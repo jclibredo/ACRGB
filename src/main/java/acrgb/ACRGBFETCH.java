@@ -49,10 +49,15 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_AREA(dataSource, tags);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
+        if (tags.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = fetchmethods.ACR_AREA(dataSource, tags);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 
@@ -64,10 +69,16 @@ public class ACRGBFETCH {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
-        ACRGBWSResult getResult = fetchmethods.ACR_AREA_TYPE(dataSource, tags);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
+        result.setSuccess(false);
+        if (tags.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = fetchmethods.ACR_AREA_TYPE(dataSource, tags);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 
@@ -80,10 +91,15 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_ASSETS(dataSource, tags);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
+        if (tags.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = fetchmethods.ACR_ASSETS(dataSource, tags);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 
@@ -96,10 +112,15 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_CONTRACT(dataSource, tags);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
+        if (tags.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = fetchmethods.ACR_CONTRACT(dataSource, tags);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 
@@ -112,10 +133,15 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_HCF(dataSource, tags);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
+        if (tags.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = fetchmethods.ACR_HCF(dataSource, tags);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 
@@ -128,10 +154,15 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_TRANCH(dataSource, tags);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
+        if (tags.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = fetchmethods.ACR_TRANCH(dataSource, tags);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 
@@ -144,10 +175,15 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_USER_DETAILS(dataSource, tags);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
+        if (tags.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = fetchmethods.ACR_USER_DETAILS(dataSource, tags);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 
@@ -160,10 +196,15 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_USER_LEVEL(dataSource, tags);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
+        if (tags.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = fetchmethods.ACR_USER_LEVEL(dataSource, tags);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 
@@ -176,10 +217,15 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_USER(dataSource, tags);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
+        if (tags.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = fetchmethods.ACR_USER(dataSource, tags);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 
@@ -207,10 +253,18 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.GETUSERLEVEL(dataSource, levid);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
+        if (levid.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else if (!utility.IsValidNumber(levid)) {
+            result.setMessage("LEVEL ID IS NOT VALID");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = fetchmethods.GETUSERLEVEL(dataSource, levid);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 
@@ -223,10 +277,18 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.GETFULLDETAILS(dataSource, userid);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
+        if (userid.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else if (!utility.IsValidNumber(userid)) {
+            result.setMessage("USER ID IS NOT VALID");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = fetchmethods.GETFULLDETAILS(dataSource, userid);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 
@@ -239,10 +301,18 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.GETASSETSWITHPARAM(dataSource, phcfid);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
+        if (phcfid.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else if (!utility.IsValidNumber(phcfid)) {
+            result.setMessage("FACILITY ID IS NOT VALID");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = fetchmethods.GETASSETSWITHPARAM(dataSource, phcfid);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 
@@ -271,10 +341,18 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = methods.GetLogsWithID(dataSource, userid);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
+        if (userid.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else if (!utility.IsValidNumber(userid)) {
+            result.setMessage("USERID IS NOT VALID");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = methods.GetLogsWithID(dataSource, userid);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 
