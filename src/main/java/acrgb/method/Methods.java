@@ -43,7 +43,7 @@ public class Methods {
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
     private final Cryptor cryptor = new Cryptor();
-    private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm:ss a");
+    private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm a");
 
     //--------------------------------------------------------
 // ACR GB USER ACCOUNT LOGIN
