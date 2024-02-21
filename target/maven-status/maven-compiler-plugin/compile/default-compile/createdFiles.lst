@@ -10,7 +10,6 @@ acrgb\structure\AccountPayable.class
 acrgb\utility\Utility.class
 acrgb\method\Methods.class
 acrgb\ACRGBFETCH.class
-acrgb\method\ArchiveMethod.class
 acrgb\structure\ACRGBWSResult.class
 acrgb\structure\Contract.class
 acrgb\utility\Cryptor.class
