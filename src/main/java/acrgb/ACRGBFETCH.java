@@ -49,7 +49,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_AREA(dataSource,tags);
+        ACRGBWSResult getResult = fetchmethods.ACR_AREA(dataSource, tags);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());
@@ -64,8 +64,7 @@ public class ACRGBFETCH {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
-        result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_AREA_TYPE(dataSource,tags);
+        ACRGBWSResult getResult = fetchmethods.ACR_AREA_TYPE(dataSource, tags);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());
@@ -81,7 +80,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_ASSETS(dataSource,tags);
+        ACRGBWSResult getResult = fetchmethods.ACR_ASSETS(dataSource, tags);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());
@@ -97,7 +96,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_CONTRACT(dataSource,tags);
+        ACRGBWSResult getResult = fetchmethods.ACR_CONTRACT(dataSource, tags);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());
@@ -113,7 +112,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_HCF(dataSource,tags);
+        ACRGBWSResult getResult = fetchmethods.ACR_HCF(dataSource, tags);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());
@@ -129,7 +128,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_TRANCH(dataSource,tags);
+        ACRGBWSResult getResult = fetchmethods.ACR_TRANCH(dataSource, tags);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());
@@ -145,7 +144,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_USER_DETAILS(dataSource,tags);
+        ACRGBWSResult getResult = fetchmethods.ACR_USER_DETAILS(dataSource, tags);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());
@@ -161,7 +160,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_USER_LEVEL(dataSource,tags);
+        ACRGBWSResult getResult = fetchmethods.ACR_USER_LEVEL(dataSource, tags);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());
@@ -177,7 +176,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.ACR_USER(dataSource,tags);
+        ACRGBWSResult getResult = fetchmethods.ACR_USER(dataSource, tags);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());

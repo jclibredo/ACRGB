@@ -39,7 +39,8 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class FetchMethods {
-    public FetchMethods(){
+
+    public FetchMethods() {
     }
 
     private final Utility utility = new Utility();
@@ -89,7 +90,7 @@ public class FetchMethods {
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :account_payable := ACR_GB.ACRGBPKGFUNCTION.ACR_AREA(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", tags);
+            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<Area> arealist = new ArrayList<>();
@@ -135,7 +136,7 @@ public class FetchMethods {
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :assets := ACR_GB.ACRGBPKGFUNCTION.ACR_AREA_TYPE(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", tags);
+            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<AreaType> listareatype = new ArrayList<>();
@@ -180,7 +181,7 @@ public class FetchMethods {
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :assets_type := ACR_GB.ACRGBPKGFUNCTION.ACR_ASSETS(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", tags);
+            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<Assets> listassets = new ArrayList<>();
@@ -229,7 +230,7 @@ public class FetchMethods {
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", tags);
+            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<Contract> listcontract = new ArrayList<>();
@@ -278,7 +279,7 @@ public class FetchMethods {
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_HCF(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", tags);
+            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<HealthCareFacility> listHCF = new ArrayList<>();
@@ -326,7 +327,7 @@ public class FetchMethods {
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_TRANCH(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", tags);
+            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<Tranch> listtranch = new ArrayList<>();
@@ -373,7 +374,7 @@ public class FetchMethods {
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_USER_DETAILS(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", tags);
+            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<UserInfo> listuserinfo = new ArrayList<>();
@@ -422,8 +423,9 @@ public class FetchMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_USER_LEVEL(); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_USER_LEVEL(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<UserLevel> listuserlevel = new ArrayList<>();
@@ -467,8 +469,9 @@ public class FetchMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_USER(); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_USER(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<User> listuser = new ArrayList<>();

@@ -38,9 +38,10 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class InsertMethods {
-    public InsertMethods(){
+    
+    public InsertMethods() {
     }
-
+    
     private final Utility utility = new Utility();
     private final Cryptor cryptor = new Cryptor();
     private final Methods methods = new Methods();
@@ -53,7 +54,7 @@ public class InsertMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            ACRGBWSResult arearesult = fm.ACR_AREA(datasource,"active");
+            ACRGBWSResult arearesult = fm.ACR_AREA(datasource, "active");
             if (!arearesult.isSuccess()) {
                 result.setMessage(arearesult.getMessage());
                 result.setSuccess(false);
@@ -62,6 +63,9 @@ public class InsertMethods {
                 result.setSuccess(false);
             } else if (!utility.IsValidNumber(area.getCreatedby()) || !utility.IsValidNumber(area.getTypeid())) {
                 result.setMessage("NUMBER FORMAT IS NOT VALID");
+                result.setSuccess(false);
+            } else if (!utility.IsValidDate(area.getDatecreated())) {
+                result.setMessage("DATE FORMAT IS NOT VALID");
                 result.setSuccess(false);
             } else {
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTAREA(:Message,:Code,:p_areaname,:p_typeid,:p_createdby,:p_datecreated)");
@@ -98,6 +102,12 @@ public class InsertMethods {
             if (!utility.IsValidDate(areatype.getDatecreated())) {
                 result.setSuccess(false);
                 result.setMessage("DATE FORMAT IS NOT VALID");
+            } else if (areatype.getTypename().isEmpty() || areatype.getCreatedby().isEmpty() || areatype.getDatecreated().isEmpty()) {
+                result.setMessage("SOME REQUIRED FIELDS IS EMPTY");
+                result.setSuccess(false);
+            } else if (!utility.IsValidNumber(areatype.getCreatedby())) {
+                result.setMessage("NUMBER FORMAT IS NOT VALID");
+                result.setSuccess(false);
             } else {
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTAREATYPE(:Message,:Code,:p_typename,"
                         + ":p_createdby,:p_datecreated)");
@@ -131,9 +141,18 @@ public class InsertMethods {
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
             //GET TRANCH PERCENTAGE
-            if (utility.IsValidNumber(assets.getHcfid()) && utility.IsValidNumber(assets.getTranchid())) {
+            if (assets.getAmount().isEmpty()
+                    || assets.getCreatedby().isEmpty()
+                    || assets.getDatecreated().isEmpty()
+                    || assets.getDatereleased().isEmpty()
+                    || assets.getHcfid().isEmpty()
+                    || assets.getReceipt().isEmpty()
+                    || assets.getTranchid().isEmpty()) {
+                result.setMessage("SOME REQUIRED FIELDS IS EMPTY");
+                result.setSuccess(false);
+            } else if (utility.IsValidNumber(assets.getHcfid()) && utility.IsValidNumber(assets.getTranchid())) {
                 ACRGBWSResult tranchresult = fm.GETTRANCHAMOUNT(datasource, assets.getTranchid());
-                ACRGBWSResult hcfresult = fm.ACR_HCF(datasource,"active");
+                ACRGBWSResult hcfresult = fm.ACR_HCF(datasource, "active");
                 int countresult = 0;
                 if (hcfresult.isSuccess()) {
                     if (!hcfresult.getResult().isEmpty()) {
@@ -145,7 +164,7 @@ public class InsertMethods {
                         }
                     }
                 }
-
+                
                 if (!tranchresult.isSuccess()) {
                     result.setMessage(tranchresult.getMessage());
                     result.setSuccess(false);
@@ -158,9 +177,9 @@ public class InsertMethods {
                 } else {
                     ACRGBWSResult conresult = fm.GETCONTRACTAMOUNT(datasource, assets.getHcfid());
                     if (conresult.isSuccess()) {
-                        ACRGBWSResult transresult = fm.ACR_ASSETS(datasource,"active");
+                        ACRGBWSResult transresult = fm.ACR_ASSETS(datasource, "active");
                         if (transresult.isSuccess()) {
-                            ACRGBWSResult trans = fm.ACR_TRANCH(datasource,"active");
+                            ACRGBWSResult trans = fm.ACR_TRANCH(datasource, "active");
                             if (trans.isSuccess()) {
                                 int transcount = 0;
                                 List<Tranch> tranchlist = Arrays.asList(utility.ObjectMapper().readValue(trans.getResult(), Tranch[].class));
@@ -179,7 +198,7 @@ public class InsertMethods {
                                         count++;
                                     }
                                 }
-
+                                
                                 if (transcount == 0) {
                                     result.setSuccess(false);
                                     result.setMessage("TRANCH VALUE NOT FOUND");
@@ -214,12 +233,10 @@ public class InsertMethods {
                                         result.setMessage("TRANCH VALUE IS ALREADY ASSIGN TO HCF");
                                     }
                                 }
-                                //----------------------------------------------------------------------
                             } else {
                                 result.setSuccess(false);
                                 result.setMessage(trans.getMessage());
                             }
-
                         } else {
                             result.setSuccess(false);
                             result.setMessage(transresult.getMessage());
@@ -233,7 +250,6 @@ public class InsertMethods {
                 result.setSuccess(false);
                 result.setMessage("NUMBER FORMAT IS NOT VALID");
             }
-
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -247,47 +263,60 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-
+        
         try (Connection connection = datasource.getConnection()) {
-            ACRGBWSResult hcfresult = fm.ACR_HCF(datasource,"active");
-            int countresult = 0;
-            if (hcfresult.isSuccess()) {
-                if (!hcfresult.getResult().isEmpty()) {
-                    List<HealthCareFacility> hcflist = Arrays.asList(utility.ObjectMapper().readValue(hcfresult.getResult(), HealthCareFacility[].class));
-                    for (int x = 0; x < hcflist.size(); x++) {
-                        if (hcflist.get(x).getHcfid().equals(contract.getHcfid())) {
-                            countresult++;
+            if (contract.getAmount().isEmpty()
+                    || contract.getCreatedby().isEmpty()
+                    || contract.getDatecreated().isEmpty()
+                    || contract.getDatefrom().isEmpty()
+                    || contract.getDateto().isEmpty()
+                    || contract.getHcfid().isEmpty()) {
+                result.setMessage("SOME REQUIRED FIELDS IS EMPTY");
+                result.setSuccess(false);
+            } else if (!utility.IsValidNumber(contract.getHcfid()) || !utility.IsValidNumber(contract.getCreatedby())) {
+                result.setMessage("NUMBER FORMAT IS NOT VALID");
+                result.setSuccess(false);
+            } else {
+                ACRGBWSResult hcfresult = fm.ACR_HCF(datasource, "active");
+                int countresult = 0;
+                if (hcfresult.isSuccess()) {
+                    if (!hcfresult.getResult().isEmpty()) {
+                        List<HealthCareFacility> hcflist = Arrays.asList(utility.ObjectMapper().readValue(hcfresult.getResult(), HealthCareFacility[].class));
+                        for (int x = 0; x < hcflist.size(); x++) {
+                            if (hcflist.get(x).getHcfid().equals(contract.getHcfid())) {
+                                countresult++;
+                            }
                         }
                     }
                 }
-            }
-            if (countresult < 1) {
-                result.setMessage("FACILITY DATA NOT FOUND");
-                result.setSuccess(false);
-            } else {
-                if (!utility.IsValidDate(contract.getDatecreated()) || !utility.IsValidDate(contract.getDatefrom()) || !utility.IsValidDate(contract.getDateto())) {
+                if (countresult < 1) {
+                    result.setMessage("FACILITY DATA NOT FOUND");
                     result.setSuccess(false);
-                    result.setMessage("DATE FORMAT IS NOT VALID");
                 } else {
-                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONTRACT(:Message,:Code,:p_hcfid,:p_amount"
-                            + ",:p_createdby,:p_datecreated,:p_datefrom,:p_dateto)");
-                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                    getinsertresult.setString("p_hcfid", contract.getHcfid());
-                    getinsertresult.setString("p_amount", contract.getAmount());
-                    getinsertresult.setString("p_createdby", contract.getCreatedby());
-                    getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(contract.getDatecreated()).getTime()));//contract.getDatecreated());
-                    getinsertresult.setDate("p_datefrom", (Date) new Date(utility.StringToDate(contract.getDatefrom()).getTime()));
-                    getinsertresult.setDate("p_dateto", (Date) new Date(utility.StringToDate(contract.getDateto()).getTime()));
-                    getinsertresult.execute();
-                    if (getinsertresult.getString("Message").equals("SUCC")) {
-                        result.setSuccess(true);
-                        result.setMessage("OK");
-                    } else {
-                        result.setMessage(getinsertresult.getString("Message"));
+                    if (!utility.IsValidDate(contract.getDatecreated()) || !utility.IsValidDate(contract.getDatefrom()) || !utility.IsValidDate(contract.getDateto())) {
                         result.setSuccess(false);
+                        result.setMessage("DATE FORMAT IS NOT VALID");
+                    } else {
+                        CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONTRACT(:Message,:Code,:p_hcfid,:p_amount"
+                                + ",:p_createdby,:p_datecreated,:p_datefrom,:p_dateto)");
+                        getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                        getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                        getinsertresult.setString("p_hcfid", contract.getHcfid());
+                        getinsertresult.setString("p_amount", contract.getAmount());
+                        getinsertresult.setString("p_createdby", contract.getCreatedby());
+                        getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(contract.getDatecreated()).getTime()));//contract.getDatecreated());
+                        getinsertresult.setDate("p_datefrom", (Date) new Date(utility.StringToDate(contract.getDatefrom()).getTime()));
+                        getinsertresult.setDate("p_dateto", (Date) new Date(utility.StringToDate(contract.getDateto()).getTime()));
+                        getinsertresult.execute();
+                        if (getinsertresult.getString("Message").equals("SUCC")) {
+                            result.setSuccess(true);
+                            result.setMessage("OK");
+                        } else {
+                            result.setMessage(getinsertresult.getString("Message"));
+                            result.setSuccess(false);
+                        }
+                        result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                     }
-                    result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                 }
             }
         } catch (SQLException | IOException | ParseException ex) {
@@ -304,8 +333,8 @@ public class InsertMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-
-            ACRGBWSResult hcfresult = fm.ACR_HCF(datasource,"active");
+            
+            ACRGBWSResult hcfresult = fm.ACR_HCF(datasource, "active");
             int counthcf = 0;
             if (hcfresult.isSuccess()) {
                 if (!hcfresult.getResult().isEmpty()) {
@@ -317,8 +346,8 @@ public class InsertMethods {
                     }
                 }
             }
-
-            ACRGBWSResult arearesult = fm.ACR_AREA(datasource,"active");
+            
+            ACRGBWSResult arearesult = fm.ACR_AREA(datasource, "active");
             int countresult = 0;
             if (arearesult.isSuccess()) {
                 if (!arearesult.getResult().isEmpty()) {
@@ -330,7 +359,7 @@ public class InsertMethods {
                     }
                 }
             }
-
+            
             if (!utility.IsValidDate(hcf.getDatecreated())) {
                 result.setSuccess(false);
                 result.setMessage("DATE FORMAT IS NOT VALID");
@@ -364,7 +393,7 @@ public class InsertMethods {
                 }
                 result.setResult(utility.ObjectMapper().writeValueAsString(hcf));
             }
-
+            
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -424,11 +453,11 @@ public class InsertMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            ACRGBWSResult realist = fm.ACR_AREA(datasource,"active");
+            ACRGBWSResult realist = fm.ACR_AREA(datasource, "active");
             int countresult = 0;
-            ACRGBWSResult hcflist = fm.ACR_HCF(datasource,"active");
+            ACRGBWSResult hcflist = fm.ACR_HCF(datasource, "active");
             int hcfresult = 0;
-
+            
             if (hcflist.isSuccess()) {
                 if (!hcflist.getResult().isEmpty()) {
                     List<HealthCareFacility> hcflistresult = Arrays.asList(utility.ObjectMapper().readValue(hcflist.getResult(), HealthCareFacility[].class));
@@ -505,7 +534,7 @@ public class InsertMethods {
                     }
                 }
             }
-
+            
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -563,7 +592,7 @@ public class InsertMethods {
                     countresult++;
                 }
             }
-            ACRGBWSResult infolistresult = fm.ACR_USER_DETAILS(datasource,"active");
+            ACRGBWSResult infolistresult = fm.ACR_USER_DETAILS(datasource, "active");
             int countinfo = 0;
             if (levelresult.isSuccess()) {
                 if (!infolistresult.getResult().isEmpty()) {
@@ -667,7 +696,7 @@ public class InsertMethods {
         }
         return result;
     }
-
+    
     public ACRGBWSResult INACTIVEDATA(final DataSource datasource, final String tags, final String dataid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -698,7 +727,7 @@ public class InsertMethods {
         }
         return result;
     }
-
+    
     public ACRGBWSResult ACTIVEDATA(final DataSource datasource, final String tags, final String dataid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -729,5 +758,5 @@ public class InsertMethods {
         }
         return result;
     }
-
+    
 }
