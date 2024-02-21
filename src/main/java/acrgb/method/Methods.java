@@ -162,9 +162,9 @@ public class Methods {
                     + ":p_firstname,:p_lastname,:p_middlename,:p_did,:p_hcfid)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("p_firstname", userinfo.getFirstname());
-            getinsertresult.setString("p_lastname", userinfo.getLastname());
-            getinsertresult.setString("p_middlename", userinfo.getMiddlename());
+            getinsertresult.setString("p_firstname", userinfo.getFirstname().toUpperCase());
+            getinsertresult.setString("p_lastname", userinfo.getLastname().toUpperCase());
+            getinsertresult.setString("p_middlename", userinfo.getMiddlename().toUpperCase());
             getinsertresult.setString("p_did", userinfo.getDid());
             getinsertresult.setString("p_hcfid", userinfo.getHcfid());
             getinsertresult.execute();
@@ -297,7 +297,7 @@ public class Methods {
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setTimestamp("a_date", new java.sql.Timestamp(d1.getTime()));
-            getinsertresult.setString("a_details", useractivity.getActdetails());
+            getinsertresult.setString("a_details", useractivity.getActdetails().toUpperCase());
             getinsertresult.setInt("a_by", Integer.parseInt(useractivity.getActby()));
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {

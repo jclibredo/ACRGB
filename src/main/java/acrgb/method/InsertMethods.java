@@ -65,7 +65,7 @@ public class InsertMethods {
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTAREA(:Message,:Code,:p_areaname,:p_typeid,:p_createdby,:p_datecreated)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("p_areaname", area.getAreaname());
+                getinsertresult.setString("p_areaname", area.getAreaname().toUpperCase());
                 getinsertresult.setString("p_typeid", area.getTypeid());
                 getinsertresult.setString("p_createdby", area.getCreatedby());
                 getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(area.getDatecreated()).getTime()));//area.getDatecreated());
@@ -101,7 +101,7 @@ public class InsertMethods {
                         + ":p_createdby,:p_datecreated)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("p_typename", areatype.getTypename());
+                getinsertresult.setString("p_typename", areatype.getTypename().toUpperCase());
                 getinsertresult.setString("p_createdby", areatype.getCreatedby());
                 getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(areatype.getDatecreated()).getTime())); //areatype.getDatecreated());
                 getinsertresult.execute();
@@ -346,8 +346,8 @@ public class InsertMethods {
                         + "p_areaid,:p_datecreated)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("p_hcfname", hcf.getHcfname());
-                getinsertresult.setString("p_hcfaddress", hcf.getHcfaddress());
+                getinsertresult.setString("p_hcfname", hcf.getHcfname().toUpperCase());
+                getinsertresult.setString("p_hcfaddress", hcf.getHcfaddress().toUpperCase());
                 getinsertresult.setString("p_hcfcode", hcf.getHcfcode());
                 getinsertresult.setString("p_createdby", hcf.getCreatedby());
                 getinsertresult.setString("p_areaid", hcf.getAreaid());
@@ -393,7 +393,7 @@ public class InsertMethods {
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTTRANCH(:Message,:Code,:p_tranchtype,:p_percentage,:p_createdby,:p_datecreated)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("p_tranchtype", tranch.getTranchtype());
+                getinsertresult.setString("p_tranchtype", tranch.getTranchtype().toUpperCase());
                 getinsertresult.setString("p_percentage", tranch.getPercentage());
                 getinsertresult.setString("p_createdby", tranch.getCreatedby());
                 getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(tranch.getDatecreated()).getTime()));//tranch.getDatecreated());
@@ -459,9 +459,9 @@ public class InsertMethods {
                             + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_areaid,:p_createdby,:p_hcfid)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                    getinsertresult.setString("p_firstname", userinfo.getFirstname());
-                    getinsertresult.setString("p_lastname", userinfo.getLastname());
-                    getinsertresult.setString("p_middlename", userinfo.getMiddlename());
+                    getinsertresult.setString("p_firstname", userinfo.getFirstname().toUpperCase());
+                    getinsertresult.setString("p_lastname", userinfo.getLastname().toUpperCase());
+                    getinsertresult.setString("p_middlename", userinfo.getMiddlename().toUpperCase());
                     getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(userinfo.getDatecreated()).getTime()));//userinfo.getDatecreated());
                     getinsertresult.setString("p_areaid", userinfo.getAreaid());
                     getinsertresult.setString("p_createdby", userinfo.getCreatedby());
@@ -484,9 +484,9 @@ public class InsertMethods {
                                 + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_areaid,:p_createdby,:p_hcfid)");
                         getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                         getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                        getinsertresult.setString("p_firstname", userinfo.getFirstname());
-                        getinsertresult.setString("p_lastname", userinfo.getLastname());
-                        getinsertresult.setString("p_middlename", userinfo.getMiddlename());
+                        getinsertresult.setString("p_firstname", userinfo.getFirstname().toUpperCase());
+                        getinsertresult.setString("p_lastname", userinfo.getLastname().toUpperCase());
+                        getinsertresult.setString("p_middlename", userinfo.getMiddlename().toUpperCase());
                         getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(userinfo.getDatecreated()).getTime()));//userinfo.getDatecreated());
                         getinsertresult.setString("p_areaid", userinfo.getAreaid());
                         getinsertresult.setString("p_createdby", userinfo.getCreatedby());
@@ -526,8 +526,8 @@ public class InsertMethods {
                         + ":p_levdetails,:p_levname,:p_createdby,:p_datecreated)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("p_levdetails", userlevel.getLevdetails());
-                getinsertresult.setString("p_levname", userlevel.getLevname());
+                getinsertresult.setString("p_levdetails", userlevel.getLevdetails().toUpperCase());
+                getinsertresult.setString("p_levname", userlevel.getLevname().toUpperCase());
                 getinsertresult.setString("p_createdby", userlevel.getCreatedby());
                 getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(userlevel.getDatecreated()).getTime())); //userlevel.getDatecreated());
                 getinsertresult.execute();
