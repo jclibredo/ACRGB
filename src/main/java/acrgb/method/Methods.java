@@ -37,13 +37,13 @@ import oracle.jdbc.OracleTypes;
 @RequestScoped
 public class Methods {
 
+    public Methods() {
+    }
+
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
     private final Cryptor cryptor = new Cryptor();
     private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm:ss a");
-
-    public Methods() {
-    }
 
     //--------------------------------------------------------
 // ACR GB USER ACCOUNT LOGIN
@@ -53,7 +53,7 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         try {
-            ACRGBWSResult resultfm = fm.ACR_USER(datasource,"active");
+            ACRGBWSResult resultfm = fm.ACR_USER(datasource, "active");
             if (resultfm.isSuccess()) {
                 List<User> userlist = Arrays.asList(utility.ObjectMapper().readValue(resultfm.getResult(), User[].class));
                 for (int x = 0; x < userlist.size(); x++) {

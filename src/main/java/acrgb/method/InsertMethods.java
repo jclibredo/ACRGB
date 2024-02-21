@@ -38,6 +38,8 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class InsertMethods {
+    public InsertMethods(){
+    }
 
     private final Utility utility = new Utility();
     private final Cryptor cryptor = new Cryptor();
