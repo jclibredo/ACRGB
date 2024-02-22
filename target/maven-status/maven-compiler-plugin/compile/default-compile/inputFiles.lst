@@ -9,6 +9,7 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\structure\User.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\Methods.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Summary.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Area.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\method\UpdateMethods.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\HealthCareFacility.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\ACRGBPOST.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\AccountPayable.java
@@ -21,5 +22,6 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\utility\NamedParameterStatement.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\NclaimsData.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserInfo.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserActivity.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\ACRGBUPDATE.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserLevel.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\ACRGBFETCH.java

@@ -489,7 +489,12 @@ public class FetchMethods {
                     user.setLeveid(levelresult.getMessage());
                 }
                 user.setUsername(resultset.getString("USERNAME"));
-                user.setUserpassword(resultset.getString("USERPASSWORD"));
+                if (resultset.getString("STATS").equals("2")) {
+                    user.setUserpassword(resultset.getString("USERPASSWORD"));
+                } else {
+                    user.setUserpassword(resultset.getString("USERPASSWORD"));
+                }
+
                 user.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 user.setStatus(resultset.getString("STATS"));
                 user.setDid(resultset.getString("DID"));

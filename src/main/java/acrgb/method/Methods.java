@@ -36,10 +36,10 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class Methods {
-
+    
     public Methods() {
     }
-
+    
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
     private final Cryptor cryptor = new Cryptor();
@@ -56,10 +56,15 @@ public class Methods {
             ACRGBWSResult resultfm = fm.ACR_USER(datasource, "active");
             if (resultfm.isSuccess()) {
                 List<User> userlist = Arrays.asList(utility.ObjectMapper().readValue(resultfm.getResult(), User[].class));
-                for (int x = 0; x < userlist.size(); x++) {
-                    String dpassword = cryptor.decrypt(userlist.get(x).getUserpassword(), p_password, "ACRGB");
-                    if (dpassword != null) {
-                        if (userlist.get(x).getUsername().equals(p_username) && dpassword.equals(p_password)) {
+                for (int x = 0; x < userlist.size(); x++) {   
+                    UserPassword userPassword = new UserPassword();
+                    if (userlist.get(x).getStatus().equals("2")) {
+                        userPassword.setDbpass(cryptor.decrypt(userlist.get(x).getUserpassword(), p_password, "ACRGB"));
+                    } else {
+                        userPassword.setDbpass(p_password);
+                    }
+                    if (userPassword.getDbpass() != null) {
+                        if (userlist.get(x).getUsername().equals(p_username) && userPassword.getDbpass().equals(p_password)) {
                             User user = new User();
                             user.setUserid(userlist.get(x).getUserid());
                             user.setLeveid(userlist.get(x).getLeveid());
@@ -93,11 +98,26 @@ public class Methods {
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
-
+        
     }
 
+    //-------------------------- NEW OBJECT -----------------
+    public class UserPassword {
+        
+        private String dbpass;
+        
+        public String getDbpass() {
+            return dbpass;
+        }
+        
+        public void setDbpass(String dbpass) {
+            this.dbpass = dbpass;
+        }
+    }
+    //-------------------------- NEW OBJECT -----------------
     //--------------------------------------------------------
     // ACR GB USERNAME CHECKING
+
     public ACRGBWSResult ACRUSERNAME(final DataSource dataSource, final String p_username) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -119,7 +139,9 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -145,7 +167,9 @@ public class Methods {
             result.setSuccess(true);
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -178,7 +202,9 @@ public class Methods {
             result.setResult(utility.ObjectMapper().writeValueAsString(userinfo));
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -219,7 +245,9 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -245,8 +273,10 @@ public class Methods {
                 String u_tags = "GOOD";
                 Double assetsamount = Double.parseDouble(resultset.getString("CAMOUNT"));
                 ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, u_accreno, u_tags, u_date);
+                
                 if (sumresult.isSuccess()) {
-                    NclaimsData nclaimsdata = utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData.class);
+                    NclaimsData nclaimsdata = utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData.class
+                    );
                     Double totalclaimsamount = Double.parseDouble(nclaimsdata.getClaimamount());
                     Double sums = totalclaimsamount / assetsamount * 100;
                     summary.setAccreno(u_accreno);
@@ -278,9 +308,13 @@ public class Methods {
             result.setSuccess(true);
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
+            
         } catch (ParseException ex) {
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -307,10 +341,12 @@ public class Methods {
                 result.setMessage(getinsertresult.getString("Message"));
                 result.setSuccess(false);
             }
-
+            
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -342,7 +378,9 @@ public class Methods {
             result.setSuccess(true);
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

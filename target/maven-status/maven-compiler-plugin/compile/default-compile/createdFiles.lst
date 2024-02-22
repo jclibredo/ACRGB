@@ -1,8 +1,11 @@
 acrgb\structure\UserActivity.class
+acrgb\ACRGBUPDATE.class
 acrgb\ACRGBPOST.class
 acrgb\method\FetchMethods.class
 acrgb\structure\NclaimsData.class
 acrgb\structure\User.class
+acrgb\method\UpdateMethods.class
+acrgb\method\Methods$UserPassword.class
 acrgb\structure\Summary.class
 acrgb\structure\AssetsType.class
 acrgb\structure\Assets.class

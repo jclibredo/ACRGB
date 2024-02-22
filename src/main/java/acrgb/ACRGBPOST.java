@@ -183,7 +183,7 @@ public class ACRGBPOST {
     @Path("INSERTUSER")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTUSER(final User user) throws SQLException {
+    public ACRGBWSResult INSERTUSER(final User user) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = insertmethods.INSERTUSER(dataSource, user);
