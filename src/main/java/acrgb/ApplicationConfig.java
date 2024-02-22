@@ -31,6 +31,7 @@ public class ApplicationConfig extends Application {
     private void addRestResourceClasses(Set<Class<?>> resources) {
         resources.add(acrgb.ACRGBFETCH.class);
         resources.add(acrgb.ACRGBPOST.class);
+        resources.add(acrgb.ACRGBUPDATE.class);
     }
     
 }
