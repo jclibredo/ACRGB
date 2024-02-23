@@ -624,29 +624,29 @@ public class InsertMethods {
                 if (validateUsername.isSuccess()) {
                     ACRGBWSResult validateRole = methods.ACRUSERLEVEL(datasource, user.getLeveid());
                     if (validateRole.isSuccess()) {
-                        
                         String encryptpword = cryptor.encrypt(user.getUserpassword(), user.getUserpassword(), "ACRGB");
-                        CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSER(:Message,:Code,"
-                                + ":p_levelid,:p_username,:p_userpassword,:p_datecreated,:p_createdby,:p_stats,:p_did)");
-                        
+                        CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSER(:Message,:Code,:p_levelid,:p_username,:p_userpassword,:p_datecreated,:p_createdby,:p_stats,:p_did)");
                         getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                         getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                        
                         getinsertresult.setString("p_levelid", user.getLeveid());
                         getinsertresult.setString("p_username", user.getUsername());
                         if (validateRole.getResult().equals("Admin")) {
-                            getinsertresult.setString("p_stats", "2");
                             getinsertresult.setString("p_userpassword", encryptpword);
                         } else {
-                            getinsertresult.setString("p_stats", "1");
                             getinsertresult.setString("p_userpassword", user.getUserpassword());
                         }
                         getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(user.getDatecreated()).getTime())); //userlevel.getDatecreated());//user.getDatecreated());
                         getinsertresult.setString("p_createdby", user.getCreatedby());
+                        if (validateRole.getResult().equals("Admin")) {
+                            getinsertresult.setString("p_stats", "2");
+
+                        } else {
+                            getinsertresult.setString("p_stats", "1");
+
+                        }
                         getinsertresult.setString("p_did", user.getDid());
                         getinsertresult.execute();
-                        
-                        
+
                         if (getinsertresult.getString("Message").equals("SUCC")) {
                             result.setSuccess(true);
                             result.setMessage("OK");

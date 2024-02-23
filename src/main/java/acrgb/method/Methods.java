@@ -36,10 +36,10 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class Methods {
-    
+
     public Methods() {
     }
-    
+
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
     private final Cryptor cryptor = new Cryptor();
@@ -56,7 +56,8 @@ public class Methods {
             ACRGBWSResult resultfm = fm.ACR_USER(datasource, "active");
             if (resultfm.isSuccess()) {
                 List<User> userlist = Arrays.asList(utility.ObjectMapper().readValue(resultfm.getResult(), User[].class));
-                for (int x = 0; x < userlist.size(); x++) {   
+                int resultcounter = 0;
+                for (int x = 0; x < userlist.size(); x++) {
                     UserPassword userPassword = new UserPassword();
                     if (userlist.get(x).getStatus().equals("2")) {
                         userPassword.setDbpass(cryptor.decrypt(userlist.get(x).getUserpassword(), p_password, "ACRGB"));
@@ -77,39 +78,40 @@ public class Methods {
                             result.setSuccess(true);
                             result.setResult(utility.ObjectMapper().writeValueAsString(user));
                             result.setMessage("OK");
-                        } else {
-                            result.setSuccess(false);
-                            result.setMessage("CREDENTIAL NOT FOUND");
-                            result.setResult("Username:" + p_username + " Password:" + p_password);
+                            resultcounter++;
+                            break;
                         }
                     } else {
-                        result.setSuccess(false);
-                        result.setResult("Username:" + p_username + " Password:" + p_password);
-                        result.setMessage("CREDENTIALS NOT FOUND");
+                        result.setResult("INVALID USERNAME AND PASSWORD");
+                        result.setMessage("CREDENTIAL NOT FOUND");
                     }
                 }
+
+                if (resultcounter == 0) {
+                    result.setMessage("CREDENTIAL NOT FOUND");
+                    result.setResult("INVALID USERNAME AND PASSWORD");
+                }
             } else {
-                result.setSuccess(false);
+                //result.setSuccess(false);
                 result.setMessage("NO AVAILABLE DATA");
-                result.setResult("Username:" + p_username + " Password:" + p_password);
             }
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
-        
+
     }
 
     //-------------------------- NEW OBJECT -----------------
     public class UserPassword {
-        
+
         private String dbpass;
-        
+
         public String getDbpass() {
             return dbpass;
         }
-        
+
         public void setDbpass(String dbpass) {
             this.dbpass = dbpass;
         }
@@ -117,7 +119,6 @@ public class Methods {
     //-------------------------- NEW OBJECT -----------------
     //--------------------------------------------------------
     // ACR GB USERNAME CHECKING
-
     public ACRGBWSResult ACRUSERNAME(final DataSource dataSource, final String p_username) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -273,7 +274,7 @@ public class Methods {
                 String u_tags = "GOOD";
                 Double assetsamount = Double.parseDouble(resultset.getString("CAMOUNT"));
                 ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, u_accreno, u_tags, u_date);
-                
+
                 if (sumresult.isSuccess()) {
                     NclaimsData nclaimsdata = utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData.class
                     );
@@ -311,7 +312,7 @@ public class Methods {
             Logger
                     .getLogger(Methods.class
                             .getName()).log(Level.SEVERE, null, ex);
-            
+
         } catch (ParseException ex) {
             Logger.getLogger(Methods.class
                     .getName()).log(Level.SEVERE, null, ex);
@@ -341,7 +342,7 @@ public class Methods {
                 result.setMessage(getinsertresult.getString("Message"));
                 result.setSuccess(false);
             }
-            
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger
