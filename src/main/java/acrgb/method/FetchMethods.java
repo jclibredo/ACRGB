@@ -303,6 +303,7 @@ public class FetchMethods {
                 }
                 hcf.setAreaid(resultset.getString("AREAID"));
                 hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
+                hcf.setProid(resultset.getString("PROID"));
                 listHCF.add(hcf);
             }
             if (listHCF.size() < 1) {

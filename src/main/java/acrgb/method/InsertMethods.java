@@ -375,7 +375,7 @@ public class InsertMethods {
                 result.setMessage("HCF NAME IS ALREADY EXIST");
             } else {
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTHCF(:Message,:Code,:p_hcfname,:p_hcfaddress,:p_hcfcode,:p_createdby,:"
-                        + "p_areaid,:p_datecreated)");
+                        + "p_areaid,:p_datecreated,:p_proid)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("p_hcfname", hcf.getHcfname().toUpperCase());
@@ -384,6 +384,7 @@ public class InsertMethods {
                 getinsertresult.setString("p_createdby", hcf.getCreatedby());
                 getinsertresult.setString("p_areaid", hcf.getAreaid());
                 getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(hcf.getDatecreated()).getTime())); //hcf.getDatecreated());
+                getinsertresult.setString("p_proid", hcf.getProid());
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);

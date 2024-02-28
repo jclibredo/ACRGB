@@ -20,4 +20,5 @@ private String hcfcode;
 private String createdby;
 private String areaid;
 private String datecreated;
+private String proid;
 }
