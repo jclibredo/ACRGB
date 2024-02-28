@@ -229,6 +229,28 @@ public class ACRGBFETCH {
         return result;
     }
 
+      @GET
+    @Path("GetPro/{tags}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetPro(@PathParam("tags") String tags) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        if (tags.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = fetchmethods.ACR_PRO(dataSource, tags);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
+        return result;
+    }
+
+    
+    
     @GET
     @Path("GetSummary")
     @Produces(MediaType.APPLICATION_JSON)
@@ -315,7 +337,6 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
     //
     @GET
     @Path("GetActivityLogs")

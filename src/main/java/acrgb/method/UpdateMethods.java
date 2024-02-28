@@ -11,6 +11,7 @@ import acrgb.structure.AreaType;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.HealthCareFacility;
+import acrgb.structure.Pro;
 import acrgb.structure.Tranch;
 import acrgb.structure.UserLevel;
 import acrgb.utility.Utility;
@@ -431,15 +432,12 @@ public class UpdateMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            if (!utility.IsValidDate(userlevel.getDatecreated())) {
-                result.setSuccess(false);
-                result.setMessage("DATE FORMAT IS NOT VALID");
-            } else if (!utility.IsValidNumber(userlevel.getLevelid())) {
+            if (!utility.IsValidNumber(userlevel.getLevelid())) {
                 result.setSuccess(false);
                 result.setMessage("NUMBER FORMAT IS NOT VALID");
             } else {
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERLEVEL(:Message,:Code,:p_levelid,"
-                        + ":p_levdetails,:p_levname,:p_createdby,:p_datecreated)");
+                        + ":p_levdetails)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("p_levelid", userlevel.getLevelid());
@@ -454,6 +452,40 @@ public class UpdateMethods {
                     result.setSuccess(false);
                 }
                 result.setResult(utility.ObjectMapper().writeValueAsString(userlevel));
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult UPDATEPRO(final DataSource datasource, Pro pro) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            if (!utility.IsValidNumber(pro.getProid())) {
+                result.setSuccess(false);
+                result.setMessage("NUMBER FORMAT IS NOT VALID");
+            } else {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPRO(:Message,:Code,:p_proid,"
+                        + ":p_proname)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("p_proid", pro.getProid());
+                getinsertresult.setString("p_proname", pro.getProname().toUpperCase());
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    result.setSuccess(true);
+                    result.setMessage("OK");
+                } else {
+                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setSuccess(false);
+                }
+                result.setResult(utility.ObjectMapper().writeValueAsString(pro));
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());

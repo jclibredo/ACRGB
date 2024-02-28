@@ -12,6 +12,7 @@ import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.NclaimsData;
+import acrgb.structure.Pro;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserActivity;
@@ -452,6 +453,52 @@ public class FetchMethods {
             if (!listuserlevel.isEmpty()) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(listuserlevel));
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+            result.setSuccess(true);
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //THIS AREA IS FOR USER LEVEL
+    public ACRGBWSResult ACR_PRO(final DataSource dataSource, final String tags) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_USER_LEVEL(:tags); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            ArrayList<Pro> prolist = new ArrayList<>();
+            while (resultset.next()) {
+                Pro pro = new Pro();
+                pro.setProid(resultset.getString("PROID"));
+                pro.setProname(resultset.getString("PRONAME"));
+                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    if (!creator.getResult().isEmpty()) {
+                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                        pro.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                    } else {
+                        pro.setCreatedby(creator.getMessage());
+                    }
+                } else {
+                    pro.setCreatedby("DATA NOT FOUND");
+                }
+                pro.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                pro.setStats(resultset.getString("STATS"));
+                prolist.add(pro);
+            }
+            if (!prolist.isEmpty()) {
+                result.setMessage("OK");
+                result.setResult(utility.ObjectMapper().writeValueAsString(prolist));
             } else {
                 result.setMessage("NO DATA FOUND");
             }

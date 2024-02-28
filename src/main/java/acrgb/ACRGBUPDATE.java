@@ -5,17 +5,23 @@
  */
 package acrgb;
 
+import acrgb.method.InsertMethods;
+import acrgb.method.Methods;
 import acrgb.method.UpdateMethods;
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.Archived;
 import acrgb.structure.Area;
 import acrgb.structure.AreaType;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.HealthCareFacility;
+import acrgb.structure.Pro;
 import acrgb.structure.Tranch;
+import acrgb.structure.User;
 import acrgb.structure.UserLevel;
 import acrgb.utility.Utility;
 import java.sql.SQLException;
+import java.text.ParseException;
 import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
 import javax.sql.DataSource;
@@ -39,6 +45,8 @@ public class ACRGBUPDATE {
 
     private final Utility utility = new Utility();
     private final UpdateMethods updatemethods = new UpdateMethods();
+    private final Methods methods = new Methods();
+    private final InsertMethods insertmethods = new InsertMethods();
 
     /**
      * Retrieves representation of an instance of acrgb.ACRGB
@@ -139,6 +147,105 @@ public class ACRGBUPDATE {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = updatemethods.UPDATEUSERLEVEL(dataSource, userlevel);
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
+    
+     @PUT
+    @Path("UPDATEPRO")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult UPDATEPRO(final Pro pro) throws SQLException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = updatemethods.UPDATEPRO(dataSource, pro);
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
+
+
+    @PUT
+    @Path("UPDATEUSERCREDENTIALS")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult UPDATEUSERCREDENTIALS(final User user) throws SQLException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        if (user.getUsername() == null) {
+            ACRGBWSResult insertresult = methods.CHANGEPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        } else if (user.getUserpassword() == null) {
+            ACRGBWSResult insertresult = methods.CHANGEUSERNAME(dataSource, user.getUserid(), user.getUserpassword());
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        } else {
+            ACRGBWSResult insertresult = methods.UPDATEUSERCREDENTIALS(dataSource, user.getUserid(), user.getUsername(), user.getUserpassword());
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
+        return result;
+    }
+
+    @PUT
+    @Path("UPDATEUSERLEVELID")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult UPDATEUSERLEVEL(final User user) throws SQLException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = methods.CHANGEUSELEVELID(dataSource, user.getUserid(), user.getLeveid());
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
+    
+    
+    @PUT
+    @Path("RESETPASSWORD")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult RESETPASSWORD(final User user) throws SQLException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = methods.RESETPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
+    
+
+    @PUT
+    @Path("INACTIVE")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult INACTIVE(final Archived arhived) throws SQLException, ParseException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = insertmethods.INACTIVEDATA(dataSource, arhived.getTags(), arhived.getDataid());
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
+
+    @PUT
+    @Path("ACTIVE")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult ACTIVE(final Archived arhived) throws SQLException, ParseException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = insertmethods.ACTIVEDATA(dataSource, arhived.getTags(), arhived.getDataid());
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());
