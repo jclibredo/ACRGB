@@ -427,7 +427,6 @@ public class Methods {
                 Date u_to = resultset.getDate("DATETO");
                 String u_tags = "GOOD";
                 Summary summary = new Summary();
-
                 ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, u_accreno, u_tags, u_from, u_to);
                 if (sumresult.isSuccess()) {
                     NclaimsData nclaimsdata = utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData.class);
@@ -438,7 +437,6 @@ public class Methods {
                         Double totalclaimsamount = Double.parseDouble(nclaimsdata.getClaimamount());
                         Double sums = totalclaimsamount / assetsamount * 100;
                         System.out.println(totalclaimsamount);
-
                         if (sums > 100) {
                             Double negvalue = 100 - sums;
                             summary.setTotalpercentage(String.valueOf(Math.round(negvalue)));

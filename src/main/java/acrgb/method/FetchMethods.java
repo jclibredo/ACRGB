@@ -18,6 +18,7 @@ import acrgb.structure.User;
 import acrgb.structure.UserActivity;
 import acrgb.structure.UserInfo;
 import acrgb.structure.UserLevel;
+import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
 import java.io.IOException;
 import java.sql.CallableStatement;
@@ -66,8 +67,8 @@ public class FetchMethods {
                 userinfo.setFirstname(resultset.getString("FIRSTNAME"));
                 userinfo.setLastname(resultset.getString("LASTNAME"));
                 userinfo.setMiddlename(resultset.getString("MIDDLENAME"));
-                userinfo.setAreaid(resultset.getString("AREAID"));
                 userinfo.setHcfid(resultset.getString("HCFID"));
+                userinfo.setProid(resultset.getString("PROID"));
                 userinfo.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 result.setMessage("OK");
                 //result.setMessage(utility.ObjectMapper().writeValueAsString(user));
@@ -90,7 +91,7 @@ public class FetchMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :account_payable := ACR_GB.ACRGBPKGFUNCTION.ACR_AREA(:tags); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_AREA(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
             statement.execute();
@@ -118,6 +119,52 @@ public class FetchMethods {
             if (!arealist.isEmpty()) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(arealist));
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+            result.setSuccess(true);
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+//USER ROLE INDEX
+
+    public ACRGBWSResult GETUSERROLEINDEX(final DataSource dataSource) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETUSERROLEINDEX(:tags); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            ArrayList<UserRoleIndex> userolelist = new ArrayList<>();
+            while (resultset.next()) {
+                UserRoleIndex userole = new UserRoleIndex();
+                userole.setRoleid(resultset.getString("ROLEID"));
+                userole.setUserid(resultset.getString("USERID"));
+                userole.setAccessid(resultset.getString("ACCESSID"));
+                ACRGBWSResult creator = GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    if (!creator.getResult().isEmpty()) {
+                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                        userole.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                    } else {
+                        userole.setCreatedby(creator.getMessage());
+                    }
+                } else {
+                    userole.setCreatedby("DATA NOT FOUND");
+                }
+                userole.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
+                userole.setStatus(resultset.getString("STATUS"));
+                userolelist.add(userole);
+            }
+            if (!userolelist.isEmpty()) {
+                result.setMessage("OK");
+                result.setResult(utility.ObjectMapper().writeValueAsString(userolelist));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
@@ -402,6 +449,7 @@ public class FetchMethods {
                 }
                 userinfo.setStats(resultset.getString("STATS"));
                 userinfo.setHcfid(resultset.getString("HCFID"));
+                userinfo.setProid(resultset.getString("PROID"));
                 listuserinfo.add(userinfo);
             }
             if (!listuserinfo.isEmpty()) {

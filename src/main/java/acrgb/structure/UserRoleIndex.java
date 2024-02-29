@@ -12,17 +12,12 @@ import lombok.Data;
  * @author MinoSun
  */
 @Data
-public class UserInfo {
-    private String did;
-    private String firstname;
-    private String lastname;
-    private String middlename;
-    private String datecreated;
-    private String areaid;
-    private String hcfid;
+public class UserRoleIndex {
+    private String roleid;
+    private String userid;
+    private String accessid;
     private String createdby;
-    private String stats;
-    private String proid;
+    private String datecreated;
+    private String status;
+    
 }
-
-

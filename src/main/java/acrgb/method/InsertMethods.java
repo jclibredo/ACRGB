@@ -524,16 +524,16 @@ public class InsertMethods {
                 } else {
                     if (userinfo.getHcfid().isEmpty()) {
                         CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSERDETAILS(:Message,:Code,"
-                                + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_areaid,:p_createdby,:p_hcfid)");
+                                + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_areaid,:p_createdby,:p_hcfid,:p_proid)");
                         getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                         getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                         getinsertresult.setString("p_firstname", userinfo.getFirstname().toUpperCase());
                         getinsertresult.setString("p_lastname", userinfo.getLastname().toUpperCase());
                         getinsertresult.setString("p_middlename", userinfo.getMiddlename().toUpperCase());
                         getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(userinfo.getDatecreated()).getTime()));//userinfo.getDatecreated());
-                        getinsertresult.setString("p_areaid", userinfo.getAreaid());
                         getinsertresult.setString("p_createdby", userinfo.getCreatedby());
                         getinsertresult.setString("p_hcfid", userinfo.getHcfid());
+                        getinsertresult.setString("p_proid", userinfo.getProid());
                         getinsertresult.execute();
                         if (getinsertresult.getString("Message").equals("SUCC")) {
                             result.setSuccess(true);
@@ -556,9 +556,9 @@ public class InsertMethods {
                             getinsertresult.setString("p_lastname", userinfo.getLastname().toUpperCase());
                             getinsertresult.setString("p_middlename", userinfo.getMiddlename().toUpperCase());
                             getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(userinfo.getDatecreated()).getTime()));//userinfo.getDatecreated());
-                            getinsertresult.setString("p_areaid", userinfo.getAreaid());
                             getinsertresult.setString("p_createdby", userinfo.getCreatedby());
                             getinsertresult.setString("p_hcfid", userinfo.getHcfid());
+                            getinsertresult.setString("p_proid", userinfo.getProid());
                             getinsertresult.execute();
                             if (getinsertresult.getString("Message").equals("SUCC")) {
                                 result.setSuccess(true);

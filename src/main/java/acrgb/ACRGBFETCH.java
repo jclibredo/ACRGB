@@ -249,8 +249,18 @@ public class ACRGBFETCH {
         return result;
     }
 
-    
-    
+    @GET
+    @Path("GetRoleIndex")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetRoleIndex() {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult getResult = fetchmethods.GETUSERROLEINDEX(dataSource);
+        result.setMessage(getResult.getMessage());
+        result.setResult(getResult.getResult());
+        result.setSuccess(getResult.isSuccess());
+        return result;
+    }
+
     @GET
     @Path("GetSummary")
     @Produces(MediaType.APPLICATION_JSON)
@@ -337,6 +347,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
+
     //
     @GET
     @Path("GetActivityLogs")
@@ -376,7 +387,5 @@ public class ACRGBFETCH {
         }
         return result;
     }
-    
-    
 
 }
