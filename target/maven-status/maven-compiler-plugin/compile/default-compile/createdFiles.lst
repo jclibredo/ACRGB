@@ -25,5 +25,7 @@ acrgb\structure\UserInfo.class
 acrgb\structure\HealthCareFacility.class
 acrgb\utility\NamedParameterStatement.class
 acrgb\structure\Archived.class
+acrgb\structure\Total.class
 acrgb\ApplicationConfig.class
 acrgb\structure\UserLevel.class
+acrgb\structure\UserRoleIndex.class
