@@ -142,8 +142,7 @@ public class InsertMethods {
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
             //GET TRANCH PERCENTAGE
-            if (assets.getAmount().isEmpty()
-                    || assets.getCreatedby().isEmpty()
+            if (assets.getCreatedby().isEmpty()
                     || assets.getDatecreated().isEmpty()
                     || assets.getDatereleased().isEmpty()
                     || assets.getHcfid().isEmpty()

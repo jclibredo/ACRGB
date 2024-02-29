@@ -152,8 +152,8 @@ public class ACRGBUPDATE {
         result.setResult(insertresult.getResult());
         return result;
     }
-    
-     @PUT
+
+    @PUT
     @Path("UPDATEPRO")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -167,7 +167,6 @@ public class ACRGBUPDATE {
         return result;
     }
 
-
     @PUT
     @Path("UPDATEUSERCREDENTIALS")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -175,13 +174,13 @@ public class ACRGBUPDATE {
     public ACRGBWSResult UPDATEUSERCREDENTIALS(final User user) throws SQLException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        if (user.getUsername() == null) {
+        if (user.getUsername().isEmpty()) {
             ACRGBWSResult insertresult = methods.CHANGEPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
-        } else if (user.getUserpassword() == null) {
-            ACRGBWSResult insertresult = methods.CHANGEUSERNAME(dataSource, user.getUserid(), user.getUserpassword());
+        } else if (user.getUserpassword().isEmpty()) {
+            ACRGBWSResult insertresult = methods.CHANGEUSERNAME(dataSource, user.getUserid(), user.getUsername());
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -207,8 +206,7 @@ public class ACRGBUPDATE {
         result.setResult(insertresult.getResult());
         return result;
     }
-    
-    
+
     @PUT
     @Path("RESETPASSWORD")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -222,7 +220,6 @@ public class ACRGBUPDATE {
         result.setResult(insertresult.getResult());
         return result;
     }
-    
 
     @PUT
     @Path("INACTIVE")

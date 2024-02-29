@@ -8,6 +8,7 @@ package acrgb.method;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.NclaimsData;
 import acrgb.structure.Summary;
+import acrgb.structure.Total;
 import acrgb.structure.User;
 import acrgb.structure.UserActivity;
 import acrgb.structure.UserInfo;
@@ -68,12 +69,17 @@ public class Methods {
                         if (userlist.get(x).getUsername().equals(p_username) && userPassword.getDbpass().equals(p_password)) {
                             User user = new User();
                             user.setUserid(userlist.get(x).getUserid());
-                            user.setLeveid(userlist.get(x).getLeveid());
+                            user.setLeveid(userlist.get(x).getLeveid().toUpperCase());
                             user.setUsername(userlist.get(x).getUsername());
                             user.setUserpassword(userlist.get(x).getUserpassword());
                             user.setDatecreated(userlist.get(x).getDatecreated());
                             user.setStatus(userlist.get(x).getStatus());
-                            user.setDid(userlist.get(x).getDid());
+                            ACRGBWSResult detailsresult = fm.GETFULLDETAILS(datasource, userlist.get(x).getUserid());
+                            if (detailsresult.isSuccess()) {
+                                user.setDid(detailsresult.getResult());
+                            } else {
+                                user.setDid(detailsresult.getMessage());
+                            }
                             user.setCreatedby(userlist.get(x).getCreatedby());
                             result.setSuccess(true);
                             result.setResult(utility.ObjectMapper().writeValueAsString(user));
@@ -374,6 +380,34 @@ public class Methods {
         return result;
     }
 
+    // CHANGEUSELEVEL
+    public ACRGBWSResult GETSUMMARY(final DataSource dataSource, final String phcfid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETSUMMARY(:phcfid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("phcfid", phcfid);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                Total tot = new Total();
+                tot.setCtotal(resultset.getString("cTOTAL"));
+                tot.setHcfid(resultset.getString("HCFID"));
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(tot));
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
     //--------------------------------------------------------
     //ACR GB GET SUMMARY
     public ACRGBWSResult JOINCONHCFTBL(final DataSource dataSource) {
@@ -388,30 +422,38 @@ public class Methods {
             ArrayList<Summary> summarylist = new ArrayList<>();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             while (resultset.next()) {
-                //SimpleDateFormat sf = utility.SimpleDateFormat("MM-DD-YYYY");
-                Summary summary = new Summary();
                 String u_accreno = resultset.getString("HCFCODE");
-                Date u_date = resultset.getDate("DATECOVERED");
+                Date u_from = resultset.getDate("DATEFROM");
+                Date u_to = resultset.getDate("DATETO");
                 String u_tags = "GOOD";
-                Double assetsamount = Double.parseDouble(resultset.getString("CAMOUNT"));
-                ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, u_accreno, u_tags, u_date);
+                Summary summary = new Summary();
 
+                ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, u_accreno, u_tags, u_from, u_to);
                 if (sumresult.isSuccess()) {
-                    NclaimsData nclaimsdata = utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData.class
-                    );
-                    Double totalclaimsamount = Double.parseDouble(nclaimsdata.getClaimamount());
-                    Double sums = totalclaimsamount / assetsamount * 100;
+                    NclaimsData nclaimsdata = utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData.class);
+                    ACRGBWSResult totalResult = this.GETSUMMARY(dataSource, resultset.getString("HCFID"));
+                    if (totalResult.isSuccess()) {
+                        Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
+                        Double assetsamount = Double.parseDouble(getResult.getCtotal());
+                        Double totalclaimsamount = Double.parseDouble(nclaimsdata.getClaimamount());
+                        Double sums = totalclaimsamount / assetsamount * 100;
+                        System.out.println(totalclaimsamount);
+
+                        if (sums > 100) {
+                            Double negvalue = 100 - sums;
+                            summary.setTotalpercentage(String.valueOf(Math.round(negvalue)));
+                        } else {
+                            summary.setTotalpercentage(String.valueOf(Math.round(sums)));
+                        }
+                        //summary.setTranchid(resultset.getString("TRANCHID"));
+                    } else {
+                        summary.setTotalpercentage(totalResult.getMessage());
+                    }
                     summary.setAccreno(u_accreno);
                     summary.setHcfid(resultset.getString("HCFID"));
-                    if (sums > 100) {
-                        Double negvalue = 100 - sums;
-                        summary.setTotalpercentage(String.valueOf(Math.round(negvalue)));
-                    } else {
-                        summary.setTotalpercentage(String.valueOf(Math.round(sums)));
-                    }
-                    summary.setTranchid(resultset.getString("TRANCHID"));
                     summary.setRemarks("YES");
                     summarylist.add(summary);
+
                 } else {
                     summary.setAccreno(u_accreno);
                     summary.setHcfid(resultset.getString("HCFID"));
@@ -428,11 +470,8 @@ public class Methods {
                 result.setMessage("NO DATA FOUND");
             }
             result.setSuccess(true);
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-
-        } catch (ParseException ex) {
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

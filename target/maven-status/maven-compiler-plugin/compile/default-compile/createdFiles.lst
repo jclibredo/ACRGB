@@ -20,6 +20,7 @@ acrgb\structure\AreaType.class
 acrgb\method\InsertMethods.class
 acrgb\structure\Tranch.class
 acrgb\structure\Area.class
+acrgb\structure\Pro.class
 acrgb\structure\UserInfo.class
 acrgb\structure\HealthCareFacility.class
 acrgb\utility\NamedParameterStatement.class

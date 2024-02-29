@@ -68,6 +68,7 @@ public class FetchMethods {
                 userinfo.setMiddlename(resultset.getString("MIDDLENAME"));
                 userinfo.setAreaid(resultset.getString("AREAID"));
                 userinfo.setHcfid(resultset.getString("HCFID"));
+                userinfo.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 result.setMessage("OK");
                 //result.setMessage(utility.ObjectMapper().writeValueAsString(user));
                 result.setResult(utility.ObjectMapper().writeValueAsString(userinfo));
@@ -336,7 +337,7 @@ public class FetchMethods {
             while (resultset.next()) {
                 Tranch tranch = new Tranch();
                 tranch.setTranchid(resultset.getString("TRANCHID"));
-                tranch.setTranchtype(resultset.getString("TRANCHTYPE"));
+                tranch.setTranchtype(resultset.getString("TRANCHTYPE").toUpperCase());
                 tranch.setPercentage(resultset.getString("PERCENTAGE"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
@@ -472,7 +473,7 @@ public class FetchMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_USER_LEVEL(:tags); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_PRO(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
             statement.execute();
@@ -841,17 +842,18 @@ public class FetchMethods {
 //        return result;
 //    }
     //GET NCLAIMS DATA AND AMOUNT OF ITS CLAIMS TOTAL
-    public ACRGBWSResult GETNCLAIMS(final DataSource dataSource, final String u_accreno, final String u_tags, final Date u_date) throws ParseException {
+    public ACRGBWSResult GETNCLAIMS(final DataSource dataSource, final String u_accreno, final String u_tags, final Date u_from, final Date u_to) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETNCLAIMS(:u_accreno,:u_tags,:u_date); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETNCLAIMS(:u_accreno,:u_tags,:u_from,:u_to); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("u_accreno", u_accreno);
             statement.setString("u_tags", u_tags);
-            statement.setDate("u_date", u_date);
+            statement.setDate("u_from", u_from);
+            statement.setDate("u_to", u_to);
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             if (resultset.next()) {

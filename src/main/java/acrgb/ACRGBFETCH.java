@@ -229,7 +229,7 @@ public class ACRGBFETCH {
         return result;
     }
 
-      @GET
+    @GET
     @Path("GetPro/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetPro(@PathParam("tags") String tags) {
@@ -376,5 +376,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
+    
+    
 
 }
