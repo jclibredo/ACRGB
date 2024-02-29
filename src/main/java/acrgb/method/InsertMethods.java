@@ -17,6 +17,7 @@ import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserInfo;
 import acrgb.structure.UserLevel;
+import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Cryptor;
 import acrgb.utility.Utility;
 import java.io.IOException;
@@ -734,6 +735,37 @@ public class InsertMethods {
                 result.setSuccess(false);
             }
             result.setResult(utility.ObjectMapper().writeValueAsString(nclaimsdata));
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult INSEROLEINDEX(final DataSource datasource, UserRoleIndex userroleindex) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.USEROLEINDEX(:Message,:Code,"
+                    + ":a_userid,:a_accessid,:a_createdby,:a_datecreated)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("a_userid", userroleindex.getUserid());
+            getinsertresult.setString("a_accessid", userroleindex.getAccessid());
+            getinsertresult.setString("a_createdby", userroleindex.getCreatedby());
+            getinsertresult.setDate("a_datecreated", (Date) new Date(utility.StringToDate(userroleindex.getDatecreated()).getTime()));
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setSuccess(true);
+                result.setMessage("OK");
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+                result.setSuccess(false);
+            }
+            result.setResult(utility.ObjectMapper().writeValueAsString(userroleindex));
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);

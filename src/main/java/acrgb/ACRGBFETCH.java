@@ -250,11 +250,11 @@ public class ACRGBFETCH {
     }
 
     @GET
-    @Path("GetRoleIndex")
+    @Path("GetRoleIndex/{puserid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetRoleIndex() {
+    public ACRGBWSResult GetRoleIndex(@PathParam("puserid") String puserid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult getResult = fetchmethods.GETUSERROLEINDEX(dataSource);
+        ACRGBWSResult getResult = fetchmethods.GETUSERROLEINDEX(dataSource,puserid);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());
@@ -381,6 +381,29 @@ public class ACRGBFETCH {
             result.setSuccess(false);
         } else {
             ACRGBWSResult getResult = methods.GetLogsWithID(dataSource, userid);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
+        return result;
+    }
+
+    @GET
+    @Path("GETFACILITY/{userid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GETFACILITY(@PathParam("userid") String userid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        if (userid.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else if (!utility.IsValidNumber(userid)) {
+            result.setMessage("USER ID IS NOT VALID");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = fetchmethods.GETFULLDETAILS(dataSource, userid);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());

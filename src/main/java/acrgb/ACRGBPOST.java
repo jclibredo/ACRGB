@@ -20,6 +20,7 @@ import acrgb.structure.User;
 import acrgb.structure.UserActivity;
 import acrgb.structure.UserInfo;
 import acrgb.structure.UserLevel;
+import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -85,7 +86,21 @@ public class ACRGBPOST {
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());
+        return result;
+    }
 
+    //INSERT ACCOUNT PAYABLE
+    @POST
+    @Path("INSEROLEINDEX")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult INSEROLEINDEX(final UserRoleIndex userroleindex) throws SQLException, ParseException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = insertmethods.INSEROLEINDEX(dataSource, userroleindex);
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
         return result;
     }
 

@@ -130,15 +130,15 @@ public class FetchMethods {
         return result;
     }
 //USER ROLE INDEX
-
-    public ACRGBWSResult GETUSERROLEINDEX(final DataSource dataSource) {
+    public ACRGBWSResult GETUSERROLEINDEX(final DataSource dataSource, final String puserid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETUSERROLEINDEX(:tags); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETUSERROLEINDEX(:puserid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("puserid", puserid.toUpperCase());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<UserRoleIndex> userolelist = new ArrayList<>();
