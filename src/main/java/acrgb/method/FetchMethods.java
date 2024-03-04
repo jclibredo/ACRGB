@@ -175,8 +175,9 @@ public class FetchMethods {
         }
         return result;
     }
+    
+    
 // ACR AREA TYPE
-
     public ACRGBWSResult ACR_AREA_TYPE(final DataSource dataSource, final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -435,7 +436,7 @@ public class FetchMethods {
                 userinfo.setLastname(resultset.getString("LASTNAME"));
                 userinfo.setMiddlename(resultset.getString("MIDDLENAME"));
                 userinfo.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                userinfo.setAreaid(resultset.getString("AREAID"));
+               // userinfo.setAreaid(resultset.getString("AREAID"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
                     if (!creator.getResult().isEmpty()) {

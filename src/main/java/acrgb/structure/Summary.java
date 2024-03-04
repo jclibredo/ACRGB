@@ -18,7 +18,7 @@ public class Summary {
     }
     private String hcfid;
     private String accreno;
-    private String tranchid;
+    private String tranchcount;
     private String totalpercentage;
     private String remarks;
 

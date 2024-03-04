@@ -6,6 +6,8 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.FacilityComputedAmount;
+import acrgb.structure.MBRequestSummary;
 import acrgb.structure.NclaimsData;
 import acrgb.structure.Summary;
 import acrgb.structure.Total;
@@ -396,6 +398,7 @@ public class Methods {
                 Total tot = new Total();
                 tot.setCtotal(resultset.getString("cTOTAL"));
                 tot.setHcfid(resultset.getString("HCFID"));
+                tot.setCcount(resultset.getString("cCOUNT"));
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(tot));
             } else {
@@ -433,17 +436,16 @@ public class Methods {
                     ACRGBWSResult totalResult = this.GETSUMMARY(dataSource, resultset.getString("HCFID"));
                     if (totalResult.isSuccess()) {
                         Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
+                        summary.setTranchcount(getResult.getCcount());
                         Double assetsamount = Double.parseDouble(getResult.getCtotal());
                         Double totalclaimsamount = Double.parseDouble(nclaimsdata.getClaimamount());
                         Double sums = totalclaimsamount / assetsamount * 100;
-                        System.out.println(totalclaimsamount);
                         if (sums > 100) {
                             Double negvalue = 100 - sums;
                             summary.setTotalpercentage(String.valueOf(Math.round(negvalue)));
                         } else {
                             summary.setTotalpercentage(String.valueOf(Math.round(sums)));
                         }
-                        //summary.setTranchid(resultset.getString("TRANCHID"));
                     } else {
                         summary.setTotalpercentage(totalResult.getMessage());
                     }
@@ -456,7 +458,7 @@ public class Methods {
                     summary.setAccreno(u_accreno);
                     summary.setHcfid(resultset.getString("HCFID"));
                     summary.setTotalpercentage("");
-                    summary.setTranchid(resultset.getString("TRANCHID"));
+                    summary.setTranchcount("");
                     summary.setRemarks("NO");
                     summarylist.add(summary);
                 }
@@ -531,6 +533,105 @@ public class Methods {
             }
             result.setSuccess(true);
         } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET AMOUNT PER FACILITY
+    public ACRGBWSResult GetAmountPerFacility(DataSource dataSource, final String uaccreno, final String udatefrom, final String udateto) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        String utags = "GOOD";
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:uaccreno,:utags,:udatefrom,:udateto); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("uaccreno", uaccreno);
+            statement.setString("utags", utags);
+            statement.setString("udatefrom", udatefrom);
+            statement.setString("udateto", udateto);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                FacilityComputedAmount fca = new FacilityComputedAmount();
+                fca.setHospital(resultset.getString("ACCRENO"));
+                fca.setTotalamount(resultset.getString("CTOTAL"));
+                fca.setYearfrom(udatefrom);
+                fca.setYearto(udateto);
+                result.setResult(utility.ObjectMapper().writeValueAsString(fca));
+                result.setMessage("OK");
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+            result.setSuccess(true);
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //INSERT MB REQUEST
+    public ACRGBWSResult InsertMBRequest(DataSource dataSource, final MBRequestSummary mbrequestsummry) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        java.util.Date d1 = new java.util.Date();
+        try (Connection connection = dataSource.getConnection()) {
+            if (!utility.IsValidDate(mbrequestsummry.getDaterequest()) || !utility.IsValidDate(mbrequestsummry.getYearfrom()) || !utility.IsValidDate(mbrequestsummry.getYearto())) {
+                result.setMessage("DATE FORMAT IS NOT VALID MM-dd-yyyy");
+                result.setSuccess(false);
+            } else if (!utility.IsValidNumber(mbrequestsummry.getTotalamount())) {
+                result.setMessage("AMOUNT FORMAT IS NOT VALID");
+                result.setSuccess(false);
+            } else {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUEST(:Message,:Code,:udaterequest,:udatefrom,"
+                        + ":udateto,:urequestor,:utranscode,:uremarks,:uamount,:udatecreated)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setDate("udaterequest", (Date) new Date(utility.StringToDate(mbrequestsummry.getDaterequest()).getTime()));
+                getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(mbrequestsummry.getYearfrom()).getTime()));
+                getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(mbrequestsummry.getYearto()).getTime()));
+                getinsertresult.setInt("urequestor", Integer.parseInt(mbrequestsummry.getRequestor()));
+                getinsertresult.setString("utranscode", mbrequestsummry.getTranscode());
+                getinsertresult.setString("uremarks", mbrequestsummry.getRemarks());
+                getinsertresult.setString("uamount", mbrequestsummry.getTotalamount());
+                getinsertresult.setTimestamp("udatecreated", new java.sql.Timestamp(d1.getTime()));
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUESTFCHUNDER(:Message,:Code,:utranscode,:udatecreated,:ufacility)");
+                    List<String> facilitylist = Arrays.asList(mbrequestsummry.getFacility().split(","));
+                    int errCounter = 0;
+                    for (int x = 0; x < facilitylist.size(); x++) {
+                        statement.registerOutParameter("Message", OracleTypes.VARCHAR);
+                        statement.registerOutParameter("Code", OracleTypes.INTEGER);
+                        statement.setString("utranscode", mbrequestsummry.getTotalamount());
+                        statement.setTimestamp("udatecreated", new java.sql.Timestamp(d1.getTime()));
+                        statement.setString("ufacility", facilitylist.get(x));
+                        statement.execute();
+                        if (!statement.getString("Message").equals("SUCC")) {
+                            errCounter++;
+                        }
+                    }
+
+                    if (errCounter == 0) {
+                        result.setMessage("OK");
+                        result.setSuccess(true);
+                    } else {
+                        result.setMessage("MANAGING BOARD FACILITY UNDER ERROR");
+                    }
+
+                } else {
+                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setSuccess(false);
+                }
+            }
+
+        } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }

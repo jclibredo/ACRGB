@@ -489,10 +489,7 @@ public class InsertMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-
-            if (userinfo.getFirstname() != null || userinfo.getLastname() != null || userinfo.getAreaid() != null) {
-                ACRGBWSResult realist = fm.ACR_AREA(datasource, "active");
-                int countresult = 0;
+            if (userinfo.getFirstname() != null && userinfo.getLastname() != null) {
                 ACRGBWSResult hcflist = fm.ACR_HCF(datasource, "active");
                 int hcfresult = 0;
 
@@ -506,22 +503,10 @@ public class InsertMethods {
                         }
                     }
                 }
-                if (realist.isSuccess()) {
-                    if (!realist.getResult().isEmpty()) {
-                        List<Area> arealist = Arrays.asList(utility.ObjectMapper().readValue(realist.getResult(), Area[].class));
-                        for (int x = 0; x < arealist.size(); x++) {
-                            if (arealist.get(x).getAreaid().equals(userinfo.getAreaid())) {
-                                countresult++;
-                            }
-                        }
-                    }
-                }
+
                 if (!utility.IsValidDate(userinfo.getDatecreated())) {
                     result.setSuccess(false);
                     result.setMessage("DATE FORMAT IS NOT VALID");
-                } else if (countresult == 0) {
-                    result.setSuccess(false);
-                    result.setMessage("AREA ID NOT FOUND");
                 } else {
                     if (userinfo.getHcfid().isEmpty()) {
                         CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSERDETAILS(:Message,:Code,"
@@ -572,6 +557,9 @@ public class InsertMethods {
                         }
                     }
                 }
+            } else {
+                result.setMessage("SOME REQUIRED FIELD IS EMPTY");
+                result.setSuccess(false);
             }
 
         } catch (SQLException | IOException | ParseException ex) {

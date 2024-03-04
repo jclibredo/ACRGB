@@ -16,4 +16,5 @@ public class Total {
 
     private String ctotal;
     private String hcfid;
+    private String ccount;
 }
