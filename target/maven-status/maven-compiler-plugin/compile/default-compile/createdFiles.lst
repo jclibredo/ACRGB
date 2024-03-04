@@ -3,12 +3,14 @@ acrgb\ACRGBUPDATE.class
 acrgb\ACRGBPOST.class
 acrgb\method\FetchMethods.class
 acrgb\structure\NclaimsData.class
+acrgb\structure\FacilityComputedAmount.class
 acrgb\structure\User.class
 acrgb\method\UpdateMethods.class
 acrgb\method\Methods$UserPassword.class
 acrgb\structure\Summary.class
 acrgb\structure\AssetsType.class
 acrgb\structure\Assets.class
+acrgb\structure\MBRequestSummary.class
 acrgb\structure\AccountPayable.class
 acrgb\structure\ProcessAmountBadget.class
 acrgb\utility\Utility.class
@@ -30,3 +32,4 @@ acrgb\structure\Total.class
 acrgb\ApplicationConfig.class
 acrgb\structure\UserLevel.class
 acrgb\structure\UserRoleIndex.class
+acrgb\structure\MBFacilityUnderRequest.class

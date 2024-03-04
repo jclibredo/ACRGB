@@ -8,6 +8,8 @@ package acrgb.utility;
 import acrgb.structure.ACRGBWSResult;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,9 +85,20 @@ public class Utility {
             return false;
         }
     }
-    
+
     public boolean IsValidDate(String string) {
         SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
+        sdf.setLenient(false);
+        try {
+            sdf.parse(string);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
+    }
+
+    public boolean IsValidDateDifference(String string) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         sdf.setLenient(false);
         try {
             sdf.parse(string);
@@ -106,4 +119,10 @@ public class Utility {
         // Date dateCovered = (Date) new Date(sf.getTime());
         return sf;
     }
+
+    public String ComputeDateBackward(String dates, int diff) throws ParseException {
+        String dateResults = String.valueOf(LocalDate.parse(dates).minusYears(diff).format(DateTimeFormatter.ofPattern("MM-dd-yyyy")));
+        return dateResults;
+    }
+
 }

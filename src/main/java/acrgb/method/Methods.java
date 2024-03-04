@@ -24,6 +24,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -65,7 +67,7 @@ public class Methods {
                     if (userlist.get(x).getStatus().equals("2")) {
                         userPassword.setDbpass(cryptor.decrypt(userlist.get(x).getUserpassword(), p_password, "ACRGB"));
                     } else {
-                        userPassword.setDbpass(p_password);
+                        userPassword.setDbpass(userlist.get(x).getUserpassword());
                     }
                     if (userPassword.getDbpass() != null) {
                         if (userlist.get(x).getUsername().equals(p_username) && userPassword.getDbpass().equals(p_password)) {
@@ -540,34 +542,44 @@ public class Methods {
     }
 
     //GET AMOUNT PER FACILITY
-    public ACRGBWSResult GetAmountPerFacility(DataSource dataSource, final String uaccreno, final String udatefrom, final String udateto) {
+    public ACRGBWSResult GetAmountPerFacility(DataSource dataSource, final String uaccreno, final String udatefrom, final String diff) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         String utags = "GOOD";
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:uaccreno,:utags,:udatefrom,:udateto); end;");
-            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("uaccreno", uaccreno);
-            statement.setString("utags", utags);
-            statement.setString("udatefrom", udatefrom);
-            statement.setString("udateto", udateto);
-            statement.execute();
-            ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            if (resultset.next()) {
-                FacilityComputedAmount fca = new FacilityComputedAmount();
-                fca.setHospital(resultset.getString("ACCRENO"));
-                fca.setTotalamount(resultset.getString("CTOTAL"));
-                fca.setYearfrom(udatefrom);
-                fca.setYearto(udateto);
-                result.setResult(utility.ObjectMapper().writeValueAsString(fca));
-                result.setMessage("OK");
+            if (!utility.IsValidDateDifference(udatefrom)) {
+                result.setMessage("Date Format is not valid");
+            } else if (!utility.IsValidNumber(diff)) {
+                result.setMessage("Number Format is not valid");
             } else {
-                result.setMessage("NO DATA FOUND");
+                String udateto = utility.ComputeDateBackward(udatefrom, Integer.parseInt(diff));
+                String udatefroms = LocalDate.parse(udatefrom).format(DateTimeFormatter.ofPattern("MM-dd-yyyy"));
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:uaccreno,:utags,:udatefrom,:udateto); end;");
+                statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                statement.setString("uaccreno", uaccreno);
+                statement.setString("utags", utags);
+                statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(udatefroms).getTime()));
+                statement.setDate("udateto", (Date) new Date(utility.StringToDate(udateto).getTime()));
+                statement.execute();
+                ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                if (resultset.next()) {
+                    FacilityComputedAmount fca = new FacilityComputedAmount();
+                    fca.setHospital(resultset.getString("ACCRENO"));
+                    fca.setTotalamount(resultset.getString("CTOTAL"));
+                    fca.setYearfrom(udatefrom);
+                    fca.setYearto(udateto);
+                    result.setResult(utility.ObjectMapper().writeValueAsString(fca));
+                    result.setMessage("OK");
+                } else {
+                    result.setMessage("NO DATA FOUND");
+                }
+                result.setSuccess(true);
+
             }
-            result.setSuccess(true);
-        } catch (SQLException | IOException ex) {
+
+        } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -603,10 +615,12 @@ public class Methods {
                 getinsertresult.setTimestamp("udatecreated", new java.sql.Timestamp(d1.getTime()));
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
-                    CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUESTFCHUNDER(:Message,:Code,:utranscode,:udatecreated,:ufacility)");
+
+                    ArrayList<String> errorList = new ArrayList<>();
                     List<String> facilitylist = Arrays.asList(mbrequestsummry.getFacility().split(","));
                     int errCounter = 0;
                     for (int x = 0; x < facilitylist.size(); x++) {
+                        CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUESTFCHUNDER(:Message,:Code,:utranscode,:udatecreated,:ufacility)");
                         statement.registerOutParameter("Message", OracleTypes.VARCHAR);
                         statement.registerOutParameter("Code", OracleTypes.INTEGER);
                         statement.setString("utranscode", mbrequestsummry.getTotalamount());
@@ -615,6 +629,7 @@ public class Methods {
                         statement.execute();
                         if (!statement.getString("Message").equals("SUCC")) {
                             errCounter++;
+                            errorList.add(getinsertresult.getString("Message"));
                         }
                     }
 
@@ -622,7 +637,7 @@ public class Methods {
                         result.setMessage("OK");
                         result.setSuccess(true);
                     } else {
-                        result.setMessage("MANAGING BOARD FACILITY UNDER ERROR");
+                        result.setMessage(errorList.toString());
                     }
 
                 } else {

@@ -26,6 +26,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -737,21 +738,66 @@ public class InsertMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.USEROLEINDEX(:Message,:Code,"
-                    + ":a_userid,:a_accessid,:a_createdby,:a_datecreated)");
-            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("a_userid", userroleindex.getUserid());
-            getinsertresult.setString("a_accessid", userroleindex.getAccessid());
-            getinsertresult.setString("a_createdby", userroleindex.getCreatedby());
-            getinsertresult.setDate("a_datecreated", (Date) new Date(utility.StringToDate(userroleindex.getDatecreated()).getTime()));
-            getinsertresult.execute();
-            if (getinsertresult.getString("Message").equals("SUCC")) {
+            ArrayList<String> errorList = new ArrayList<>();
+            List<String> accesslist = Arrays.asList(userroleindex.getAccessid().split(","));
+            int errCount = 0;
+            for (int x = 0; x < accesslist.size(); x++) {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.USEROLEINDEX(:Message,:Code,"
+                        + ":a_userid,:a_accessid,:a_createdby,:a_datecreated)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("a_userid", userroleindex.getUserid());
+                getinsertresult.setString("a_accessid", accesslist.get(x));
+                getinsertresult.setString("a_createdby", userroleindex.getCreatedby());
+                getinsertresult.setDate("a_datecreated", (Date) new Date(utility.StringToDate(userroleindex.getDatecreated()).getTime()));
+                getinsertresult.execute();
+                if (!getinsertresult.getString("Message").equals("SUCC")) {
+                    errCount++;
+                    errorList.add(getinsertresult.getString("Message"));
+                }
+            }
+            if (errCount == 0) {
                 result.setSuccess(true);
                 result.setMessage("OK");
             } else {
-                result.setMessage(getinsertresult.getString("Message"));
+                result.setMessage(errorList.toString());
                 result.setSuccess(false);
+            }
+            result.setResult(utility.ObjectMapper().writeValueAsString(userroleindex));
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    public ACRGBWSResult REMOVEDACCESSLEVEL(final DataSource datasource, UserRoleIndex userroleindex) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            ArrayList<String> errorList = new ArrayList<>();
+            List<String> accesslist = Arrays.asList(userroleindex.getAccessid().split(","));
+            int errCount = 0;
+            for (int x = 0; x < accesslist.size(); x++) {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.REMOVEDACCESSLEVEL(:Message,:Code,"
+                        + ":a_userid,:a_accessid)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("a_userid", userroleindex.getUserid());
+                getinsertresult.setString("a_accessid", accesslist.get(x));
+                getinsertresult.execute();
+                if (!getinsertresult.getString("Message").equals("SUCC")) {
+                    errCount++;
+                    errorList.add(getinsertresult.getString("Message"));
+                }
+            }
+            if (errCount == 0) {
+                result.setSuccess(true);
+                result.setMessage("OK");
+            } else {
+                result.setMessage(errorList.toString());
             }
             result.setResult(utility.ObjectMapper().writeValueAsString(userroleindex));
         } catch (SQLException | IOException ex) {

@@ -1,6 +1,7 @@
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Archived.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\FetchMethods.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\utility\Cryptor.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\structure\MBFacilityUnderRequest.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\AreaType.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Assets.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\InsertMethods.java
@@ -9,6 +10,7 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\structure\User.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\Methods.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Pro.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Summary.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\structure\MBRequestSummary.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserRoleIndex.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Area.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\UpdateMethods.java
@@ -26,6 +28,7 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\structure\NclaimsData.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserInfo.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserActivity.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\ACRGBUPDATE.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\structure\FacilityComputedAmount.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserLevel.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ProcessAmountBadget.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\ACRGBFETCH.java
