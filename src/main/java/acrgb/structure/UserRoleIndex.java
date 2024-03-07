@@ -5,10 +5,13 @@
  */
 package acrgb.structure;
 
+import lombok.Data;
+
 /**
  *
  * @author MinoSun
  */
+@Data
 public class UserRoleIndex {
 
     public UserRoleIndex() {
@@ -20,53 +23,4 @@ public class UserRoleIndex {
     private String createdby;
     private String datecreated;
     private String status;
-
-    public String getRoleid() {
-        return roleid;
-    }
-
-    public void setRoleid(String roleid) {
-        this.roleid = roleid;
-    }
-
-    public String getUserid() {
-        return userid;
-    }
-
-    public void setUserid(String userid) {
-        this.userid = userid;
-    }
-
-    public String getAccessid() {
-        return accessid;
-    }
-
-    public void setAccessid(String accessid) {
-        this.accessid = accessid;
-    }
-
-    public String getCreatedby() {
-        return createdby;
-    }
-
-    public void setCreatedby(String createdby) {
-        this.createdby = createdby;
-    }
-
-    public String getDatecreated() {
-        return datecreated;
-    }
-
-    public void setDatecreated(String datecreated) {
-        this.datecreated = datecreated;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
 }

@@ -11,6 +11,7 @@ import acrgb.structure.AreaType;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.HealthCareFacility;
+import acrgb.structure.ManagingBoard;
 import acrgb.structure.NclaimsData;
 import acrgb.structure.Pro;
 import acrgb.structure.Tranch;
@@ -102,7 +103,9 @@ public class FetchMethods {
                 area.setAreaid(resultset.getString("AREAID"));
                 area.setAreaname(resultset.getString("AREANAME"));
                 area.setTypeid(resultset.getString("TYPEID"));
-                ACRGBWSResult creator = GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                
+                
+                ACRGBWSResult creator =this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
                     if (!creator.getResult().isEmpty()) {
                         UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
@@ -113,6 +116,9 @@ public class FetchMethods {
                 } else {
                     area.setCreatedby("DATA NOT FOUND");
                 }
+                
+                
+                
                 area.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 arealist.add(area);
             }
@@ -130,6 +136,7 @@ public class FetchMethods {
         return result;
     }
 //USER ROLE INDEX
+
     public ACRGBWSResult GETUSERROLEINDEX(final DataSource dataSource, final String puserid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -175,8 +182,7 @@ public class FetchMethods {
         }
         return result;
     }
-    
-    
+
 // ACR AREA TYPE
     public ACRGBWSResult ACR_AREA_TYPE(final DataSource dataSource, final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -436,7 +442,7 @@ public class FetchMethods {
                 userinfo.setLastname(resultset.getString("LASTNAME"));
                 userinfo.setMiddlename(resultset.getString("MIDDLENAME"));
                 userinfo.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-               // userinfo.setAreaid(resultset.getString("AREAID"));
+                // userinfo.setAreaid(resultset.getString("AREAID"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
                     if (!creator.getResult().isEmpty()) {
@@ -763,6 +769,7 @@ public class FetchMethods {
                 useractivity.setActid(resultset.getString("ACTID"));
                 useractivity.setActdate(datetimeformat.format(resultset.getTimestamp("ACTDATE")));
                 useractivity.setActdetails(resultset.getString("ACTDETAILS"));
+
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("ACTBY").trim());
                 if (creator.isSuccess()) {
                     if (!creator.getResult().isEmpty()) {
@@ -774,6 +781,7 @@ public class FetchMethods {
                 } else {
                     useractivity.setActby("DATA NOT FOUND");
                 }
+
                 logslist.add(useractivity);
             }
             if (!logslist.isEmpty()) {
@@ -931,6 +939,55 @@ public class FetchMethods {
         result.setSuccess(true);
 
         return null;
+    }
+
+    //GET MANAGING BOARD DATA
+    public ACRGBWSResult GetManagingBoard(final DataSource dataSource, final String tags) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMB(:tags); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("tags", tags.toUpperCase());
+            statement.execute();
+            ArrayList<ManagingBoard> mblist = new ArrayList<>();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                ManagingBoard mb = new ManagingBoard();
+                mb.setMbid(resultset.getString("MBID"));
+                mb.setMbname(resultset.getString("MBNAME"));
+                mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    if (!creator.getResult().isEmpty()) {
+                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                        mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                    } else {
+                        mb.setCreatedby(creator.getMessage());
+                    }
+                } else {
+                    mb.setCreatedby("NO DATA FOUND");
+                }
+
+                mb.setStatus(resultset.getString("STATUS"));
+                mblist.add(mb);
+
+            }
+
+            if (mblist.size() > 0) {
+                result.setResult(utility.ObjectMapper().writeValueAsString(mblist));
+                result.setMessage("OK");
+                result.setSuccess(true);
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
     }
 
 }

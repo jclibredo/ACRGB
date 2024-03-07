@@ -13,12 +13,14 @@ import lombok.Data;
  */
 @Data
 public class HealthCareFacility {
-private String hcfid;
-private String hcfname;
-private String hcfaddress;
-private String hcfcode;
-private String createdby;
-private String areaid;
-private String datecreated;
-private String proid;
+
+    private String hcfid;
+    private String hcfname;
+    private String hcfaddress;
+    private String hcfcode;
+    private String createdby;
+    private String areaid;
+    private String datecreated;
+    private String proid;
+    private String amount;
 }

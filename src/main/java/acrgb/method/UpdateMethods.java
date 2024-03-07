@@ -11,6 +11,7 @@ import acrgb.structure.AreaType;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.HealthCareFacility;
+import acrgb.structure.ManagingBoard;
 import acrgb.structure.Pro;
 import acrgb.structure.Tranch;
 import acrgb.structure.UserLevel;
@@ -494,4 +495,39 @@ public class UpdateMethods {
         return result;
     }
 
+    
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult UPDATEMB(final DataSource datasource, ManagingBoard managingboard) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            if (!utility.IsValidNumber(managingboard.getMbid())) {
+                result.setSuccess(false);
+                result.setMessage("NUMBER FORMAT IS NOT VALID");
+            } else {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEMB(:Message,:Code,:umbid,"
+                        + ":umbname)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("umbid", managingboard.getMbid());
+                getinsertresult.setString("umbname", managingboard.getMbname().toUpperCase());
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    result.setSuccess(true);
+                    result.setMessage("OK");
+                } else {
+                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setSuccess(false);
+                }
+                result.setResult(utility.ObjectMapper().writeValueAsString(managingboard));
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+    
 }

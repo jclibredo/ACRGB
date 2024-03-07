@@ -19,6 +19,7 @@ acrgb\ACRGBFETCH.class
 acrgb\structure\ACRGBWSResult.class
 acrgb\structure\Contract.class
 acrgb\utility\Cryptor.class
+acrgb\structure\ManagingBoard.class
 acrgb\structure\AreaType.class
 acrgb\method\InsertMethods.class
 acrgb\structure\Tranch.class

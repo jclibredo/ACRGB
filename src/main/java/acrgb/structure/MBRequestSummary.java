@@ -27,5 +27,6 @@ public class MBRequestSummary {
     private String reqstatus;
     private String remarks;
     private String facility;
+    private String datecreated;
 
 }

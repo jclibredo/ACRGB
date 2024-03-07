@@ -15,6 +15,7 @@ import acrgb.structure.AreaType;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.HealthCareFacility;
+import acrgb.structure.ManagingBoard;
 import acrgb.structure.Pro;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
@@ -166,7 +167,22 @@ public class ACRGBUPDATE {
         result.setResult(insertresult.getResult());
         return result;
     }
+// UPDATE MANAGING BOARD
+    @PUT
+    @Path("UPDATEMB")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult UPDATEMB(final ManagingBoard managingboard) throws SQLException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = updatemethods.UPDATEMB(dataSource, managingboard);
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
 
+    
     @PUT
     @Path("UPDATEUSERCREDENTIALS")
     @Consumes(MediaType.APPLICATION_JSON)
