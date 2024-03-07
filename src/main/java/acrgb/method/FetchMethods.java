@@ -50,6 +50,44 @@ public class FetchMethods {
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
     private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm:ss a");
 
+    public ACRGBWSResult GETFACILITYID(final DataSource dataSource, final String uhcfid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:userid   ); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("hcfrid", uhcfid);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                HealthCareFacility hcf = new HealthCareFacility();
+                hcf.setHcfid(resultset.getString("HCFID"));
+                hcf.setHcfname(resultset.getString("HCFNAME"));
+                hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
+                hcf.setHcfcode(resultset.getString("HCFCODE"));
+                hcf.setCreatedby(resultset.getString("CREATEDBY"));
+                hcf.setAreaid(resultset.getString("AREAID"));
+                hcf.setDatecreated(resultset.getString("DATECREATED"));
+                hcf.setProid(resultset.getString("PROID"));
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(hcf));
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+    
+    
+    
+    
+
     //GET USER INFO
     public ACRGBWSResult GETFULLDETAILS(final DataSource dataSource, final String userid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -62,6 +100,7 @@ public class FetchMethods {
             statement.setString("userid", userid);
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
+
             if (resultset.next()) {
                 UserInfo userinfo = new UserInfo();
                 userinfo.setDid(resultset.getString("BDID"));
@@ -103,9 +142,7 @@ public class FetchMethods {
                 area.setAreaid(resultset.getString("AREAID"));
                 area.setAreaname(resultset.getString("AREANAME"));
                 area.setTypeid(resultset.getString("TYPEID"));
-                
-                
-                ACRGBWSResult creator =this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
                     if (!creator.getResult().isEmpty()) {
                         UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
@@ -116,9 +153,6 @@ public class FetchMethods {
                 } else {
                     area.setCreatedby("DATA NOT FOUND");
                 }
-                
-                
-                
                 area.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 arealist.add(area);
             }

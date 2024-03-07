@@ -395,25 +395,33 @@ public class ACRGBFETCH {
         return result;
     }
 
+//    @GET
+//    @Path("GETFACILITY/{userid}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult GETFACILITY(@PathParam("userid") String userid) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//       
+//        return result;
+//    }
+    //Get Facility using FHID
     @GET
-    @Path("GETFACILITY/{userid}")
+    @Path("GETFACILITY/{uhcfid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GETFACILITY(@PathParam("userid") String userid) {
+    public ACRGBWSResult GETFACILITY(@PathParam("uhcfid") String uhcfid){
         ACRGBWSResult result = utility.ACRGBWSResult();
-        if (userid.isEmpty()) {
-            result.setMessage("PATH PARAMETER IS EMPTY");
-            result.setSuccess(false);
-        } else if (!utility.IsValidNumber(userid)) {
-            result.setMessage("USER ID IS NOT VALID");
-            result.setSuccess(false);
-        } else {
-            ACRGBWSResult getResult = fetchmethods.GETFULLDETAILS(dataSource, userid);
-            result.setMessage(getResult.getMessage());
-            result.setResult(getResult.getResult());
-            result.setSuccess(getResult.isSuccess());
-        }
+        ACRGBWSResult hcf = fetchmethods.GETFACILITYID(dataSource, uhcfid);
+        result.setMessage(hcf.getMessage());
+        result.setSuccess(hcf.isSuccess());
+        result.setResult(hcf.getResult());
         return result;
+       
     }
+    
+    
+    
+    
+    
+    
 
     @GET
     @Path("GetHealthFacilityBadget/{datefrom}/{dateto}")
