@@ -71,14 +71,17 @@ public class InsertMethods {
                 result.setMessage("DATE FORMAT IS NOT VALID");
                 result.setSuccess(false);
             } else {
+                
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTAREA(:Message,:Code,:p_areaname,:p_typeid,:p_createdby,:p_datecreated)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                
                 getinsertresult.setString("p_areaname", area.getAreaname().toUpperCase());
                 getinsertresult.setString("p_typeid", area.getTypeid());
                 getinsertresult.setString("p_createdby", area.getCreatedby());
                 getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(area.getDatecreated()).getTime()));//area.getDatecreated());
                 getinsertresult.execute();
+                
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);
                     result.setMessage("OK");
@@ -87,6 +90,9 @@ public class InsertMethods {
                     result.setSuccess(false);
                 }
                 result.setResult(utility.ObjectMapper().writeValueAsString(area));
+                
+                
+                
             }
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());

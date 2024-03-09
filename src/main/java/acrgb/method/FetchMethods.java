@@ -50,13 +50,14 @@ public class FetchMethods {
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
     private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm:ss a");
 
+   
     public ACRGBWSResult GETFACILITYID(final DataSource dataSource, final String uhcfid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:userid   ); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:userid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("hcfrid", uhcfid);
             statement.execute();
@@ -83,10 +84,44 @@ public class FetchMethods {
         }
         return result;
     }
-    
-    
-    
-    
+
+    //GET ALL FACILITY(MULTIPLE)
+    public ACRGBWSResult GETALLFACILITY(final DataSource dataSource) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITYVALUE(); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            ArrayList<HealthCareFacility> hcflist = new ArrayList<>();
+            while (resultset.next()) {
+                HealthCareFacility hcf = new HealthCareFacility();
+                hcf.setHcfid(resultset.getString("HCFID"));
+                hcf.setHcfname(resultset.getString("HCFNAME"));
+                hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
+                hcf.setHcfcode(resultset.getString("HCFCODE"));
+                hcf.setCreatedby(resultset.getString("CREATEDBY"));
+                hcf.setAreaid(resultset.getString("AREAID"));
+                hcf.setDatecreated(resultset.getString("DATECREATED"));
+                hcf.setProid(resultset.getString("PROID"));
+                hcflist.add(hcf);
+            }
+            if (hcflist.size() > 0) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(hcflist));
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
 
     //GET USER INFO
     public ACRGBWSResult GETFULLDETAILS(final DataSource dataSource, final String userid) {

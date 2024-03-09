@@ -361,9 +361,6 @@ public class ACRGBFETCH {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetActivityLogs() {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
         ACRGBWSResult getResult = fetchmethods.ACRACTIVTYLOGS(dataSource);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
@@ -395,14 +392,6 @@ public class ACRGBFETCH {
         return result;
     }
 
-//    @GET
-//    @Path("GETFACILITY/{userid}")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public ACRGBWSResult GETFACILITY(@PathParam("userid") String userid) {
-//        ACRGBWSResult result = utility.ACRGBWSResult();
-//       
-//        return result;
-//    }
     //Get Facility using FHID
     @GET
     @Path("GETFACILITY/{uhcfid}")
@@ -417,12 +406,6 @@ public class ACRGBFETCH {
        
     }
     
-    
-    
-    
-    
-    
-
     @GET
     @Path("GetHealthFacilityBadget/{datefrom}/{dateto}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -436,9 +419,6 @@ public class ACRGBFETCH {
         if (!utility.IsValidDate(datefrom) || !utility.IsValidDate(dateto)) {
             result.setMessage("DATE FORMAT IS NOT VALID");
             result.setSuccess(false);
-//        } else if (tags.isEmpty()) {
-//            result.setMessage("PATH PARAMETER IS EMPTY");
-//            result.setSuccess(false);
         } else {
             ACRGBWSResult getResult = methods.MethodGetHealthFacilityBadget(dataSource, datefrom, dateto);
             result.setMessage(getResult.getMessage());
@@ -554,5 +534,18 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+//Get all facility (multiple)
+    @GET
+    @Path("GETALLFACILITY")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GETALLFACILITY(){
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult hcf = fetchmethods.GETALLFACILITY(dataSource);
+        result.setMessage(hcf.getMessage());
+        result.setSuccess(hcf.isSuccess());
+        result.setResult(hcf.getResult());
+        return result;
+       
+    }
+    
 }
