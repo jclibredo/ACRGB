@@ -396,16 +396,16 @@ public class ACRGBFETCH {
     @GET
     @Path("GETFACILITY/{uhcfid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GETFACILITY(@PathParam("uhcfid") String uhcfid){
+    public ACRGBWSResult GETFACILITY(@PathParam("uhcfid") String uhcfid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult hcf = fetchmethods.GETFACILITYID(dataSource, uhcfid);
         result.setMessage(hcf.getMessage());
         result.setSuccess(hcf.isSuccess());
         result.setResult(hcf.getResult());
         return result;
-       
+
     }
-    
+
     @GET
     @Path("GetHealthFacilityBadget/{datefrom}/{dateto}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -511,7 +511,7 @@ public class ACRGBFETCH {
         return result;
     }
 
-    //GET ASSETS WITH PARAMETER
+    //GET GET FACILITY USING PRO USERID
     @GET
     @Path("GetRoleIndexWithID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -534,18 +534,87 @@ public class ACRGBFETCH {
         }
         return result;
     }
+
+    //GET GET FACILITY USING MB USERID
+    @GET
+    @Path("GetMBUsingUserIDMBID/{pid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetMBUsingUserIDMBID(@PathParam("pid") String pid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        if (pid.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else if (!utility.IsValidNumber(pid)) {
+            result.setMessage("NUMBER FORMAT IS NOT VALID");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = methods.GETFACILITYUNDERMBUSER(dataSource, pid);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
+        return result;
+    }
+
 //Get all facility (multiple)
     @GET
     @Path("GETALLFACILITY")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GETALLFACILITY(){
+    public ACRGBWSResult GETALLFACILITY() {
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult hcf = fetchmethods.GETALLFACILITY(dataSource);
         result.setMessage(hcf.getMessage());
         result.setSuccess(hcf.isSuccess());
         result.setResult(hcf.getResult());
         return result;
-       
+
     }
-    
+
+    //GET ASSETS WITH PARAMETER
+    @GET
+    @Path("GetManagingBoardWithProID/{proid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetManagingBoardWithProID(@PathParam("proid") String proid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        if (!utility.IsValidNumber(proid)) {
+            result.setMessage("NUMBER FORMAT IS NOT VALID");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = methods.GETALLMBWITHPROID(dataSource, proid);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
+        return result;
+    }
+
+    @GET
+    @Path("GetMBUsingMBID/{pid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetMBUsingMBID(@PathParam("pid") String pid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        if (pid.isEmpty()) {
+            result.setMessage("PATH PARAMETER IS EMPTY");
+            result.setSuccess(false);
+        } else if (!utility.IsValidNumber(pid)) {
+            result.setMessage("NUMBER FORMAT IS NOT VALID");
+            result.setSuccess(false);
+        } else {
+            ACRGBWSResult getResult = methods.GETALLFACILITYWITHMBID(dataSource, pid);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
+        return result;
+    }
+
 }

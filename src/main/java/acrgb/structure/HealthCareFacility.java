@@ -22,5 +22,6 @@ public class HealthCareFacility {
     private String areaid;
     private String datecreated;
     private String proid;
+    private String mb;
     private String amount;
 }

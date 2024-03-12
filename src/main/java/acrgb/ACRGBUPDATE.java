@@ -20,6 +20,7 @@ import acrgb.structure.Pro;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserLevel;
+import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -97,7 +98,7 @@ public class ACRGBUPDATE {
         result.setResult(insertresult.getResult());
         return result;
     }
-
+    
     @PUT
     @Path("UPDATECONTRACT")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -168,6 +169,7 @@ public class ACRGBUPDATE {
         return result;
     }
 // UPDATE MANAGING BOARD
+
     @PUT
     @Path("UPDATEMB")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -182,7 +184,6 @@ public class ACRGBUPDATE {
         return result;
     }
 
-    
     @PUT
     @Path("UPDATEUSERCREDENTIALS")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -265,4 +266,17 @@ public class ACRGBUPDATE {
         return result;
     }
 
+    @PUT
+    @Path("RemoveAccessRole")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult RemoveAccessRole(final UserRoleIndex userroleindex) throws SQLException, ParseException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = methods.REMOVEDROLEINDEX(dataSource, userroleindex.getUserid(), userroleindex.getAccessid());
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
 }

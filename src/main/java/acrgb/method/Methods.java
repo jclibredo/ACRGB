@@ -933,25 +933,131 @@ public class Methods {
             if (!utility.IsValidNumber(pid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
-                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
-                statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                statement.setString("pid", pid);
-                statement.execute();
-                ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                ArrayList<String> accessidlist = new ArrayList<>();
-                ArrayList<ManagingBoard> mblist = new ArrayList<>();
-                while (resultset.next()) {
-                    accessidlist.add(resultset.getString("ACCESSID"));
-                }
-                if (accessidlist.size() > 0) {
-                    for (int x = 0; x < accessidlist.size(); x++) {
-                        ACRGBWSResult getmbresult = this.GETMBWITHID(dataSource, accessidlist.get(x));
-                        if (getmbresult.isSuccess()) {
-                            ManagingBoard managingboard = utility.ObjectMapper().readValue(getmbresult.getResult(), ManagingBoard.class);
-                            mblist.add(managingboard);
-                        }
+                CallableStatement getstatementaccessid = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+                getstatementaccessid.registerOutParameter("v_result", OracleTypes.CURSOR);
+                getstatementaccessid.setString("pid", pid);
+                getstatementaccessid.execute();
+                ResultSet accessidresultset = (ResultSet) getstatementaccessid.getObject("v_result");
+                if (accessidresultset.next()) {
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                    statement.setString("pid", accessidresultset.getString("ACCESSID"));
+                    statement.execute();
+                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                    ArrayList<String> accessidlist = new ArrayList<>();
+                    ArrayList<ManagingBoard> mblist = new ArrayList<>();
+                    ArrayList<HealthCareFacility> facilitylist = new ArrayList<>();
+                    while (resultset.next()) {
+                        accessidlist.add(resultset.getString("ACCESSID"));
                     }
+                    if (accessidlist.size() > 0) {
+                        for (int x = 0; x < accessidlist.size(); x++) {
+                            ACRGBWSResult getmbresult = this.GETMBWITHID(dataSource, accessidlist.get(x));
+                            if (getmbresult.isSuccess()) {
+                                ManagingBoard managingboard = utility.ObjectMapper().readValue(getmbresult.getResult(), ManagingBoard.class);
+                                //GET FALCITY UNDER EVERY MB
+                                CallableStatement mbstatement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+                                mbstatement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                                mbstatement.setString("pid", managingboard.getMbid());
+                                mbstatement.execute();
+                                ArrayList<String> facilityidlist = new ArrayList<>();
+                                ResultSet mbresultset = (ResultSet) mbstatement.getObject("v_result");
+                                while (mbresultset.next()) {
+                                    facilityidlist.add(mbresultset.getString("ACCESSID"));
+                                }
 
+                                for (int y = 0; y < facilityidlist.size(); y++) {
+                                    ACRGBWSResult getfacility = fm.GETFACILITYID(dataSource, facilityidlist.get(y));
+                                    if (getfacility.isSuccess()) {
+                                        HealthCareFacility facility = utility.ObjectMapper().readValue(getfacility.getResult(), HealthCareFacility.class);
+                                        HealthCareFacility newfacility = new HealthCareFacility();
+                                        newfacility.setAmount(facility.getAmount());
+                                        newfacility.setAreaid(facility.getAreaid());
+                                        newfacility.setCreatedby(facility.getCreatedby());
+                                        newfacility.setDatecreated(facility.getDatecreated());
+                                        newfacility.setHcfaddress(facility.getHcfaddress());
+                                        newfacility.setHcfcode(facility.getHcfcode());
+                                        newfacility.setHcfid(facility.getHcfid());
+                                        newfacility.setHcfname(facility.getHcfname());
+                                        newfacility.setMb(utility.ObjectMapper().writeValueAsString(managingboard));
+                                        newfacility.setProid(facility.getProid());
+                                        facilitylist.add(newfacility);
+                                    }
+                                }
+                                mblist.add(managingboard);
+                            }
+                            break;
+                        }
+
+                    } else {
+                        result.setMessage("NO DATA FOUND");
+                    }
+                    if (mblist.size() > 0) {
+                        result.setResult(utility.ObjectMapper().writeValueAsString(facilitylist));
+                        result.setMessage("OK");
+                        result.setSuccess(true);
+                    } else {
+                        result.setMessage("NO DATA FOUND");
+                    }
+                } else {
+                    result.setMessage("NO DATA FOUND");
+                }
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET FACILITY UNDER MB USING USERID
+    public ACRGBWSResult GETFACILITYUNDERMBUSER(final DataSource dataSource, final String pid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            if (!utility.IsValidNumber(pid)) {
+                result.setMessage("INVALID NUMBER FORMAT");
+            } else {
+                CallableStatement getstatementaccessid = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+                getstatementaccessid.registerOutParameter("v_result", OracleTypes.CURSOR);
+                getstatementaccessid.setString("pid", pid);
+                getstatementaccessid.execute();
+                ResultSet accessidresultset = (ResultSet) getstatementaccessid.getObject("v_result");
+                if (accessidresultset.next()) {
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                    statement.setString("pid", accessidresultset.getString("ACCESSID"));
+                    statement.execute();
+                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
+
+                    //-------------testing area ----------------
+                    //-------------testing area ----------------
+                    ArrayList<String> fchlist = new ArrayList<>();
+                    ArrayList<HealthCareFacility> healthcarefacilitylist = new ArrayList<>();
+                    while (resultset.next()) {
+                        fchlist.add(resultset.getString("ACCESSID"));
+
+                    }
+                    if (fchlist.size() > 0) {
+                        for (int y = 0; y < fchlist.size(); y++) {
+                            ACRGBWSResult getfacility = fm.GETFACILITYID(dataSource, fchlist.get(y));
+                            if (getfacility.isSuccess()) {
+                                HealthCareFacility facility = utility.ObjectMapper().readValue(getfacility.getResult(), HealthCareFacility.class);
+                                healthcarefacilitylist.add(facility);
+                            }
+                        }
+                    } else {
+                        result.setMessage("NO DATA FOUND");
+                    }
+                    if (healthcarefacilitylist.size() > 0) {
+                        result.setResult(utility.ObjectMapper().writeValueAsString(healthcarefacilitylist));
+                        result.setMessage("OK");
+                        result.setSuccess(true);
+                    } else {
+                        result.setMessage("NO DATA FOUND");
+                    }
                 } else {
                     result.setMessage("NO DATA FOUND");
                 }
@@ -970,6 +1076,8 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
+
+            //  System.out.println(resultset.getString("MBNAME"));
             if (!utility.IsValidNumber(pid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
@@ -981,7 +1089,6 @@ public class Methods {
                 ResultSet resultset = (ResultSet) statement.getObject("v_result");
                 if (resultset.next()) {
                     //--------------------------------------------------------
-
                     ManagingBoard mb = new ManagingBoard();
                     mb.setMbid(resultset.getString("MBID"));
                     mb.setMbname(resultset.getString("MBNAME"));
@@ -1007,6 +1114,183 @@ public class Methods {
                 } else {
                     result.setMessage("NO DATA FOUND");
 
+                }
+
+                //----------------------------------------------------------
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    // REMOVED ACCESS LEVEL USING ROLE INDEX
+    public ACRGBWSResult REMOVEDROLEINDEX(final DataSource datasource, final String userid, final String accessid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+
+            if (!utility.IsValidNumber(userid)) {
+                result.setMessage("NUMBER FORMAT IS NOT VALID");
+            } else {
+                ArrayList<String> errorList = new ArrayList<>();
+                List<String> accesslist = Arrays.asList(accessid.split(","));
+                int errCount = 0;
+                for (int x = 0; x < accesslist.size(); x++) {
+                    //------------------------------------------------------------------------------------------------
+                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.REMOVEDROLEINDEX(:Message,:Code,"
+                            + ":puserid,:paccessid)");
+                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                    getinsertresult.setString("puserid", userid);
+                    getinsertresult.setString("paccessid", accesslist.get(x));
+                    getinsertresult.execute();
+                    //------------------------------------------------------------------------------------------------
+                    if (!getinsertresult.getString("Message").equals("SUCC")) {
+                        errCount++;
+                        errorList.add(getinsertresult.getString("Message"));
+                    }
+                }
+                if (errCount == 0) {
+                    result.setSuccess(true);
+                    result.setMessage("OK");
+                } else {
+                    result.setMessage(errorList.toString());
+                    result.setSuccess(false);
+                    result.setResult(errorList.toString());
+                }
+
+            }
+
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET MB WITH ID
+    public ACRGBWSResult GETALLMBWITHPROID(final DataSource dataSource, final String proid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            //  System.out.println(resultset.getString("MBNAME"));
+            if (!utility.IsValidNumber(proid)) {
+                result.setMessage("INVALID NUMBER FORMAT");
+            } else {
+                CallableStatement statementproid = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+                statementproid.registerOutParameter("v_result", OracleTypes.CURSOR);
+                statementproid.setString("pid", proid);
+                statementproid.execute();
+                ArrayList<ManagingBoard> mblist = new ArrayList<>();
+                ResultSet resultsetpro = (ResultSet) statementproid.getObject("v_result");
+                while (resultsetpro.next()) {
+                    //---------------------------------------------------- 
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                    statement.setString("pid", resultsetpro.getString("ACCESSID"));
+                    statement.execute();
+                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                    while (resultset.next()) {
+                        //--------------------------------------------------------
+                        ManagingBoard mb = new ManagingBoard();
+                        mb.setMbid(resultset.getString("MBID"));
+                        mb.setMbname(resultset.getString("MBNAME"));
+                        mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                        ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                        if (creator.isSuccess()) {
+                            if (!creator.getResult().isEmpty()) {
+                                UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                                mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                            } else {
+                                mb.setCreatedby(creator.getMessage());
+                            }
+                        } else {
+                            mb.setCreatedby("DATA NOT FOUND");
+                        }
+                        mb.setStatus(resultset.getString("STATUS"));
+                        mblist.add(mb);
+                        //------------------------------------------------------
+                    }
+                }
+                if (mblist.size() > 0) {
+                    result.setMessage("OK");
+                    result.setSuccess(true);
+                    result.setResult(utility.ObjectMapper().writeValueAsString(mblist));
+                } else {
+                    result.setMessage("NO DATA FOUND");
+                }
+
+                //----------------------------------------------------------
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET FACILITY WITH MBID
+    public ACRGBWSResult GETALLFACILITYWITHMBID(final DataSource dataSource, final String proid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            //  System.out.println(resultset.getString("MBNAME"));
+            if (!utility.IsValidNumber(proid)) {
+                result.setMessage("INVALID NUMBER FORMAT");
+            } else {
+                CallableStatement statementproid = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+                statementproid.registerOutParameter("v_result", OracleTypes.CURSOR);
+                statementproid.setString("pid", proid);
+                statementproid.execute();
+                ArrayList<HealthCareFacility> fchlist = new ArrayList<>();
+                ResultSet resultsetpro = (ResultSet) statementproid.getObject("v_result");
+                while (resultsetpro.next()) {
+                    //---------------------------------------------------- 
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:pid); end;");
+                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                    statement.setString("pid", resultsetpro.getString("ACCESSID"));
+                    statement.execute();
+                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                    while (resultset.next()) {
+                        //--------------------------------------------------------
+
+                        HealthCareFacility hcf = new HealthCareFacility();
+                        hcf.setHcfid(resultset.getString("HCFID"));
+                        hcf.setHcfname(resultset.getString("HCFNAME"));
+                        hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
+                        hcf.setHcfcode(resultset.getString("HCFCODE"));
+                        ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                        if (creator.isSuccess()) {
+                            if (!creator.getResult().isEmpty()) {
+                                UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                                hcf.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                            } else {
+                                hcf.setCreatedby(creator.getMessage());
+                            }
+                        } else {
+                            hcf.setCreatedby("DATA NOT FOUND");
+                        }
+                        hcf.setAreaid(resultset.getString("AREAID"));
+                        hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                        hcf.setProid(resultset.getString("PROID"));
+                        fchlist.add(hcf);
+                        //------------------------------------------------------
+                    }
+                }
+                if (fchlist.size() > 0) {
+                    result.setMessage("OK");
+                    result.setSuccess(true);
+                    result.setResult(utility.ObjectMapper().writeValueAsString(fchlist));
+                } else {
+                    result.setMessage("NO DATA FOUND");
                 }
 
                 //----------------------------------------------------------
