@@ -50,7 +50,6 @@ public class FetchMethods {
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
     private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm:ss a");
 
-   
     public ACRGBWSResult GETFACILITYID(final DataSource dataSource, final String uhcfid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -92,6 +91,7 @@ public class FetchMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
+
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITYVALUE(); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.execute();
@@ -103,9 +103,35 @@ public class FetchMethods {
                 hcf.setHcfname(resultset.getString("HCFNAME"));
                 hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
                 hcf.setHcfcode(resultset.getString("HCFCODE"));
-                hcf.setCreatedby(resultset.getString("CREATEDBY"));
+                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    if (!creator.getResult().isEmpty()) {
+                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                        hcf.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                    } else {
+                        hcf.setCreatedby(creator.getMessage());
+                    }
+                } else {
+                    hcf.setCreatedby("DATA NOT FOUND");
+                }
                 hcf.setAreaid(resultset.getString("AREAID"));
-                hcf.setDatecreated(resultset.getString("DATECREATED"));
+                hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                //-------------------------------------------------
+                CallableStatement getstatementaccessid = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:pid); end;");
+                getstatementaccessid.registerOutParameter("v_result", OracleTypes.CURSOR);
+                getstatementaccessid.setString("pid", resultset.getString("HCFID"));
+                getstatementaccessid.execute();
+                ResultSet accessidresultset = (ResultSet) getstatementaccessid.getObject("v_result");
+                if (accessidresultset.next()) {
+                    Methods nf = new Methods();
+                    ACRGBWSResult mgresult =nf.GETMBWITHID(dataSource, accessidresultset.getString("USERID"));
+                    if (mgresult.isSuccess()) {
+                        hcf.setMb(mgresult.getResult());
+                    } else {
+                        hcf.setMb(mgresult.getMessage());
+                    }
+
+                }
                 hcf.setProid(resultset.getString("PROID"));
                 hcflist.add(hcf);
             }
@@ -116,6 +142,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("NO DATA FOUND");
             }
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);

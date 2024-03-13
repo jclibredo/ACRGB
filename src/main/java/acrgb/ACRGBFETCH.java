@@ -407,23 +407,42 @@ public class ACRGBFETCH {
     }
 
     @GET
-    @Path("GetHealthFacilityBadget/{datefrom}/{dateto}")
+    @Path("GetHealthFacilityBadget/{accesstags}/{puserid}/{datefrom}/{dateto}")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetHealthFacilityBadget(
+            @PathParam("accesstags") String accesstags,
+            @PathParam("puserid") String puserid,
             @PathParam("datefrom") String datefrom,
             @PathParam("dateto") String dateto) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
+
         result.setSuccess(false);
         if (!utility.IsValidDate(datefrom) || !utility.IsValidDate(dateto)) {
             result.setMessage("DATE FORMAT IS NOT VALID");
             result.setSuccess(false);
         } else {
-            ACRGBWSResult getResult = methods.MethodGetHealthFacilityBadget(dataSource, datefrom, dateto);
-            result.setMessage(getResult.getMessage());
-            result.setResult(getResult.getResult());
-            result.setSuccess(getResult.isSuccess());
+            switch (accesstags.trim().toUpperCase()) {
+                case "PHICPRO": {
+                    //GET FACILITY BUDGET USING MB SELECTED MBID
+                    ACRGBWSResult getResult = methods.MethodGetHealthFacilityBadgetUisngMBID(dataSource, puserid, datefrom, dateto);
+                    result.setMessage(getResult.getMessage());
+                    result.setResult(getResult.getResult());
+                    result.setSuccess(getResult.isSuccess());
+                    break;
+                }
+                case "MB": {
+                    //GET FACILITY BUDGET USING MB USERACCOUNT ID
+                    ACRGBWSResult getResult = methods.MethodGetHealthFacilityBadget(dataSource, puserid, datefrom, dateto);
+                    result.setMessage(getResult.getMessage());
+                    result.setResult(getResult.getResult());
+                    result.setSuccess(getResult.isSuccess());
+                    break;
+                }
+                default:
+                    result.setMessage("TAGS IS INVALID");
+                    break;
+            }
+
         }
 
         return result;
@@ -431,11 +450,11 @@ public class ACRGBFETCH {
 
     //GET  HCI NET ASSETS TBL
     @GET
-    @Path("GetMBRequest")
+    @Path("GetMBRequest/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetMBRequest() {
+    public ACRGBWSResult GetMBRequest(@PathParam("userid") String userid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult getResult = methods.FetchMBRequest(dataSource);
+        ACRGBWSResult getResult = methods.FetchMBRequest(dataSource, userid);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());

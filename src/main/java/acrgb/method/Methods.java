@@ -16,7 +16,6 @@ import acrgb.structure.Total;
 import acrgb.structure.User;
 import acrgb.structure.UserActivity;
 import acrgb.structure.UserInfo;
-import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Cryptor;
 import acrgb.utility.Utility;
 import java.io.IOException;
@@ -642,49 +641,60 @@ public class Methods {
                 result.setMessage("AMOUNT FORMAT IS NOT VALID");
                 result.setSuccess(false);
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUEST(:Message,:Code,:udaterequest,:udatefrom,"
-                        + ":udateto,:urequestor,:utranscode,:uremarks,:uamount,:udatecreated)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setDate("udaterequest", (Date) new Date(utility.StringToDate(mbrequestsummry.getDaterequest()).getTime()));
-                getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(mbrequestsummry.getYearfrom()).getTime()));
-                getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(mbrequestsummry.getYearto()).getTime()));
-                getinsertresult.setInt("urequestor", Integer.parseInt(mbrequestsummry.getRequestor()));
-                getinsertresult.setString("utranscode", mbrequestsummry.getTranscode());
-                getinsertresult.setString("uremarks", mbrequestsummry.getRemarks());
-                getinsertresult.setString("uamount", mbrequestsummry.getTotalamount());
-                getinsertresult.setTimestamp("udatecreated", new java.sql.Timestamp(d1.getTime()));
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
+                CallableStatement getstatementaccessid = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+                getstatementaccessid.registerOutParameter("v_result", OracleTypes.CURSOR);
+                getstatementaccessid.setString("pid", mbrequestsummry.getRequestor());
+                getstatementaccessid.execute();
+                ResultSet accessidresultset = (ResultSet) getstatementaccessid.getObject("v_result");
+                if (accessidresultset.next()) {
+                    System.out.println(accessidresultset.getString("ACCESSID"));
+                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUEST(:Message,:Code,:udaterequest,:udatefrom,"
+                            + ":udateto,:urequestor,:utranscode,:uremarks,:uamount,:udatecreated)");
+                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                    getinsertresult.setDate("udaterequest", (Date) new Date(utility.StringToDate(mbrequestsummry.getDaterequest()).getTime()));
+                    getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(mbrequestsummry.getYearfrom()).getTime()));
+                    getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(mbrequestsummry.getYearto()).getTime()));
+                    getinsertresult.setInt("urequestor", Integer.parseInt(accessidresultset.getString("ACCESSID")));
+                    getinsertresult.setString("utranscode", mbrequestsummry.getTranscode());
+                    getinsertresult.setString("uremarks", mbrequestsummry.getRemarks());
+                    getinsertresult.setString("uamount", mbrequestsummry.getTotalamount());
+                    getinsertresult.setTimestamp("udatecreated", new java.sql.Timestamp(d1.getTime()));
+                    getinsertresult.execute();
+                    if (getinsertresult.getString("Message").equals("SUCC")) {
+                        ArrayList<String> errorList = new ArrayList<>();
+                        List<String> facilitylist = Arrays.asList(mbrequestsummry.getFacility().split(","));
+                        int errCounter = 0;
+                        for (int x = 0; x < facilitylist.size(); x = x + 2) {
+                            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUESTFCHUNDER(:Message,:Code,:utranscode,:udatecreated,:uamount,:ufacility)");
+                            statement.registerOutParameter("Message", OracleTypes.VARCHAR);
+                            statement.registerOutParameter("Code", OracleTypes.INTEGER);
+                            statement.setString("utranscode", mbrequestsummry.getTranscode());
+                            statement.setTimestamp("udatecreated", new java.sql.Timestamp(d1.getTime()));
+                            statement.setString("uamount", facilitylist.get(x + 1));
+                            statement.setString("ufacility", facilitylist.get(x));
+                            statement.execute();
+                            if (!statement.getString("Message").equals("SUCC")) {
+                                errCounter++;
+                                errorList.add(getinsertresult.getString("Message"));
+                            }
 
-                    ArrayList<String> errorList = new ArrayList<>();
-                    List<String> facilitylist = Arrays.asList(mbrequestsummry.getFacility().split(","));
-                    int errCounter = 0;
-                    for (int x = 0; x < facilitylist.size(); x++) {
-                        CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUESTFCHUNDER(:Message,:Code,:utranscode,:udatecreated,:ufacility)");
-                        statement.registerOutParameter("Message", OracleTypes.VARCHAR);
-                        statement.registerOutParameter("Code", OracleTypes.INTEGER);
-                        statement.setString("utranscode", mbrequestsummry.getTotalamount());
-                        statement.setTimestamp("udatecreated", new java.sql.Timestamp(d1.getTime()));
-                        statement.setString("ufacility", facilitylist.get(x));
-                        statement.execute();
-                        if (!statement.getString("Message").equals("SUCC")) {
-                            errCounter++;
-                            errorList.add(getinsertresult.getString("Message"));
                         }
-                    }
 
-                    if (errCounter == 0) {
-                        result.setMessage("OK");
-                        result.setSuccess(true);
+                        if (errCounter == 0) {
+                            result.setMessage("OK");
+                            result.setSuccess(true);
+                        } else {
+                            result.setMessage(errorList.toString());
+                        }
+
                     } else {
-                        result.setMessage(errorList.toString());
+                        result.setMessage(getinsertresult.getString("Message"));
+                        result.setSuccess(false);
                     }
 
-                } else {
-                    result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(false);
                 }
+
             }
         } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
@@ -693,60 +703,84 @@ public class Methods {
         return result;
     }
 
-    //GET FHCI WITH BADGET
-    public ACRGBWSResult MethodGetHealthFacilityBadget(final DataSource dataSource, final String udatefrom, final String udateto) {
+    //GET FHCI WITH BADGET USING MANAGING BOARD USERID
+    public ACRGBWSResult MethodGetHealthFacilityBadget(final DataSource dataSource, final String puserid, final String udatefrom, final String udateto) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITYVALUE(); end;");
-            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.execute();
-            ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            ArrayList<HealthCareFacility> listHCF = new ArrayList<>();
-            while (resultset.next()) {
-                HealthCareFacility hcf = new HealthCareFacility();
-                hcf.setHcfid(resultset.getString("HCFID"));
-                hcf.setHcfname(resultset.getString("HCFNAME"));
-                hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
-                hcf.setHcfcode(resultset.getString("HCFCODE"));
-                //GET DATE CREATOR
-                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
-                        hcf.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    } else {
-                        hcf.setCreatedby(creator.getMessage());
-                    }
-                } else {
-                    hcf.setCreatedby("DATA NOT FOUND");
+            CallableStatement getstatementaccessid = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+            getstatementaccessid.registerOutParameter("v_result", OracleTypes.CURSOR);
+            getstatementaccessid.setString("pid", puserid);
+            getstatementaccessid.execute();
+            ArrayList<String> accessidlist = new ArrayList<>();
+            ResultSet accessidresultset = (ResultSet) getstatementaccessid.getObject("v_result");
+            if (accessidresultset.next()) {
+                CallableStatement getmbuser = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+                getmbuser.registerOutParameter("v_result", OracleTypes.CURSOR);
+                getmbuser.setString("pid", accessidresultset.getString("ACCESSID"));
+                getmbuser.execute();
+                ResultSet resultsetlist = (ResultSet) getmbuser.getObject("v_result");
+                while (resultsetlist.next()) {
+                    accessidlist.add(resultsetlist.getString("ACCESSID"));
                 }
-                //END OF GET DATE CREATOR
-                hcf.setAreaid(resultset.getString("AREAID"));
-                hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                hcf.setProid(resultset.getString("PROID"));
-                // GET BADGET 
-                //FacilityComputedAmount
-                ACRGBWSResult getBadgetResult = this.GetAmountPerFacility(dataSource, resultset.getString("HCFCODE"), udatefrom, udateto);//GET TOTAL CLAIMS AMOUNT FOR GOOD TAGS
-                if (getBadgetResult.isSuccess()) {
-                    FacilityComputedAmount getBadgetFirst = utility.ObjectMapper().readValue(getBadgetResult.getResult(), FacilityComputedAmount.class);
-                    ACRGBWSResult getBadgetFirstSecond = this.GetAmountPerFacilitySkipYear(dataSource, getBadgetFirst.getHospital());//GET TOTAL BADGET FROM SKIP YEAR
-                    if (getBadgetFirstSecond.isSuccess()) {
-                        FacilityComputedAmount combadget = utility.ObjectMapper().readValue(getBadgetFirstSecond.getResult(), FacilityComputedAmount.class);
-                        Double skipamount = Double.parseDouble(combadget.getTotalamount());
-                        Double totalamount = Double.parseDouble(getBadgetFirst.getTotalamount());
-                        String diff = String.valueOf(totalamount - skipamount);
-                        hcf.setAmount(diff);
 
+            }
+            ArrayList<HealthCareFacility> listHCF = new ArrayList<>();
+            for (int t = 0; t < accessidlist.size(); t++) {
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:hcfrid); end;");
+                statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                statement.setString("hcfrid", accessidlist.get(t));
+                statement.execute();
+                ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                while (resultset.next()) {
+                    HealthCareFacility hcf = new HealthCareFacility();
+                    hcf.setHcfid(resultset.getString("HCFID"));
+                    hcf.setHcfname(resultset.getString("HCFNAME"));
+                    hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
+                    hcf.setHcfcode(resultset.getString("HCFCODE"));
+                    //GET DATE CREATOR
+                    ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                    if (creator.isSuccess()) {
+                        if (!creator.getResult().isEmpty()) {
+                            UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                            hcf.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                        } else {
+                            hcf.setCreatedby(creator.getMessage());
+                        }
                     } else {
-                        hcf.setAmount(getBadgetFirst.getTotalamount());
+                        hcf.setCreatedby("DATA NOT FOUND");
                     }
-                } else {
-                    hcf.setAmount(getBadgetResult.getMessage());
+                    //END OF GET DATE CREATOR
+                    hcf.setAreaid(resultset.getString("AREAID"));
+                    hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
+                    hcf.setProid(resultset.getString("PROID"));
+                    // GET BADGET 
+                    //FacilityComputedAmount
+
+                    ACRGBWSResult getBadgetResult = this.GetAmountPerFacility(dataSource, resultset.getString("HCFCODE"), udatefrom, udateto);//GET TOTAL CLAIMS AMOUNT FOR GOOD TAGS
+                    if (getBadgetResult.isSuccess()) {
+                        if (!getBadgetResult.getResult().isEmpty()) {
+                            FacilityComputedAmount getBadgetFirst = utility.ObjectMapper().readValue(getBadgetResult.getResult(), FacilityComputedAmount.class);
+                            ACRGBWSResult getBadgetFirstSecond = this.GetAmountPerFacilitySkipYear(dataSource, getBadgetFirst.getHospital());//GET TOTAL BADGET FROM SKIP YEAR
+                            if (getBadgetFirstSecond.isSuccess()) {
+                                FacilityComputedAmount combadget = utility.ObjectMapper().readValue(getBadgetFirstSecond.getResult(), FacilityComputedAmount.class);
+                                Double skipamount = Double.parseDouble(combadget.getTotalamount());
+                                Double totalamount = Double.parseDouble(getBadgetFirst.getTotalamount());
+                                String diff = String.valueOf(totalamount - skipamount);
+                                hcf.setAmount(diff);
+                            } else {
+                                hcf.setAmount(getBadgetFirst.getTotalamount());
+                            }
+                        } else {
+                            hcf.setAmount("NO DATA FOUND");
+                        }
+                    } else {
+                        hcf.setAmount(getBadgetResult.getMessage());
+                    }
+                    listHCF.add(hcf);
                 }
-                listHCF.add(hcf);
             }
             if (listHCF.size() < 1) {
                 result.setMessage("NO DATA FOUND");
@@ -755,6 +789,95 @@ public class Methods {
                 result.setResult(utility.ObjectMapper().writeValueAsString(listHCF));
             }
             result.setSuccess(true);
+
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET FHCI WITH BADGET USING MANAGING BOARD MBID
+    public ACRGBWSResult MethodGetHealthFacilityBadgetUisngMBID(final DataSource dataSource, final String mbid, final String udatefrom, final String udateto) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            ArrayList<String> accessidlist = new ArrayList<>();
+            CallableStatement getmbuser = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+            getmbuser.registerOutParameter("v_result", OracleTypes.CURSOR);
+            getmbuser.setString("pid", mbid);
+            getmbuser.execute();
+            ResultSet resultsetlist = (ResultSet) getmbuser.getObject("v_result");
+            while (resultsetlist.next()) {
+                accessidlist.add(resultsetlist.getString("ACCESSID"));
+            }
+
+            ArrayList<HealthCareFacility> listHCF = new ArrayList<>();
+            for (int t = 0; t < accessidlist.size(); t++) {
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:hcfrid); end;");
+                statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                statement.setString("hcfrid", accessidlist.get(t));
+                statement.execute();
+                ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                while (resultset.next()) {
+                    HealthCareFacility hcf = new HealthCareFacility();
+                    hcf.setHcfid(resultset.getString("HCFID"));
+                    hcf.setHcfname(resultset.getString("HCFNAME"));
+                    hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
+                    hcf.setHcfcode(resultset.getString("HCFCODE"));
+                    //GET DATE CREATOR
+                    ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                    if (creator.isSuccess()) {
+                        if (!creator.getResult().isEmpty()) {
+                            UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                            hcf.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                        } else {
+                            hcf.setCreatedby(creator.getMessage());
+                        }
+                    } else {
+                        hcf.setCreatedby("DATA NOT FOUND");
+                    }
+                    //END OF GET DATE CREATOR
+                    hcf.setAreaid(resultset.getString("AREAID"));
+                    hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
+                    hcf.setProid(resultset.getString("PROID"));
+                    // GET BADGET 
+                    //FacilityComputedAmount
+                    ACRGBWSResult getBadgetResult = this.GetAmountPerFacility(dataSource, resultset.getString("HCFCODE"), udatefrom, udateto);//GET TOTAL CLAIMS AMOUNT FOR GOOD TAGS
+                    if (getBadgetResult.isSuccess()) {
+                        if (!getBadgetResult.getResult().isEmpty()) {
+                            FacilityComputedAmount getBadgetFirst = utility.ObjectMapper().readValue(getBadgetResult.getResult(), FacilityComputedAmount.class);
+                            ACRGBWSResult getBadgetFirstSecond = this.GetAmountPerFacilitySkipYear(dataSource, getBadgetFirst.getHospital());//GET TOTAL BADGET FROM SKIP YEAR
+                            if (getBadgetFirstSecond.isSuccess()) {
+                                FacilityComputedAmount combadget = utility.ObjectMapper().readValue(getBadgetFirstSecond.getResult(), FacilityComputedAmount.class);
+                                Double skipamount = Double.parseDouble(combadget.getTotalamount());
+                                Double totalamount = Double.parseDouble(getBadgetFirst.getTotalamount());
+                                String diff = String.valueOf(totalamount - skipamount);
+                                hcf.setAmount(diff);
+
+                            } else {
+                                hcf.setAmount(getBadgetFirst.getTotalamount());
+                            }
+                        } else {
+                            hcf.setAmount("NO DATA FOUND");
+                        }
+                    } else {
+                        hcf.setAmount(getBadgetResult.getMessage());
+                    }
+                    listHCF.add(hcf);
+                }
+            }
+
+            if (listHCF.size() < 1) {
+                result.setMessage("NO DATA FOUND");
+            } else {
+                result.setMessage("OK");
+                result.setResult(utility.ObjectMapper().writeValueAsString(listHCF));
+            }
+            result.setSuccess(true);
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -851,12 +974,13 @@ public class Methods {
 //    }
 //  
     // ACR GB USER ACTIVITY LOGS WITH PARAMETER
-    public ACRGBWSResult FetchMBRequest(final DataSource dataSource) {
+    public ACRGBWSResult FetchMBRequest(final DataSource dataSource, final String userid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
+
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBREQUEST(); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.execute();
