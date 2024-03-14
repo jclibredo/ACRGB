@@ -11,6 +11,7 @@ import acrgb.structure.HealthCareFacility;
 import acrgb.structure.MBRequestSummary;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.NclaimsData;
+import acrgb.structure.Pro;
 import acrgb.structure.Summary;
 import acrgb.structure.Total;
 import acrgb.structure.User;
@@ -572,6 +573,7 @@ public class Methods {
                     fca.setTotalamount(resultset.getString("CTOTAL"));
                     fca.setYearfrom(udatefrom);
                     fca.setYearto(udateto);
+                    fca.setTotalclaims(resultset.getString("COUNTVAL"));
                     result.setResult(utility.ObjectMapper().writeValueAsString(fca));
                     result.setMessage("OK");
                 } else {
@@ -737,6 +739,41 @@ public class Methods {
                 while (resultset.next()) {
                     HealthCareFacility hcf = new HealthCareFacility();
                     hcf.setHcfid(resultset.getString("HCFID"));
+                    // GET MANAGING BOARD USING FACILITY ID
+                    CallableStatement getMB = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:pid); end;");
+                    getMB.registerOutParameter("v_result", OracleTypes.CURSOR);
+                    getMB.setString("pid", resultset.getString("HCFID"));
+                    getMB.execute();
+                    ResultSet resultsetMB = (ResultSet) getMB.getObject("v_result");
+                    if (resultsetMB.next()) {
+                        ACRGBWSResult mgresult = this.GETMBWITHID(dataSource, resultsetMB.getString("USERID"));
+                        if (mgresult.isSuccess()) {
+                            ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
+                            hcf.setMb(mb.getMbname());
+                            //GET PRO
+                            CallableStatement getPRO = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:pid); end;");
+                            getPRO.registerOutParameter("v_result", OracleTypes.CURSOR);
+                            getPRO.setString("pid", mb.getMbid());
+                            getPRO.execute();
+                            ResultSet resultsetPRO = (ResultSet) getPRO.getObject("v_result");
+                            if (resultsetPRO.next()) {
+                                //GET PRO USING PROID
+                                ACRGBWSResult getproid = this.GetProWithPROID(dataSource, resultsetPRO.getString("USERID"));
+                                if (getproid.isSuccess()) {
+                                    Pro pro = utility.ObjectMapper().readValue(getproid.getResult(), Pro.class);
+                                    hcf.setProid(pro.getProname());
+                                } else {
+                                    hcf.setProid(getproid.getMessage());
+                                }
+                            } else {
+                                hcf.setProid("NO DATA FOUND");
+                            }
+                            //GET PRO
+                        } else {
+                            hcf.setMb(mgresult.getMessage());
+                        }
+                    }
+                    // GET MANAGING BOARD USING FACILITY ID
                     hcf.setHcfname(resultset.getString("HCFNAME"));
                     hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
                     hcf.setHcfcode(resultset.getString("HCFCODE"));
@@ -755,7 +792,6 @@ public class Methods {
                     //END OF GET DATE CREATOR
                     hcf.setAreaid(resultset.getString("AREAID"));
                     hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                    hcf.setProid(resultset.getString("PROID"));
                     // GET BADGET 
                     //FacilityComputedAmount
 
@@ -773,6 +809,7 @@ public class Methods {
                             } else {
                                 hcf.setAmount(getBadgetFirst.getTotalamount());
                             }
+                            hcf.setTotalclaims(getBadgetFirst.getTotalclaims());
                         } else {
                             hcf.setAmount("NO DATA FOUND");
                         }
@@ -824,6 +861,41 @@ public class Methods {
                 while (resultset.next()) {
                     HealthCareFacility hcf = new HealthCareFacility();
                     hcf.setHcfid(resultset.getString("HCFID"));
+                    //GET MANAGING BOARD USING FACILITY ID
+                    CallableStatement getMB = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:pid); end;");
+                    getMB.registerOutParameter("v_result", OracleTypes.CURSOR);
+                    getMB.setString("pid", resultset.getString("HCFID"));
+                    getMB.execute();
+                    ResultSet resultsetMB = (ResultSet) getMB.getObject("v_result");
+                    if (resultsetMB.next()) {
+                        ACRGBWSResult mgresult = this.GETMBWITHID(dataSource, resultsetMB.getString("USERID"));
+                        if (mgresult.isSuccess()) {
+                            ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
+                            hcf.setMb(mb.getMbname());
+                            //GET PRO
+                            CallableStatement getPRO = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:pid); end;");
+                            getPRO.registerOutParameter("v_result", OracleTypes.CURSOR);
+                            getPRO.setString("pid", mb.getMbid());
+                            getPRO.execute();
+                            ResultSet resultsetPRO = (ResultSet) getPRO.getObject("v_result");
+                            if (resultsetPRO.next()) {
+                                //GET PRO USING PROID
+                                ACRGBWSResult getproid = this.GetProWithPROID(dataSource, resultsetPRO.getString("USERID"));
+                                if (getproid.isSuccess()) {
+                                    Pro pro = utility.ObjectMapper().readValue(getproid.getResult(), Pro.class);
+                                    hcf.setProid(pro.getProname());
+                                } else {
+                                    hcf.setProid(getproid.getMessage());
+                                }
+                            } else {
+                                hcf.setProid("NO DATA FOUND");
+                            }
+//                            //GET PRO
+                        } else {
+                            hcf.setMb(mgresult.getMessage());
+                        }
+                    }
+                    //GET MANAGING BOARD USING FACILITY ID
                     hcf.setHcfname(resultset.getString("HCFNAME"));
                     hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
                     hcf.setHcfcode(resultset.getString("HCFCODE"));
@@ -842,7 +914,6 @@ public class Methods {
                     //END OF GET DATE CREATOR
                     hcf.setAreaid(resultset.getString("AREAID"));
                     hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                    hcf.setProid(resultset.getString("PROID"));
                     // GET BADGET 
                     //FacilityComputedAmount
                     ACRGBWSResult getBadgetResult = this.GetAmountPerFacility(dataSource, resultset.getString("HCFCODE"), udatefrom, udateto);//GET TOTAL CLAIMS AMOUNT FOR GOOD TAGS
@@ -860,6 +931,7 @@ public class Methods {
                             } else {
                                 hcf.setAmount(getBadgetFirst.getTotalamount());
                             }
+                            hcf.setTotalclaims(getBadgetFirst.getTotalclaims());
                         } else {
                             hcf.setAmount("NO DATA FOUND");
                         }
@@ -1418,6 +1490,48 @@ public class Methods {
                 }
 
                 //----------------------------------------------------------
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    public ACRGBWSResult GetProWithPROID(final DataSource dataSource, final String pproid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETPROWITHID(:pproid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("pproid", pproid);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                Pro pro = new Pro();
+                pro.setProid(resultset.getString("PROID"));
+                pro.setProname(resultset.getString("PRONAME"));
+                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    if (!creator.getResult().isEmpty()) {
+                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                        pro.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                    } else {
+                        pro.setCreatedby(creator.getMessage());
+                    }
+                } else {
+                    pro.setCreatedby("DATA NOT FOUND");
+                }
+
+                pro.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                result.setResult(utility.ObjectMapper().writeValueAsString(pro));
+                result.setMessage("OK");
+                result.setSuccess(true);
+            } else {
+                result.setMessage("NO DATA FOUND");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());

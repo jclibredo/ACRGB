@@ -24,4 +24,5 @@ public class HealthCareFacility {
     private String proid;
     private String mb;
     private String amount;
+    private String totalclaims;
 }
