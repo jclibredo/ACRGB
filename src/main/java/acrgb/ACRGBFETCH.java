@@ -112,21 +112,37 @@ public class ACRGBFETCH {
 
     //GET  HCI NET ASSETS TBL
     @GET
-    @Path("GetContract/{tags}")
+    @Path("GetContract/{tags}/{puserid}/{level}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetContract(@PathParam("tags") String tags) {
+    public ACRGBWSResult GetContract(@PathParam("tags") String tags, @PathParam("puserid") String puserid, @PathParam("level") String level) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
+
         result.setSuccess(false);
         if (tags.isEmpty()) {
             result.setMessage("PATH PARAMETER IS EMPTY");
             result.setSuccess(false);
         } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_CONTRACT(dataSource, tags);
-            result.setMessage(getResult.getMessage());
-            result.setResult(getResult.getResult());
-            result.setSuccess(getResult.isSuccess());
+            switch (level) {
+                case "PRO":
+                    {
+                        ACRGBWSResult getResult = fetchmethods.ACR_CONTRACTPROID(dataSource, tags, puserid);
+                        result.setMessage(getResult.getMessage());
+                        result.setResult(getResult.getResult());
+                        result.setSuccess(getResult.isSuccess());
+                        break;
+                    }
+                case "MB":
+                    {
+                        ACRGBWSResult getResult = fetchmethods.ACR_CONTRACT(dataSource, tags, puserid);
+                        result.setMessage(getResult.getMessage());
+                        result.setResult(getResult.getResult());
+                        result.setSuccess(getResult.isSuccess());
+                        break;
+                    }
+                default:
+                    result.setMessage(level + " IS NOT VALID");
+                    break;
+            }
         }
         return result;
     }
@@ -448,7 +464,7 @@ public class ACRGBFETCH {
         return result;
     }
 
-    //GET  HCI NET ASSETS TBL
+    //GET  REQUEST USING MB USER ID
     @GET
     @Path("GetMBRequest/{userid}")
     @Produces(MediaType.APPLICATION_JSON)

@@ -17,6 +17,7 @@ import acrgb.structure.Total;
 import acrgb.structure.User;
 import acrgb.structure.UserActivity;
 import acrgb.structure.UserInfo;
+import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Cryptor;
 import acrgb.utility.Utility;
 import java.io.IOException;
@@ -643,13 +644,8 @@ public class Methods {
                 result.setMessage("AMOUNT FORMAT IS NOT VALID");
                 result.setSuccess(false);
             } else {
-                CallableStatement getstatementaccessid = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
-                getstatementaccessid.registerOutParameter("v_result", OracleTypes.CURSOR);
-                getstatementaccessid.setString("pid", mbrequestsummry.getRequestor());
-                getstatementaccessid.execute();
-                ResultSet accessidresultset = (ResultSet) getstatementaccessid.getObject("v_result");
-                if (accessidresultset.next()) {
-                    System.out.println(accessidresultset.getString("ACCESSID"));
+                ACRGBWSResult restA = this.GETROLE(dataSource, mbrequestsummry.getRequestor());
+                if (restA.isSuccess()) {
                     CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUEST(:Message,:Code,:udaterequest,:udatefrom,"
                             + ":udateto,:urequestor,:utranscode,:uremarks,:uamount,:udatecreated)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -657,7 +653,7 @@ public class Methods {
                     getinsertresult.setDate("udaterequest", (Date) new Date(utility.StringToDate(mbrequestsummry.getDaterequest()).getTime()));
                     getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(mbrequestsummry.getYearfrom()).getTime()));
                     getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(mbrequestsummry.getYearto()).getTime()));
-                    getinsertresult.setInt("urequestor", Integer.parseInt(accessidresultset.getString("ACCESSID")));
+                    getinsertresult.setInt("urequestor", Integer.parseInt(restA.getResult()));
                     getinsertresult.setString("utranscode", mbrequestsummry.getTranscode());
                     getinsertresult.setString("uremarks", mbrequestsummry.getRemarks());
                     getinsertresult.setString("uamount", mbrequestsummry.getTotalamount());
@@ -712,22 +708,14 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getstatementaccessid = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
-            getstatementaccessid.registerOutParameter("v_result", OracleTypes.CURSOR);
-            getstatementaccessid.setString("pid", puserid);
-            getstatementaccessid.execute();
             ArrayList<String> accessidlist = new ArrayList<>();
-            ResultSet accessidresultset = (ResultSet) getstatementaccessid.getObject("v_result");
-            if (accessidresultset.next()) {
-                CallableStatement getmbuser = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
-                getmbuser.registerOutParameter("v_result", OracleTypes.CURSOR);
-                getmbuser.setString("pid", accessidresultset.getString("ACCESSID"));
-                getmbuser.execute();
-                ResultSet resultsetlist = (ResultSet) getmbuser.getObject("v_result");
-                while (resultsetlist.next()) {
-                    accessidlist.add(resultsetlist.getString("ACCESSID"));
+            ACRGBWSResult restA = this.GETROLE(dataSource, puserid);
+            if (restA.isSuccess()) {
+                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult());
+                List<String> restist = Arrays.asList(restB.getResult().split(","));
+                for (int y = 0; y < restist.size(); y++) {
+                    accessidlist.add(restist.get(y));
                 }
-
             }
             ArrayList<HealthCareFacility> listHCF = new ArrayList<>();
             for (int t = 0; t < accessidlist.size(); t++) {
@@ -740,25 +728,17 @@ public class Methods {
                     HealthCareFacility hcf = new HealthCareFacility();
                     hcf.setHcfid(resultset.getString("HCFID"));
                     // GET MANAGING BOARD USING FACILITY ID
-                    CallableStatement getMB = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:pid); end;");
-                    getMB.registerOutParameter("v_result", OracleTypes.CURSOR);
-                    getMB.setString("pid", resultset.getString("HCFID"));
-                    getMB.execute();
-                    ResultSet resultsetMB = (ResultSet) getMB.getObject("v_result");
-                    if (resultsetMB.next()) {
-                        ACRGBWSResult mgresult = this.GETMBWITHID(dataSource, resultsetMB.getString("USERID"));
+                    ACRGBWSResult restB = this.GETROLEREVERESE(dataSource, resultset.getString("HCFID"));
+                    if (restB.isSuccess()) {
+                        ACRGBWSResult mgresult = this.GETMBWITHID(dataSource, restB.getResult());
                         if (mgresult.isSuccess()) {
                             ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
                             hcf.setMb(mb.getMbname());
                             //GET PRO
-                            CallableStatement getPRO = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:pid); end;");
-                            getPRO.registerOutParameter("v_result", OracleTypes.CURSOR);
-                            getPRO.setString("pid", mb.getMbid());
-                            getPRO.execute();
-                            ResultSet resultsetPRO = (ResultSet) getPRO.getObject("v_result");
-                            if (resultsetPRO.next()) {
+                            ACRGBWSResult restC = this.GETROLEREVERESE(dataSource, mb.getMbid());
+                            if (restC.isSuccess()) {
                                 //GET PRO USING PROID
-                                ACRGBWSResult getproid = this.GetProWithPROID(dataSource, resultsetPRO.getString("USERID"));
+                                ACRGBWSResult getproid = this.GetProWithPROID(dataSource, restC.getResult());
                                 if (getproid.isSuccess()) {
                                     Pro pro = utility.ObjectMapper().readValue(getproid.getResult(), Pro.class);
                                     hcf.setProid(pro.getProname());
@@ -827,7 +807,7 @@ public class Methods {
             }
             result.setSuccess(true);
 
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -841,16 +821,8 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            ArrayList<String> accessidlist = new ArrayList<>();
-            CallableStatement getmbuser = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
-            getmbuser.registerOutParameter("v_result", OracleTypes.CURSOR);
-            getmbuser.setString("pid", mbid);
-            getmbuser.execute();
-            ResultSet resultsetlist = (ResultSet) getmbuser.getObject("v_result");
-            while (resultsetlist.next()) {
-                accessidlist.add(resultsetlist.getString("ACCESSID"));
-            }
-
+            ACRGBWSResult restA = this.GETROLEMULITPLE(dataSource, mbid);
+            List<String> accessidlist = Arrays.asList(restA.getResult().split(","));
             ArrayList<HealthCareFacility> listHCF = new ArrayList<>();
             for (int t = 0; t < accessidlist.size(); t++) {
                 CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:hcfrid); end;");
@@ -861,26 +833,21 @@ public class Methods {
                 while (resultset.next()) {
                     HealthCareFacility hcf = new HealthCareFacility();
                     hcf.setHcfid(resultset.getString("HCFID"));
+                   
                     //GET MANAGING BOARD USING FACILITY ID
-                    CallableStatement getMB = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:pid); end;");
-                    getMB.registerOutParameter("v_result", OracleTypes.CURSOR);
-                    getMB.setString("pid", resultset.getString("HCFID"));
-                    getMB.execute();
-                    ResultSet resultsetMB = (ResultSet) getMB.getObject("v_result");
-                    if (resultsetMB.next()) {
-                        ACRGBWSResult mgresult = this.GETMBWITHID(dataSource, resultsetMB.getString("USERID"));
+                    ACRGBWSResult restB = this.GETROLEREVERESE(dataSource, resultset.getString("HCFID"));
+                   
+                    if (restB.isSuccess()) {
+                        
+                        ACRGBWSResult mgresult = this.GETMBWITHID(dataSource, restB.getResult());
                         if (mgresult.isSuccess()) {
                             ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
                             hcf.setMb(mb.getMbname());
                             //GET PRO
-                            CallableStatement getPRO = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:pid); end;");
-                            getPRO.registerOutParameter("v_result", OracleTypes.CURSOR);
-                            getPRO.setString("pid", mb.getMbid());
-                            getPRO.execute();
-                            ResultSet resultsetPRO = (ResultSet) getPRO.getObject("v_result");
-                            if (resultsetPRO.next()) {
+                            ACRGBWSResult restC = this.GETROLEREVERESE(dataSource, mb.getMbid());
+                            if (restC.isSuccess()) {
                                 //GET PRO USING PROID
-                                ACRGBWSResult getproid = this.GetProWithPROID(dataSource, resultsetPRO.getString("USERID"));
+                                ACRGBWSResult getproid = this.GetProWithPROID(dataSource, restC.getResult());
                                 if (getproid.isSuccess()) {
                                     Pro pro = utility.ObjectMapper().readValue(getproid.getResult(), Pro.class);
                                     hcf.setProid(pro.getProname());
@@ -950,111 +917,23 @@ public class Methods {
             }
             result.setSuccess(true);
 
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
 
-//
-//    // ACR GB USER IMAGE
-//    public ACRGBWSResult UPDATEUSERIMAGE(final DataSource dataSource, final String userid, final String p_image) {
-//        ACRGBWSResult result = utility.ACRGBWSResult();
-//        result.setMessage("");
-//        result.setResult("");
-//        result.setSuccess(false);
-//        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBINSERTPKG.UPDATEUSERIMAGE(:Message,:Code,:userid,:p_image)");
-//            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-//            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-//            getinsertresult.setString("userid", userid);
-//            getinsertresult.setString("p_image", p_image);
-//            getinsertresult.execute();
-//            if (getinsertresult.getString("Message").equals("SUCC")) {
-//                result.setSuccess(true);
-//                result.setMessage("SUCCESSFULLY INSERTED");
-//            } else {
-//                result.setMessage(getinsertresult.getString("Message"));
-//                result.setSuccess(false);
-//            }
-//        } catch (SQLException ex) {
-//            result.setMessage(ex.toString());
-//            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return result;
-//    }
-//
-//    // ACR GB ACCOUNTS PAYABLE
-//    public ACRGBWSResult JOINPAYABLE(final DataSource dataSource, final String p_username) {
-//        ACRGBWSResult result = utility.ACRGBWSResult();
-//        result.setMessage("");
-//        result.setResult("");
-//        result.setSuccess(false);
-//        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement statement = connection.prepareCall("begin :joinresult := ACR_GB.ACRGBPKG.JOINPAYABLE(); end;");
-//            statement.registerOutParameter("joinresult", OracleTypes.CURSOR);
-//            statement.execute();
-//            ResultSet resultset = (ResultSet) statement.getObject("joinresult");
-//            ArrayList<AccountPayable> accountpayablelist = new ArrayList<>();
-//            while (resultset.next()) {
-//                AccountPayable accountpayable = new AccountPayable();
-//                accountpayable.setPayableid(resultset.getString("PAYABLEID"));
-//                accountpayable.setClaimseries(resultset.getString("CLAIMSERIES"));
-//                accountpayable.setDatereleased(resultset.getString("DATERELEASED"));
-//                accountpayable.setAmount(resultset.getString("AAMOUNT"));
-//                accountpayable.setCreatedby(resultset.getString("CREATEDBY"));
-//                accountpayable.setModeofpayment(resultset.getString("MODEOFPAYMENT"));
-//                accountpayable.setPaidto(resultset.getString("PAIDTO"));
-//                accountpayable.setAssetsid(resultset.getString("AASSETSID"));
-//                accountpayable.setClaimid(resultset.getString("CLAIMID"));
-//                accountpayablelist.add(accountpayable);
-////------------------------------------------------------------------------------------------------------
-//                Assets assests = new Assets();
-//                assests.setAssetsid(resultset.getString("BASSETSID"));
-//                assests.setAmount(resultset.getString("BAMOUNT"));
-//                assests.setTransnumber(resultset.getString("TRANSNUMBER"));
-//                assests.setTypeofassets(resultset.getString("TYPEOFASSETS"));
-//                assests.setSourceoffunds(resultset.getString("SOURCEOFFUNDS"));
-//                assests.setDaterecieved(resultset.getString("DATERECIEVED"));
-//                assests.setEncodedby(resultset.getString("ENCODEDBY"));
-//                assests.setAccreditation(resultset.getString("ACCREDITATION"));
-//                assests.setHfid(resultset.getString("HFID"));
-//                assests.setTransid(resultset.getString("BID"));
-////------------------------------------------------------------------------------------------------------
-//                Tranch trans = new Tranch();
-//                trans.setTransid(resultset.getString("CID"));
-//                trans.setDatereleased(resultset.getString("DATERELEASED"));
-//                trans.setTranstype(resultset.getString("TRANSTYPEID"));
-//                trans.setPercent(resultset.getString("PERCENT"));
-//                trans.setHfid(resultset.getString("CHFID"));
-//            }
-//            
-//            if (!accountpayablelist.isEmpty()) {
-//                result.setSuccess(true);
-//                result.setResult(utility.ObjectMapper().writeValueAsString(accountpayablelist));
-//            } else {
-//                result.setSuccess(false);
-//                result.setMessage("NO DATA AVAILABLE");
-//            }
-//            
-//        } catch (SQLException | IOException ex) {
-//            result.setMessage(ex.toString());
-//            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return result;
-//    }
-//  
-    // ACR GB USER ACTIVITY LOGS WITH PARAMETER
+    // GET ALL REQUEST USING MB USERID ACCOUNT
     public ACRGBWSResult FetchMBRequest(final DataSource dataSource, final String userid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBREQUEST(); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBREQUEST(:userid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("userid", userid);
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<MBRequestSummary> mbrequestlist = new ArrayList<>();
@@ -1125,43 +1004,24 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        try (Connection connection = dataSource.getConnection()) {
+        try {
             if (!utility.IsValidNumber(pid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
-                CallableStatement getstatementaccessid = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
-                getstatementaccessid.registerOutParameter("v_result", OracleTypes.CURSOR);
-                getstatementaccessid.setString("pid", pid);
-                getstatementaccessid.execute();
-                ResultSet accessidresultset = (ResultSet) getstatementaccessid.getObject("v_result");
-                if (accessidresultset.next()) {
-                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
-                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                    statement.setString("pid", accessidresultset.getString("ACCESSID"));
-                    statement.execute();
-                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                    ArrayList<String> accessidlist = new ArrayList<>();
+                ACRGBWSResult restA = this.GETROLE(dataSource, pid);
+                if (restA.isSuccess()) {
+                    ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult());
+                    List<String> accessidlist = Arrays.asList(restB.getResult().split(","));
                     ArrayList<ManagingBoard> mblist = new ArrayList<>();
                     ArrayList<HealthCareFacility> facilitylist = new ArrayList<>();
-                    while (resultset.next()) {
-                        accessidlist.add(resultset.getString("ACCESSID"));
-                    }
                     if (accessidlist.size() > 0) {
                         for (int x = 0; x < accessidlist.size(); x++) {
                             ACRGBWSResult getmbresult = this.GETMBWITHID(dataSource, accessidlist.get(x));
                             if (getmbresult.isSuccess()) {
                                 ManagingBoard managingboard = utility.ObjectMapper().readValue(getmbresult.getResult(), ManagingBoard.class);
                                 //GET FALCITY UNDER EVERY MB
-                                CallableStatement mbstatement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
-                                mbstatement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                                mbstatement.setString("pid", managingboard.getMbid());
-                                mbstatement.execute();
-                                ArrayList<String> facilityidlist = new ArrayList<>();
-                                ResultSet mbresultset = (ResultSet) mbstatement.getObject("v_result");
-                                while (mbresultset.next()) {
-                                    facilityidlist.add(mbresultset.getString("ACCESSID"));
-                                }
-
+                                ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, managingboard.getMbid());
+                                List<String> facilityidlist = Arrays.asList(restC.getResult().split(","));
                                 for (int y = 0; y < facilityidlist.size(); y++) {
                                     ACRGBWSResult getfacility = fm.GETFACILITYID(dataSource, facilityidlist.get(y));
                                     if (getfacility.isSuccess()) {
@@ -1199,7 +1059,7 @@ public class Methods {
                     result.setMessage("NO DATA FOUND");
                 }
             }
-        } catch (SQLException | IOException ex) {
+        } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1212,30 +1072,15 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        try (Connection connection = dataSource.getConnection()) {
+        try {
             if (!utility.IsValidNumber(pid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
-                CallableStatement getstatementaccessid = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
-                getstatementaccessid.registerOutParameter("v_result", OracleTypes.CURSOR);
-                getstatementaccessid.setString("pid", pid);
-                getstatementaccessid.execute();
-                ResultSet accessidresultset = (ResultSet) getstatementaccessid.getObject("v_result");
-                if (accessidresultset.next()) {
-                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
-                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                    statement.setString("pid", accessidresultset.getString("ACCESSID"));
-                    statement.execute();
-                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
-
-                    //-------------testing area ----------------
-                    //-------------testing area ----------------
-                    ArrayList<String> fchlist = new ArrayList<>();
+                ACRGBWSResult restA = this.GETROLE(dataSource, pid);
+                if (restA.isSuccess()) {
+                    ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult());
+                    List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                     ArrayList<HealthCareFacility> healthcarefacilitylist = new ArrayList<>();
-                    while (resultset.next()) {
-                        fchlist.add(resultset.getString("ACCESSID"));
-
-                    }
                     if (fchlist.size() > 0) {
                         for (int y = 0; y < fchlist.size(); y++) {
                             ACRGBWSResult getfacility = fm.GETFACILITYID(dataSource, fchlist.get(y));
@@ -1258,7 +1103,7 @@ public class Methods {
                     result.setMessage("NO DATA FOUND");
                 }
             }
-        } catch (SQLException | IOException ex) {
+        } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1379,17 +1224,14 @@ public class Methods {
             if (!utility.IsValidNumber(proid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
-                CallableStatement statementproid = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
-                statementproid.registerOutParameter("v_result", OracleTypes.CURSOR);
-                statementproid.setString("pid", proid);
-                statementproid.execute();
+                ACRGBWSResult restA = this.GETROLEMULITPLE(dataSource, proid);
+                List<String> fchlist = Arrays.asList(restA.getResult().split(","));
                 ArrayList<ManagingBoard> mblist = new ArrayList<>();
-                ResultSet resultsetpro = (ResultSet) statementproid.getObject("v_result");
-                while (resultsetpro.next()) {
+                for (int x = 0; x < fchlist.size(); x++) {
                     //---------------------------------------------------- 
                     CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                    statement.setString("pid", resultsetpro.getString("ACCESSID"));
+                    statement.setString("pid", fchlist.get(x));
                     statement.execute();
                     ResultSet resultset = (ResultSet) statement.getObject("v_result");
                     while (resultset.next()) {
@@ -1424,7 +1266,7 @@ public class Methods {
 
                 //----------------------------------------------------------
             }
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1442,17 +1284,14 @@ public class Methods {
             if (!utility.IsValidNumber(proid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
-                CallableStatement statementproid = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
-                statementproid.registerOutParameter("v_result", OracleTypes.CURSOR);
-                statementproid.setString("pid", proid);
-                statementproid.execute();
+                ACRGBWSResult restA = this.GETROLEMULITPLE(dataSource, proid);
+                List<String> resultlist = Arrays.asList(restA.getResult().split(","));
                 ArrayList<HealthCareFacility> fchlist = new ArrayList<>();
-                ResultSet resultsetpro = (ResultSet) statementproid.getObject("v_result");
-                while (resultsetpro.next()) {
+                for (int x = 0; x < resultlist.size(); x++) {
                     //---------------------------------------------------- 
                     CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:pid); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                    statement.setString("pid", resultsetpro.getString("ACCESSID"));
+                    statement.setString("pid", resultlist.get(x));
                     statement.execute();
                     ResultSet resultset = (ResultSet) statement.getObject("v_result");
                     while (resultset.next()) {
@@ -1491,7 +1330,7 @@ public class Methods {
 
                 //----------------------------------------------------------
             }
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1504,7 +1343,6 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETPROWITHID(:pproid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("pproid", pproid);
@@ -1536,6 +1374,87 @@ public class Methods {
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    public ACRGBWSResult GETROLE(final DataSource dataSource, final String puserid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("pid", puserid);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                result.setResult(resultset.getString("ACCESSID"));
+                result.setMessage("OK");
+                result.setSuccess(true);
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    public ACRGBWSResult GETROLEMULITPLE(final DataSource dataSource, final String puserid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("pid", puserid);
+            statement.execute();
+            ArrayList<String> listresult = new ArrayList<>();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                listresult.add(resultset.getString("ACCESSID"));
+            }
+
+            if (listresult.size() > 0) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(String.join(",", listresult));
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    public ACRGBWSResult GETROLEREVERESE(final DataSource dataSource, final String puserid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:pid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("pid", puserid);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if(resultset.next()) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(resultset.getString("USERID"));
+                
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
