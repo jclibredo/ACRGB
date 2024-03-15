@@ -123,22 +123,20 @@ public class ACRGBFETCH {
             result.setSuccess(false);
         } else {
             switch (level) {
-                case "PRO":
-                    {
-                        ACRGBWSResult getResult = fetchmethods.ACR_CONTRACTPROID(dataSource, tags, puserid);
-                        result.setMessage(getResult.getMessage());
-                        result.setResult(getResult.getResult());
-                        result.setSuccess(getResult.isSuccess());
-                        break;
-                    }
-                case "MB":
-                    {
-                        ACRGBWSResult getResult = fetchmethods.ACR_CONTRACT(dataSource, tags, puserid);
-                        result.setMessage(getResult.getMessage());
-                        result.setResult(getResult.getResult());
-                        result.setSuccess(getResult.isSuccess());
-                        break;
-                    }
+                case "PRO": {
+                    ACRGBWSResult getResult = fetchmethods.ACR_CONTRACTPROID(dataSource, tags, puserid);
+                    result.setMessage(getResult.getMessage());
+                    result.setResult(getResult.getResult());
+                    result.setSuccess(getResult.isSuccess());
+                    break;
+                }
+                case "MB": {
+                    ACRGBWSResult getResult = fetchmethods.ACR_CONTRACT(dataSource, tags, puserid);
+                    result.setMessage(getResult.getMessage());
+                    result.setResult(getResult.getResult());
+                    result.setSuccess(getResult.isSuccess());
+                    break;
+                }
                 default:
                     result.setMessage(level + " IS NOT VALID");
                     break;

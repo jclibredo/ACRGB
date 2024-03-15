@@ -17,7 +17,6 @@ import acrgb.structure.Total;
 import acrgb.structure.User;
 import acrgb.structure.UserActivity;
 import acrgb.structure.UserInfo;
-import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Cryptor;
 import acrgb.utility.Utility;
 import java.io.IOException;
@@ -833,12 +832,12 @@ public class Methods {
                 while (resultset.next()) {
                     HealthCareFacility hcf = new HealthCareFacility();
                     hcf.setHcfid(resultset.getString("HCFID"));
-                   
+
                     //GET MANAGING BOARD USING FACILITY ID
                     ACRGBWSResult restB = this.GETROLEREVERESE(dataSource, resultset.getString("HCFID"));
-                   
+
                     if (restB.isSuccess()) {
-                        
+
                         ACRGBWSResult mgresult = this.GETMBWITHID(dataSource, restB.getResult());
                         if (mgresult.isSuccess()) {
                             ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
@@ -855,7 +854,7 @@ public class Methods {
                                     hcf.setProid(getproid.getMessage());
                                 }
                             } else {
-                                hcf.setProid("NO DATA FOUND");
+                                hcf.setProid(restC.getMessage());
                             }
 //                            //GET PRO
                         } else {
@@ -1224,37 +1223,41 @@ public class Methods {
             if (!utility.IsValidNumber(proid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
-                ACRGBWSResult restA = this.GETROLEMULITPLE(dataSource, proid);
-                List<String> fchlist = Arrays.asList(restA.getResult().split(","));
+                ACRGBWSResult restA = this.GETROLE(dataSource, proid);
                 ArrayList<ManagingBoard> mblist = new ArrayList<>();
-                for (int x = 0; x < fchlist.size(); x++) {
-                    //---------------------------------------------------- 
-                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
-                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                    statement.setString("pid", fchlist.get(x));
-                    statement.execute();
-                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                    while (resultset.next()) {
-                        //--------------------------------------------------------
-                        ManagingBoard mb = new ManagingBoard();
-                        mb.setMbid(resultset.getString("MBID"));
-                        mb.setMbname(resultset.getString("MBNAME"));
-                        mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
-                        ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                        if (creator.isSuccess()) {
-                            if (!creator.getResult().isEmpty()) {
-                                UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
-                                mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                if (restA.isSuccess()) {
+                    ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult());
+                    List<String> fchlist = Arrays.asList(restB.getResult().split(","));
+                    for (int x = 0; x < fchlist.size(); x++) {
+                        //---------------------------------------------------- 
+                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                        statement.setString("pid", fchlist.get(x));
+                        statement.execute();
+                        ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                        while (resultset.next()) {
+                            //--------------------------------------------------------
+                            ManagingBoard mb = new ManagingBoard();
+                            mb.setMbid(resultset.getString("MBID"));
+                            mb.setMbname(resultset.getString("MBNAME"));
+                            mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                            ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                            if (creator.isSuccess()) {
+                                if (!creator.getResult().isEmpty()) {
+                                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                                    mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                                } else {
+                                    mb.setCreatedby(creator.getMessage());
+                                }
                             } else {
-                                mb.setCreatedby(creator.getMessage());
+                                mb.setCreatedby("DATA NOT FOUND");
                             }
-                        } else {
-                            mb.setCreatedby("DATA NOT FOUND");
+                            mb.setStatus(resultset.getString("STATUS"));
+                            mblist.add(mb);
+                            //------------------------------------------------------
                         }
-                        mb.setStatus(resultset.getString("STATUS"));
-                        mblist.add(mb);
-                        //------------------------------------------------------
                     }
+
                 }
                 if (mblist.size() > 0) {
                     result.setMessage("OK");
@@ -1266,6 +1269,7 @@ public class Methods {
 
                 //----------------------------------------------------------
             }
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1444,11 +1448,11 @@ public class Methods {
             statement.setString("pid", puserid);
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            if(resultset.next()) {
+            if (resultset.next()) {
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(resultset.getString("USERID"));
-                
+
             } else {
                 result.setMessage("NO DATA FOUND");
             }
