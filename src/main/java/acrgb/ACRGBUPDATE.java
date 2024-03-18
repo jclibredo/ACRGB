@@ -10,8 +10,6 @@ import acrgb.method.Methods;
 import acrgb.method.UpdateMethods;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Archived;
-import acrgb.structure.Area;
-import acrgb.structure.AreaType;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.HealthCareFacility;
@@ -53,37 +51,11 @@ public class ACRGBUPDATE {
     /**
      * Retrieves representation of an instance of acrgb.ACRGB
      *
-     * @param area
+     * @param assets
      * @return an instance of java.lang.String
      * @throws java.sql.SQLException
      */
-    @PUT
-    @Path("UPDATEAREA")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEAREA(final Area area) throws SQLException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = updatemethods.UPDATEAREA(dataSource, area);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
-
-    @PUT
-    @Path("UPDATEAREATYPE")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEAREATYPE(final AreaType areatype) throws SQLException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = updatemethods.UPDATEAREATYPE(dataSource, areatype);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
+   
 
     @PUT
     @Path("UPDATEASSETS")

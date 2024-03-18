@@ -18,10 +18,8 @@ public class UserInfo {
     private String lastname;
     private String middlename;
     private String datecreated;
-    private String hcfid;
     private String createdby;
     private String stats;
-    private String proid;
 }
 
 

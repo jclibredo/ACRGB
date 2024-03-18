@@ -47,48 +47,7 @@ public class ACRGBFETCH {
     private final FetchMethods fetchmethods = new FetchMethods();
     private final Methods methods = new Methods();
 
-    //GET ACCOUNT PAYABLE
-    @GET
-    @Path("GetArea/{tags}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetArea(@PathParam("tags") String tags) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        if (tags.isEmpty()) {
-            result.setMessage("PATH PARAMETER IS EMPTY");
-            result.setSuccess(false);
-        } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_AREA(dataSource, tags);
-            result.setMessage(getResult.getMessage());
-            result.setResult(getResult.getResult());
-            result.setSuccess(getResult.isSuccess());
-        }
-        return result;
-    }
-
-    //GET ASSETS TABLE
-    @GET
-    @Path("GetAreaType/{tags}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetAreaType(@PathParam("tags") String tags) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        if (tags.isEmpty()) {
-            result.setMessage("PATH PARAMETER IS EMPTY");
-            result.setSuccess(false);
-        } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_AREA_TYPE(dataSource, tags);
-            result.setMessage(getResult.getMessage());
-            result.setResult(getResult.getResult());
-            result.setSuccess(getResult.isSuccess());
-        }
-        return result;
-    }
-
+   
     //GET ASSETS TYPE TBL
     @GET
     @Path("GetAssets/{tags}")

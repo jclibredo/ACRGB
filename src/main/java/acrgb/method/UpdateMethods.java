@@ -6,8 +6,6 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
-import acrgb.structure.Area;
-import acrgb.structure.AreaType;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.HealthCareFacility;
@@ -42,84 +40,7 @@ public class UpdateMethods {
 
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
-
-    //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult UPDATEAREA(final DataSource datasource, final Area area) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = datasource.getConnection()) {
-            ACRGBWSResult arearesult = fm.ACR_AREA(datasource, "active");
-            if (!arearesult.isSuccess()) {
-                result.setMessage(arearesult.getMessage());
-                result.setSuccess(false);
-            } else if (area.getAreaname().isEmpty() || area.getTypeid().isEmpty()) {
-                result.setMessage("SOME REQUIRED FIELDS IS EMPTY");
-                result.setSuccess(false);
-            } else if (!utility.IsValidNumber(area.getTypeid()) || !utility.IsValidNumber(area.getAreaid())) {
-                result.setMessage("NUMBER FORMAT IS NOT VALID");
-                result.setSuccess(false);
-            } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEAREA(:Message,:Code,:p_areid,:p_areaname,:p_typeid)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("p_areid", area.getAreaid());
-                getinsertresult.setString("p_areaname", area.getAreaname().toUpperCase());
-                getinsertresult.setString("p_typeid", area.getTypeid());
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setSuccess(true);
-                    result.setMessage("OK");
-                } else {
-                    result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(false);
-                }
-                result.setResult(utility.ObjectMapper().writeValueAsString(area));
-            }
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
-    //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult UPDATEAREATYPE(final DataSource datasource, final AreaType areatype) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = datasource.getConnection()) {
-            if (areatype.getTypename().isEmpty() || areatype.getTypeid().isEmpty()) {
-                result.setMessage("SOME REQUIRED FIELDS IS EMPTY");
-                result.setSuccess(false);
-            } else if (!utility.IsValidNumber(areatype.getTypeid())) {
-                result.setMessage("NUMBER FORMAT IS NOT VALID");
-                result.setSuccess(false);
-            } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEAREATYPE(:Message,:Code,:p_typeid,:p_typename)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("p_typeid", areatype.getTypeid());
-                getinsertresult.setString("p_typename", areatype.getTypename().toUpperCase());
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setSuccess(true);
-                    result.setMessage("OK");
-                } else {
-                    result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(false);
-                }
-                result.setResult(utility.ObjectMapper().writeValueAsString(areatype));
-            }
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+   
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEASSETS(final DataSource datasource, Assets assets) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -315,7 +236,7 @@ public class UpdateMethods {
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
 
-            if (!utility.IsValidNumber(hcf.getAreaid()) || !utility.IsValidNumber(hcf.getHcfid())) {
+            if (!utility.IsValidNumber(hcf.getHcfid())) {
                 result.setSuccess(false);
                 result.setMessage("NUMBER FORMAT IS NOT VALID");
             } else {
@@ -332,23 +253,7 @@ public class UpdateMethods {
                     }
                 }
 
-                ACRGBWSResult arearesult = fm.ACR_AREA(datasource, "active");
-                int countresult = 0;
-                if (arearesult.isSuccess()) {
-                    if (!arearesult.getResult().isEmpty()) {
-                        List<Area> arealist = Arrays.asList(utility.ObjectMapper().readValue(arearesult.getResult(), Area[].class));
-                        for (int x = 0; x < arealist.size(); x++) {
-                            if (arealist.get(x).getAreaid().equals(hcf.getAreaid())) {
-                                countresult++;
-                            }
-                        }
-                    }
-                }
-
-                if (countresult == 0) {
-                    result.setSuccess(false);
-                    result.setMessage("AREA ID NOT FOUND");
-                } else if (hcf.getHcfname().isEmpty() || hcf.getHcfaddress().isEmpty() || hcf.getHcfcode().isEmpty() || hcf.getHcfid().isEmpty() || hcf.getAreaid().isEmpty()) {
+                if (hcf.getHcfname().isEmpty() || hcf.getHcfaddress().isEmpty() || hcf.getHcfcode().isEmpty() || hcf.getHcfid().isEmpty() || hcf.getType().isEmpty()) {
                     result.setSuccess(false);
                     result.setMessage("SOME REQUIRED FIELD IS EMPTY");
                 } else if (counthcf > 0) {
@@ -363,7 +268,7 @@ public class UpdateMethods {
                     getinsertresult.setString("p_hcfname", hcf.getHcfname().toUpperCase());
                     getinsertresult.setString("p_hcfaddress", hcf.getHcfaddress().toUpperCase());
                     getinsertresult.setString("p_hcfcode", hcf.getHcfcode());
-                    getinsertresult.setString("p_areaid", hcf.getAreaid());
+                    getinsertresult.setString("p_type", hcf.getType());
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
                         result.setSuccess(true);
@@ -374,7 +279,6 @@ public class UpdateMethods {
                     }
                     result.setResult(utility.ObjectMapper().writeValueAsString(hcf));
                 }
-
             }
 
         } catch (SQLException | IOException ex) {
@@ -495,7 +399,6 @@ public class UpdateMethods {
         return result;
     }
 
-    
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEMB(final DataSource datasource, ManagingBoard managingboard) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -529,5 +432,5 @@ public class UpdateMethods {
         }
         return result;
     }
-    
+
 }

@@ -6,8 +6,6 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
-import acrgb.structure.Area;
-import acrgb.structure.AreaType;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.HealthCareFacility;
@@ -44,104 +42,10 @@ public class InsertMethods {
 
     public InsertMethods() {
     }
-
     private final Utility utility = new Utility();
     private final Cryptor cryptor = new Cryptor();
     private final Methods methods = new Methods();
     private final FetchMethods fm = new FetchMethods();
-
-    //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult INSERTAREA(final DataSource datasource, final Area area) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = datasource.getConnection()) {
-            ACRGBWSResult arearesult = fm.ACR_AREA(datasource, "active");
-            if (!arearesult.isSuccess()) {
-                result.setMessage(arearesult.getMessage());
-                result.setSuccess(false);
-            } else if (area.getAreaname().isEmpty() || area.getTypeid().isEmpty() || area.getCreatedby().isEmpty() || area.getDatecreated().isEmpty()) {
-                result.setMessage("SOME REQUIRED FIELDS IS EMPTY");
-                result.setSuccess(false);
-            } else if (!utility.IsValidNumber(area.getCreatedby()) || !utility.IsValidNumber(area.getTypeid())) {
-                result.setMessage("NUMBER FORMAT IS NOT VALID");
-                result.setSuccess(false);
-            } else if (!utility.IsValidDate(area.getDatecreated())) {
-                result.setMessage("DATE FORMAT IS NOT VALID");
-                result.setSuccess(false);
-            } else {
-                
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTAREA(:Message,:Code,:p_areaname,:p_typeid,:p_createdby,:p_datecreated)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                
-                getinsertresult.setString("p_areaname", area.getAreaname().toUpperCase());
-                getinsertresult.setString("p_typeid", area.getTypeid());
-                getinsertresult.setString("p_createdby", area.getCreatedby());
-                getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(area.getDatecreated()).getTime()));//area.getDatecreated());
-                getinsertresult.execute();
-                
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setSuccess(true);
-                    result.setMessage("OK");
-                } else {
-                    result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(false);
-                }
-                result.setResult(utility.ObjectMapper().writeValueAsString(area));
-                
-                
-                
-            }
-        } catch (SQLException | IOException | ParseException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
-    //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult INSERTAREATYPE(final DataSource datasource, final AreaType areatype) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = datasource.getConnection()) {
-            if (!utility.IsValidDate(areatype.getDatecreated())) {
-                result.setSuccess(false);
-                result.setMessage("DATE FORMAT IS NOT VALID");
-            } else if (areatype.getTypename().isEmpty() || areatype.getCreatedby().isEmpty() || areatype.getDatecreated().isEmpty()) {
-                result.setMessage("SOME REQUIRED FIELDS IS EMPTY");
-                result.setSuccess(false);
-            } else if (!utility.IsValidNumber(areatype.getCreatedby())) {
-                result.setMessage("NUMBER FORMAT IS NOT VALID");
-                result.setSuccess(false);
-            } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTAREATYPE(:Message,:Code,:p_typename,"
-                        + ":p_createdby,:p_datecreated)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("p_typename", areatype.getTypename().toUpperCase());
-                getinsertresult.setString("p_createdby", areatype.getCreatedby());
-                getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(areatype.getDatecreated()).getTime())); //areatype.getDatecreated());
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setSuccess(true);
-                    result.setMessage("OK");
-                } else {
-                    result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(false);
-                }
-                result.setResult(utility.ObjectMapper().writeValueAsString(areatype));
-            }
-        } catch (SQLException | IOException | ParseException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult INSERTASSETS(final DataSource datasource, Assets assets) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -285,46 +189,46 @@ public class InsertMethods {
                 result.setMessage("NUMBER FORMAT IS NOT VALID");
                 result.setSuccess(false);
             } else {
-                ACRGBWSResult hcfresult = fm.ACR_HCF(datasource, "active");
-                int countresult = 0;
-                if (hcfresult.isSuccess()) {
-                    if (!hcfresult.getResult().isEmpty()) {
-                        List<HealthCareFacility> hcflist = Arrays.asList(utility.ObjectMapper().readValue(hcfresult.getResult(), HealthCareFacility[].class));
-                        for (int x = 0; x < hcflist.size(); x++) {
-                            if (hcflist.get(x).getHcfid().equals(contract.getHcfid())) {
-                                countresult++;
-                            }
-                        }
-                    }
-                }
-                if (countresult < 1) {
-                    result.setMessage("FACILITY DATA NOT FOUND");
+//                ACRGBWSResult hcfresult = fm.ACR_HCF(datasource, "active");
+//                int countresult = 0;
+//                if (hcfresult.isSuccess()) {
+//                    if (!hcfresult.getResult().isEmpty()) {
+//                        List<HealthCareFacility> hcflist = Arrays.asList(utility.ObjectMapper().readValue(hcfresult.getResult(), HealthCareFacility[].class));
+//                        for (int x = 0; x < hcflist.size(); x++) {
+//                            if (hcflist.get(x).getHcfid().equals(contract.getHcfid())) {
+//                                countresult++;
+//                            }
+//                        }
+//                    }
+//                }
+//                if (countresult < 1) {
+//                    result.setMessage("FACILITY DATA NOT FOUND");
+//                    result.setSuccess(false);
+//                } else {
+                if (!utility.IsValidDate(contract.getDatecreated()) || !utility.IsValidDate(contract.getDatefrom()) || !utility.IsValidDate(contract.getDateto())) {
                     result.setSuccess(false);
+                    result.setMessage("DATE FORMAT IS NOT VALID");
                 } else {
-                    if (!utility.IsValidDate(contract.getDatecreated()) || !utility.IsValidDate(contract.getDatefrom()) || !utility.IsValidDate(contract.getDateto())) {
-                        result.setSuccess(false);
-                        result.setMessage("DATE FORMAT IS NOT VALID");
+                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONTRACT(:Message,:Code,:p_hcfid,:p_amount"
+                            + ",:p_createdby,:p_datecreated,:p_datefrom,:p_dateto)");
+                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                    getinsertresult.setString("p_hcfid", contract.getHcfid());
+                    getinsertresult.setString("p_amount", contract.getAmount());
+                    getinsertresult.setString("p_createdby", contract.getCreatedby());
+                    getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(contract.getDatecreated()).getTime()));//contract.getDatecreated());
+                    getinsertresult.setDate("p_datefrom", (Date) new Date(utility.StringToDate(contract.getDatefrom()).getTime()));
+                    getinsertresult.setDate("p_dateto", (Date) new Date(utility.StringToDate(contract.getDateto()).getTime()));
+                    getinsertresult.execute();
+                    if (getinsertresult.getString("Message").equals("SUCC")) {
+                        result.setSuccess(true);
+                        result.setMessage("OK");
                     } else {
-                        CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONTRACT(:Message,:Code,:p_hcfid,:p_amount"
-                                + ",:p_createdby,:p_datecreated,:p_datefrom,:p_dateto)");
-                        getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                        getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                        getinsertresult.setString("p_hcfid", contract.getHcfid());
-                        getinsertresult.setString("p_amount", contract.getAmount());
-                        getinsertresult.setString("p_createdby", contract.getCreatedby());
-                        getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(contract.getDatecreated()).getTime()));//contract.getDatecreated());
-                        getinsertresult.setDate("p_datefrom", (Date) new Date(utility.StringToDate(contract.getDatefrom()).getTime()));
-                        getinsertresult.setDate("p_dateto", (Date) new Date(utility.StringToDate(contract.getDateto()).getTime()));
-                        getinsertresult.execute();
-                        if (getinsertresult.getString("Message").equals("SUCC")) {
-                            result.setSuccess(true);
-                            result.setMessage("OK");
-                        } else {
-                            result.setMessage(getinsertresult.getString("Message"));
-                            result.setSuccess(false);
-                        }
-                        result.setResult(utility.ObjectMapper().writeValueAsString(contract));
+                        result.setMessage(getinsertresult.getString("Message"));
+                        result.setSuccess(false);
                     }
+                    result.setResult(utility.ObjectMapper().writeValueAsString(contract));
+//                    }
                 }
             }
         } catch (SQLException | IOException | ParseException ex) {
@@ -355,25 +259,9 @@ public class InsertMethods {
                 }
             }
 
-            ACRGBWSResult arearesult = fm.ACR_AREA(datasource, "active");
-            int countresult = 0;
-            if (arearesult.isSuccess()) {
-                if (!arearesult.getResult().isEmpty()) {
-                    List<Area> arealist = Arrays.asList(utility.ObjectMapper().readValue(arearesult.getResult(), Area[].class));
-                    for (int x = 0; x < arealist.size(); x++) {
-                        if (arealist.get(x).getAreaid().equals(hcf.getAreaid())) {
-                            countresult++;
-                        }
-                    }
-                }
-            }
-
             if (!utility.IsValidDate(hcf.getDatecreated())) {
                 result.setSuccess(false);
                 result.setMessage("DATE FORMAT IS NOT VALID");
-            } else if (countresult == 0) {
-                result.setSuccess(false);
-                result.setMessage("AREA ID NOT FOUND");
             } else if (hcf.getHcfname().isEmpty() || hcf.getHcfaddress().isEmpty() || hcf.getHcfcode().isEmpty() || hcf.getDatecreated().isEmpty()) {
                 result.setSuccess(false);
                 result.setMessage("SOME REQUIRED FIELD IS EMPTY");
@@ -381,15 +269,16 @@ public class InsertMethods {
                 result.setSuccess(false);
                 result.setMessage("HCF NAME IS ALREADY EXIST");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTHCF(:Message,:Code,:p_hcfname,:p_hcfaddress,:p_hcfcode,:p_createdby,:"
-                        + "p_areaid,:p_datecreated,:p_proid)");
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTHCF(:Message,:Code,"
+                        + ":p_hcfname,:p_hcfaddress,:p_hcfcode,:p_createdby,:"
+                        + "p_type,:p_datecreated,:p_proid)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("p_hcfname", hcf.getHcfname().toUpperCase());
                 getinsertresult.setString("p_hcfaddress", hcf.getHcfaddress().toUpperCase());
                 getinsertresult.setString("p_hcfcode", hcf.getHcfcode());
                 getinsertresult.setString("p_createdby", hcf.getCreatedby());
-                getinsertresult.setString("p_areaid", hcf.getAreaid());
+                getinsertresult.setString("p_type", hcf.getType());
                 getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(hcf.getDatecreated()).getTime())); //hcf.getDatecreated());
                 getinsertresult.setString("p_proid", hcf.getProid());
                 getinsertresult.execute();
@@ -497,72 +386,29 @@ public class InsertMethods {
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
             if (userinfo.getFirstname() != null && userinfo.getLastname() != null) {
-                ACRGBWSResult hcflist = fm.ACR_HCF(datasource, "active");
-                int hcfresult = 0;
-
-                if (hcflist.isSuccess()) {
-                    if (!hcflist.getResult().isEmpty()) {
-                        List<HealthCareFacility> hcflistresult = Arrays.asList(utility.ObjectMapper().readValue(hcflist.getResult(), HealthCareFacility[].class));
-                        for (int x = 0; x < hcflistresult.size(); x++) {
-                            if (hcflistresult.get(x).getHcfid().equals(userinfo.getHcfid())) {
-                                hcfresult++;
-                            }
-                        }
-                    }
-                }
-
                 if (!utility.IsValidDate(userinfo.getDatecreated())) {
                     result.setSuccess(false);
                     result.setMessage("DATE FORMAT IS NOT VALID");
                 } else {
-                    if (userinfo.getHcfid().isEmpty()) {
-                        CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSERDETAILS(:Message,:Code,"
-                                + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_areaid,:p_createdby,:p_hcfid,:p_proid)");
-                        getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                        getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                        getinsertresult.setString("p_firstname", userinfo.getFirstname().toUpperCase());
-                        getinsertresult.setString("p_lastname", userinfo.getLastname().toUpperCase());
-                        getinsertresult.setString("p_middlename", userinfo.getMiddlename().toUpperCase());
-                        getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(userinfo.getDatecreated()).getTime()));//userinfo.getDatecreated());
-                        getinsertresult.setString("p_createdby", userinfo.getCreatedby());
-                        getinsertresult.setString("p_hcfid", userinfo.getHcfid());
-                        getinsertresult.setString("p_proid", userinfo.getProid());
-                        getinsertresult.execute();
-                        if (getinsertresult.getString("Message").equals("SUCC")) {
-                            result.setSuccess(true);
-                            result.setMessage("OK");
-                        } else {
-                            result.setMessage(getinsertresult.getString("Message"));
-                            result.setSuccess(false);
-                        }
-                        result.setResult(utility.ObjectMapper().writeValueAsString(userinfo));
+                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSERDETAILS(:Message,:Code,"
+                            + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_createdby,)");
+                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                    getinsertresult.setString("p_firstname", userinfo.getFirstname().toUpperCase());
+                    getinsertresult.setString("p_lastname", userinfo.getLastname().toUpperCase());
+                    getinsertresult.setString("p_middlename", userinfo.getMiddlename().toUpperCase());
+                    getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(userinfo.getDatecreated()).getTime()));//userinfo.getDatecreated());
+                    getinsertresult.setString("p_createdby", userinfo.getCreatedby());
+                    getinsertresult.execute();
+                    if (getinsertresult.getString("Message").equals("SUCC")) {
+                        result.setSuccess(true);
+                        result.setMessage("OK");
                     } else {
-                        if (hcfresult == 0) {
-                            result.setSuccess(false);
-                            result.setMessage("HCF ID IS NOT VALID");
-                        } else {
-                            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSERDETAILS(:Message,:Code,"
-                                    + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_areaid,:p_createdby,:p_hcfid)");
-                            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                            getinsertresult.setString("p_firstname", userinfo.getFirstname().toUpperCase());
-                            getinsertresult.setString("p_lastname", userinfo.getLastname().toUpperCase());
-                            getinsertresult.setString("p_middlename", userinfo.getMiddlename().toUpperCase());
-                            getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(userinfo.getDatecreated()).getTime()));//userinfo.getDatecreated());
-                            getinsertresult.setString("p_createdby", userinfo.getCreatedby());
-                            getinsertresult.setString("p_hcfid", userinfo.getHcfid());
-                            getinsertresult.setString("p_proid", userinfo.getProid());
-                            getinsertresult.execute();
-                            if (getinsertresult.getString("Message").equals("SUCC")) {
-                                result.setSuccess(true);
-                                result.setMessage("OK");
-                            } else {
-                                result.setMessage(getinsertresult.getString("Message"));
-                                result.setSuccess(false);
-                            }
-                            result.setResult(utility.ObjectMapper().writeValueAsString(userinfo));
-                        }
+                        result.setMessage(getinsertresult.getString("Message"));
+                        result.setSuccess(false);
                     }
+                    result.setResult(utility.ObjectMapper().writeValueAsString(userinfo));
+
                 }
             } else {
                 result.setMessage("SOME REQUIRED FIELD IS EMPTY");

@@ -19,7 +19,7 @@ public class HealthCareFacility {
     private String hcfaddress;
     private String hcfcode;
     private String createdby;
-    private String areaid;
+    private String type;
     private String datecreated;
     private String proid;
     private String mb;

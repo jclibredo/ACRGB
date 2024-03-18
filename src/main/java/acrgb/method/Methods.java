@@ -200,7 +200,6 @@ public class Methods {
             getinsertresult.setString("p_lastname", userinfo.getLastname().toUpperCase());
             getinsertresult.setString("p_middlename", userinfo.getMiddlename().toUpperCase());
             getinsertresult.setString("p_did", userinfo.getDid());
-            getinsertresult.setString("p_hcfid", userinfo.getHcfid());
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setSuccess(true);
@@ -769,7 +768,7 @@ public class Methods {
                         hcf.setCreatedby("DATA NOT FOUND");
                     }
                     //END OF GET DATE CREATOR
-                    hcf.setAreaid(resultset.getString("AREAID"));
+                    hcf.setType(resultset.getString("HCFTYPE"));
                     hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                     // GET BADGET 
                     //FacilityComputedAmount
@@ -878,7 +877,7 @@ public class Methods {
                         hcf.setCreatedby("DATA NOT FOUND");
                     }
                     //END OF GET DATE CREATOR
-                    hcf.setAreaid(resultset.getString("AREAID"));
+                    hcf.setType(resultset.getString("HCFTYPE"));
                     hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                     // GET BADGET 
                     //FacilityComputedAmount
@@ -1027,7 +1026,7 @@ public class Methods {
                                         HealthCareFacility facility = utility.ObjectMapper().readValue(getfacility.getResult(), HealthCareFacility.class);
                                         HealthCareFacility newfacility = new HealthCareFacility();
                                         newfacility.setAmount(facility.getAmount());
-                                        newfacility.setAreaid(facility.getAreaid());
+                                        newfacility.setType(facility.getType());
                                         newfacility.setCreatedby(facility.getCreatedby());
                                         newfacility.setDatecreated(facility.getDatecreated());
                                         newfacility.setHcfaddress(facility.getHcfaddress());
@@ -1035,7 +1034,6 @@ public class Methods {
                                         newfacility.setHcfid(facility.getHcfid());
                                         newfacility.setHcfname(facility.getHcfname());
                                         newfacility.setMb(utility.ObjectMapper().writeValueAsString(managingboard));
-                                        newfacility.setProid(facility.getProid());
                                         facilitylist.add(newfacility);
                                     }
                                 }
@@ -1055,6 +1053,7 @@ public class Methods {
                         result.setMessage("NO DATA FOUND");
                     }
                 } else {
+                  
                     result.setMessage("NO DATA FOUND");
                 }
             }
@@ -1317,7 +1316,7 @@ public class Methods {
                         } else {
                             hcf.setCreatedby("DATA NOT FOUND");
                         }
-                        hcf.setAreaid(resultset.getString("AREAID"));
+                        hcf.setType(resultset.getString("HCFTYPE"));
                         hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
                         hcf.setProid(resultset.getString("PROID"));
                         fchlist.add(hcf);

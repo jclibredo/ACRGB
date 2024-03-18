@@ -6,8 +6,6 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
-import acrgb.structure.Area;
-import acrgb.structure.AreaType;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.HealthCareFacility;
@@ -30,8 +28,6 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.context.RequestScoped;
@@ -70,9 +66,8 @@ public class FetchMethods {
                 hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
                 hcf.setHcfcode(resultset.getString("HCFCODE"));
                 hcf.setCreatedby(resultset.getString("CREATEDBY"));
-                hcf.setAreaid(resultset.getString("AREAID"));
+                hcf.setType(resultset.getString("HCFTYPE"));
                 hcf.setDatecreated(resultset.getString("DATECREATED"));
-                hcf.setProid(resultset.getString("PROID"));
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(hcf));
@@ -117,7 +112,7 @@ public class FetchMethods {
                 } else {
                     hcf.setCreatedby("DATA NOT FOUND");
                 }
-                hcf.setAreaid(resultset.getString("AREAID"));
+                hcf.setType(resultset.getString("HCFTYPE"));
                 hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
                 //-------------------------------------------------
                 ACRGBWSResult methodsresult = methods.GETROLEREVERESE(dataSource, resultset.getString("HCFID"));
@@ -182,8 +177,6 @@ public class FetchMethods {
                 userinfo.setFirstname(resultset.getString("FIRSTNAME"));
                 userinfo.setLastname(resultset.getString("LASTNAME"));
                 userinfo.setMiddlename(resultset.getString("MIDDLENAME"));
-                userinfo.setHcfid(resultset.getString("HCFID"));
-                userinfo.setProid(resultset.getString("PROID"));
                 userinfo.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 result.setMessage("OK");
                 //result.setMessage(utility.ObjectMapper().writeValueAsString(user));
@@ -199,51 +192,7 @@ public class FetchMethods {
         return result;
     }
 
-    //ACR AREA METHODS
-    public ACRGBWSResult ACR_AREA(final DataSource dataSource, final String tags) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_AREA(:tags); end;");
-            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
-            statement.execute();
-            ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            ArrayList<Area> arealist = new ArrayList<>();
-            while (resultset.next()) {
-                Area area = new Area();
-                area.setAreaid(resultset.getString("AREAID"));
-                area.setAreaname(resultset.getString("AREANAME"));
-                area.setTypeid(resultset.getString("TYPEID"));
-                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
-                        area.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    } else {
-                        area.setCreatedby(creator.getMessage());
-                    }
-                } else {
-                    area.setCreatedby("DATA NOT FOUND");
-                }
-                area.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                arealist.add(area);
-            }
-            if (!arealist.isEmpty()) {
-                result.setMessage("OK");
-                result.setResult(utility.ObjectMapper().writeValueAsString(arealist));
-            } else {
-                result.setMessage("NO DATA FOUND");
-            }
-            result.setSuccess(true);
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
+    
 //USER ROLE INDEX
 
     public ACRGBWSResult GETUSERROLEINDEX(final DataSource dataSource, final String puserid) {
@@ -281,51 +230,6 @@ public class FetchMethods {
             if (!userolelist.isEmpty()) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(userolelist));
-            } else {
-                result.setMessage("NO DATA FOUND");
-            }
-            result.setSuccess(true);
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
-// ACR AREA TYPE
-    public ACRGBWSResult ACR_AREA_TYPE(final DataSource dataSource, final String tags) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :assets := ACR_GB.ACRGBPKGFUNCTION.ACR_AREA_TYPE(:tags); end;");
-            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
-            statement.execute();
-            ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            ArrayList<AreaType> listareatype = new ArrayList<>();
-            while (resultset.next()) {
-                AreaType areatype = new AreaType();
-                areatype.setTypeid(resultset.getString("TYPEID"));
-                areatype.setTypename(resultset.getString("TYPENAME"));
-                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
-                        areatype.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    } else {
-                        areatype.setCreatedby(creator.getMessage());
-                    }
-                } else {
-                    areatype.setCreatedby("DATA NOT FOUND");
-                }
-                areatype.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
-                listareatype.add(areatype);
-            }
-            if (!listareatype.isEmpty()) {
-                result.setMessage("OK");
-                result.setResult(utility.ObjectMapper().writeValueAsString(listareatype));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
@@ -395,57 +299,75 @@ public class FetchMethods {
         Methods methods = new Methods();
         try (Connection connection = dataSource.getConnection()) {
             ArrayList<Contract> contractlist = new ArrayList<>();
-            ACRGBWSResult restA = methods.GETROLE(dataSource, userid);
-            if (restA.isSuccess()) {
-                ArrayList<String> accessidlist = new ArrayList<>();
-                ACRGBWSResult restB = methods.GETROLEMULITPLE(dataSource, restA.getResult());
-                List<String> restist = Arrays.asList(restB.getResult().split(","));
-                for (int y = 0; y < restist.size(); y++) {
-                    accessidlist.add(restist.get(y));
-                }
-                if (restB.isSuccess()) {
-                    for (int x = 0; x < accessidlist.size(); x++) {
-                        //--------------------------------------------------------
-                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
-                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                        statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
-                        statement.setString("pfchid", accessidlist.get(x));
-                        statement.execute();
-                        ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                        while (resultset.next()) {
-                            Contract contract = new Contract();
-                            contract.setConid(resultset.getString("CONID"));
-                            ACRGBWSResult facility = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
-                            if (facility.isSuccess()) {
-                                contract.setHcfid(facility.getResult());
-                            } else {
-                                contract.setHcfid("NOT DATA FOUND");
-                            }
-                            contract.setAmount(resultset.getString("AMOUNT"));
-                            contract.setStats(resultset.getString("STATS"));
-                            ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                            if (creator.isSuccess()) {
-                                if (!creator.getResult().isEmpty()) {
-                                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
-                                    contract.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                                } else {
-                                    contract.setCreatedby(creator.getMessage());
-                                }
-                            } else {
-                                contract.setCreatedby("DATA NOT FOUND");
-                            }
-                            contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                            contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
-                            contract.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
-                            contractlist.add(contract);
-                        }
+//            ACRGBWSResult restA = methods.GETROLE(dataSource, userid);
+//            if (restA.isSuccess()) {
+//            ArrayList<String> accessidlist = new ArrayList<>();
+//                ACRGBWSResult restB = methods.GETROLEMULITPLE(dataSource, restA.getResult());
+//                List<String> restist = Arrays.asList(restB.getResult().split(","));
+//                for (int y = 0; y < restist.size(); y++) {
+//                    accessidlist.add(restist.get(y));
+//                }
+//                if (restB.isSuccess()) {
+//                    //GETTING LIST OF CONTRACT
+//                    for (int x = 0; x < accessidlist.size(); x++) {
+            //--------------------------------------------------------
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
+            statement.setString("pfchid", userid);
+            // statement.setString("pfchid", accessidlist.get(x));
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                Contract contract = new Contract();
+                contract.setConid(resultset.getString("CONID"));
+                //GET NETWORK FULL DETAILS
 
+                ACRGBWSResult mgresult = methods.GETMBWITHID(dataSource, resultset.getString("HCFID"));
+                if (mgresult.isSuccess()) {
+                    if (!mgresult.getResult().isEmpty()) {
+                        ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
+                        contract.setHcfid(mb.getMbname());
+                    } else {
+                        contract.setHcfid(mgresult.getMessage());
                     }
+
+                } else {
+                    contract.setHcfid(mgresult.getMessage());
                 }
 
+//                ACRGBWSResult facility = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
+//                if (facility.isSuccess()) {
+//                    contract.setHcfid(facility.getResult());
+//                } else {
+//                    contract.setHcfid("NOT DATA FOUND");
+//                }
+                //END OF GET NETWORK FULL DETAILS
+                contract.setAmount(resultset.getString("AMOUNT"));
+                contract.setStats(resultset.getString("STATS"));
+                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    if (!creator.getResult().isEmpty()) {
+                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                        contract.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                    } else {
+                        contract.setCreatedby(creator.getMessage());
+                    }
+                } else {
+                    contract.setCreatedby("DATA NOT FOUND");
+                }
+                contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
+                contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
+                contract.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
+                contractlist.add(contract);
             }
-            //---------------------------------------------------------------
 
+//                    }
+            //END OF GETTING LIST OF CONTRACT
+//                }
+//
+//            }
+            //---------------------------------------------------------------
             if (!contractlist.isEmpty()) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
@@ -455,8 +377,6 @@ public class FetchMethods {
             result.setSuccess(true);
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -546,8 +466,7 @@ public class FetchMethods {
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<HealthCareFacility> listHCF = new ArrayList<>();
             while (resultset.next()) {
-                
-                
+
                 HealthCareFacility hcf = new HealthCareFacility();
                 hcf.setHcfid(resultset.getString("HCFID"));
                 hcf.setHcfname(resultset.getString("HCFNAME"));
@@ -566,14 +485,10 @@ public class FetchMethods {
                 } else {
                     hcf.setCreatedby("DATA NOT FOUND");
                 }
-                hcf.setAreaid(resultset.getString("AREAID"));
+                hcf.setType(resultset.getString("HCFTYPE"));
                 hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                hcf.setProid(resultset.getString("PROID"));
                 listHCF.add(hcf);
-                
-                
-                
-                
+
             }
             if (listHCF.size() < 1) {
                 result.setMessage("NO DATA FOUND");
@@ -677,8 +592,6 @@ public class FetchMethods {
                     userinfo.setCreatedby("DATA NOT FOUND");
                 }
                 userinfo.setStats(resultset.getString("STATS"));
-                userinfo.setHcfid(resultset.getString("HCFID"));
-                userinfo.setProid(resultset.getString("PROID"));
                 listuserinfo.add(userinfo);
             }
             if (!listuserinfo.isEmpty()) {

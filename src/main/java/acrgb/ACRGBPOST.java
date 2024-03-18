@@ -8,8 +8,6 @@ package acrgb;
 import acrgb.method.InsertMethods;
 import acrgb.method.Methods;
 import acrgb.structure.ACRGBWSResult;
-import acrgb.structure.Area;
-import acrgb.structure.AreaType;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.HealthCareFacility;
@@ -57,54 +55,10 @@ public class ACRGBPOST {
     /**
      * Retrieves representation of an instance of acrgb.ACRGB
      *
-     * @param area
+     * @param assets
      * @return an instance of java.lang.String
      * @throws java.sql.SQLException
      */
-    //INSERT USER
-    @POST
-    @Path("INSERTAREA")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTAREA(final Area area) throws SQLException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = insertmethods.INSERTAREA(dataSource, area);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
-
-    //INSERT ACCOUNT PAYABLE
-    @POST
-    @Path("INSERTAREATYPE")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTAREATYPE(final AreaType areatype) throws SQLException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = insertmethods.INSERTAREATYPE(dataSource, areatype);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
-
-    //INSERT ACCOUNT PAYABLE
-//    @POST
-//    @Path("INSEROLEINDEX")
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public ACRGBWSResult INSEROLEINDEX(final UserRoleIndex userroleindex) throws SQLException, ParseException {
-//        //TODO return proper representation object
-//        ACRGBWSResult result = utility.ACRGBWSResult();
-//        ACRGBWSResult insertresult = insertmethods.INSEROLEINDEX(dataSource, userroleindex);
-//        result.setMessage(insertresult.getMessage());
-//        result.setSuccess(insertresult.isSuccess());
-//        result.setResult(insertresult.getResult());
-//        return result;
-//    }
 
     //INSERTASSETS
     @POST
