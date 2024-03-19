@@ -21,5 +21,6 @@ public class Contract {
     private String datecreated;
     private String datefrom;
     private String dateto;
+    private String transcode;
     
 }

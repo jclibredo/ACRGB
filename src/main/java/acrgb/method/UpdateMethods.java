@@ -40,7 +40,7 @@ public class UpdateMethods {
 
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
-   
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEASSETS(final DataSource datasource, Assets assets) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -83,7 +83,7 @@ public class UpdateMethods {
                 } else {
                     ACRGBWSResult conresult = fm.GETCONTRACTAMOUNT(datasource, assets.getHcfid());
                     if (conresult.isSuccess()) {
-                        ACRGBWSResult transresult = fm.ACR_ASSETS(datasource, "active");
+                        ACRGBWSResult transresult = fm.ACR_ASSETS(datasource, "active","0");
                         if (transresult.isSuccess()) {
                             ACRGBWSResult trans = fm.ACR_TRANCH(datasource, "active");
                             if (trans.isSuccess()) {
@@ -168,7 +168,6 @@ public class UpdateMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-
         try (Connection connection = datasource.getConnection()) {
             if (contract.getAmount().isEmpty()
                     || contract.getDatefrom().isEmpty()
@@ -180,46 +179,31 @@ public class UpdateMethods {
                 result.setMessage("NUMBER FORMAT IS NOT VALID");
                 result.setSuccess(false);
             } else {
-                ACRGBWSResult hcfresult = fm.ACR_HCF(datasource, "active");
-                int countresult = 0;
-                if (hcfresult.isSuccess()) {
-                    if (!hcfresult.getResult().isEmpty()) {
-                        List<HealthCareFacility> hcflist = Arrays.asList(utility.ObjectMapper().readValue(hcfresult.getResult(), HealthCareFacility[].class));
-                        for (int x = 0; x < hcflist.size(); x++) {
-                            if (hcflist.get(x).getHcfid().equals(contract.getHcfid())) {
-                                countresult++;
-                            }
-                        }
-                    }
-                }
-                if (countresult < 1) {
-                    result.setMessage("FACILITY DATA NOT FOUND");
+                if (!utility.IsValidDate(contract.getDatefrom()) || !utility.IsValidDate(contract.getDateto())) {
                     result.setSuccess(false);
+                    result.setMessage("DATE FORMAT IS NOT VALID");
                 } else {
-                    if (!utility.IsValidDate(contract.getDatefrom()) || !utility.IsValidDate(contract.getDateto())) {
-                        result.setSuccess(false);
-                        result.setMessage("DATE FORMAT IS NOT VALID");
+                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATECONTRACT(:Message,:Code,:p_conid,:p_hcfid,:p_amount"
+                            + ",:p_datefrom,:p_dateto,:p_transcode)");
+                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                    getinsertresult.setString("p_conid", contract.getConid());
+                    getinsertresult.setString("p_hcfid", contract.getHcfid());
+                    getinsertresult.setString("p_amount", contract.getAmount());
+                    getinsertresult.setDate("p_datefrom", (Date) new Date(utility.StringToDate(contract.getDatefrom()).getTime()));
+                    getinsertresult.setDate("p_dateto", (Date) new Date(utility.StringToDate(contract.getDateto()).getTime()));
+                    getinsertresult.setString("p_transcode", contract.getTranscode());
+                    getinsertresult.execute();
+                    if (getinsertresult.getString("Message").equals("SUCC")) {
+                        result.setSuccess(true);
+                        result.setMessage("OK");
                     } else {
-                        CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATECONTRACT(:Message,:Code,:p_conid,:p_hcfid,:p_amount"
-                                + ",:p_datefrom,:p_dateto)");
-                        getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                        getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                        getinsertresult.setString("p_conid", contract.getConid());
-                        getinsertresult.setString("p_hcfid", contract.getHcfid());
-                        getinsertresult.setString("p_amount", contract.getAmount());
-                        getinsertresult.setDate("p_datefrom", (Date) new Date(utility.StringToDate(contract.getDatefrom()).getTime()));
-                        getinsertresult.setDate("p_dateto", (Date) new Date(utility.StringToDate(contract.getDateto()).getTime()));
-                        getinsertresult.execute();
-                        if (getinsertresult.getString("Message").equals("SUCC")) {
-                            result.setSuccess(true);
-                            result.setMessage("OK");
-                        } else {
-                            result.setMessage(getinsertresult.getString("Message"));
-                            result.setSuccess(false);
-                        }
-                        result.setResult(utility.ObjectMapper().writeValueAsString(contract));
+                        result.setMessage(getinsertresult.getString("Message"));
+                        result.setSuccess(false);
                     }
+                    result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                 }
+
             }
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());

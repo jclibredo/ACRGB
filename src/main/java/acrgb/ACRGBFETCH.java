@@ -47,12 +47,13 @@ public class ACRGBFETCH {
     private final FetchMethods fetchmethods = new FetchMethods();
     private final Methods methods = new Methods();
 
-   
     //GET ASSETS TYPE TBL
     @GET
-    @Path("GetAssets/{tags}")
+    @Path("GetAssets/{tags}/{phcfid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetAssets(@PathParam("tags") String tags) {
+    public ACRGBWSResult GetAssets(
+            @PathParam("tags") String tags,
+            @PathParam("phcfid") String phcfid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -61,7 +62,7 @@ public class ACRGBFETCH {
             result.setMessage("PATH PARAMETER IS EMPTY");
             result.setSuccess(false);
         } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_ASSETS(dataSource, tags);
+            ACRGBWSResult getResult = fetchmethods.ACR_ASSETS(dataSource, tags,phcfid);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -75,22 +76,35 @@ public class ACRGBFETCH {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetContract(@PathParam("tags") String tags, @PathParam("puserid") String puserid, @PathParam("level") String level) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-
         result.setSuccess(false);
         if (tags.isEmpty()) {
             result.setMessage("PATH PARAMETER IS EMPTY");
             result.setSuccess(false);
         } else {
-            switch (level) {
-                case "PRO": {
-                    ACRGBWSResult getResult = fetchmethods.ACR_CONTRACTPROID(dataSource, tags, puserid);
+            switch (level.toUpperCase()) {
+                case "PRO": {//puserid = prouseraccount ID
+                    ACRGBWSResult getResult = fetchmethods.ACR_CONTRACTPROID(dataSource, tags, puserid);//GET CONTRACT USING USERID OF PRO USER ACCOUNT
                     result.setMessage(getResult.getMessage());
                     result.setResult(getResult.getResult());
                     result.setSuccess(getResult.isSuccess());
                     break;
                 }
-                case "MB": {
-                    ACRGBWSResult getResult = fetchmethods.ACR_CONTRACT(dataSource, tags, puserid);
+                case "MB": {//puserid = hcpnuseraccount ID
+                    ACRGBWSResult getResult = fetchmethods.GETCONTRACTUNDERMB(dataSource, tags, puserid);//GET CONTRACT USING USERID OF HCPN USER ACCOUNT
+                    result.setMessage(getResult.getMessage());
+                    result.setResult(getResult.getResult());
+                    result.setSuccess(getResult.isSuccess());
+                    break;
+                }
+                case "PHICAPEX": {//puserid = 0
+                    ACRGBWSResult getResult = fetchmethods.ACR_CONTRACT(dataSource, tags, puserid);//GET CONTRACT OF ALL APEX FACILITY
+                    result.setMessage(getResult.getMessage());
+                    result.setResult(getResult.getResult());
+                    result.setSuccess(getResult.isSuccess());
+                    break;
+                }
+                case "PHICHCPN": { //puserid = 0
+                    ACRGBWSResult getResult = fetchmethods.GETALLHCPNCONTRACT(dataSource, tags, puserid);//GET CONTRACT OF ALL APEX FACILITY
                     result.setMessage(getResult.getMessage());
                     result.setResult(getResult.getResult());
                     result.setSuccess(getResult.isSuccess());

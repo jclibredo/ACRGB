@@ -449,9 +449,11 @@ public class Methods {
                         } else {
                             summary.setTotalpercentage(String.valueOf(Math.round(sums)));
                         }
+
                     } else {
                         summary.setTotalpercentage(totalResult.getMessage());
                     }
+                    summary.setTotalclaims(nclaimsdata.getTotalclaims());
                     summary.setAccreno(u_accreno);
                     summary.setHcfid(resultset.getString("HCFID"));
                     summary.setRemarks("YES");
@@ -466,6 +468,7 @@ public class Methods {
                     summarylist.add(summary);
                 }
             }
+
             if (summarylist.size() > 0) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(summarylist));
@@ -1053,7 +1056,7 @@ public class Methods {
                         result.setMessage("NO DATA FOUND");
                     }
                 } else {
-                  
+
                     result.setMessage("NO DATA FOUND");
                 }
             }
@@ -1401,7 +1404,7 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1431,7 +1434,7 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1457,7 +1460,54 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+    //GET APEX FACILITY
+
+    public ACRGBWSResult GETAPEXFACILITY(final DataSource dataSource) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETAPEXFACILITY(); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.execute();
+            ArrayList<HealthCareFacility> hcflist = new ArrayList<>();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                HealthCareFacility hcf = new HealthCareFacility();
+                hcf.setHcfid(resultset.getString("HCFID"));
+                hcf.setHcfname(resultset.getString("HCFNAME"));
+                hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
+                hcf.setHcfcode(resultset.getString("HCFCODE"));
+                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    if (!creator.getResult().isEmpty()) {
+                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                        hcf.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                    } else {
+                        hcf.setCreatedby(creator.getMessage());
+                    }
+                } else {
+                    hcf.setCreatedby("DATA NOT FOUND");
+                }
+                hcf.setType(resultset.getString("HCFTYPE"));
+                hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                hcflist.add(hcf);
+            }
+            if (hcflist.size() > 0) {
+                result.setResult(utility.ObjectMapper().writeValueAsString(hcflist));
+                result.setMessage("OK");
+                result.setSuccess(true);
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

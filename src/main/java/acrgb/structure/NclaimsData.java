@@ -22,4 +22,5 @@ public class NclaimsData {
     private String series;
     private String claimid;
     private String tags;
+    private String totalclaims;
 }

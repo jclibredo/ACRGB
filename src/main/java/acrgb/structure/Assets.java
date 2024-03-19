@@ -18,6 +18,7 @@ public class Assets {
     private String tranchid;
     private String receipt;
     private String amount;
+    private String conid;
     private String createdby;
     private String datereleased;
     private String datecreated;

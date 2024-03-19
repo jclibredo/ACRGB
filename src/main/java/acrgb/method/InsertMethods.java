@@ -46,6 +46,7 @@ public class InsertMethods {
     private final Cryptor cryptor = new Cryptor();
     private final Methods methods = new Methods();
     private final FetchMethods fm = new FetchMethods();
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult INSERTASSETS(final DataSource datasource, Assets assets) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -89,7 +90,7 @@ public class InsertMethods {
                 } else {
                     ACRGBWSResult conresult = fm.GETCONTRACTAMOUNT(datasource, assets.getHcfid());
                     if (conresult.isSuccess()) {
-                        ACRGBWSResult transresult = fm.ACR_ASSETS(datasource, "active");
+                        ACRGBWSResult transresult = fm.ACR_ASSETS(datasource, "active", "0");
                         if (transresult.isSuccess()) {
                             ACRGBWSResult trans = fm.ACR_TRANCH(datasource, "active");
                             if (trans.isSuccess()) {
@@ -121,7 +122,7 @@ public class InsertMethods {
                                         Double amount = Double.parseDouble(conresult.getResult());//contract amount
                                         Double p_amount = amount * totalpercent;
                                         CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTASSETS(:Message,:Code,:p_hcfid,:p_tranchid ,:p_receipt,:p_amount"
-                                                + ",:p_createdby,:p_datereleased,:p_datecreated)");
+                                                + ",:p_createdby,:p_datereleased,:p_datecreated,:p_conid)");
                                         getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                                         getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                                         getinsertresult.setString("p_hcfid", assets.getHcfid());
@@ -131,6 +132,7 @@ public class InsertMethods {
                                         getinsertresult.setString("p_createdby", assets.getCreatedby());
                                         getinsertresult.setDate("p_datereleased", (Date) new Date(utility.StringToDate(assets.getDatecreated()).getTime())); //assets.getDatereleased());
                                         getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(assets.getDatecreated()).getTime()));//assets.getDatecreated());
+                                        getinsertresult.setString("p_conid", assets.getConid());
                                         getinsertresult.execute();
                                         if (getinsertresult.getString("Message").equals("SUCC")) {
                                             result.setSuccess(true);
@@ -210,7 +212,7 @@ public class InsertMethods {
                     result.setMessage("DATE FORMAT IS NOT VALID");
                 } else {
                     CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONTRACT(:Message,:Code,:p_hcfid,:p_amount"
-                            + ",:p_createdby,:p_datecreated,:p_datefrom,:p_dateto)");
+                            + ",:p_createdby,:p_datecreated,:p_datefrom,:p_dateto,:p_transcode)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                     getinsertresult.setString("p_hcfid", contract.getHcfid());
@@ -219,6 +221,7 @@ public class InsertMethods {
                     getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(contract.getDatecreated()).getTime()));//contract.getDatecreated());
                     getinsertresult.setDate("p_datefrom", (Date) new Date(utility.StringToDate(contract.getDatefrom()).getTime()));
                     getinsertresult.setDate("p_dateto", (Date) new Date(utility.StringToDate(contract.getDateto()).getTime()));
+                    getinsertresult.setString("p_transcode", contract.getTranscode());
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
                         result.setSuccess(true);

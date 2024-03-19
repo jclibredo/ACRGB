@@ -21,5 +21,6 @@ public class Summary {
     private String tranchcount;
     private String totalpercentage;
     private String remarks;
+    private String totalclaims;
 
 }
