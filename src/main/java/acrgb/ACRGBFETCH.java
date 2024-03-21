@@ -62,7 +62,7 @@ public class ACRGBFETCH {
             result.setMessage("PATH PARAMETER IS EMPTY");
             result.setSuccess(false);
         } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_ASSETS(dataSource, tags,phcfid);
+            ACRGBWSResult getResult = fetchmethods.ACR_ASSETS(dataSource, tags, phcfid);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -120,22 +120,14 @@ public class ACRGBFETCH {
 
     //GET  ACR ROLE TBLE
     @GET
-    @Path("GetHealthCareFacility/{tags}")
+    @Path("GetHealthCareFacility")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetHealthCareFacility(@PathParam("tags") String tags) {
+    public ACRGBWSResult GetHealthCareFacility() {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        if (tags.isEmpty()) {
-            result.setMessage("PATH PARAMETER IS EMPTY");
-            result.setSuccess(false);
-        } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_HCF(dataSource, tags);
-            result.setMessage(getResult.getMessage());
-            result.setResult(getResult.getResult());
-            result.setSuccess(getResult.isSuccess());
-        }
+        ACRGBWSResult getResult = fetchmethods.ACR_HCF(dataSource);
+        result.setMessage(getResult.getMessage());
+        result.setResult(getResult.getResult());
+        result.setSuccess(getResult.isSuccess());
         return result;
     }
 
@@ -224,22 +216,14 @@ public class ACRGBFETCH {
     }
 
     @GET
-    @Path("GetPro/{tags}")
+    @Path("GetPro")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetPro(@PathParam("tags") String tags) {
+    public ACRGBWSResult GetPro() {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        if (tags.isEmpty()) {
-            result.setMessage("PATH PARAMETER IS EMPTY");
-            result.setSuccess(false);
-        } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_PRO(dataSource, tags);
-            result.setMessage(getResult.getMessage());
-            result.setResult(getResult.getResult());
-            result.setSuccess(getResult.isSuccess());
-        }
+        ACRGBWSResult getResult = fetchmethods.ACR_PRO(dataSource);
+        result.setMessage(getResult.getMessage());
+        result.setResult(getResult.getResult());
+        result.setSuccess(getResult.isSuccess());
         return result;
     }
 
@@ -620,6 +604,34 @@ public class ACRGBFETCH {
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
         }
+        return result;
+    }
+
+    //GENERATE REPORTS userid is userid of account
+    @GET
+    @Path("ReportsForMB/{tags}/{userid}/{level}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult ReportsForMB(@PathParam("tags") String tags,
+            @PathParam("userid") String userid, @PathParam("level") String level) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        if (tags.equals("ACTIVE")) {
+            switch (level.toUpperCase()) {
+                case "MB":
+                    ACRGBWSResult getResult = methods.GetReportsOfSelectedHCPN(dataSource, tags, userid);
+                    result.setMessage(getResult.getMessage());
+                    result.setResult(getResult.getResult());
+                    result.setSuccess(getResult.isSuccess());
+                    break;
+                case "FACILITY":
+
+                    break;
+                default:
+                    break;
+            }
+        } else {
+
+        }
+
         return result;
     }
 

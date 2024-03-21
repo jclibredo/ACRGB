@@ -58,7 +58,7 @@ public class UpdateMethods {
                 result.setSuccess(false);
             } else if (utility.IsValidNumber(assets.getHcfid()) && utility.IsValidNumber(assets.getTranchid())) {
                 ACRGBWSResult tranchresult = fm.GETTRANCHAMOUNT(datasource, assets.getTranchid());
-                ACRGBWSResult hcfresult = fm.ACR_HCF(datasource, "active");
+                ACRGBWSResult hcfresult = fm.ACR_HCF(datasource);
                 int countresult = 0;
                 if (hcfresult.isSuccess()) {
                     if (!hcfresult.getResult().isEmpty()) {
@@ -83,7 +83,7 @@ public class UpdateMethods {
                 } else {
                     ACRGBWSResult conresult = fm.GETCONTRACTAMOUNT(datasource, assets.getHcfid());
                     if (conresult.isSuccess()) {
-                        ACRGBWSResult transresult = fm.ACR_ASSETS(datasource, "active","0");
+                        ACRGBWSResult transresult = fm.ACR_ASSETS(datasource, "active", "0");
                         if (transresult.isSuccess()) {
                             ACRGBWSResult trans = fm.ACR_TRANCH(datasource, "active");
                             if (trans.isSuccess()) {
@@ -224,7 +224,7 @@ public class UpdateMethods {
                 result.setSuccess(false);
                 result.setMessage("NUMBER FORMAT IS NOT VALID");
             } else {
-                ACRGBWSResult hcfresult = fm.ACR_HCF(datasource, "active");
+                ACRGBWSResult hcfresult = fm.ACR_HCF(datasource);
                 int counthcf = 0;
                 if (hcfresult.isSuccess()) {
                     if (!hcfresult.getResult().isEmpty()) {
@@ -350,40 +350,6 @@ public class UpdateMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult UPDATEPRO(final DataSource datasource, Pro pro) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = datasource.getConnection()) {
-            if (!utility.IsValidNumber(pro.getProid())) {
-                result.setSuccess(false);
-                result.setMessage("NUMBER FORMAT IS NOT VALID");
-            } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPRO(:Message,:Code,:p_proid,"
-                        + ":p_proname)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("p_proid", pro.getProid());
-                getinsertresult.setString("p_proname", pro.getProname().toUpperCase());
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setSuccess(true);
-                    result.setMessage("OK");
-                } else {
-                    result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(false);
-                }
-                result.setResult(utility.ObjectMapper().writeValueAsString(pro));
-            }
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
-    //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEMB(final DataSource datasource, ManagingBoard managingboard) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -395,22 +361,52 @@ public class UpdateMethods {
                 result.setMessage("NUMBER FORMAT IS NOT VALID");
             } else {
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEMB(:Message,:Code,:umbid,"
-                        + ":umbname)");
+                        + ":umbname,:ucontrolnumber)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("umbid", managingboard.getMbid());
                 getinsertresult.setString("umbname", managingboard.getMbname().toUpperCase());
+                getinsertresult.setString("ucontrolnumber", managingboard.getControlnumber());
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);
-                    result.setMessage("OK");
+                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setResult(utility.ObjectMapper().writeValueAsString(managingboard));
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(false);
                 }
-                result.setResult(utility.ObjectMapper().writeValueAsString(managingboard));
+
             }
         } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult FACILITYTAGGING(final DataSource datasource, HealthCareFacility hcf) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.FACILITYTAGGING(:Message,:Code,:p_hcfidcode,"
+                    + ":p_type,:p_gb,:p_hcpn)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("p_hcfidcode", hcf.getHcfcode());
+            getinsertresult.setString("p_type", hcf.getType());
+            getinsertresult.setString("p_gb", hcf.getGbtags());
+            getinsertresult.setString("p_hcpn", hcf.getMb());
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setSuccess(true);
+                result.setMessage(getinsertresult.getString("Message"));
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -55,8 +55,6 @@ public class ACRGBUPDATE {
      * @return an instance of java.lang.String
      * @throws java.sql.SQLException
      */
-   
-
     @PUT
     @Path("UPDATEASSETS")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -70,7 +68,7 @@ public class ACRGBUPDATE {
         result.setResult(insertresult.getResult());
         return result;
     }
-    
+
     @PUT
     @Path("UPDATECONTRACT")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -127,21 +125,8 @@ public class ACRGBUPDATE {
         return result;
     }
 
-    @PUT
-    @Path("UPDATEPRO")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEPRO(final Pro pro) throws SQLException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = updatemethods.UPDATEPRO(dataSource, pro);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
+   
 // UPDATE MANAGING BOARD
-
     @PUT
     @Path("UPDATEMB")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -251,4 +236,20 @@ public class ACRGBUPDATE {
         result.setResult(insertresult.getResult());
         return result;
     }
+
+    //TAGGING PROCESS
+    @PUT
+    @Path("TAGGINGFACILITY")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult TAGGINGFACILITY(final HealthCareFacility hcf) throws SQLException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult taggingresult = updatemethods.FACILITYTAGGING(dataSource, hcf);
+        result.setMessage(taggingresult.getMessage());
+        result.setSuccess(taggingresult.isSuccess());
+        result.setResult(taggingresult.getResult());
+        return result;
+    }
+
 }

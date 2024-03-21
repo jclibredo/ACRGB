@@ -10,11 +10,9 @@ import acrgb.method.Methods;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
-import acrgb.structure.HealthCareFacility;
 import acrgb.structure.MBRequestSummary;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.NclaimsData;
-import acrgb.structure.Pro;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserActivity;
@@ -83,21 +81,6 @@ public class ACRGBPOST {
     public ACRGBWSResult INSERTCONTRACT(final Contract contract) throws SQLException, ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = insertmethods.INSERTCONTRACT(dataSource, contract);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
-
-    //INSERT HCI
-    @POST
-    @Path("INSERTHCF")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTHCF(final HealthCareFacility hcfacility) throws SQLException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = insertmethods.INSERTHCF(dataSource, hcfacility);
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());
@@ -204,19 +187,6 @@ public class ACRGBPOST {
         return result;
     }
 
-    @POST
-    @Path("INSERTPRO")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTPRO(final Pro pro) throws SQLException, ParseException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = insertmethods.INSERTPRO(dataSource, pro);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
 
     @POST
     @Path("INSERTMBREQUEST")

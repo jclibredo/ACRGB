@@ -1,3 +1,4 @@
+acrgb\structure\ReportsFacilityUnderHCPNSummary.class
 acrgb\structure\UserActivity.class
 acrgb\ACRGBUPDATE.class
 acrgb\ACRGBPOST.class
@@ -11,6 +12,7 @@ acrgb\structure\Summary.class
 acrgb\structure\AssetsType.class
 acrgb\structure\Assets.class
 acrgb\structure\MBRequestSummary.class
+acrgb\structure\ReportsHCPNSummary.class
 acrgb\structure\AccountPayable.class
 acrgb\structure\ProcessAmountBadget.class
 acrgb\utility\Utility.class

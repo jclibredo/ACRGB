@@ -25,4 +25,5 @@ public class HealthCareFacility {
     private String mb;
     private String amount;
     private String totalclaims;
+    private String gbtags;
 }

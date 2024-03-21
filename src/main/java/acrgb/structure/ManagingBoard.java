@@ -13,11 +13,13 @@ import lombok.Data;
  */
 @Data
 public class ManagingBoard {
-    public ManagingBoard(){
+
+    public ManagingBoard() {
     }
     private String mbid;
     private String mbname;
     private String datecreated;
     private String createdby;
     private String status;
+    private String controlnumber;
 }

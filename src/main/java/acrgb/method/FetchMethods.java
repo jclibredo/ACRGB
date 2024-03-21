@@ -92,7 +92,7 @@ public class FetchMethods {
         Methods methods = new Methods();
         try (Connection connection = dataSource.getConnection()) {
 
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITYVALUE(); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.ACR_HCF(); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
@@ -116,6 +116,7 @@ public class FetchMethods {
                 }
                 hcf.setType(resultset.getString("HCFTYPE"));
                 hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                hcf.setGbtags(resultset.getString("GB"));
                 //-------------------------------------------------
                 ACRGBWSResult methodsresult = methods.GETROLEREVERESE(dataSource, resultset.getString("HCFID"));
                 if (methodsresult.isSuccess()) {
@@ -247,6 +248,7 @@ public class FetchMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :assets_type := ACR_GB.ACRGBPKGFUNCTION.ACR_ASSETS(:tags,:phcfid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
@@ -258,8 +260,19 @@ public class FetchMethods {
             while (resultset.next()) {
                 Assets assets = new Assets();
                 assets.setAssetid(resultset.getString("ASSETSID"));
-                assets.setTranchid(resultset.getString("TRANCHID"));
-                assets.setHcfid(resultset.getString("HCFID"));
+                ACRGBWSResult tranchresult = this.ACR_TRANCHWITHID(dataSource, resultset.getString("TRANCHID"));
+                if (tranchresult.isSuccess()) {
+                    assets.setTranchid(tranchresult.getResult());
+                } else {
+                    assets.setTranchid(tranchresult.getMessage());
+                }
+                ACRGBWSResult facilityresult = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
+                if (facilityresult.isSuccess()) {
+                    assets.setHcfid(facilityresult.getResult());
+                } else {
+                    assets.setHcfid(facilityresult.getMessage());
+                }
+
                 assets.setDatereleased(dateformat.format(resultset.getDate("DATERELEASED")));//resultset.getDate("DATERELEASED"));
                 assets.setReceipt(resultset.getString("RECEIPT"));
                 assets.setAmount(resultset.getString("AMOUNT"));
@@ -334,8 +347,7 @@ public class FetchMethods {
                     ACRGBWSResult facility = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
                     if (facility.isSuccess()) {
                         if (!facility.getResult().isEmpty()) {
-                            HealthCareFacility hcfresult = utility.ObjectMapper().readValue(facility.getResult(), HealthCareFacility.class);
-                            contract.setHcfid(hcfresult.getHcfname());
+                            contract.setHcfid(facility.getResult());
                         } else {
                             contract.setHcfid("NOT DATA FOUND");
                         }
@@ -358,6 +370,7 @@ public class FetchMethods {
                     contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                     contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
                     contract.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
+                    contract.setTranscode(resultset.getString("TRANSCODE"));
                     contractlist.add(contract);
                 } else {
                     result.setMessage("NO DATA FOUND");
@@ -408,7 +421,7 @@ public class FetchMethods {
                             if (facility.isSuccess()) {
                                 if (facility.isSuccess()) {
                                     ManagingBoard mb = utility.ObjectMapper().readValue(facility.getResult(), ManagingBoard.class);
-                                    contract.setHcfid(mb.getMbname());
+                                    contract.setHcfid(utility.ObjectMapper().writeValueAsString(mb));
                                 } else {
                                     contract.setHcfid("NO DATA FOUND");
                                 }
@@ -482,8 +495,8 @@ public class FetchMethods {
                 ACRGBWSResult facility = methods.GETMBWITHID(dataSource, resultset.getString("HCFID"));
                 if (facility.isSuccess()) {
                     if (facility.isSuccess()) {
-                        ManagingBoard mb = utility.ObjectMapper().readValue(facility.getResult(), ManagingBoard.class);
-                        contract.setHcfid(mb.getMbname());
+                      //  ManagingBoard mb = utility.ObjectMapper().readValue(facility.getResult(), ManagingBoard.class);
+                        contract.setHcfid(facility.getResult());
                     } else {
                         contract.setHcfid("NO DATA FOUND");
                     }
@@ -627,6 +640,7 @@ public class FetchMethods {
                 contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
                 contract.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
+                contract.setTranscode(resultset.getString("TRANSCODE"));
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                 result.setSuccess(true);
@@ -642,15 +656,14 @@ public class FetchMethods {
     }
 
 //ACR_HCF
-    public ACRGBWSResult ACR_HCF(final DataSource dataSource, final String tags) {
+    public ACRGBWSResult ACR_HCF(final DataSource dataSource) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_HCF(:tags); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.ACR_HCF(); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<HealthCareFacility> listHCF = new ArrayList<>();
@@ -852,15 +865,14 @@ public class FetchMethods {
     }
 
     //THIS AREA IS FOR USER LEVEL
-    public ACRGBWSResult ACR_PRO(final DataSource dataSource, final String tags) {
+    public ACRGBWSResult ACR_PRO(final DataSource dataSource) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_PRO(:tags); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.ACR_PRO(); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<Pro> prolist = new ArrayList<>();
@@ -1432,6 +1444,37 @@ public class FetchMethods {
                 result.setMessage("NO DATA FOUND");
             }
 
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET TRANCH USING TRANCHID
+    public ACRGBWSResult ACR_TRANCHWITHID(final DataSource dataSource, final String ptranchid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_TRANCHWITHID(:ptranchid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("ptranchid", ptranchid);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                Tranch tr = new Tranch();
+                tr.setTranchtype(resultset.getString("TRANCHTYPE"));
+                tr.setTranchid(resultset.getString("TRANCHID"));
+                tr.setPercentage(resultset.getString("PERCENTAGE"));
+                result.setMessage("OK");
+                //result.setMessage(utility.ObjectMapper().writeValueAsString(user));
+                result.setResult(utility.ObjectMapper().writeValueAsString(tr));
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+            result.setSuccess(true);
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);

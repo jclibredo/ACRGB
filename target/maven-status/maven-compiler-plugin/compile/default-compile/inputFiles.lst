@@ -5,6 +5,7 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\structure\MBFacilityUnderRequest.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Assets.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\InsertMethods.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\AssetsType.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ReportsHCPNSummary.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\User.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\Methods.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Pro.java
@@ -31,3 +32,4 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserLevel.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ProcessAmountBadget.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ManagingBoard.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\ACRGBFETCH.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ReportsFacilityUnderHCPNSummary.java
