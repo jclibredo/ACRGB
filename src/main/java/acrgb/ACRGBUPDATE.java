@@ -14,7 +14,6 @@ import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.ManagingBoard;
-import acrgb.structure.Pro;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserLevel;
@@ -22,6 +21,7 @@ import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.concurrent.ExecutorService;
 import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
 import javax.sql.DataSource;
@@ -29,6 +29,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -84,20 +86,6 @@ public class ACRGBUPDATE {
     }
 
     @PUT
-    @Path("UPDATEHCF")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEHCF(final HealthCareFacility healthcarefacility) throws SQLException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = updatemethods.UPDATEHCF(dataSource, healthcarefacility);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
-
-    @PUT
     @Path("UPDATETRANCH")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -125,7 +113,6 @@ public class ACRGBUPDATE {
         return result;
     }
 
-   
 // UPDATE MANAGING BOARD
     @PUT
     @Path("UPDATEMB")
@@ -223,6 +210,7 @@ public class ACRGBUPDATE {
         return result;
     }
 
+    //REMOVED ACCESS ROLE INDEX
     @PUT
     @Path("RemoveAccessRole")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -246,6 +234,50 @@ public class ACRGBUPDATE {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult taggingresult = updatemethods.FACILITYTAGGING(dataSource, hcf);
+        result.setMessage(taggingresult.getMessage());
+        result.setSuccess(taggingresult.isSuccess());
+        result.setResult(taggingresult.getResult());
+        return result;
+    }
+    private final ExecutorService executorService = java.util.concurrent.Executors.newCachedThreadPool();
+
+    //CONTRACT TAGGING PROCESS
+    @PUT
+    @Path("TAGGINGCONTRACT")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public void TAGGINGCONTRACT(@Suspended
+            final AsyncResponse asyncResponse, final Contract contract) {
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                asyncResponse.resume(doTAGGINGCONTRACT(contract));
+            }
+        });
+
+    }
+
+    private ACRGBWSResult doTAGGINGCONTRACT(final Contract contract) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        Contract con = new Contract();
+        con.setConid(contract.getConid());
+        con.setRemarks(contract.getRemarks());
+        con.setEnddate(contract.getEnddate());
+        switch (contract.getStats()) {
+            case "RENEWAL":
+                con.setStats("3");
+                break;
+            case "NONRENEWAL":
+                con.setStats("4");
+                break;
+            case "END":
+                con.setStats("5");
+                break;
+            default:
+                con.setStats("2");
+                break;
+        }
+        ACRGBWSResult taggingresult = updatemethods.TAGGINGCONTRACT(dataSource, con);
         result.setMessage(taggingresult.getMessage());
         result.setSuccess(taggingresult.isSuccess());
         result.setResult(taggingresult.getResult());

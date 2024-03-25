@@ -13,14 +13,18 @@ import lombok.Data;
  */
 @Data
 public class Contract {
-    private String conid;
+
+    private String conid;//THIS
     private String hcfid;
     private String amount;
-    private String stats;
+    private String stats; // THIS
     private String createdby;
     private String datecreated;
     private String datefrom;
     private String dateto;
     private String transcode;
-    
+    private String baseamount;
+    private String enddate;// THIS
+    private String remarks;// THIS
+
 }

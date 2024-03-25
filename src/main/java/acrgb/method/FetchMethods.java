@@ -173,7 +173,6 @@ public class FetchMethods {
             statement.setString("userid", userid);
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
-
             if (resultset.next()) {
                 UserInfo userinfo = new UserInfo();
                 userinfo.setDid(resultset.getString("BDID"));
@@ -182,12 +181,11 @@ public class FetchMethods {
                 userinfo.setMiddlename(resultset.getString("MIDDLENAME"));
                 userinfo.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 result.setMessage("OK");
-                //result.setMessage(utility.ObjectMapper().writeValueAsString(user));
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(userinfo));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -230,11 +228,11 @@ public class FetchMethods {
             }
             if (!userolelist.isEmpty()) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(userolelist));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -303,11 +301,12 @@ public class FetchMethods {
             }
             if (!listassets.isEmpty()) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(listassets));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -379,11 +378,12 @@ public class FetchMethods {
 
             if (!contractlist.isEmpty()) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -458,14 +458,13 @@ public class FetchMethods {
             if (!contractlist.isEmpty()) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
+                result.setSuccess(true);
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
-        } catch (SQLException | IOException ex) {
+
+        } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -495,7 +494,7 @@ public class FetchMethods {
                 ACRGBWSResult facility = methods.GETMBWITHID(dataSource, resultset.getString("HCFID"));
                 if (facility.isSuccess()) {
                     if (facility.isSuccess()) {
-                      //  ManagingBoard mb = utility.ObjectMapper().readValue(facility.getResult(), ManagingBoard.class);
+                        //  ManagingBoard mb = utility.ObjectMapper().readValue(facility.getResult(), ManagingBoard.class);
                         contract.setHcfid(facility.getResult());
                     } else {
                         contract.setHcfid("NO DATA FOUND");
@@ -524,11 +523,12 @@ public class FetchMethods {
 
             if (!contractlist.isEmpty()) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -593,11 +593,12 @@ public class FetchMethods {
             }
             if (!contractlist.isEmpty()) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -692,18 +693,17 @@ public class FetchMethods {
                 listHCF.add(hcf);
 
             }
-            if (listHCF.size() < 1) {
-                result.setMessage("NO DATA FOUND");
-            } else {
+            if (listHCF.size() > 0) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(listHCF));
+            } else {
+                result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(FetchMethods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -745,16 +745,14 @@ public class FetchMethods {
             }
             if (!listtranch.isEmpty()) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(listtranch));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(FetchMethods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -798,17 +796,15 @@ public class FetchMethods {
             }
             if (!listuserinfo.isEmpty()) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(listuserinfo));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
 
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(FetchMethods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -850,16 +846,14 @@ public class FetchMethods {
             }
             if (!listuserlevel.isEmpty()) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(listuserlevel));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(FetchMethods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -899,16 +893,14 @@ public class FetchMethods {
             }
             if (!prolist.isEmpty()) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(prolist));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(FetchMethods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -965,16 +957,15 @@ public class FetchMethods {
             }
             if (!listuser.isEmpty()) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(listuser));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(FetchMethods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -993,16 +984,15 @@ public class FetchMethods {
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             if (resultset.next()) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(resultset.getString("PERCENTAGE"));
             } else {
                 result.setMessage("TRANCH NOT FOUND");
             }
-            result.setSuccess(true);
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(FetchMethods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1021,16 +1011,15 @@ public class FetchMethods {
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             if (resultset.next()) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(resultset.getString("AMOUNT"));
             } else {
                 result.setMessage("CONTRACT NOT FOUND");
             }
-            result.setSuccess(true);
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(FetchMethods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1049,16 +1038,15 @@ public class FetchMethods {
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             if (resultset.next()) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(resultset.getString("LEVNAME"));
             } else {
                 result.setMessage("ROLE NAME NOT FOUND");
             }
-            result.setSuccess(true);
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(FetchMethods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1098,16 +1086,15 @@ public class FetchMethods {
                 assets.setDatereleased(dateformat.format(resultset.getDate("DATERELEASED")));//resultset.getString("DATERELEASED"));
                 assets.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(assets));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(FetchMethods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1148,16 +1135,15 @@ public class FetchMethods {
             }
             if (!logslist.isEmpty()) {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(logslist));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(FetchMethods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1282,13 +1268,11 @@ public class FetchMethods {
                 nclaimsdata.setAccreno(resultset.getString("ACCRENO"));
                 nclaimsdata.setClaimamount(resultset.getString("CTOTAL"));
                 nclaimsdata.setTotalclaims(resultset.getString("COUNTVAL"));
-
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(nclaimsdata));
             } else {
                 result.setMessage("NO DATA FOUND");
-                result.setSuccess(false);
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -1401,7 +1385,6 @@ public class FetchMethods {
                 } else {
                     mb.setCreatedby("NO DATA FOUND");
                 }
-
                 mb.setStatus(resultset.getString("STATUS"));
                 mblist.add(mb);
             }
@@ -1469,12 +1452,12 @@ public class FetchMethods {
                 tr.setTranchid(resultset.getString("TRANCHID"));
                 tr.setPercentage(resultset.getString("PERCENTAGE"));
                 result.setMessage("OK");
-                //result.setMessage(utility.ObjectMapper().writeValueAsString(user));
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(tr));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);

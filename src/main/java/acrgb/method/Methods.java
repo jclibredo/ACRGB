@@ -147,7 +147,6 @@ public class Methods {
             ResultSet resultset = (ResultSet) statement.getObject("p_user");
             if (resultset.next()) {
                 result.setMessage("USERNAME IS ALREADY EXIST");
-                result.setSuccess(false);
                 result.setResult(p_username);
             } else {
                 result.setMessage("OK");
@@ -175,10 +174,10 @@ public class Methods {
             ResultSet resultset = (ResultSet) statement.getObject("v_level");
             if (resultset.next()) {
                 result.setResult(resultset.getString("LEVNAME"));
+                result.setSuccess(true);
             } else {
                 result.setMessage("USER ROLE IS NOT AVAILABLE");
             }
-            result.setSuccess(true);
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -205,13 +204,12 @@ public class Methods {
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setSuccess(true);
-                result.setMessage("OK");
+                result.setMessage(getinsertresult.getString("Message"));
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
-                result.setSuccess(false);
             }
-            result.setResult(utility.ObjectMapper().writeValueAsString(userinfo));
-        } catch (SQLException | IOException ex) {
+
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -242,10 +240,9 @@ public class Methods {
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
                         result.setSuccess(true);
-                        result.setMessage("OK");
+                        result.setMessage(getinsertresult.getString("Message"));
                     } else {
                         result.setMessage(getinsertresult.getString("Message"));
-                        result.setSuccess(false);
                     }
                 }
             } else {
@@ -277,10 +274,9 @@ public class Methods {
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);
-                    result.setMessage("OK");
+                    result.setMessage(getinsertresult.getString("Message"));
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(false);
                 }
 
             } else {
@@ -313,10 +309,9 @@ public class Methods {
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);
-                    result.setMessage("OK");
+                    result.setMessage(getinsertresult.getString("Message"));
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(false);
                 }
             }
         } catch (SQLException ex) {
@@ -346,10 +341,9 @@ public class Methods {
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);
-                    result.setMessage("OK");
+                    result.setMessage(getinsertresult.getString("Message"));
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(false);
                 }
             }
         } catch (SQLException ex) {
@@ -375,10 +369,9 @@ public class Methods {
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setSuccess(true);
-                result.setMessage("OK");
+                result.setMessage(getinsertresult.getString("Message"));
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
-                result.setSuccess(false);
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
@@ -474,10 +467,11 @@ public class Methods {
             if (summarylist.size() > 0) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(summarylist));
+                result.setSuccess(true);
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -502,10 +496,10 @@ public class Methods {
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setSuccess(true);
-                result.setMessage("OK");
+                result.setMessage(getinsertresult.getString("Message"));
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
-                result.setSuccess(false);
+
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
@@ -535,10 +529,11 @@ public class Methods {
                 logs.setActid(resultset.getString("ACTID"));
                 result.setResult(utility.ObjectMapper().writeValueAsString(logs));
                 result.setMessage("OK");
+                result.setSuccess(true);
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            result.setSuccess(true);
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -580,10 +575,10 @@ public class Methods {
                     fca.setTotalclaims(resultset.getString("COUNTVAL"));
                     result.setResult(utility.ObjectMapper().writeValueAsString(fca));
                     result.setMessage("OK");
+                    result.setSuccess(true);
                 } else {
                     result.setMessage("NO DATA FOUND");
                 }
-                result.setSuccess(true);
             }
 
         } catch (SQLException | IOException | ParseException ex) {
@@ -688,10 +683,8 @@ public class Methods {
                         } else {
                             result.setMessage(errorList.toString());
                         }
-
                     } else {
                         result.setMessage(getinsertresult.getString("Message"));
-                        result.setSuccess(false);
                     }
 
                 }
@@ -807,8 +800,8 @@ public class Methods {
             } else {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(listHCF));
+                result.setSuccess(true);
             }
-            result.setSuccess(true);
 
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
@@ -916,9 +909,9 @@ public class Methods {
                 result.setMessage("NO DATA FOUND");
             } else {
                 result.setMessage("OK");
+                result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(listHCF));
             }
-            result.setSuccess(true);
 
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
@@ -1059,7 +1052,6 @@ public class Methods {
                         result.setMessage("NO DATA FOUND");
                     }
                 } else {
-
                     result.setMessage("NO DATA FOUND");
                 }
             }
@@ -1157,7 +1149,6 @@ public class Methods {
                     //------------------------------------------------------
                 } else {
                     result.setMessage("NO DATA FOUND");
-
                 }
 
                 //----------------------------------------------------------
@@ -1203,7 +1194,6 @@ public class Methods {
                     result.setMessage("OK");
                 } else {
                     result.setMessage(errorList.toString());
-                    result.setSuccess(false);
                     result.setResult(errorList.toString());
                 }
             }
@@ -1222,7 +1212,6 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            //  System.out.println(resultset.getString("MBNAME"));
             if (!utility.IsValidNumber(proid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
@@ -1260,7 +1249,6 @@ public class Methods {
                             //------------------------------------------------------
                         }
                     }
-
                 }
                 if (mblist.size() > 0) {
                     result.setMessage("OK");
@@ -1269,8 +1257,6 @@ public class Methods {
                 } else {
                     result.setMessage("NO DATA FOUND");
                 }
-
-                //----------------------------------------------------------
             }
 
         } catch (SQLException | IOException | ParseException ex) {
@@ -1455,7 +1441,6 @@ public class Methods {
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(resultset.getString("USERID"));
-
             } else {
                 result.setMessage("NO DATA FOUND");
             }
@@ -1529,12 +1514,13 @@ public class Methods {
 
                     for (int x = 0; x < conlist.size(); x++) {
 //                        //-------------------------------------
-                        ManagingBoard mb = utility.ObjectMapper().readValue(conlist.get(x).getHcfid(), ManagingBoard.class);
+                       // System.out.println(conlist.get(x).getHcfid());
+                       // ManagingBoard mb = utility.ObjectMapper().readValue(conlist.get(x).getHcfid(), ManagingBoard.class);
 ////                        ACRGBWSResult facilitylist = this.GETROLEMULITPLE(dataSource, mb.getMbid());
 ////                        if (facilitylist.isSuccess()) {
 //                        //  List<String> restist = Arrays.asList(facilitylist.getResult().split(","));
                         ReportsHCPNSummary rmb = new ReportsHCPNSummary();
-                        rmb.setHcpnname(mb.getMbname());
+                        rmb.setHcpnname(conlist.get(x).getHcfid());
                         rmb.setContractadateto(conlist.get(x).getDateto());
                         rmb.setContractadatefrom(conlist.get(x).getDatefrom());
                         rmb.setConctractamount(conlist.get(x).getAmount());
@@ -1568,13 +1554,12 @@ public class Methods {
             }
 
             if (rmblist.size() > 0) {
+                result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(rmblist));
                 result.setSuccess(true);
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-
-//          
         } catch (IOException | SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1637,13 +1622,12 @@ public class Methods {
             }
 
             if (rmblist.size() > 0) {
+                result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(rmblist));
                 result.setSuccess(true);
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-
-//          
         } catch (IOException | SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1707,13 +1691,12 @@ public class Methods {
             }
 
             if (rmblist.size() > 0) {
+                result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(rmblist));
                 result.setSuccess(true);
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-
-//          
         } catch (IOException | SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);

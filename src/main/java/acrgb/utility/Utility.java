@@ -42,8 +42,7 @@ public class Utility {
 //represents a special character that must occur at least once.
 //white spaces don’t allowed in the entire string.
 //.{8, 20} represents at least 8 characters and at most 20 characters.
-//$ represents the end of the string.
-//    
+//$ represents the end of the string.  
     public ACRGBWSResult ACRGBWSResult() {
         return new ACRGBWSResult();
     }
@@ -72,8 +71,6 @@ public class Utility {
             Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
             result = ex.getMessage();
         }
-
-        System.out.println(result);
         return result;
     }
 

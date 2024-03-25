@@ -79,12 +79,9 @@ public class InsertMethods {
 
                 if (!tranchresult.isSuccess()) {
                     result.setMessage(tranchresult.getMessage());
-                    result.setSuccess(false);
                 } else if (countresult == 0) {
-                    result.setSuccess(false);
                     result.setMessage("HEALTH CARE FACILITY NOT FOUND");
                 } else if (!utility.IsValidDate(assets.getDatecreated()) || !utility.IsValidDate(assets.getDatereleased())) {
-                    result.setSuccess(false);
                     result.setMessage("DATE FORMAT IS NOT VALID");
                 } else {
                     ACRGBWSResult conresult = fm.GETCONTRACTAMOUNT(datasource, assets.getHcfid());
@@ -135,32 +132,25 @@ public class InsertMethods {
                                         getinsertresult.execute();
                                         if (getinsertresult.getString("Message").equals("SUCC")) {
                                             result.setSuccess(true);
-                                            result.setMessage("OK");
+                                            result.setMessage(getinsertresult.getString("Message"));
                                         } else {
                                             result.setMessage(getinsertresult.getString("Message"));
-                                            result.setSuccess(false);
                                         }
-                                        result.setResult(utility.ObjectMapper().writeValueAsString(assets));
                                     } else {
-                                        result.setSuccess(false);
                                         result.setMessage("TRANCH VALUE IS ALREADY ASSIGN TO HCF");
                                     }
                                 }
                             } else {
-                                result.setSuccess(false);
                                 result.setMessage(trans.getMessage());
                             }
                         } else {
-                            result.setSuccess(false);
                             result.setMessage(transresult.getMessage());
                         }
                     } else {
                         result.setMessage(conresult.getMessage());
-                        result.setSuccess(false);
                     }
                 }
             } else {
-                result.setSuccess(false);
                 result.setMessage("NUMBER FORMAT IS NOT VALID");
             }
         } catch (SQLException | IOException | ParseException ex) {
@@ -208,15 +198,13 @@ public class InsertMethods {
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
                         result.setSuccess(true);
-                        result.setMessage("OK");
+                        result.setMessage(getinsertresult.getString("Message"));
                     } else {
                         result.setMessage(getinsertresult.getString("Message"));
-                        result.setSuccess(false);
                     }
-                    result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                 }
             }
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -254,13 +242,11 @@ public class InsertMethods {
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);
                     result.setMessage(getinsertresult.getString("Message"));
-                    result.setResult(utility.ObjectMapper().writeValueAsString(tranch));
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
-
             }
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -268,7 +254,6 @@ public class InsertMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    //INSERT USER DETAILS
     public ACRGBWSResult INSERTUSERDETAILS(final DataSource datasource, UserInfo userinfo) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -293,7 +278,6 @@ public class InsertMethods {
                     if (getinsertresult.getString("Message").equals("SUCC")) {
                         result.setSuccess(true);
                         result.setMessage(getinsertresult.getString("Message"));
-                        result.setResult(utility.ObjectMapper().writeValueAsString(userinfo));
                     } else {
                         result.setMessage(getinsertresult.getString("Message"));
                     }
@@ -301,8 +285,8 @@ public class InsertMethods {
             } else {
                 result.setMessage("SOME REQUIRED FIELD IS EMPTY");
             }
-        } catch (SQLException | IOException | ParseException ex) {
-            result.setMessage(ex.toString());
+        } catch (SQLException | ParseException ex) {
+            result.setMessage(ex.toString() + "YOUR ARE HERE");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -331,13 +315,12 @@ public class InsertMethods {
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);
                     result.setMessage(getinsertresult.getString("Message"));
-                    result.setResult(utility.ObjectMapper().writeValueAsString(userlevel));
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
 
             }
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -413,18 +396,15 @@ public class InsertMethods {
                         if (getinsertresult.getString("Message").equals("SUCC")) {
                             result.setSuccess(true);
                             result.setMessage(getinsertresult.getString("Message"));
-                            result.setResult(utility.ObjectMapper().writeValueAsString(user));
                         } else {
                             result.setMessage(getinsertresult.getString("Message"));
                         }
 
                     } else {
-                        result.setSuccess(false);
                         result.setMessage(validateRole.getMessage());
                         result.setResult(validateRole.getResult());
                     }
                 } else {
-                    result.setSuccess(validateUsername.isSuccess());
                     result.setMessage(validateUsername.getMessage());
                     result.setResult(validateUsername.getResult());
                 }
@@ -457,12 +437,11 @@ public class InsertMethods {
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setSuccess(true);
                 result.setMessage(getinsertresult.getString("Message"));
-                result.setResult(utility.ObjectMapper().writeValueAsString(nclaimsdata));
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
 
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -503,19 +482,19 @@ public class InsertMethods {
                 if (errCount == 0) {
                     result.setSuccess(true);
                     result.setMessage("OK");
-                    result.setResult(utility.ObjectMapper().writeValueAsString(userroleindex));
                 } else {
                     result.setMessage(errorList.toString());
                 }
             }
 
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
 
+    //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult REMOVEDACCESSLEVEL(final DataSource datasource, UserRoleIndex userroleindex) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -544,14 +523,15 @@ public class InsertMethods {
             } else {
                 result.setMessage(errorList.toString());
             }
-            result.setResult(utility.ObjectMapper().writeValueAsString(userroleindex));
-        } catch (SQLException | IOException ex) {
+
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
 
+    //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult INACTIVEDATA(final DataSource datasource, final String tags, final String dataid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -570,7 +550,7 @@ public class InsertMethods {
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);
-                    result.setMessage("SUCCESSFULLY SET DATA AS INACTIVE");
+                    result.setMessage(getinsertresult.getString("Message"));
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
@@ -582,6 +562,7 @@ public class InsertMethods {
         return result;
     }
 
+    //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult ACTIVEDATA(final DataSource datasource, final String tags, final String dataid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -600,7 +581,7 @@ public class InsertMethods {
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setMessage(getinsertresult.getString("Message"));
-                    result.setMessage("SUCCESSFULLY SET DATA AS ACTIVE");
+                    result.setSuccess(true);
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }

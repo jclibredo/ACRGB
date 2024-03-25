@@ -19,6 +19,7 @@ acrgb\utility\Utility.class
 acrgb\method\Methods.class
 acrgb\ACRGBFETCH.class
 acrgb\structure\ACRGBWSResult.class
+acrgb\ACRGBUPDATE$1.class
 acrgb\structure\Contract.class
 acrgb\utility\Cryptor.class
 acrgb\structure\ManagingBoard.class

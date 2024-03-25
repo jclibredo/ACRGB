@@ -94,7 +94,6 @@ public class UpdateMethods {
                                         transcount++;
                                     }
                                 }
-
                                 //---------------------------------------------------------------
                                 int count = 0;
                                 List<Assets> assetslist = Arrays.asList(utility.ObjectMapper().readValue(transresult.getResult(), Assets[].class));
@@ -130,29 +129,23 @@ public class UpdateMethods {
                                             result.setMessage("OK");
                                         } else {
                                             result.setMessage(getinsertresult.getString("Message"));
-                                            result.setSuccess(false);
                                         }
                                         result.setResult(utility.ObjectMapper().writeValueAsString(assets));
                                     } else {
-                                        result.setSuccess(false);
                                         result.setMessage("TRANCH VALUE IS ALREADY ASSIGN TO HCF");
                                     }
                                 }
                             } else {
-                                result.setSuccess(false);
                                 result.setMessage(trans.getMessage());
                             }
                         } else {
-                            result.setSuccess(false);
                             result.setMessage(transresult.getMessage());
                         }
                     } else {
                         result.setMessage(conresult.getMessage());
-                        result.setSuccess(false);
                     }
                 }
             } else {
-                result.setSuccess(false);
                 result.setMessage("NUMBER FORMAT IS NOT VALID");
             }
         } catch (SQLException | IOException | ParseException ex) {
@@ -199,73 +192,12 @@ public class UpdateMethods {
                         result.setMessage("OK");
                     } else {
                         result.setMessage(getinsertresult.getString("Message"));
-                        result.setSuccess(false);
                     }
                     result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                 }
 
             }
         } catch (SQLException | IOException | ParseException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
-    //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult UPDATEHCF(final DataSource datasource, final HealthCareFacility hcf) throws SQLException {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = datasource.getConnection()) {
-
-            if (!utility.IsValidNumber(hcf.getHcfid())) {
-                result.setSuccess(false);
-                result.setMessage("NUMBER FORMAT IS NOT VALID");
-            } else {
-                ACRGBWSResult hcfresult = fm.ACR_HCF(datasource);
-                int counthcf = 0;
-                if (hcfresult.isSuccess()) {
-                    if (!hcfresult.getResult().isEmpty()) {
-                        List<HealthCareFacility> hcflist = Arrays.asList(utility.ObjectMapper().readValue(hcfresult.getResult(), HealthCareFacility[].class));
-                        for (int x = 0; x < hcflist.size(); x++) {
-                            if (hcflist.get(x).getHcfname().toUpperCase().equals(hcf.getHcfname().toUpperCase())) {
-                                counthcf++;
-                            }
-                        }
-                    }
-                }
-
-                if (hcf.getHcfname().isEmpty() || hcf.getHcfaddress().isEmpty() || hcf.getHcfcode().isEmpty() || hcf.getHcfid().isEmpty() || hcf.getType().isEmpty()) {
-                    result.setSuccess(false);
-                    result.setMessage("SOME REQUIRED FIELD IS EMPTY");
-                } else if (counthcf > 0) {
-                    result.setSuccess(false);
-                    result.setMessage("HCF NAME IS ALREADY EXIST");
-                } else {
-                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEHCF(:Message,:Code,:p_hcfid,:p_hcfname,:p_hcfaddress,:p_hcfcode,:"
-                            + "p_areaid)");
-                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                    getinsertresult.setString("p_hcfid", hcf.getHcfid());
-                    getinsertresult.setString("p_hcfname", hcf.getHcfname().toUpperCase());
-                    getinsertresult.setString("p_hcfaddress", hcf.getHcfaddress().toUpperCase());
-                    getinsertresult.setString("p_hcfcode", hcf.getHcfcode());
-                    getinsertresult.setString("p_type", hcf.getType());
-                    getinsertresult.execute();
-                    if (getinsertresult.getString("Message").equals("SUCC")) {
-                        result.setSuccess(true);
-                        result.setMessage("OK");
-                    } else {
-                        result.setMessage(getinsertresult.getString("Message"));
-                        result.setSuccess(false);
-                    }
-                    result.setResult(utility.ObjectMapper().writeValueAsString(hcf));
-                }
-            }
-
-        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -300,14 +232,12 @@ public class UpdateMethods {
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);
-                    result.setMessage("OK");
+                    result.setMessage(getinsertresult.getString("Message"));
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(false);
                 }
-                result.setResult(utility.ObjectMapper().writeValueAsString(tranch));
             }
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -335,14 +265,12 @@ public class UpdateMethods {
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);
-                    result.setMessage("OK");
+                    result.setMessage(getinsertresult.getString("Message"));
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(false);
                 }
-                result.setResult(utility.ObjectMapper().writeValueAsString(userlevel));
             }
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -371,13 +299,11 @@ public class UpdateMethods {
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);
                     result.setMessage(getinsertresult.getString("Message"));
-                    result.setResult(utility.ObjectMapper().writeValueAsString(managingboard));
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
-
             }
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -392,13 +318,12 @@ public class UpdateMethods {
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.FACILITYTAGGING(:Message,:Code,:p_hcfidcode,"
-                    + ":p_type,:p_gb,:p_hcpn)");
+                    + ":p_type,:p_gb)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("p_hcfidcode", hcf.getHcfcode());
-            getinsertresult.setString("p_type", hcf.getType());
-            getinsertresult.setString("p_gb", hcf.getGbtags());
-            getinsertresult.setString("p_hcpn", hcf.getMb());
+            getinsertresult.setString("p_hcfidcode", hcf.getHcfcode());//GET HOSPITAL CODE
+            getinsertresult.setString("p_type", hcf.getType()); //APEX OR HCPN CONTROL NUMBER
+            getinsertresult.setString("p_gb", hcf.getGbtags());//GB OR NONGB
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setSuccess(true);
@@ -407,6 +332,40 @@ public class UpdateMethods {
                 result.setMessage(getinsertresult.getString("Message"));
             }
         } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult TAGGINGCONTRACT(final DataSource datasource, Contract contract) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            if (!utility.IsValidNumber(contract.getConid())) {
+                result.setMessage("CONTRACT ID IS INVALID NUMBER FORMAT");
+            } else {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.CONTRACTTAGGING(:Message,:Code,"
+                        + ":pconid,:pstats,:pendate,:premarks)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("pconid", contract.getConid());//CONID
+                getinsertresult.setString("pstats", contract.getStats()); //STATS
+                getinsertresult.setDate("pendate", (Date) new Date(utility.StringToDate(contract.getEnddate()).getTime()));//END DATE
+                getinsertresult.setString("premarks", contract.getRemarks());//REMARKS
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    result.setSuccess(true);
+                    result.setMessage(getinsertresult.getString("Message"));
+                } else {
+                    result.setMessage(getinsertresult.getString("Message"));
+                }
+            }
+
+        } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
