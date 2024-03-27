@@ -10,9 +10,8 @@ import acrgb.method.Methods;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
+import acrgb.structure.DateSettings;
 import acrgb.structure.MBRequestSummary;
-import acrgb.structure.ManagingBoard;
-import acrgb.structure.NclaimsData;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserActivity;
@@ -57,7 +56,6 @@ public class ACRGBPOST {
      * @return an instance of java.lang.String
      * @throws java.sql.SQLException
      */
-
     //INSERTASSETS
     @POST
     @Path("INSERTASSETS")
@@ -87,7 +85,7 @@ public class ACRGBPOST {
         return result;
     }
 
-    //INSERT ACCOUNT TOLE
+    //INSERT ACCOUNT ROLE
     @POST
     @Path("INSERTTRANCH")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -133,6 +131,20 @@ public class ACRGBPOST {
     }
 
     @POST
+    @Path("INSERTDATESETTINGS")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult INSERTDATESETTINGS(final DateSettings datesettings) throws SQLException, ParseException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = insertmethods.INSERTDATESETTINGS(dataSource, datesettings);
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
+
+    @POST
     @Path("INSERTUSER")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -161,19 +173,6 @@ public class ACRGBPOST {
     }
 
     @POST
-    @Path("INSERTNCLAIMS")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTNCLAIMS(final NclaimsData nclaimsdata) throws SQLException, ParseException {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = insertmethods.INSERTNCLAIMS(dataSource, nclaimsdata);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
-
-    @POST
     @Path("logs")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -186,7 +185,6 @@ public class ACRGBPOST {
         result.setResult(insertresult.getResult());
         return result;
     }
-
 
     @POST
     @Path("INSERTMBREQUEST")
@@ -210,20 +208,6 @@ public class ACRGBPOST {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = insertmethods.INSEROLEINDEX(dataSource, userroleindex);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
-
-    @POST
-    @Path("INSERTManagingBoard")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTManagingBoard(final ManagingBoard managingboard) throws SQLException, ParseException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = methods.InsertMB(dataSource, managingboard);
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());

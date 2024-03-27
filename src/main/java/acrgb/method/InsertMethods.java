@@ -8,6 +8,7 @@ package acrgb.method;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
+import acrgb.structure.DateSettings;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.NclaimsData;
 import acrgb.structure.Tranch;
@@ -188,7 +189,7 @@ public class InsertMethods {
                             + ",:p_createdby,:p_datecreated,:p_datefrom,:p_dateto,:p_transcode)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                    getinsertresult.setString("p_hcfid", contract.getHcfid());
+                    getinsertresult.setString("p_hcfid", contract.getHcfid());//PAN Number or MB Accreditaion Number
                     getinsertresult.setString("p_amount", contract.getAmount());
                     getinsertresult.setString("p_createdby", contract.getCreatedby());
                     getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(contract.getDatecreated()).getTime()));//contract.getDatecreated());
@@ -417,38 +418,6 @@ public class InsertMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult INSERTNCLAIMS(final DataSource datasource, NclaimsData nclaimsdata) throws ParseException {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.INSERTNCLAIMS(:Message,:Code,"
-                    + ":p_accreno,:p_datesubmitted,:p_amount,:p_series,:p_claimid,:p_tags)");
-            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("p_accreno", nclaimsdata.getAccreno());
-            getinsertresult.setDate("p_datesubmitted", (Date) new Date(utility.StringToDate(nclaimsdata.getDatesubmitted()).getTime()));
-            getinsertresult.setString("p_amount", nclaimsdata.getClaimamount());
-            getinsertresult.setString("p_series", nclaimsdata.getSeries());
-            getinsertresult.setString("p_claimid", nclaimsdata.getClaimid());
-            getinsertresult.setString("p_tags", nclaimsdata.getTags());
-            getinsertresult.execute();
-            if (getinsertresult.getString("Message").equals("SUCC")) {
-                result.setSuccess(true);
-                result.setMessage(getinsertresult.getString("Message"));
-            } else {
-                result.setMessage(getinsertresult.getString("Message"));
-            }
-
-        } catch (SQLException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
-    //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult INSEROLEINDEX(final DataSource datasource, UserRoleIndex userroleindex) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -592,5 +561,69 @@ public class InsertMethods {
         }
         return result;
     }
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult INSERTDATESETTINGS(final DataSource datasource, final DateSettings datesettings) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            if (!utility.IsValidDate(datesettings.getDatefrom()) || !utility.IsValidDate(datesettings.getDateto())) {
+                result.setMessage("DATE FORMAT IS NOT VALID");
+            } else {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTDATESETTINGS(:Message,:Code,"
+                        + ":udatefrom,:udateto)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(datesettings.getDatefrom()).getTime()));
+                getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(datesettings.getDateto()).getTime()));
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setSuccess(true);
+                } else {
+                    result.setMessage(getinsertresult.getString("Message"));
+                }
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+    
+    
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult INSERTSKIPYEAR(final DataSource datasource, final DateSettings datesettings) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            if (!utility.IsValidDate(datesettings.getDatefrom()) || !utility.IsValidDate(datesettings.getDateto())) {
+                result.setMessage("DATE FORMAT IS NOT VALID");
+            } else {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTSKIPYEAR(:Message,:Code,"
+                        + ":udatefrom,:udateto)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(datesettings.getDatefrom()).getTime()));
+                getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(datesettings.getDateto()).getTime()));
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setSuccess(true);
+                } else {
+                    result.setMessage(getinsertresult.getString("Message"));
+                }
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
 
 }

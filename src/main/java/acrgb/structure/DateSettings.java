@@ -12,15 +12,10 @@ import lombok.Data;
  * @author MinoSun
  */
 @Data
-public class Pro {
+public class DateSettings {
 
-    public Pro() {
+    public DateSettings() {
     }
-    private String proid;
-    private String proname;
-    private String createdby;
-    private String datecreated;
-    private String stats;
-    private String procode;
-
+    private String datefrom;
+    private String dateto;
 }

@@ -276,40 +276,6 @@ public class UpdateMethods {
         }
         return result;
     }
-
-    //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult UPDATEMB(final DataSource datasource, ManagingBoard managingboard) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = datasource.getConnection()) {
-            if (!utility.IsValidNumber(managingboard.getMbid())) {
-                result.setSuccess(false);
-                result.setMessage("NUMBER FORMAT IS NOT VALID");
-            } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEMB(:Message,:Code,:umbid,"
-                        + ":umbname,:ucontrolnumber)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("umbid", managingboard.getMbid());
-                getinsertresult.setString("umbname", managingboard.getMbname().toUpperCase());
-                getinsertresult.setString("ucontrolnumber", managingboard.getControlnumber());
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setSuccess(true);
-                    result.setMessage(getinsertresult.getString("Message"));
-                } else {
-                    result.setMessage(getinsertresult.getString("Message"));
-                }
-            }
-        } catch (SQLException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult FACILITYTAGGING(final DataSource datasource, HealthCareFacility hcf) {
         ACRGBWSResult result = utility.ACRGBWSResult();

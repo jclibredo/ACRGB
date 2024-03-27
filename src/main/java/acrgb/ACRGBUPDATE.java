@@ -113,21 +113,6 @@ public class ACRGBUPDATE {
         return result;
     }
 
-// UPDATE MANAGING BOARD
-    @PUT
-    @Path("UPDATEMB")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEMB(final ManagingBoard managingboard) throws SQLException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = updatemethods.UPDATEMB(dataSource, managingboard);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
-
     @PUT
     @Path("UPDATEUSERCREDENTIALS")
     @Consumes(MediaType.APPLICATION_JSON)

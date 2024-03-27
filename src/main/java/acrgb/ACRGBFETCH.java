@@ -70,7 +70,7 @@ public class ACRGBFETCH {
         return result;
     }
 
-    //GET  HCI NET ASSETS TBL
+    //GET  HCI NET ASSETS TBL FINAL
     @GET
     @Path("GetContract/{tags}/{puserid}/{level}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -378,44 +378,34 @@ public class ACRGBFETCH {
     }
 
     @GET
-    @Path("GetHealthFacilityBadget/{accesstags}/{puserid}/{datefrom}/{dateto}")
+    @Path("GetHealthFacilityBadget/{accesstags}/{puserid}")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetHealthFacilityBadget(
             @PathParam("accesstags") String accesstags,
-            @PathParam("puserid") String puserid,
-            @PathParam("datefrom") String datefrom,
-            @PathParam("dateto") String dateto) {
+            @PathParam("puserid") String puserid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-
         result.setSuccess(false);
-        if (!utility.IsValidDate(datefrom) || !utility.IsValidDate(dateto)) {
-            result.setMessage("DATE FORMAT IS NOT VALID");
-            result.setSuccess(false);
-        } else {
-            switch (accesstags.trim().toUpperCase()) {
-                case "PHICPRO": {
-                    //GET FACILITY BUDGET USING MB SELECTED MBID
-                    ACRGBWSResult getResult = methods.MethodGetHealthFacilityBadgetUisngMBID(dataSource, puserid, datefrom, dateto);
-                    result.setMessage(getResult.getMessage());
-                    result.setResult(getResult.getResult());
-                    result.setSuccess(getResult.isSuccess());
-                    break;
-                }
-                case "MB": {
-                    //GET FACILITY BUDGET USING MB USERACCOUNT ID
-                    ACRGBWSResult getResult = methods.MethodGetHealthFacilityBadget(dataSource, puserid, datefrom, dateto);
-                    result.setMessage(getResult.getMessage());
-                    result.setResult(getResult.getResult());
-                    result.setSuccess(getResult.isSuccess());
-                    break;
-                }
-                default:
-                    result.setMessage("TAGS IS INVALID");
-                    break;
+        switch (accesstags.trim().toUpperCase()) {
+            case "PHICPRO": {
+                //GET FACILITY BUDGET USING MB SELECTED MBID
+                ACRGBWSResult getResult = methods.MethodGetHealthFacilityBadgetUisngMBID(dataSource, puserid);
+                result.setMessage(getResult.getMessage());
+                result.setResult(getResult.getResult());
+                result.setSuccess(getResult.isSuccess());
+                break;
             }
-
+            case "MB": {
+                //GET FACILITY BUDGET USING MB USERACCOUNT ID
+                ACRGBWSResult getResult = methods.MethodGetHealthFacilityBadget(dataSource, puserid);
+                result.setMessage(getResult.getMessage());
+                result.setResult(getResult.getResult());
+                result.setSuccess(getResult.isSuccess());
+                break;
+            }
+            default:
+                result.setMessage("TAGS IS INVALID");
+                break;
         }
-
         return result;
     }
 
@@ -432,24 +422,19 @@ public class ACRGBFETCH {
         return result;
     }
 
-    //GET ASSETS WITH PARAMETER
+    //GET HCPN
     @GET
-    @Path("GetManagingBoard/{tags}")
+    @Path("GetManagingBoard")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetManagingBoard(@PathParam("tags") String tags) throws ParseException {
+    public ACRGBWSResult GetManagingBoard() throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        if (tags.isEmpty()) {
-            result.setMessage("PATH PARAMETER IS EMPTY");
-            result.setSuccess(false);
-        } else {
-            ACRGBWSResult getResult = fetchmethods.GetManagingBoard(dataSource, tags);
-            result.setMessage(getResult.getMessage());
-            result.setResult(getResult.getResult());
-            result.setSuccess(getResult.isSuccess());
-        }
+        ACRGBWSResult getResult = fetchmethods.GetManagingBoard(dataSource);
+        result.setMessage(getResult.getMessage());
+        result.setResult(getResult.getResult());
+        result.setSuccess(getResult.isSuccess());
         return result;
     }
 
@@ -515,7 +500,6 @@ public class ACRGBFETCH {
             result.setSuccess(false);
         } else if (!utility.IsValidNumber(pid)) {
             result.setMessage("NUMBER FORMAT IS NOT VALID");
-            result.setSuccess(false);
         } else {
             ACRGBWSResult getResult = methods.GETROLEWITHID(dataSource, pid);
             result.setMessage(getResult.getMessage());
@@ -539,7 +523,6 @@ public class ACRGBFETCH {
             result.setSuccess(false);
         } else if (!utility.IsValidNumber(pid)) {
             result.setMessage("NUMBER FORMAT IS NOT VALID");
-            result.setSuccess(false);
         } else {
             ACRGBWSResult getResult = methods.GETFACILITYUNDERMBUSER(dataSource, pid);
             result.setMessage(getResult.getMessage());
@@ -549,7 +532,7 @@ public class ACRGBFETCH {
         return result;
     }
 
-//Get all facility (multiple)
+    //Get all facility (multiple)
     @GET
     @Path("GETALLFACILITY")
     @Produces(MediaType.APPLICATION_JSON)
@@ -574,7 +557,6 @@ public class ACRGBFETCH {
         result.setSuccess(false);
         if (!utility.IsValidNumber(proid)) {
             result.setMessage("NUMBER FORMAT IS NOT VALID");
-            result.setSuccess(false);
         } else {
             ACRGBWSResult getResult = methods.GETALLMBWITHPROID(dataSource, proid);
             result.setMessage(getResult.getMessage());
@@ -594,10 +576,8 @@ public class ACRGBFETCH {
         result.setSuccess(false);
         if (pid.isEmpty()) {
             result.setMessage("PATH PARAMETER IS EMPTY");
-            result.setSuccess(false);
         } else if (!utility.IsValidNumber(pid)) {
             result.setMessage("NUMBER FORMAT IS NOT VALID");
-            result.setSuccess(false);
         } else {
             ACRGBWSResult getResult = methods.GETALLFACILITYWITHMBID(dataSource, pid);
             result.setMessage(getResult.getMessage());
@@ -631,7 +611,22 @@ public class ACRGBFETCH {
         } else {
 
         }
+        return result;
+    }
 
+    //GETTING THE DATE SETTINGS
+    @GET
+    @Path("GetDateSettings")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetDateSettings() throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult getResult = fetchmethods.GETDATESETTINGS(dataSource);
+        result.setMessage(getResult.getMessage());
+        result.setResult(getResult.getResult());
+        result.setSuccess(getResult.isSuccess());
         return result;
     }
 
