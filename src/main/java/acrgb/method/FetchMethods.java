@@ -616,9 +616,8 @@ public class FetchMethods {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             //--------------------------------------------------------
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONTRACTCONID(:tags,:pconid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONTRACTCONID(:pconid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", "ACTIVE");
             statement.setString("pconid", pconid);
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
@@ -1053,18 +1052,20 @@ public class FetchMethods {
     }
 
     //GET ASSETS WITH PARAMETER
-    public ACRGBWSResult GETASSETSWITHPARAM(final DataSource dataSource, final String phcfid) {
+    public ACRGBWSResult GETASSETSWITHPARAM(final DataSource dataSource, final String phcfid, final String conid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETASSETSBYHCFID(:phcfid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETASSETSBYHCFID(:phcfid,:pconid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("phcfid", phcfid);
+            statement.setString("pconid", conid);
             statement.execute();
+            ArrayList<Assets> assetslist = new ArrayList<>();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            if (resultset.next()) {
+            while (resultset.next()) {
                 Assets assets = new Assets();
                 assets.setAssetid(resultset.getString("ASSETSID"));
                 assets.setHcfid(resultset.getString("HCFID"));
@@ -1072,11 +1073,9 @@ public class FetchMethods {
                 assets.setReceipt(resultset.getString("RECEIPT"));
                 assets.setAmount(resultset.getString("AMOUNT"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-
                 if (creator.isSuccess()) {
                     if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
-                        );
+                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
                         assets.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                     } else {
                         assets.setCreatedby(creator.getMessage());
@@ -1086,9 +1085,12 @@ public class FetchMethods {
                 }
                 assets.setDatereleased(dateformat.format(resultset.getDate("DATERELEASED")));//resultset.getString("DATERELEASED"));
                 assets.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
+                assetslist.add(assets);
+            }
+            if (!assetslist.isEmpty()) {
                 result.setMessage("OK");
                 result.setSuccess(true);
-                result.setResult(utility.ObjectMapper().writeValueAsString(assets));
+                result.setResult(utility.ObjectMapper().writeValueAsString(assetslist));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
@@ -1331,8 +1333,7 @@ public class FetchMethods {
         return result;
     }
 
-    
-     public ACRGBWSResult GETSKIPYEAR(final DataSource dataSource) throws ParseException {
+    public ACRGBWSResult GETSKIPYEAR(final DataSource dataSource) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -1359,6 +1360,5 @@ public class FetchMethods {
         }
         return result;
     }
-    
-    
+
 }

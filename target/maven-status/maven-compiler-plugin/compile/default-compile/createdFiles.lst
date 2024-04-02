@@ -7,6 +7,7 @@ acrgb\structure\NclaimsData.class
 acrgb\structure\FacilityComputedAmount.class
 acrgb\structure\User.class
 acrgb\method\UpdateMethods.class
+acrgb\structure\DateSettings.class
 acrgb\method\Methods$UserPassword.class
 acrgb\structure\Summary.class
 acrgb\structure\AssetsType.class
@@ -19,7 +20,6 @@ acrgb\utility\Utility.class
 acrgb\method\Methods.class
 acrgb\ACRGBFETCH.class
 acrgb\structure\ACRGBWSResult.class
-acrgb\ACRGBUPDATE$1.class
 acrgb\structure\Contract.class
 acrgb\utility\Cryptor.class
 acrgb\structure\ManagingBoard.class

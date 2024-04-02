@@ -304,9 +304,9 @@ public class ACRGBFETCH {
 
     //GET ASSETS WITH PARAMETER
     @GET
-    @Path("GETASSETSWITHPARAM/{phcfid}")
+    @Path("GETASSETSWITHPARAM/{phcfid}/{conid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GETASSETSWITHPARAM(@PathParam("phcfid") String phcfid) {
+    public ACRGBWSResult GETASSETSWITHPARAM(@PathParam("phcfid") String phcfid,@PathParam("conid") String conid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -318,7 +318,7 @@ public class ACRGBFETCH {
             result.setMessage("FACILITY ID IS NOT VALID");
             result.setSuccess(false);
         } else {
-            ACRGBWSResult getResult = fetchmethods.GETASSETSWITHPARAM(dataSource, phcfid);
+            ACRGBWSResult getResult = fetchmethods.GETASSETSWITHPARAM(dataSource, phcfid,conid);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -627,6 +627,32 @@ public class ACRGBFETCH {
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());
+        return result;
+    }
+
+    @GET
+    @Path("GetBalanceTerminatedContract/{userid}/{levelname}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetBalanceTerminatedContract(@PathParam("userid") String userid,
+            @PathParam("levelname") String levelname) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        switch (levelname.toUpperCase().trim()) {
+            case "PRO":
+                ACRGBWSResult getResult = methods.GetRemainingBalanceForTerminatedContract(dataSource, userid);
+                result.setMessage(getResult.getMessage());
+                result.setResult(getResult.getResult());
+                result.setSuccess(getResult.isSuccess());
+                break;
+            case "HCPN":
+                result.setMessage("TO SOON");
+                break;
+            default:
+                result.setMessage("LEVEL STATUS NOT VALID");
+                break;
+        }
         return result;
     }
 

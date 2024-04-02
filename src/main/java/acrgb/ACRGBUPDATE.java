@@ -13,7 +13,6 @@ import acrgb.structure.Archived;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.HealthCareFacility;
-import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserLevel;
@@ -21,7 +20,6 @@ import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.concurrent.ExecutorService;
 import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
 import javax.sql.DataSource;
@@ -29,8 +27,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -224,25 +220,14 @@ public class ACRGBUPDATE {
         result.setResult(taggingresult.getResult());
         return result;
     }
-    private final ExecutorService executorService = java.util.concurrent.Executors.newCachedThreadPool();
+   
 
     //CONTRACT TAGGING PROCESS
     @PUT
     @Path("TAGGINGCONTRACT")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public void TAGGINGCONTRACT(@Suspended
-            final AsyncResponse asyncResponse, final Contract contract) {
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                asyncResponse.resume(doTAGGINGCONTRACT(contract));
-            }
-        });
-
-    }
-
-    private ACRGBWSResult doTAGGINGCONTRACT(final Contract contract) {
+    public ACRGBWSResult TAGGINGCONTRACT(final Contract contract) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         Contract con = new Contract();
         con.setConid(contract.getConid());

@@ -26,5 +26,8 @@ public class Contract {
     private String baseamount;
     private String enddate;// THIS
     private String remarks;// THIS
+    private String remainingbalance;
+    private String traches;
+    private String totalclaims;
 
 }
