@@ -186,7 +186,7 @@ public class InsertMethods {
                     result.setMessage("DATE FORMAT IS NOT VALID");
                 } else {
                     CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONTRACT(:Message,:Code,:p_hcfid,:p_amount"
-                            + ",:p_createdby,:p_datecreated,:p_datefrom,:p_dateto,:p_transcode)");
+                            + ",:p_createdby,:p_datecreated,:p_datefrom,:p_dateto,:p_transcode,:p_baseamount)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                     getinsertresult.setString("p_hcfid", contract.getHcfid());//PAN Number or MB Accreditaion Number
@@ -196,6 +196,7 @@ public class InsertMethods {
                     getinsertresult.setDate("p_datefrom", (Date) new Date(utility.StringToDate(contract.getDatefrom()).getTime()));
                     getinsertresult.setDate("p_dateto", (Date) new Date(utility.StringToDate(contract.getDateto()).getTime()));
                     getinsertresult.setString("p_transcode", contract.getTranscode());
+                    getinsertresult.setString("p_baseamount", contract.getBaseamount());
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
                         result.setSuccess(true);
@@ -592,8 +593,7 @@ public class InsertMethods {
         }
         return result;
     }
-    
-    
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult INSERTSKIPYEAR(final DataSource datasource, final DateSettings datesettings) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -624,6 +624,5 @@ public class InsertMethods {
         }
         return result;
     }
-
 
 }

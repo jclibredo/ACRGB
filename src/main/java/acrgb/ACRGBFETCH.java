@@ -74,7 +74,9 @@ public class ACRGBFETCH {
     @GET
     @Path("GetContract/{tags}/{puserid}/{level}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetContract(@PathParam("tags") String tags, @PathParam("puserid") String puserid, @PathParam("level") String level) {
+    public ACRGBWSResult GetContract(@PathParam("tags") String tags, 
+            @PathParam("puserid") String puserid, 
+            @PathParam("level") String level) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setSuccess(false);
         if (tags.isEmpty()) {
@@ -109,7 +111,13 @@ public class ACRGBFETCH {
                     result.setResult(getResult.getResult());
                     result.setSuccess(getResult.isSuccess());
                     break;
-                }
+                }//GetFacilityContractUsingHCPNCode
+                case "HCPN":
+                    ACRGBWSResult getResult = fetchmethods.GetFacilityContractUsingHCPNCode(dataSource, tags, puserid);//GET CONTRACT OF ALL APEX FACILITY
+                    result.setMessage(getResult.getMessage());
+                    result.setResult(getResult.getResult());
+                    result.setSuccess(getResult.isSuccess());
+                    break;
                 default:
                     result.setMessage(level + " IS NOT VALID");
                     break;
@@ -118,19 +126,7 @@ public class ACRGBFETCH {
         return result;
     }
 
-    //GET  ACR ROLE TBLE
-    @GET
-    @Path("GetHealthCareFacility")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetHealthCareFacility() {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult getResult = fetchmethods.ACR_HCF(dataSource);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
-        return result;
-    }
-
+  
     //GET  ACR USER INDEX TBL
     @GET
     @Path("GetTranch/{tags}")
@@ -364,18 +360,18 @@ public class ACRGBFETCH {
     }
 
     //Get Facility using FHID
-    @GET
-    @Path("GETFACILITY/{uhcfid}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GETFACILITY(@PathParam("uhcfid") String uhcfid) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult hcf = fetchmethods.GETFACILITYID(dataSource, uhcfid);
-        result.setMessage(hcf.getMessage());
-        result.setSuccess(hcf.isSuccess());
-        result.setResult(hcf.getResult());
-        return result;
-
-    }
+//    @GET
+//    @Path("GETFACILITY/{uhcfid}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult GETFACILITY(@PathParam("uhcfid") String uhcfid) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        ACRGBWSResult hcf = fetchmethods.GETFACILITYID(dataSource, uhcfid);
+//        result.setMessage(hcf.getMessage());
+//        result.setSuccess(hcf.isSuccess());
+//        result.setResult(hcf.getResult());
+//        return result;
+//
+//    }
 
     @GET
     @Path("GetHealthFacilityBadget/{accesstags}/{puserid}")
@@ -488,9 +484,9 @@ public class ACRGBFETCH {
 
     //GET GET FACILITY USING PRO USERID
     @GET
-    @Path("GetRoleIndexWithID/{pid}")
+    @Path("GetFacilityUsingProAccountUserID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetRoleIndexWithID(@PathParam("pid") String pid) throws ParseException {
+    public ACRGBWSResult GetFacilityUsingProAccountUserID(@PathParam("pid") String pid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");

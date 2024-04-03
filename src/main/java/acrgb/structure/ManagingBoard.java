@@ -22,4 +22,5 @@ public class ManagingBoard {
     private String createdby;
     private String status;
     private String controlnumber;
+    private String baseamount;
 }

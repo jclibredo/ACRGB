@@ -1018,7 +1018,6 @@ public class Methods {
                                 }
                                 mblist.add(managingboard);
                             }
-                            break;
                         }
 
                     } else {
@@ -1225,6 +1224,39 @@ public class Methods {
                                 mb.setCreatedby("DATA NOT FOUND");
                             }
                             mb.setStatus(resultset.getString("STATUS"));
+                            mb.setControlnumber(resultset.getString("CONNUMBER"));
+                            //-----------------------------------------------------
+
+                            ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("MBID"));
+                            List<String> hcfcodeList = Arrays.asList(reastC.getResult().split(","));
+
+                            Double totaldiff = 0.00;
+                            for (int f = 0; f < hcfcodeList.size(); f++) {
+                                //FacilityComputedAmount
+                                ACRGBWSResult getBadgetResult = this.GetAmountPerFacility(dataSource, hcfcodeList.get(f));//GET TOTAL CLAIMS AMOUNT FOR GOOD TAGS
+                                System.out.println(getBadgetResult);
+                                if (getBadgetResult.isSuccess()) {
+                                    if (!getBadgetResult.getResult().isEmpty()) {
+                                        FacilityComputedAmount getBadgetFirst = utility.ObjectMapper().readValue(getBadgetResult.getResult(), FacilityComputedAmount.class);
+                                        ACRGBWSResult getBadgetFirstSecond = this.GetAmountPerFacilitySkipYear(dataSource, getBadgetFirst.getHospital());//GET TOTAL BADGET FROM SKIP YEAR
+                                        if (getBadgetFirstSecond.isSuccess()) {
+                                            FacilityComputedAmount combadget = utility.ObjectMapper().readValue(getBadgetFirstSecond.getResult(), FacilityComputedAmount.class);
+                                            Double skipamount = Double.parseDouble(combadget.getTotalamount());
+                                            Double totalamount = Double.parseDouble(getBadgetFirst.getTotalamount());
+//                                            String diff = String.valueOf(totalamount - skipamount);
+                                            totaldiff += totalamount - skipamount;
+                                        } else {
+                                            totaldiff += Double.parseDouble(getBadgetFirst.getTotalamount());
+                                        }
+
+                                    } else {
+                                        totaldiff += 0.00;
+                                    }
+                                } else {
+                                    totaldiff += 0.00;
+                                }
+                            }
+                            mb.setBaseamount(String.valueOf(totaldiff));
                             mblist.add(mb);
                             //------------------------------------------------------
                         }
@@ -1779,7 +1811,7 @@ public class Methods {
             }
 
             if (contractlist.isEmpty()) {
-                result.setMessage("NO DATA FOUND HERE");
+                result.setMessage("NO DATA FOUND");
             } else {
                 result.setMessage("OK");
                 result.setSuccess(true);
