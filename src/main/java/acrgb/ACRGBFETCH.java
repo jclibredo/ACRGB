@@ -74,8 +74,8 @@ public class ACRGBFETCH {
     @GET
     @Path("GetContract/{tags}/{puserid}/{level}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetContract(@PathParam("tags") String tags, 
-            @PathParam("puserid") String puserid, 
+    public ACRGBWSResult GetContract(@PathParam("tags") String tags,
+            @PathParam("puserid") String puserid,
             @PathParam("level") String level) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setSuccess(false);
@@ -126,7 +126,6 @@ public class ACRGBFETCH {
         return result;
     }
 
-  
     //GET  ACR USER INDEX TBL
     @GET
     @Path("GetTranch/{tags}")
@@ -302,7 +301,7 @@ public class ACRGBFETCH {
     @GET
     @Path("GETASSETSWITHPARAM/{phcfid}/{conid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GETASSETSWITHPARAM(@PathParam("phcfid") String phcfid,@PathParam("conid") String conid) {
+    public ACRGBWSResult GETASSETSWITHPARAM(@PathParam("phcfid") String phcfid, @PathParam("conid") String conid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -314,7 +313,7 @@ public class ACRGBFETCH {
             result.setMessage("FACILITY ID IS NOT VALID");
             result.setSuccess(false);
         } else {
-            ACRGBWSResult getResult = fetchmethods.GETASSETSWITHPARAM(dataSource, phcfid,conid);
+            ACRGBWSResult getResult = fetchmethods.GETASSETSWITHPARAM(dataSource, phcfid, conid);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -372,7 +371,6 @@ public class ACRGBFETCH {
 //        return result;
 //
 //    }
-
     @GET
     @Path("GetHealthFacilityBadget/{accesstags}/{puserid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -637,13 +635,18 @@ public class ACRGBFETCH {
         result.setSuccess(false);
         switch (levelname.toUpperCase().trim()) {
             case "PRO":
+                //GET TERMINATED CONTRACT OF FACILITY UNDER HCPN UNDER PRO USING PRO ACCOUNT USERID
                 ACRGBWSResult getResult = methods.GetRemainingBalanceForTerminatedContract(dataSource, userid);
                 result.setMessage(getResult.getMessage());
                 result.setResult(getResult.getResult());
                 result.setSuccess(getResult.isSuccess());
                 break;
-            case "HCPN":
-                result.setMessage("TO SOON");
+            case "APEX":
+                  //GET TERMINATED CONTRACT OF APEX
+                ACRGBWSResult getResultApex = methods.GetRemainingBalanceForTerminatedContractApex(dataSource);
+                result.setMessage(getResultApex.getMessage());
+                result.setResult(getResultApex.getResult());
+                result.setSuccess(getResultApex.isSuccess());
                 break;
             default:
                 result.setMessage("LEVEL STATUS NOT VALID");

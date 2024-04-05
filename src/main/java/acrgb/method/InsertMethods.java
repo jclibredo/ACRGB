@@ -10,7 +10,6 @@ import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.DateSettings;
 import acrgb.structure.HealthCareFacility;
-import acrgb.structure.NclaimsData;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserInfo;
@@ -46,7 +45,6 @@ public class InsertMethods {
     private final Cryptor cryptor = new Cryptor();
     private final Methods methods = new Methods();
     private final FetchMethods fm = new FetchMethods();
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult INSERTASSETS(final DataSource datasource, Assets assets) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -65,23 +63,8 @@ public class InsertMethods {
                 result.setSuccess(false);
             } else if (utility.IsValidNumber(assets.getHcfid()) && utility.IsValidNumber(assets.getTranchid())) {
                 ACRGBWSResult tranchresult = fm.GETTRANCHAMOUNT(datasource, assets.getTranchid());
-                ACRGBWSResult hcfresult = fm.ACR_HCF(datasource);
-                int countresult = 0;
-                if (hcfresult.isSuccess()) {
-                    if (!hcfresult.getResult().isEmpty()) {
-                        List<HealthCareFacility> hcflist = Arrays.asList(utility.ObjectMapper().readValue(hcfresult.getResult(), HealthCareFacility[].class));
-                        for (int x = 0; x < hcflist.size(); x++) {
-                            if (hcflist.get(x).getHcfid().equals(assets.getHcfid())) {
-                                countresult++;
-                            }
-                        }
-                    }
-                }
-
                 if (!tranchresult.isSuccess()) {
                     result.setMessage(tranchresult.getMessage());
-                } else if (countresult == 0) {
-                    result.setMessage("HEALTH CARE FACILITY NOT FOUND");
                 } else if (!utility.IsValidDate(assets.getDatecreated()) || !utility.IsValidDate(assets.getDatereleased())) {
                     result.setMessage("DATE FORMAT IS NOT VALID");
                 } else {
@@ -104,7 +87,8 @@ public class InsertMethods {
                                 List<Assets> assetslist = Arrays.asList(utility.ObjectMapper().readValue(transresult.getResult(), Assets[].class));
                                 for (int x = 0; x < assetslist.size(); x++) {
                                     if (assets.getHcfid().trim().equals(assetslist.get(x).getHcfid().trim())
-                                            && assets.getTranchid().trim().equals(assetslist.get(x).getTranchid().trim())) {
+                                            && assets.getTranchid().trim().equals(assetslist.get(x).getTranchid().trim()) 
+                                            && assetslist.get(x).getStatus().equals("2")) {
                                         count++;
                                     }
                                 }
@@ -138,7 +122,7 @@ public class InsertMethods {
                                             result.setMessage(getinsertresult.getString("Message"));
                                         }
                                     } else {
-                                        result.setMessage("TRANCH VALUE IS ALREADY ASSIGN TO HCF");
+                                        result.setMessage("TRANCH VALUE IS ALREADY ASSIGN TO FACILITY");
                                     }
                                 }
                             } else {

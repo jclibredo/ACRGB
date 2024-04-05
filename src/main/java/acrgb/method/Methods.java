@@ -6,7 +6,6 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
-import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.DateSettings;
 import acrgb.structure.FacilityComputedAmount;
@@ -997,7 +996,7 @@ public class Methods {
                             if (getmbresult.isSuccess()) {
                                 ManagingBoard managingboard = utility.ObjectMapper().readValue(getmbresult.getResult(), ManagingBoard.class);
                                 //GET FALCITY UNDER EVERY MB
-                                ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, managingboard.getMbid());
+                                ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, managingboard.getControlnumber());
                                 List<String> facilityidlist = Arrays.asList(restC.getResult().split(","));
                                 for (int y = 0; y < facilityidlist.size(); y++) {
                                     ACRGBWSResult getfacility = fm.GETFACILITYID(dataSource, facilityidlist.get(y));
@@ -1121,6 +1120,7 @@ public class Methods {
                         mb.setCreatedby("DATA NOT FOUND");
                     }
                     mb.setStatus(resultset.getString("STATUS"));
+                    mb.setControlnumber(resultset.getString("CONNUMBER"));
                     result.setMessage("OK");
                     result.setSuccess(true);
                     result.setResult(utility.ObjectMapper().writeValueAsString(mb));
@@ -1234,7 +1234,6 @@ public class Methods {
                             for (int f = 0; f < hcfcodeList.size(); f++) {
                                 //FacilityComputedAmount
                                 ACRGBWSResult getBadgetResult = this.GetAmountPerFacility(dataSource, hcfcodeList.get(f));//GET TOTAL CLAIMS AMOUNT FOR GOOD TAGS
-                                System.out.println(getBadgetResult);
                                 if (getBadgetResult.isSuccess()) {
                                     if (!getBadgetResult.getResult().isEmpty()) {
                                         FacilityComputedAmount getBadgetFirst = utility.ObjectMapper().readValue(getBadgetResult.getResult(), FacilityComputedAmount.class);
@@ -1732,72 +1731,19 @@ public class Methods {
                         if (restC.isSuccess()) {
                             List<String> restCList = Arrays.asList(restC.getResult().split(","));
                             for (int y = 0; y < restCList.size(); y++) {
-                                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTERMINATECON(:pan); end;");
-                                statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                                statement.setString("pan", restCList.get(y));
-                                statement.execute();
-                                ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                                if (resultset.next()) {
-                                    Contract contract = new Contract();
-                                    contract.setAmount(resultset.getString("AMOUNT"));
-                                    contract.setBaseamount(resultset.getString("BASEAMOUNT"));
-                                    contract.setConid(resultset.getString("CONID"));
-                                    ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                                    if (creator.isSuccess()) {
-                                        contract.setCreatedby(creator.getResult());
-                                    } else {
-                                        contract.setCreatedby(creator.getMessage());
-                                    }
-                                    contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
-                                    contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));
-                                    contract.setDateto(dateformat.format(resultset.getDate("DATETO")));
-                                    contract.setEnddate(dateformat.format(resultset.getDate("ENDDATE")));
-                                    ACRGBWSResult facility = fm.GETFACILITYID(dataSource, resultset.getString("HCFID"));
-                                    if (facility.isSuccess()) {
-                                        HealthCareFacility hcf = utility.ObjectMapper().readValue(facility.getResult(), HealthCareFacility.class);
-                                        contract.setHcfid(facility.getResult());
-                                        //GET TOTAL GOOD CLAIMS UNDER CONTRACT
-                                        ACRGBWSResult GetTotalClaimsAmount = this.GetAmount(dataSource,
-                                                hcf.getHcfcode(),
-                                                dateformat.format(resultset.getDate("DATEFROM")),
-                                                dateformat.format(resultset.getDate("ENDDATE")));
-                                        if (GetTotalClaimsAmount.isSuccess()) {
-                                            FacilityComputedAmount fca = utility.ObjectMapper().readValue(GetTotalClaimsAmount.getResult(), FacilityComputedAmount.class);
-                                            fca.getTotalclaims();
-                                            fca.getTotalamount();
-                                            Double conAmount = Double.parseDouble(resultset.getString("AMOUNT"));
-                                            Double GoodClaimsAmount = Double.parseDouble(fca.getTotalamount());
-                                            Double product = conAmount - GoodClaimsAmount;
-                                            contract.setTotalclaims(fca.getTotalclaims());
-                                            contract.setRemainingbalance(String.valueOf(product));
-                                        } else {
-                                            contract.setTotalclaims("NO DATA FOUND");
-                                            contract.setRemainingbalance(resultset.getString("AMOUNT"));
-                                        }
-                                        //END OF GET TOTAL GOOD CLAIMS UNDER CONTRACT
-
-                                    } else {
-                                        contract.setHcfid(facility.getMessage());
-                                    }
-                                    contract.setRemarks(resultset.getString("REMARKS"));
-                                    contract.setStats(resultset.getString("STATS"));
-                                    contract.setTranscode(resultset.getString("TRANSCODE"));
-                                    //GET COUNT OF TRANCHES RELEASED
-                                    ACRGBWSResult Assets = fm.GETASSETSWITHPARAM(dataSource, resultset.getString("HCFID"), resultset.getString("CONID"));
-                                    if (Assets.isSuccess()) {
-                                        List<Assets> assetsList = Arrays.asList(utility.ObjectMapper().readValue(Assets.getResult(), Assets[].class));
-                                        contract.setTraches(String.valueOf(assetsList.size()));
-                                    } else {
-                                        contract.setTraches("NO TRANCH RELEASED");
-                                    }
-                                    //END OF GET COUNT OF TRANCHES RELEASED
-
-                                    contractlist.add(contract);
-                                } else {
-                                    //IF NO FACILITY FOUND IN CONTRACT
+                                ACRGBWSResult conResult = fm.GetTerminateContract(dataSource, restCList.get(y));
+                                if (conResult.isSuccess()) {
+                                    Contract restD = utility.ObjectMapper().readValue(conResult.getResult(), Contract.class);
+                                    contractlist.add(restD);
                                 }
                             }
-
+                            if (contractlist.isEmpty()) {
+                                result.setMessage("NO DATA FOUND");
+                            } else {
+                                result.setMessage("OK");
+                                result.setSuccess(true);
+                                result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
+                            }
                         } else {
                             result.setMessage("NO DATA FOUND ");
                         }
@@ -1805,11 +1751,37 @@ public class Methods {
                 } else {
                     result.setMessage("NO DATA FOUND ");
                 }
-
             } else {
                 result.setMessage("NO DATA FOUND ");
             }
 
+        } catch (IOException | SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET TERMINATED CONTRACT OF APEX FACILITY
+    public ACRGBWSResult GetRemainingBalanceForTerminatedContractApex(final DataSource dataSource) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ArrayList<Contract> contractlist = new ArrayList<>();
+        try {
+            //GET FACILITY UNDER PRO LEVEL USING USERID ACCOUNT
+            ACRGBWSResult apexResult = this.GETAPEXFACILITY(dataSource);
+            if (apexResult.isSuccess()) {
+                List<HealthCareFacility> hcfList = Arrays.asList(utility.ObjectMapper().readValue(apexResult.getResult(), HealthCareFacility[].class));
+                for (int v = 0; v < hcfList.size(); v++) {
+                    ACRGBWSResult conResult = fm.GetTerminateContract(dataSource, hcfList.get(v).getHcfcode());
+                    if (conResult.isSuccess()) {
+                        Contract restA = utility.ObjectMapper().readValue(conResult.getResult(), Contract.class);
+                        contractlist.add(restA);
+                    }
+                }
+            }
             if (contractlist.isEmpty()) {
                 result.setMessage("NO DATA FOUND");
             } else {
@@ -1818,7 +1790,7 @@ public class Methods {
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
             }
 
-        } catch (IOException | SQLException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1856,7 +1828,9 @@ public class Methods {
 
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

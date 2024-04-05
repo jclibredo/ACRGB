@@ -180,10 +180,8 @@ public class FetchMethods {
                 result.setMessage("NO DATA FOUND");
             }
 
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -325,6 +323,7 @@ public class FetchMethods {
                 } else {
                     assets.setCreatedby("DATA NOT FOUND");
                 }
+                assets.setStatus(resultset.getString("STATS"));
                 listassets.add(assets);
             }
             if (!listassets.isEmpty()) {
@@ -357,7 +356,7 @@ public class FetchMethods {
             if (resultfm.isSuccess()) {
                 List<HealthCareFacility> userlist = Arrays.asList(utility.ObjectMapper().readValue(resultfm.getResult(), HealthCareFacility[].class));
                 for (int x = 0; x < userlist.size(); x++) {
-                    hcflist.add(userlist.get(x).getHcfid());
+                    hcflist.add(userlist.get(x).getHcfcode());
                 }
             }   //-------------- END OF GET APEX FACILITY
             for (int y = 0; y < hcflist.size(); y++) {
@@ -436,46 +435,10 @@ public class FetchMethods {
                 if (restB.isSuccess()) {
                     for (int b = 0; b < restist.size(); b++) {
                         //--------------------------------------------------------
-                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
-                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                        statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
-                        statement.setString("pfchid", restist.get(b));
-                        statement.execute();
-                        ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                        while (resultset.next()) {
-                            Contract contract = new Contract();
-                            contract.setConid(resultset.getString("CONID"));
-                            ACRGBWSResult facility = methods.GETMBWITHID(dataSource, resultset.getString("HCFID"));
-                            if (facility.isSuccess()) {
-                                if (facility.isSuccess()) {
-                                    ManagingBoard mb = utility.ObjectMapper().readValue(facility.getResult(), ManagingBoard.class);
-                                    contract.setHcfid(utility.ObjectMapper().writeValueAsString(mb));
-                                } else {
-                                    contract.setHcfid("NO DATA FOUND");
-                                }
-                            } else {
-                                contract.setHcfid("NOT DATA FOUND");
-                            }
-                            contract.setAmount(resultset.getString("AMOUNT"));
-                            contract.setStats(resultset.getString("STATS"));
-
-                            ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                            if (creator.isSuccess()) {
-                                if (!creator.getResult().isEmpty()) {
-                                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
-                                    contract.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                                } else {
-                                    contract.setCreatedby(creator.getMessage());
-                                }
-                            } else {
-                                contract.setCreatedby("DATA NOT FOUND");
-                            }
-                            contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                            contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
-                            contract.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
-                            contract.setTranscode(resultset.getString("TRANSCODE"));
-                            contract.setBaseamount(resultset.getString("BASEAMOUNT"));
-                            contractlist.add(contract);
+                        ACRGBWSResult getcon = this.GetHCPNSingleContract(dataSource, tags, restist.get(b));
+                        if (getcon.isSuccess()) {
+                            Contract conresult = utility.ObjectMapper().readValue(getcon.getResult(), Contract.class);
+                            contractlist.add(conresult);
                         }
                     }
                 } else {
@@ -483,7 +446,6 @@ public class FetchMethods {
                 }
             }
             //---------------------------------------------------------------
-
             if (!contractlist.isEmpty()) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
@@ -506,51 +468,20 @@ public class FetchMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        Methods methods = new Methods();
-        try (Connection connection = dataSource.getConnection()) {
+        // Methods methods = new Methods();
+        try {
             ArrayList<Contract> contractlist = new ArrayList<>();
-            //--------------------------------------------------------
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
-            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
-            statement.setString("pfchid", userid);
-            statement.execute();
-            ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            while (resultset.next()) {
-                Contract contract = new Contract();
-                contract.setConid(resultset.getString("CONID"));
-
-                ACRGBWSResult facility = methods.GETMBWITHID(dataSource, resultset.getString("HCFID"));
-                if (facility.isSuccess()) {
-                    if (facility.isSuccess()) {
-                        //  ManagingBoard mb = utility.ObjectMapper().readValue(facility.getResult(), ManagingBoard.class);
-                        contract.setHcfid(facility.getResult());
-                    } else {
-                        contract.setHcfid("NO DATA FOUND");
+            ACRGBWSResult mblist = this.GetManagingBoard(dataSource);
+            if (mblist.isSuccess()) {
+                List<ManagingBoard> mblistresult = Arrays.asList(utility.ObjectMapper().readValue(mblist.getResult(), ManagingBoard[].class));
+                for (int x = 0; x < mblistresult.size(); x++) {
+                    ACRGBWSResult getmbcon = this.GetHCPNSingleContract(dataSource, tags, mblistresult.get(x).getControlnumber());
+                    if (getmbcon.isSuccess()) {
+                        Contract contrac = utility.ObjectMapper().readValue(getmbcon.getResult(), Contract.class);
+                        contractlist.add(contrac);
                     }
-                } else {
-                    contract.setHcfid("NOT DATA FOUND");
                 }
-                //END OF GET NETWORK FULL DETAILS
-                contract.setAmount(resultset.getString("AMOUNT"));
-                contract.setStats(resultset.getString("STATS"));
-                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        contract.setCreatedby(creator.getResult());
-                    } else {
-                        contract.setCreatedby(creator.getMessage());
-                    }
-                } else {
-                    contract.setCreatedby("DATA NOT FOUND");
-                }
-                contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
-                contract.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
-                contract.setBaseamount(resultset.getString("BASEAMOUNT"));
-                contractlist.add(contract);
             }
-
             if (!contractlist.isEmpty()) {
                 result.setMessage("OK");
                 result.setSuccess(true);
@@ -559,7 +490,7 @@ public class FetchMethods {
                 result.setMessage("NO DATA FOUND");
             }
 
-        } catch (SQLException | IOException ex) {
+        } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -577,7 +508,6 @@ public class FetchMethods {
         try (Connection connection = dataSource.getConnection()) {
             ArrayList<Contract> contractlist = new ArrayList<>();
             ACRGBWSResult reatA = methods.GETROLE(dataSource, userid);
-            System.out.println(reatA.getResult());
             if (reatA.isSuccess()) {
                 //--------------------------------------------------------
                 CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
@@ -591,12 +521,8 @@ public class FetchMethods {
                     contract.setConid(resultset.getString("CONID"));
                     ACRGBWSResult facility = methods.GETMBWITHID(dataSource, resultset.getString("HCFID"));
                     if (facility.isSuccess()) {
-                        if (facility.isSuccess()) {
-                            ManagingBoard mb = utility.ObjectMapper().readValue(facility.getResult(), ManagingBoard.class);
-                            contract.setHcfid(mb.getMbname());
-                        } else {
-                            contract.setHcfid("NO DATA FOUND");
-                        }
+                        ManagingBoard mb = utility.ObjectMapper().readValue(facility.getResult(), ManagingBoard.class);
+                        contract.setHcfid(mb.getMbname());
                     } else {
                         contract.setHcfid("NOT DATA FOUND");
                     }
@@ -631,10 +557,8 @@ public class FetchMethods {
                 result.setMessage("NO DATA FOUND");
             }
 
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -711,6 +635,7 @@ public class FetchMethods {
                 statement.execute();
                 ResultSet resultset = (ResultSet) statement.getObject("v_result");
                 if (resultset.next()) {
+
                     Contract contract = new Contract();
                     contract.setConid(resultset.getString("CONID"));
                     ACRGBWSResult facility = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
@@ -1469,4 +1394,134 @@ public class FetchMethods {
         return result;
     }
 
+    //GET SINGLE CONTRACT 
+    public ACRGBWSResult GetHCPNSingleContract(final DataSource dataSource, final String tags, final String pcode) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        Methods methods = new Methods();
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("tags", tags.replaceAll("\\s", "").toUpperCase());
+            statement.setString("pfchid", pcode);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                Contract contract = new Contract();
+                contract.setConid(resultset.getString("CONID"));
+                ACRGBWSResult facility = methods.GETMBWITHID(dataSource, resultset.getString("HCFID"));
+                if (facility.isSuccess()) {
+                    contract.setHcfid(facility.getResult());
+                } else {
+                    contract.setHcfid("NOT DATA FOUND");
+                }
+                //END OF GET NETWORK FULL DETAILS
+                contract.setAmount(resultset.getString("AMOUNT"));
+                contract.setStats(resultset.getString("STATS"));
+                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    if (!creator.getResult().isEmpty()) {
+                        contract.setCreatedby(creator.getResult());
+                    } else {
+                        contract.setCreatedby(creator.getMessage());
+                    }
+                } else {
+                    contract.setCreatedby("DATA NOT FOUND");
+                }
+                contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
+                contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
+                contract.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
+                contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                contract.setTranscode(resultset.getString("TRANSCODE"));
+                result.setMessage("OK");
+                result.setResult(utility.ObjectMapper().writeValueAsString(contract));
+                result.setSuccess(true);
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+
+        } catch (Exception ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return result;
+    }
+
+    //GET TERMINATED CONTRACT SINGLE RESULT
+    public ACRGBWSResult GetTerminateContract(final DataSource dataSource, final String pcode) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        Methods methods = new Methods();
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTERMINATECON(:pan); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("pan", pcode);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                Contract contract = new Contract();
+                contract.setAmount(resultset.getString("AMOUNT"));
+                contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                contract.setConid(resultset.getString("CONID"));
+                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    contract.setCreatedby(creator.getResult());
+                } else {
+                    contract.setCreatedby(creator.getMessage());
+                }
+                contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));
+                contract.setDateto(dateformat.format(resultset.getDate("DATETO")));
+                contract.setEnddate(dateformat.format(resultset.getDate("ENDDATE")));
+                ACRGBWSResult facility = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
+                if (facility.isSuccess()) {
+                    HealthCareFacility hcf = utility.ObjectMapper().readValue(facility.getResult(), HealthCareFacility.class);
+                    contract.setHcfid(facility.getResult());
+                    ACRGBWSResult GetTotalClaimsAmount = methods.GetAmount(dataSource,
+                            hcf.getHcfcode(),
+                            dateformat.format(resultset.getDate("DATEFROM")),
+                            dateformat.format(resultset.getDate("ENDDATE")));
+                    if (GetTotalClaimsAmount.isSuccess()) {
+                        FacilityComputedAmount fca = utility.ObjectMapper().readValue(GetTotalClaimsAmount.getResult(), FacilityComputedAmount.class);
+                        fca.getTotalclaims();
+                        fca.getTotalamount();
+                        Double conAmount = Double.parseDouble(resultset.getString("AMOUNT"));
+                        Double GoodClaimsAmount = Double.parseDouble(fca.getTotalamount());
+                        Double product = conAmount - GoodClaimsAmount;
+                        contract.setTotalclaims(fca.getTotalclaims());
+                        contract.setRemainingbalance(String.valueOf(product));
+                    } else {
+                        contract.setTotalclaims("NO DATA FOUND");
+                        contract.setRemainingbalance(resultset.getString("AMOUNT"));
+                    }
+                }
+                contract.setRemarks(resultset.getString("REMARKS"));
+                contract.setStats(resultset.getString("STATS"));
+                contract.setTranscode(resultset.getString("TRANSCODE"));
+                //GET COUNT OF TRANCHES RELEASED
+                ACRGBWSResult Assets = this.GETASSETSWITHPARAM(dataSource, resultset.getString("HCFID"), resultset.getString("CONID"));
+                if (Assets.isSuccess()) {
+                    List<Assets> assetsList = Arrays.asList(utility.ObjectMapper().readValue(Assets.getResult(), Assets[].class));
+                    contract.setTraches(String.valueOf(assetsList.size()));
+                } else {
+                    contract.setTraches("NO TRANCH RELEASED");
+                }
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(contract));
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+        } catch (Exception ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return result;
+    }
 }

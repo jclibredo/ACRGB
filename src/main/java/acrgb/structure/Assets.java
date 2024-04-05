@@ -22,6 +22,7 @@ public class Assets {
     private String createdby;
     private String datereleased;
     private String datecreated;
+    private String status;
 
 
 }
