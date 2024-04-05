@@ -1227,9 +1227,8 @@ public class Methods {
                             mb.setControlnumber(resultset.getString("CONNUMBER"));
                             //-----------------------------------------------------
 
-                            ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("MBID"));
+                            ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("CONNUMBER"));
                             List<String> hcfcodeList = Arrays.asList(reastC.getResult().split(","));
-
                             Double totaldiff = 0.00;
                             for (int f = 0; f < hcfcodeList.size(); f++) {
                                 //FacilityComputedAmount

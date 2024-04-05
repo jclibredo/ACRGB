@@ -466,7 +466,6 @@ public class ACRGBFETCH {
                     } else {
                         result.setMessage("USER LEVEL NOT FOUND");
                     }
-
                 } else {
                     result.setMessage(getResult.getMessage());
                     result.setResult(getResult.getResult());
@@ -559,6 +558,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
+    
 
     @GET
     @Path("GetMBUsingMBID/{pid}")

@@ -220,7 +220,6 @@ public class ACRGBUPDATE {
         result.setResult(taggingresult.getResult());
         return result;
     }
-   
 
     //CONTRACT TAGGING PROCESS
     @PUT
@@ -229,28 +228,31 @@ public class ACRGBUPDATE {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult TAGGINGCONTRACT(final Contract contract) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        Contract con = new Contract();
-        con.setConid(contract.getConid());
-        con.setRemarks(contract.getRemarks());
-        con.setEnddate(contract.getEnddate());
-        switch (contract.getStats()) {
-            case "RENEWAL":
-                con.setStats("3");
-                break;
-            case "NONRENEWAL":
-                con.setStats("4");
-                break;
-            case "END":
-                con.setStats("5");
-                break;
-            default:
-                con.setStats("2");
-                break;
+        if (contract.getStats().isEmpty()) {
+            result.setMessage("CONTRACT TAGS IS EMPTY");
+            result.setSuccess(false);
+        } else {
+            Contract con = new Contract();
+            con.setConid(contract.getConid());
+            con.setRemarks(contract.getRemarks());
+            con.setEnddate(contract.getEnddate());
+            switch (contract.getStats()) {
+                case "NONRENEW":
+                    con.setStats("3");
+                    break;
+                case "RENEW":
+                    con.setStats("4");
+                    break;
+                case "TERMINATE":
+                    con.setStats("5");
+                    break;
+            }
+            ACRGBWSResult taggingresult = updatemethods.TAGGINGCONTRACT(dataSource, con);
+            result.setMessage(taggingresult.getMessage());
+            result.setSuccess(taggingresult.isSuccess());
+            result.setResult(taggingresult.getResult());
         }
-        ACRGBWSResult taggingresult = updatemethods.TAGGINGCONTRACT(dataSource, con);
-        result.setMessage(taggingresult.getMessage());
-        result.setSuccess(taggingresult.isSuccess());
-        result.setResult(taggingresult.getResult());
+
         return result;
     }
 
