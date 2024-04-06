@@ -9,8 +9,6 @@ import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.HealthCareFacility;
-import acrgb.structure.ManagingBoard;
-import acrgb.structure.Pro;
 import acrgb.structure.Tranch;
 import acrgb.structure.UserLevel;
 import acrgb.utility.Utility;
@@ -195,7 +193,6 @@ public class UpdateMethods {
                     }
                     result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                 }
-
             }
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
@@ -203,7 +200,6 @@ public class UpdateMethods {
         }
         return result;
     }
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATETRANCH(final DataSource datasource, Tranch tranch) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -243,7 +239,6 @@ public class UpdateMethods {
         }
         return result;
     }
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEUSERLEVEL(final DataSource datasource, UserLevel userlevel) {
         ACRGBWSResult result = utility.ACRGBWSResult();

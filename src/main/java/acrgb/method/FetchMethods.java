@@ -1524,4 +1524,79 @@ public class FetchMethods {
 
         return result;
     }
+    
+      //GET END OR NONRENEW CONTRACT SINGLE RESULT
+    public ACRGBWSResult GetEndContract(final DataSource dataSource, final String pcode) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        Methods methods = new Methods();
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETENDCON(:pan); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("pan", pcode);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                Contract contract = new Contract();
+                contract.setAmount(resultset.getString("AMOUNT"));
+                contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                contract.setConid(resultset.getString("CONID"));
+                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    contract.setCreatedby(creator.getResult());
+                } else {
+                    contract.setCreatedby(creator.getMessage());
+                }
+                contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));
+                contract.setDateto(dateformat.format(resultset.getDate("DATETO")));
+                contract.setEnddate(dateformat.format(resultset.getDate("ENDDATE")));
+                ACRGBWSResult facility = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
+                if (facility.isSuccess()) {
+                    HealthCareFacility hcf = utility.ObjectMapper().readValue(facility.getResult(), HealthCareFacility.class);
+                    contract.setHcfid(facility.getResult());
+                    ACRGBWSResult GetTotalClaimsAmount = methods.GetAmount(dataSource,
+                            hcf.getHcfcode(),
+                            dateformat.format(resultset.getDate("DATEFROM")),
+                            dateformat.format(resultset.getDate("ENDDATE")));
+                    if (GetTotalClaimsAmount.isSuccess()) {
+                        FacilityComputedAmount fca = utility.ObjectMapper().readValue(GetTotalClaimsAmount.getResult(), FacilityComputedAmount.class);
+                        fca.getTotalclaims();
+                        fca.getTotalamount();
+                        Double conAmount = Double.parseDouble(resultset.getString("AMOUNT"));
+                        Double GoodClaimsAmount = Double.parseDouble(fca.getTotalamount());
+                        Double product = conAmount - GoodClaimsAmount;
+                        contract.setTotalclaims(fca.getTotalclaims());
+                        contract.setRemainingbalance(String.valueOf(product));
+                    } else {
+                        contract.setTotalclaims("NO DATA FOUND");
+                        contract.setRemainingbalance(resultset.getString("AMOUNT"));
+                    }
+                }
+                contract.setRemarks(resultset.getString("REMARKS"));
+                contract.setStats(resultset.getString("STATS"));
+                contract.setTranscode(resultset.getString("TRANSCODE"));
+                //GET COUNT OF TRANCHES RELEASED
+                ACRGBWSResult Assets = this.GETASSETSWITHPARAM(dataSource, resultset.getString("HCFID"), resultset.getString("CONID"));
+                if (Assets.isSuccess()) {
+                    List<Assets> assetsList = Arrays.asList(utility.ObjectMapper().readValue(Assets.getResult(), Assets[].class));
+                    contract.setTraches(String.valueOf(assetsList.size()));
+                } else {
+                    contract.setTraches("NO TRANCH RELEASED");
+                }
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(contract));
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+        } catch (Exception ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return result;
+    }
 }

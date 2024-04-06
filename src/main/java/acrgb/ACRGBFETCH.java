@@ -536,7 +536,6 @@ public class ACRGBFETCH {
         result.setSuccess(hcf.isSuccess());
         result.setResult(hcf.getResult());
         return result;
-
     }
 
     //GET ASSETS WITH PARAMETER
@@ -558,7 +557,6 @@ public class ACRGBFETCH {
         }
         return result;
     }
-    
 
     @GET
     @Path("GetMBUsingMBID/{pid}")
@@ -641,12 +639,26 @@ public class ACRGBFETCH {
                 result.setResult(getResult.getResult());
                 result.setSuccess(getResult.isSuccess());
                 break;
-            case "APEX":
-                  //GET TERMINATED CONTRACT OF APEX
-                ACRGBWSResult getResultApex = methods.GetRemainingBalanceForTerminatedContractApex(dataSource);
-                result.setMessage(getResultApex.getMessage());
-                result.setResult(getResultApex.getResult());
-                result.setSuccess(getResultApex.isSuccess());
+            case "TERMINATEAPEX":
+                //GET TERMINATED CONTRACT OF APEX
+                ACRGBWSResult getResultTerminateApex = methods.GetRemainingBalanceForTerminatedContractApex(dataSource);
+                result.setMessage(getResultTerminateApex.getMessage());
+                result.setResult(getResultTerminateApex.getResult());
+                result.setSuccess(getResultTerminateApex.isSuccess());
+                break;
+            case "ENDCONAPEX":
+                //GET END CONTRACT OF APEX
+                ACRGBWSResult getResultEndApex = methods.GetRemainingBalanceForEndContractApex(dataSource);
+                result.setMessage(getResultEndApex.getMessage());
+                result.setResult(getResultEndApex.getResult());
+                result.setSuccess(getResultEndApex.isSuccess());
+                break;
+            case "NONRENEW":
+                //GET END CONTRACT OF FACILITY UNDER HCPN UNDER PRO USING PRO ACCOUNT USERID
+                ACRGBWSResult getResultnNonRenew = methods.GetRemainingBalanceForEndContract(dataSource, userid);
+                result.setMessage(getResultnNonRenew.getMessage());
+                result.setResult(getResultnNonRenew.getResult());
+                result.setSuccess(getResultnNonRenew.isSuccess());
                 break;
             default:
                 result.setMessage("LEVEL STATUS NOT VALID");

@@ -1796,6 +1796,41 @@ public class Methods {
         return result;
     }
 
+    //GET END CONTRACT OF APEX FACILITY
+    public ACRGBWSResult GetRemainingBalanceForEndContractApex(final DataSource dataSource) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ArrayList<Contract> contractlist = new ArrayList<>();
+        try {
+            //GET FACILITY UNDER PRO LEVEL USING USERID ACCOUNT
+            ACRGBWSResult apexResult = this.GETAPEXFACILITY(dataSource);
+            if (apexResult.isSuccess()) {
+                List<HealthCareFacility> hcfList = Arrays.asList(utility.ObjectMapper().readValue(apexResult.getResult(), HealthCareFacility[].class));
+                for (int v = 0; v < hcfList.size(); v++) {
+                    ACRGBWSResult conResult = fm.GetEndContract(dataSource, hcfList.get(v).getHcfcode());
+                    if (conResult.isSuccess()) {
+                        Contract restA = utility.ObjectMapper().readValue(conResult.getResult(), Contract.class);
+                        contractlist.add(restA);
+                    }
+                }
+            }
+            if (contractlist.isEmpty()) {
+                result.setMessage("NO DATA FOUND");
+            } else {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
+            }
+
+        } catch (IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
     public ACRGBWSResult GetAmount(final DataSource dataSource, final String pan, final String datestart, final String dateend) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1830,6 +1865,56 @@ public class Methods {
             Logger
                     .getLogger(Methods.class
                             .getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET COMPUTED REMAINING BALANCE FOR TERMINATED CONTRACT PER FACILITY
+    public ACRGBWSResult GetRemainingBalanceForEndContract(final DataSource dataSource, final String userid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ArrayList<Contract> contractlist = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            //GET FACILITY UNDER PRO LEVEL USING USERID ACCOUNT
+            ACRGBWSResult restA = this.GETROLE(dataSource, userid);//GET PRO ID USING USER ID
+            if (restA.isSuccess()) {
+                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult());//GET MB UNDER PRO USING PRO ID
+                if (restB.isSuccess()) {
+                    List<String> restBList = Arrays.asList(restB.getResult().split(","));
+                    for (int x = 0; x < restBList.size(); x++) {
+                        ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, restBList.get(x));//GET MB UNDER PRO USING PRO ID
+                        if (restC.isSuccess()) {
+                            List<String> restCList = Arrays.asList(restC.getResult().split(","));
+                            for (int y = 0; y < restCList.size(); y++) {
+                                ACRGBWSResult conResult = fm.GetEndContract(dataSource, restCList.get(y));
+                                if (conResult.isSuccess()) {
+                                    Contract restD = utility.ObjectMapper().readValue(conResult.getResult(), Contract.class);
+                                    contractlist.add(restD);
+                                }
+                            }
+                            if (contractlist.isEmpty()) {
+                                result.setMessage("NO DATA FOUND");
+                            } else {
+                                result.setMessage("OK");
+                                result.setSuccess(true);
+                                result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
+                            }
+                        } else {
+                            result.setMessage("NO DATA FOUND ");
+                        }
+                    }
+                } else {
+                    result.setMessage("NO DATA FOUND ");
+                }
+            } else {
+                result.setMessage("NO DATA FOUND ");
+            }
+
+        } catch (IOException | SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
