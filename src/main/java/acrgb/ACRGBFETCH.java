@@ -6,6 +6,7 @@
 package acrgb;
 
 import acrgb.method.FetchMethods;
+import acrgb.method.LedgerMethod;
 import acrgb.method.Methods;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.UserLevel;
@@ -46,6 +47,7 @@ public class ACRGBFETCH {
     private final Utility utility = new Utility();
     private final FetchMethods fetchmethods = new FetchMethods();
     private final Methods methods = new Methods();
+    private final LedgerMethod lm = new LedgerMethod();
 
     //GET ASSETS TYPE TBL
     @GET
@@ -540,9 +542,10 @@ public class ACRGBFETCH {
 
     //GET ASSETS WITH PARAMETER
     @GET
-    @Path("GetManagingBoardWithProID/{proid}")
+    @Path("GetManagingBoardWithProID/{proid}/{levelname}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetManagingBoardWithProID(@PathParam("proid") String proid) throws ParseException {
+    public ACRGBWSResult GetManagingBoardWithProID(@PathParam("proid") String proid,
+            @PathParam("levelname") String levelname) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -550,10 +553,23 @@ public class ACRGBFETCH {
         if (!utility.IsValidNumber(proid)) {
             result.setMessage("NUMBER FORMAT IS NOT VALID");
         } else {
-            ACRGBWSResult getResult = methods.GETALLMBWITHPROID(dataSource, proid);
-            result.setMessage(getResult.getMessage());
-            result.setResult(getResult.getResult());
-            result.setSuccess(getResult.isSuccess());
+            switch (levelname.toUpperCase().trim()) {
+                case "PRO":
+                    ACRGBWSResult getResult = methods.GETALLMBWITHPROID(dataSource, proid);
+                    result.setMessage(getResult.getMessage());
+                    result.setResult(getResult.getResult());
+                    result.setSuccess(getResult.isSuccess());
+                    break;
+                case "PHIC":
+                    ACRGBWSResult getphicResult = methods.GETALLMBWITHPROCODE(dataSource, proid);
+                    result.setMessage(getphicResult.getMessage());
+                    result.setResult(getphicResult.getResult());
+                    result.setSuccess(getphicResult.isSuccess());
+                    break;
+                default:
+                    result.setMessage("LEVEL TAGS NOT FOUND");
+                    break;
+            }
         }
         return result;
     }
@@ -664,6 +680,37 @@ public class ACRGBFETCH {
                 result.setMessage("LEVEL STATUS NOT VALID");
                 break;
         }
+        return result;
+    }
+
+    //LEDGER 
+    @GET
+    @Path("ProcessLedger/{datefrom}/{dateto}/{accessid}/{accesslevel}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult ProcessLedger(
+            @PathParam("datefrom") String datefrom,
+            @PathParam("dateto") String dateto,
+            @PathParam("accessid") String accessid,
+            @PathParam("accesslevel") String accesslevel) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        switch (accesslevel.toUpperCase().trim()) {
+            case "HCPN":
+                ACRGBWSResult hdcpnledger = lm.HCPNLedger(dataSource, datefrom, dateto, accessid);
+                result.setMessage(hdcpnledger.getMessage());
+                result.setResult(hdcpnledger.getResult());
+                result.setSuccess(hdcpnledger.isSuccess());
+                break;
+            case "HCF":
+                result.setMessage("");
+                result.setResult("");
+                result.setSuccess(false);
+                break;
+
+        }
+
         return result;
     }
 

@@ -93,7 +93,6 @@ public class FetchMethods {
         result.setSuccess(false);
         Methods methods = new Methods();
         try (Connection connection = dataSource.getConnection()) {
-
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.ACR_HCF(); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.execute();
@@ -114,19 +113,20 @@ public class FetchMethods {
                         hcf.setCreatedby(creator.getMessage());
                     }
                 } else {
-                    hcf.setCreatedby("DATA NOT FOUND");
+                    hcf.setCreatedby("N/A");
                 }
                 hcf.setType(resultset.getString("HCFTYPE"));
                 hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
                 hcf.setGbtags(resultset.getString("GB"));
                 //-------------------------------------------------
-                ACRGBWSResult methodsresult = methods.GETROLEREVERESE(dataSource, resultset.getString("HCFID"));
+                ACRGBWSResult methodsresult = methods.GETROLEREVERESE(dataSource, resultset.getString("HCFCODE"));
                 if (methodsresult.isSuccess()) {
                     ACRGBWSResult mgresult = methods.GETMBWITHID(dataSource, methodsresult.getResult());
                     if (mgresult.isSuccess()) {
                         ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
-                        hcf.setMb(mb.getMbname());
+                        hcf.setMb(mb.getControlnumber());
                         ACRGBWSResult restC = methods.GETROLEREVERESE(dataSource, mb.getMbid());
+                        System.out.println(restC);
                         if (restC.isSuccess()) {
                             //GET PRO USING PROID
                             ACRGBWSResult getproid = methods.GetProWithPROID(dataSource, restC.getResult());
@@ -162,12 +162,12 @@ public class FetchMethods {
                         }
                         hcf.setTotalclaims(getBadgetFirst.getTotalclaims());
                     } else {
-                        hcf.setTotalclaims("NO DATA");
-                        hcf.setBaseamount("NO DATA");
+                        hcf.setTotalclaims("N/A");
+                        hcf.setBaseamount("N/A");
                     }
                 } else {
                     hcf.setBaseamount(getBadgetResult.getMessage());
-                    hcf.setTotalclaims("NO DATA");
+                    hcf.setTotalclaims("N/A");
                 }
 
                 hcflist.add(hcf);
@@ -177,7 +177,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(hcflist));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
         } catch (SQLException | IOException | ParseException ex) {
@@ -210,7 +210,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(userinfo));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -272,7 +272,6 @@ public class FetchMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        Methods methods = new Methods();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :assets_type := ACR_GB.ACRGBPKGFUNCTION.ACR_ASSETS(:tags,:phcfid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
@@ -1524,8 +1523,8 @@ public class FetchMethods {
 
         return result;
     }
-    
-      //GET END OR NONRENEW CONTRACT SINGLE RESULT
+
+    //GET END OR NONRENEW CONTRACT SINGLE RESULT
     public ACRGBWSResult GetEndContract(final DataSource dataSource, final String pcode) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1589,6 +1588,77 @@ public class FetchMethods {
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+        } catch (Exception ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return result;
+    }
+
+    //GET ASSETS BY CONID
+    public ACRGBWSResult GETASSETSBYCONID(final DataSource dataSource, final String conid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ArrayList<Assets> listassets = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETASSETSBYCONID(:pconid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("pconid", conid);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                Assets assets = new Assets();
+                assets.setAssetid(resultset.getString("ASSETSID"));
+                ACRGBWSResult tranchresult = this.ACR_TRANCHWITHID(dataSource, resultset.getString("TRANCHID"));
+                if (tranchresult.isSuccess()) {
+                    assets.setTranchid(tranchresult.getResult());
+                } else {
+                    assets.setTranchid(tranchresult.getMessage());
+                }
+                ACRGBWSResult facilityresult = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
+                if (facilityresult.isSuccess()) {
+                    assets.setHcfid(facilityresult.getResult());
+                } else {
+                    assets.setHcfid(facilityresult.getMessage());
+                }
+                assets.setDatereleased(dateformat.format(resultset.getDate("DATERELEASED")));//resultset.getDate("DATERELEASED"));
+                assets.setReceipt(resultset.getString("RECEIPT"));
+                assets.setAmount(resultset.getString("AMOUNT"));
+                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    if (!creator.getResult().isEmpty()) {
+                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                        assets.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                    } else {
+                        assets.setCreatedby(creator.getMessage());
+                    }
+                } else {
+                    assets.setCreatedby("DATA NOT FOUND");
+                }
+                assets.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                ACRGBWSResult getcon = this.GETCONTRACTCONID(dataSource, resultset.getString("CONID").trim());
+                if (getcon.isSuccess()) {
+                    if (!getcon.getResult().isEmpty()) {
+                        assets.setConid(getcon.getResult());
+                    } else {
+                        assets.setConid(getcon.getMessage());
+                    }
+                } else {
+                    assets.setCreatedby("DATA NOT FOUND");
+                }
+                assets.setStatus(resultset.getString("STATS"));
+                listassets.add(assets);
+            }
+            if (!listassets.isEmpty()) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(listassets));
             } else {
                 result.setMessage("NO DATA FOUND");
             }

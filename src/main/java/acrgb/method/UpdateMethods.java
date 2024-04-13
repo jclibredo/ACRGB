@@ -200,6 +200,7 @@ public class UpdateMethods {
         }
         return result;
     }
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATETRANCH(final DataSource datasource, Tranch tranch) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -239,6 +240,7 @@ public class UpdateMethods {
         }
         return result;
     }
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEUSERLEVEL(final DataSource datasource, UserLevel userlevel) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -271,6 +273,7 @@ public class UpdateMethods {
         }
         return result;
     }
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult FACILITYTAGGING(final DataSource datasource, HealthCareFacility hcf) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -279,12 +282,11 @@ public class UpdateMethods {
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.FACILITYTAGGING(:Message,:Code,:p_hcfidcode,"
-                    + ":p_type,:p_gb)");
+                    + ":p_type)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("p_hcfidcode", hcf.getHcfcode());//GET HOSPITAL CODE
             getinsertresult.setString("p_type", hcf.getType()); //APEX OR HCPN CONTROL NUMBER
-            getinsertresult.setString("p_gb", hcf.getGbtags());//GB OR NONGB
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setSuccess(true);

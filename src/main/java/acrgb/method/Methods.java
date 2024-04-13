@@ -1276,6 +1276,94 @@ public class Methods {
         return result;
     }
 
+    //GET MB USING PROCODE
+    public ACRGBWSResult GETALLMBWITHPROCODE(final DataSource dataSource, final String proid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            if (!utility.IsValidNumber(proid)) {
+                result.setMessage("INVALID NUMBER FORMAT");
+            } else {
+                ArrayList<ManagingBoard> mblist = new ArrayList<>();
+                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, proid);
+                List<String> fchlist = Arrays.asList(restB.getResult().split(","));
+                for (int x = 0; x < fchlist.size(); x++) {
+                    //---------------------------------------------------- 
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETMBWITHID(:pid); end;");
+                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                    statement.setString("pid", fchlist.get(x));
+                    statement.execute();
+                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                    while (resultset.next()) {
+                        //--------------------------------------------------------
+                        ManagingBoard mb = new ManagingBoard();
+                        mb.setMbid(resultset.getString("MBID"));
+                        mb.setMbname(resultset.getString("MBNAME"));
+                        mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                        ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                        if (creator.isSuccess()) {
+                            if (!creator.getResult().isEmpty()) {
+                                UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                                mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                            } else {
+                                mb.setCreatedby(creator.getMessage());
+                            }
+                        } else {
+                            mb.setCreatedby("DATA NOT FOUND");
+                        }
+                        mb.setStatus(resultset.getString("STATUS"));
+                        mb.setControlnumber(resultset.getString("CONNUMBER"));
+                        //-----------------------------------------------------
+                        ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("CONNUMBER"));
+                        List<String> hcfcodeList = Arrays.asList(reastC.getResult().split(","));
+                        Double totaldiff = 0.00;
+                        for (int f = 0; f < hcfcodeList.size(); f++) {
+                            //FacilityComputedAmount
+                            ACRGBWSResult getBadgetResult = this.GetAmountPerFacility(dataSource, hcfcodeList.get(f));//GET TOTAL CLAIMS AMOUNT FOR GOOD TAGS
+                            if (getBadgetResult.isSuccess()) {
+                                if (!getBadgetResult.getResult().isEmpty()) {
+                                    FacilityComputedAmount getBadgetFirst = utility.ObjectMapper().readValue(getBadgetResult.getResult(), FacilityComputedAmount.class);
+                                    ACRGBWSResult getBadgetFirstSecond = this.GetAmountPerFacilitySkipYear(dataSource, getBadgetFirst.getHospital());//GET TOTAL BADGET FROM SKIP YEAR
+                                    if (getBadgetFirstSecond.isSuccess()) {
+                                        FacilityComputedAmount combadget = utility.ObjectMapper().readValue(getBadgetFirstSecond.getResult(), FacilityComputedAmount.class);
+                                        Double skipamount = Double.parseDouble(combadget.getTotalamount());
+                                        Double totalamount = Double.parseDouble(getBadgetFirst.getTotalamount());
+//                                            String diff = String.valueOf(totalamount - skipamount);
+                                        totaldiff += totalamount - skipamount;
+                                    } else {
+                                        totaldiff += Double.parseDouble(getBadgetFirst.getTotalamount());
+                                    }
+
+                                } else {
+                                    totaldiff += 0.00;
+                                }
+                            } else {
+                                totaldiff += 0.00;
+                            }
+                        }
+                        mb.setBaseamount(String.valueOf(totaldiff));
+                        mblist.add(mb);
+                        //------------------------------------------------------
+                    }
+                }
+                if (mblist.size() > 0) {
+                    result.setMessage("OK");
+                    result.setSuccess(true);
+                    result.setResult(utility.ObjectMapper().writeValueAsString(mblist));
+                } else {
+                    result.setMessage("NO DATA FOUND");
+                }
+            }
+
+        } catch (SQLException | IOException | ParseException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
     //GET FACILITY WITH MBID
     public ACRGBWSResult GETALLFACILITYWITHMBID(final DataSource dataSource, final String proid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -1397,7 +1485,7 @@ public class Methods {
                 result.setMessage("OK");
                 result.setSuccess(true);
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
@@ -1427,7 +1515,7 @@ public class Methods {
                 result.setSuccess(true);
                 result.setResult(String.join(",", listresult));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
@@ -1452,7 +1540,7 @@ public class Methods {
                 result.setSuccess(true);
                 result.setResult(resultset.getString("USERID"));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
@@ -1488,7 +1576,7 @@ public class Methods {
                         hcf.setCreatedby(creator.getMessage());
                     }
                 } else {
-                    hcf.setCreatedby("DATA NOT FOUND");
+                    hcf.setCreatedby("N/A");
                 }
                 hcf.setType(resultset.getString("HCFTYPE"));
                 hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
@@ -1499,7 +1587,7 @@ public class Methods {
                 result.setMessage("OK");
                 result.setSuccess(true);
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -1557,7 +1645,7 @@ public class Methods {
                     }
                     result.setMessage("OK");
                 } else {
-                    result.setMessage("NO DATA FOUND");
+                    result.setMessage("N/A");
                 }
             } else {
                 result.setMessage(resultreports.getMessage());
@@ -1568,7 +1656,7 @@ public class Methods {
                 result.setResult(utility.ObjectMapper().writeValueAsString(rmblist));
                 result.setSuccess(true);
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (IOException | SQLException ex) {
             result.setMessage(ex.toString());
@@ -1590,7 +1678,6 @@ public class Methods {
                 if (!resultreports.getResult().isEmpty()) {
 //
                     List<Contract> conlist = Arrays.asList(utility.ObjectMapper().readValue(resultreports.getResult(), Contract[].class));
-
                     for (int x = 0; x < conlist.size(); x++) {
 //                        //-------------------------------------
                         ManagingBoard mb = utility.ObjectMapper().readValue(conlist.get(x).getHcfid(), ManagingBoard.class);
@@ -1625,7 +1712,7 @@ public class Methods {
                     }
 //
                 } else {
-                    result.setMessage("NO DATA FOUND");
+                    result.setMessage("N/A");
                 }
             } else {
                 result.setMessage(resultreports.getMessage());
@@ -1636,7 +1723,7 @@ public class Methods {
                 result.setResult(utility.ObjectMapper().writeValueAsString(rmblist));
                 result.setSuccess(true);
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (IOException | SQLException ex) {
             result.setMessage(ex.toString());
@@ -1862,9 +1949,7 @@ public class Methods {
 
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

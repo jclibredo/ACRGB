@@ -6,10 +6,12 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.Accreditation;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.DateSettings;
-import acrgb.structure.HealthCareFacility;
+import acrgb.structure.LogStatus;
+import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserInfo;
@@ -45,6 +47,7 @@ public class InsertMethods {
     private final Cryptor cryptor = new Cryptor();
     private final Methods methods = new Methods();
     private final FetchMethods fm = new FetchMethods();
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult INSERTASSETS(final DataSource datasource, Assets assets) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -87,7 +90,7 @@ public class InsertMethods {
                                 List<Assets> assetslist = Arrays.asList(utility.ObjectMapper().readValue(transresult.getResult(), Assets[].class));
                                 for (int x = 0; x < assetslist.size(); x++) {
                                     if (assets.getHcfid().trim().equals(assetslist.get(x).getHcfid().trim())
-                                            && assets.getTranchid().trim().equals(assetslist.get(x).getTranchid().trim()) 
+                                            && assets.getTranchid().trim().equals(assetslist.get(x).getTranchid().trim())
                                             && assetslist.get(x).getStatus().equals("2")) {
                                         count++;
                                     }
@@ -594,6 +597,125 @@ public class InsertMethods {
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(datesettings.getDatefrom()).getTime()));
                 getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(datesettings.getDateto()).getTime()));
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setSuccess(true);
+                } else {
+                    result.setMessage(getinsertresult.getString("Message"));
+                }
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult INSERTHCPN(final DataSource datasource, final ManagingBoard mb) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            if (!utility.IsValidDate(mb.getDatecreated())) {
+                result.setMessage("DATE FORMAT IS NOT VALID");
+            } else {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTHCPN(:Message,:Code,"
+                        + ":umbname,:udatecreated,:ucreatedby,:uaccreno)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("umbname", mb.getMbname().toUpperCase());
+                getinsertresult.setDate("udatecreated", (Date) new Date(utility.StringToDate(mb.getDatecreated()).getTime()));
+                getinsertresult.setString("ucreatedby", mb.getCreatedby());
+                getinsertresult.setString("uaccreno", mb.getControlnumber());
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    //MAPPING OF ACCREDITATION DATA
+                    Accreditation acree = new Accreditation();
+                    acree.setAccreno(mb.getControlnumber());
+                    acree.setCreatedby(mb.getCreatedby());
+                    acree.setDatecreated(mb.getDatecreated());
+                    acree.setDatefrom(mb.getLicensedatefrom());
+                    acree.setDateto(mb.getLicensedateto());
+                    ACRGBWSResult accreResult = this.INSERTACCREDITAION(datasource, acree);
+                    //MAPPING LOGSTATUS VALUE
+                    LogStatus logstats = new LogStatus();
+                    logstats.setAccount(mb.getControlnumber());
+                    logstats.setActby(mb.getCreatedby());
+                    logstats.setDatechange(mb.getDatecreated());
+                    logstats.setStatus("2");
+                    ACRGBWSResult logsResult = this.INSERTSTATSLOG(datasource, logstats);
+                    if (logsResult.isSuccess() && accreResult.isSuccess()) {
+                        result.setMessage(logsResult.getMessage() + " , " + accreResult.getMessage());
+                        result.setSuccess(true);
+                    } else {
+                        result.setMessage(logsResult.getMessage() + " , " + accreResult.getMessage());
+                    }
+                } else {
+                    result.setMessage(getinsertresult.getString("Message"));
+                }
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //INSERT ACCREDITATION  
+    public ACRGBWSResult INSERTACCREDITAION(final DataSource datasource, final Accreditation accre) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            if (!utility.IsValidDate(accre.getDatecreated())) {
+                result.setMessage("DATE FORMAT IS NOT VALID");
+            } else {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTACCREDITAION(:Message,:Code,"
+                        + ":uaccreno,:udatefrom,:udateto,:udatecreated,:ucreatedby)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("uaccreno", accre.getAccreno());
+                getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(accre.getDatefrom()).getTime()));
+                getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(accre.getDateto()).getTime()));
+                getinsertresult.setDate("udatecreated", (Date) new Date(utility.StringToDate(accre.getDatecreated()).getTime()));
+                getinsertresult.setString("ucreatedby", accre.getCreatedby());
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setSuccess(true);
+                } else {
+                    result.setMessage(getinsertresult.getString("Message"));
+                }
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+    //INSERT LOGS STATUS
+
+    public ACRGBWSResult INSERTSTATSLOG(final DataSource datasource, final LogStatus logs) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            if (!utility.IsValidDate(logs.getDatechange())) {
+                result.setMessage("DATE FORMAT IS NOT VALID");
+            } else {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTSTATSLOG(:Message,:Code,"
+                        + ":uaccount,:ustatus,:udatechange,:uactby)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("uaccount", logs.getAccount());
+                getinsertresult.setString("ustatus", logs.getAccount());
+                getinsertresult.setDate("udatechange", (Date) new Date(utility.StringToDate(logs.getDatechange()).getTime()));
+                getinsertresult.setString("uactby", logs.getActby());
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setMessage(getinsertresult.getString("Message"));

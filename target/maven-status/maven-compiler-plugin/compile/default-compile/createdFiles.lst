@@ -13,6 +13,8 @@ acrgb\structure\Summary.class
 acrgb\structure\AssetsType.class
 acrgb\structure\Assets.class
 acrgb\structure\MBRequestSummary.class
+acrgb\method\LedgerMethod.class
+acrgb\structure\LogStatus.class
 acrgb\structure\ReportsHCPNSummary.class
 acrgb\structure\AccountPayable.class
 acrgb\structure\ProcessAmountBadget.class
@@ -21,7 +23,10 @@ acrgb\method\Methods.class
 acrgb\ACRGBFETCH.class
 acrgb\structure\ACRGBWSResult.class
 acrgb\structure\Contract.class
+acrgb\structure\Ledger.class
+acrgb\structure\ReportsParam.class
 acrgb\utility\Cryptor.class
+acrgb\structure\Accreditation.class
 acrgb\structure\ManagingBoard.class
 acrgb\method\InsertMethods.class
 acrgb\structure\Tranch.class
