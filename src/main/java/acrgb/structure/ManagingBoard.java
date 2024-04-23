@@ -25,4 +25,5 @@ public class ManagingBoard {
     private String baseamount;
     private String licensedatefrom;//DATE OF LICENSE EXPIRED
     private String licensedateto;//
+    private String pro;
 }

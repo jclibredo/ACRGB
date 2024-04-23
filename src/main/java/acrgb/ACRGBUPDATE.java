@@ -12,6 +12,7 @@ import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Archived;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
+import acrgb.structure.DateSettings;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
@@ -253,6 +254,35 @@ public class ACRGBUPDATE {
             result.setResult(taggingresult.getResult());
         }
 
+        return result;
+    }
+
+    //DATE SETTINGS
+    @PUT
+    @Path("UPDATESETTINGS")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult UPDATESETTINGS(final DateSettings datesetting) throws SQLException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult taggingresult = updatemethods.UPDATESETTINGS(dataSource, datesetting);
+        result.setMessage(taggingresult.getMessage());
+        result.setSuccess(taggingresult.isSuccess());
+        result.setResult(taggingresult.getResult());
+        return result;
+    }
+
+    @PUT
+    @Path("RemoveAppellate")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult RemoveAppellate(final UserRoleIndex userroleindex) throws SQLException, ParseException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = updatemethods.RemoveAppellate(dataSource, userroleindex.getUserid(), userroleindex.getAccessid());
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
         return result;
     }
 

@@ -22,5 +22,6 @@ public class Pro {
     private String datecreated;
     private String stats;
     private String procode;
+    private String conamount;
 
 }

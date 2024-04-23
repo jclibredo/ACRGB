@@ -7,6 +7,7 @@ acrgb\structure\NclaimsData.class
 acrgb\structure\FacilityComputedAmount.class
 acrgb\structure\User.class
 acrgb\method\UpdateMethods.class
+acrgb\structure\Appellate.class
 acrgb\structure\DateSettings.class
 acrgb\method\Methods$UserPassword.class
 acrgb\structure\Summary.class

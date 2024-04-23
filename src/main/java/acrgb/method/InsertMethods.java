@@ -10,10 +10,13 @@ import acrgb.structure.Accreditation;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.DateSettings;
+import acrgb.structure.HealthCareFacility;
 import acrgb.structure.LogStatus;
 import acrgb.structure.ManagingBoard;
+import acrgb.structure.Pro;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
+import acrgb.structure.UserActivity;
 import acrgb.structure.UserInfo;
 import acrgb.structure.UserLevel;
 import acrgb.structure.UserRoleIndex;
@@ -191,10 +194,38 @@ public class InsertMethods {
                     } else {
                         result.setMessage(getinsertresult.getString("Message"));
                     }
+                    //INSERT TO ACTIVITY LOGS
+                    UserActivity userlogs = utility.UserActivity();
+                    ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, contract.getHcfid());
+                    if (getSubject.isSuccess()) {
+                        HealthCareFacility hcf = utility.ObjectMapper().readValue(getSubject.getResult(), HealthCareFacility.class);
+                        String actdetails = "INSERT CONTRACT TO " + hcf.getHcfname();
+                        userlogs.setActby(contract.getCreatedby());
+                        userlogs.setActdate(contract.getDatecreated());
+                        userlogs.setActdetails(actdetails);
+                        ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+                    } else {
+                        ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, contract.getHcfid());
+                        userlogs.setActby(contract.getCreatedby());
+                        userlogs.setActdate(contract.getDatecreated());
+                        if (getSubjectA.isSuccess()) {
+                            ManagingBoard mb = utility.ObjectMapper().readValue(getSubjectA.getResult(), ManagingBoard.class);
+                            String actdetails = "INSERT CONTRACT TO " + mb.getMbname();
+                            userlogs.setActdetails(actdetails);
+                        } else {
+                            String actdetails = "INSERT CONTRACT TO HCPN ";
+                            userlogs.setActdetails(actdetails);
+                        }
+                        ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+
+                    }
+
                 }
             }
         } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -412,7 +443,6 @@ public class InsertMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-
             if (!utility.IsValidDate(userroleindex.getDatecreated())) {
                 result.setMessage("DATE FORMAT IS NOT VALID");
             } else {
@@ -622,42 +652,65 @@ public class InsertMethods {
             if (!utility.IsValidDate(mb.getDatecreated())) {
                 result.setMessage("DATE FORMAT IS NOT VALID");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTHCPN(:Message,:Code,"
-                        + ":umbname,:udatecreated,:ucreatedby,:uaccreno)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("umbname", mb.getMbname().toUpperCase());
-                getinsertresult.setDate("udatecreated", (Date) new Date(utility.StringToDate(mb.getDatecreated()).getTime()));
-                getinsertresult.setString("ucreatedby", mb.getCreatedby());
-                getinsertresult.setString("uaccreno", mb.getControlnumber());
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    //MAPPING OF ACCREDITATION DATA
-                    Accreditation acree = new Accreditation();
-                    acree.setAccreno(mb.getControlnumber());
-                    acree.setCreatedby(mb.getCreatedby());
-                    acree.setDatecreated(mb.getDatecreated());
-                    acree.setDatefrom(mb.getLicensedatefrom());
-                    acree.setDateto(mb.getLicensedateto());
-                    ACRGBWSResult accreResult = this.INSERTACCREDITAION(datasource, acree);
-                    //MAPPING LOGSTATUS VALUE
-                    LogStatus logstats = new LogStatus();
-                    logstats.setAccount(mb.getControlnumber());
-                    logstats.setActby(mb.getCreatedby());
-                    logstats.setDatechange(mb.getDatecreated());
-                    logstats.setStatus("2");
-                    ACRGBWSResult logsResult = this.INSERTSTATSLOG(datasource, logstats);
-                    if (logsResult.isSuccess() && accreResult.isSuccess()) {
-                        result.setMessage(logsResult.getMessage() + " , " + accreResult.getMessage());
-                        result.setSuccess(true);
+                ACRGBWSResult restA = methods.GETROLE(datasource, mb.getCreatedby());
+                System.out.println(restA);
+                if (restA.isSuccess()) {
+                    ACRGBWSResult getProCode = methods.GetProWithPROID(datasource, restA.getResult());
+                    if (!getProCode.isSuccess()) {
+                        result.setMessage(getProCode.getMessage());
                     } else {
-                        result.setMessage(logsResult.getMessage() + " , " + accreResult.getMessage());
+                        Pro pro = utility.ObjectMapper().readValue(getProCode.getResult(), Pro.class);
+                        UserRoleIndex indexrole = new UserRoleIndex();
+                        indexrole.setUserid(pro.getProcode());
+                        indexrole.setAccessid(mb.getControlnumber());
+                        indexrole.setCreatedby(mb.getCreatedby());
+                        indexrole.setDatecreated(mb.getDatecreated());
+                        ACRGBWSResult insertRole = this.INSEROLEINDEX(datasource, indexrole);
+                        if (insertRole.isSuccess()) {
+                            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTHCPN(:Message,:Code,"
+                                    + ":umbname,:udatecreated,:ucreatedby,:uaccreno)");
+                            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                            getinsertresult.setString("umbname", mb.getMbname().toUpperCase());
+                            getinsertresult.setDate("udatecreated", (Date) new Date(utility.StringToDate(mb.getDatecreated()).getTime()));
+                            getinsertresult.setString("ucreatedby", mb.getCreatedby());
+                            getinsertresult.setString("uaccreno", mb.getControlnumber());
+                            getinsertresult.execute();
+                            if (getinsertresult.getString("Message").equals("SUCC")) {
+                                //MAPPING OF ACCREDITATION DATA
+                                Accreditation acree = new Accreditation();
+                                acree.setAccreno(mb.getControlnumber());
+                                acree.setCreatedby(mb.getCreatedby());
+                                acree.setDatecreated(mb.getDatecreated());
+                                acree.setDatefrom(mb.getLicensedatefrom());
+                                acree.setDateto(mb.getLicensedateto());
+                                ACRGBWSResult accreResult = this.INSERTACCREDITAION(datasource, acree);
+                                //MAPPING LOGSTATUS VALUE
+                                LogStatus logstats = new LogStatus();
+                                logstats.setAccount(mb.getControlnumber());
+                                logstats.setActby(mb.getCreatedby());
+                                logstats.setDatechange(mb.getDatecreated());
+                                logstats.setStatus("2");
+                                ACRGBWSResult logsResult = this.INSERTSTATSLOG(datasource, logstats);
+                                if (logsResult.isSuccess() && accreResult.isSuccess()) {
+                                    result.setMessage(logsResult.getMessage() + " , " + accreResult.getMessage());
+                                    result.setSuccess(true);
+                                } else {
+                                    result.setMessage(logsResult.getMessage() + " , " + accreResult.getMessage());
+                                }
+                            } else {
+                                result.setMessage(getinsertresult.getString("Message"));
+                            }
+                        } else {
+                            result.setMessage(insertRole.getMessage());
+                        }
                     }
+
                 } else {
-                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setMessage(restA.getMessage());
                 }
             }
-        } catch (SQLException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -713,7 +766,7 @@ public class InsertMethods {
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("uaccount", logs.getAccount());
-                getinsertresult.setString("ustatus", logs.getAccount());
+                getinsertresult.setString("ustatus", logs.getStatus());
                 getinsertresult.setDate("udatechange", (Date) new Date(utility.StringToDate(logs.getDatechange()).getTime()));
                 getinsertresult.setString("uactby", logs.getActby());
                 getinsertresult.execute();
@@ -724,6 +777,45 @@ public class InsertMethods {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
             }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    public ACRGBWSResult INSERTAPPELLATE(final DataSource datasource, final String uaccesscode,
+            final String ucontrolcode) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            ArrayList<String> errorList = new ArrayList<>();
+            List<String> accesslist = Arrays.asList(ucontrolcode.split(","));
+            int errCount = 0;
+            for (int x = 0; x < accesslist.size(); x++) {
+                //------------------------------------------------------------------------------------------------
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTAPPELLATE(:Message,:Code,"
+                        + ":uaccesscode,:ucontrolcode)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("uaccesscode", uaccesscode);
+                getinsertresult.setString("ucontrolcode", accesslist.get(x));
+                getinsertresult.execute();
+                //------------------------------------------------------------------------------------------------
+                if (!getinsertresult.getString("Message").equals("SUCC")) {
+                    errCount++;
+                    errorList.add(getinsertresult.getString("Message"));
+                }
+            }
+            if (errCount == 0) {
+                result.setSuccess(true);
+                result.setMessage("OK");
+            } else {
+                result.setMessage(errorList.toString());
+            }
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);

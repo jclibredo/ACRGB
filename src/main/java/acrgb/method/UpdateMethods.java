@@ -8,6 +8,7 @@ package acrgb.method;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
+import acrgb.structure.DateSettings;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.Tranch;
 import acrgb.structure.UserLevel;
@@ -18,6 +19,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -302,6 +304,35 @@ public class UpdateMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult UPDATESETTINGS(final DataSource datasource, DateSettings datesettings) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATESETTINGS(:Message,:Code,"
+                    + ":pdatefrom,"
+                    + ":pdateto,:ptags)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setDate("pdatefrom", (Date) new Date(utility.StringToDate(datesettings.getDatefrom()).getTime()));
+            getinsertresult.setDate("pdatefrom", (Date) new Date(utility.StringToDate(datesettings.getDateto()).getTime()));
+            getinsertresult.setString("ptags", datesettings.getTags().toUpperCase());//GET HOSPITAL CODE
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setSuccess(true);
+                result.setMessage(getinsertresult.getString("Message"));
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+        } catch (SQLException | ParseException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult TAGGINGCONTRACT(final DataSource datasource, Contract contract) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -327,12 +358,55 @@ public class UpdateMethods {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
             }
-
         } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
+    
+    
+    // REMOVED ACCESS LEVEL USING ROLE INDEX
+    public ACRGBWSResult RemoveAppellate(final DataSource datasource, final String accesscode, final String controlcode) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            if (!utility.IsValidNumber(accesscode)) {
+                result.setMessage("NUMBER FORMAT IS NOT VALID");
+            } else {
+                ArrayList<String> errorList = new ArrayList<>();
+                List<String> accesslist = Arrays.asList(controlcode.split(","));
+                int errCount = 0;
+                for (int x = 0; x < accesslist.size(); x++) {
+                    //------------------------------------------------------------------------------------------------
+                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.REMOVEAPPELLATE(:Message,:Code,"
+                            + ":uaccesscode,:ucontrolcode)");
+                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                    getinsertresult.setString("uaccesscode", accesscode);
+                    getinsertresult.setString("ucontrolcode", accesslist.get(x));
+                    getinsertresult.execute();
+                    //------------------------------------------------------------------------------------------------
+                    if (!getinsertresult.getString("Message").equals("SUCC")) {
+                        errCount++;
+                        errorList.add(getinsertresult.getString("Message"));
+                    }
+                }
+                if (errCount == 0) {
+                    result.setSuccess(true);
+                    result.setMessage("OK");
+                } else {
+                    result.setMessage(errorList.toString());
+                }
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+    
 
 }

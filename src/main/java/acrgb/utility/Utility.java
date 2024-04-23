@@ -6,6 +6,7 @@
 package acrgb.utility;
 
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.UserActivity;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -45,6 +46,10 @@ public class Utility {
 //$ represents the end of the string.  
     public ACRGBWSResult ACRGBWSResult() {
         return new ACRGBWSResult();
+    }
+
+    public UserActivity UserActivity() {
+        return new UserActivity();
     }
 
     public SimpleDateFormat SimpleDateFormat(String pattern) {

@@ -6,6 +6,7 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.Accreditation;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.DateSettings;
@@ -76,7 +77,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(hcf));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -106,44 +107,72 @@ public class FetchMethods {
                 hcf.setHcfcode(resultset.getString("HCFCODE"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
-                        hcf.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    } else {
-                        hcf.setCreatedby(creator.getMessage());
-                    }
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    hcf.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+
                 } else {
-                    hcf.setCreatedby("N/A");
+                    hcf.setCreatedby(creator.getMessage());
                 }
                 hcf.setType(resultset.getString("HCFTYPE"));
                 hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
                 hcf.setGbtags(resultset.getString("GB"));
                 //-------------------------------------------------
-                ACRGBWSResult methodsresult = methods.GETROLEREVERESE(dataSource, resultset.getString("HCFCODE"));
-                if (methodsresult.isSuccess()) {
-                    ACRGBWSResult mgresult = methods.GETMBWITHID(dataSource, methodsresult.getResult());
-                    if (mgresult.isSuccess()) {
-                        ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
-                        hcf.setMb(mb.getControlnumber());
-                        ACRGBWSResult restC = methods.GETROLEREVERESE(dataSource, mb.getMbid());
-                        System.out.println(restC);
-                        if (restC.isSuccess()) {
-                            //GET PRO USING PROID
-                            ACRGBWSResult getproid = methods.GetProWithPROID(dataSource, restC.getResult());
-                            if (getproid.isSuccess()) {
-                                Pro pro = utility.ObjectMapper().readValue(getproid.getResult(), Pro.class);
-                                hcf.setProid(pro.getProname());
+                if (resultset.getString("HCFTYPE").equals("APEX")) {
+                    //GETAPPELLATE
+                    ACRGBWSResult restA = this.GETAPPELLATE(dataSource, resultset.getString("HCFCODE"));
+                    List<String> hcpnlist = Arrays.asList(restA.getResult().split(","));
+                    ArrayList<String> mblist = new ArrayList<>();
+                    ArrayList<String> prolist = new ArrayList<>();
+                    for (int h = 0; h < hcpnlist.size(); h++) {
+                        ACRGBWSResult mgresult = methods.GETMBWITHID(dataSource, hcpnlist.get(h));
+                        if (mgresult.isSuccess()) {
+                            ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
+                            mblist.add(mb.getControlnumber());
+                            ACRGBWSResult restC = methods.GETROLEREVERESE(dataSource, mb.getControlnumber());
+                            if (restC.isSuccess()) {
+                                //GET PRO USING PROID
+                                ACRGBWSResult getproid = methods.GetProWithPROID(dataSource, restC.getResult());
+                                if (getproid.isSuccess()) {
+                                    Pro pro = utility.ObjectMapper().readValue(getproid.getResult(), Pro.class);
+                                    prolist.add(pro.getProname());
+                                }
+                            }
+                        }
+                    }
+                    if (mblist.isEmpty()) {
+                        hcf.setMb("N/A");
+                        hcf.setProid("N/A");
+                    } else {
+                        hcf.setProid(utility.ObjectMapper().writeValueAsString(prolist));
+                        hcf.setMb(utility.ObjectMapper().writeValueAsString(mblist));
+                    }
+                } else {
+                    ACRGBWSResult methodsresult = methods.GETROLEREVERESE(dataSource, resultset.getString("HCFCODE"));
+                    if (methodsresult.isSuccess()) {
+                        ACRGBWSResult mgresult = methods.GETMBWITHID(dataSource, methodsresult.getResult());
+                        if (mgresult.isSuccess()) {
+                            ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
+                            hcf.setMb(mb.getControlnumber());
+                            ACRGBWSResult restC = methods.GETROLEREVERESE(dataSource, mb.getControlnumber());
+                            if (restC.isSuccess()) {
+                                //GET PRO USING PROID
+                                ACRGBWSResult getproid = methods.GetProWithPROID(dataSource, restC.getResult());
+                                if (getproid.isSuccess()) {
+                                    Pro pro = utility.ObjectMapper().readValue(getproid.getResult(), Pro.class);
+                                    hcf.setProid(pro.getProname());
+                                } else {
+                                    hcf.setProid(getproid.getMessage());
+                                }
                             } else {
-                                hcf.setProid(getproid.getMessage());
+                                hcf.setProid(restC.getMessage());
                             }
                         } else {
-                            hcf.setProid(restC.getMessage());
+                            hcf.setMb(mgresult.getMessage());
                         }
-
-                    } else {
-                        hcf.setMb(mgresult.getMessage());
                     }
+
                 }
+
                 //GET FACILITY BUDGET BASE AMOUNT
                 //FacilityComputedAmount
                 ACRGBWSResult getBadgetResult = methods.GetAmountPerFacility(dataSource, resultset.getString("HCFCODE"));//GET TOTAL CLAIMS AMOUNT FOR GOOD TAGS
@@ -158,7 +187,7 @@ public class FetchMethods {
                             String diff = String.valueOf(totalamount - skipamount);
                             hcf.setBaseamount(diff);
                         } else {
-                            hcf.setBaseamount(getBadgetFirst.getTotalamount());
+                            hcf.setBaseamount(getBadgetFirstSecond.getMessage());
                         }
                         hcf.setTotalclaims(getBadgetFirst.getTotalclaims());
                     } else {
@@ -169,7 +198,8 @@ public class FetchMethods {
                     hcf.setBaseamount(getBadgetResult.getMessage());
                     hcf.setTotalclaims("N/A");
                 }
-
+                hcf.setAmount("N/A");
+                hcf.setRemainingbalance("N/A");
                 hcflist.add(hcf);
             }
             if (hcflist.size() > 0) {
@@ -425,7 +455,7 @@ public class FetchMethods {
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
-        try (Connection connection = dataSource.getConnection()) {
+        try {
             ArrayList<Contract> contractlist = new ArrayList<>();
             ACRGBWSResult restA = methods.GETROLE(dataSource, userid);//GET (PROID) USING (USERID)
             if (restA.isSuccess()) {
@@ -441,7 +471,7 @@ public class FetchMethods {
                         }
                     }
                 } else {
-                    result.setMessage("NO DATA FOUND");
+                    result.setMessage("N/A");
                 }
             }
             //---------------------------------------------------------------
@@ -450,10 +480,9 @@ public class FetchMethods {
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
                 result.setSuccess(true);
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
-
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -486,7 +515,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
         } catch (IOException | ParseException ex) {
@@ -523,7 +552,7 @@ public class FetchMethods {
                         ManagingBoard mb = utility.ObjectMapper().readValue(facility.getResult(), ManagingBoard.class);
                         contract.setHcfid(mb.getMbname());
                     } else {
-                        contract.setHcfid("NOT DATA FOUND");
+                        contract.setHcfid("N/A");
                     }
                     //END OF GET NETWORK FULL DETAILS
                     contract.setAmount(resultset.getString("AMOUNT"));
@@ -536,7 +565,7 @@ public class FetchMethods {
                             contract.setCreatedby(creator.getMessage());
                         }
                     } else {
-                        contract.setCreatedby("DATA NOT FOUND");
+                        contract.setCreatedby("N/A");
                     }
                     contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                     contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
@@ -546,14 +575,14 @@ public class FetchMethods {
                 }
 
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
             if (!contractlist.isEmpty()) {
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
         } catch (SQLException | IOException | ParseException ex) {
@@ -586,13 +615,9 @@ public class FetchMethods {
                 contract.setStats(resultset.getString("STATS"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        contract.setCreatedby(creator.getResult());
-                    } else {
-                        contract.setCreatedby(creator.getMessage());
-                    }
+                    contract.setCreatedby(creator.getResult());
                 } else {
-                    contract.setCreatedby("DATA NOT FOUND");
+                    contract.setCreatedby(creator.getMessage());
                 }
                 contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
@@ -602,7 +627,7 @@ public class FetchMethods {
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                 result.setSuccess(true);
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
         } catch (SQLException | IOException ex) {
@@ -634,31 +659,22 @@ public class FetchMethods {
                 statement.execute();
                 ResultSet resultset = (ResultSet) statement.getObject("v_result");
                 if (resultset.next()) {
-
                     Contract contract = new Contract();
                     contract.setConid(resultset.getString("CONID"));
                     ACRGBWSResult facility = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
                     if (facility.isSuccess()) {
-                        if (!facility.getResult().isEmpty()) {
-                            contract.setHcfid(facility.getResult());
-                        } else {
-                            contract.setHcfid("NOT DATA FOUND");
-                        }
+                        contract.setHcfid(facility.getResult());
                     } else {
-                        contract.setHcfid("NOT DATA FOUND");
+                        contract.setHcfid(facility.getMessage());
                     }
                     //END OF GET NETWORK FULL DETAILS
                     contract.setAmount(resultset.getString("AMOUNT"));
                     contract.setStats(resultset.getString("STATS"));
                     ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                     if (creator.isSuccess()) {
-                        if (!creator.getResult().isEmpty()) {
-                            contract.setCreatedby(creator.getResult());
-                        } else {
-                            contract.setCreatedby(creator.getMessage());
-                        }
+                        contract.setCreatedby(creator.getResult());
                     } else {
-                        contract.setCreatedby("DATA NOT FOUND");
+                        contract.setCreatedby(creator.getMessage());
                     }
                     contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                     contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
@@ -666,8 +682,6 @@ public class FetchMethods {
                     contract.setTranscode(resultset.getString("TRANSCODE"));
                     contract.setBaseamount(resultset.getString("BASEAMOUNT"));
                     contractlist.add(contract);
-                } else {
-                    result.setMessage("NO DATA FOUND");
                 }
             }
 
@@ -676,13 +690,11 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -708,17 +720,11 @@ public class FetchMethods {
                 hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
                 hcf.setHcfcode(resultset.getString("HCFCODE"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-
                 if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
-                        );
-                        hcf.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    } else {
-                        hcf.setCreatedby(creator.getMessage());
-                    }
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    hcf.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                 } else {
-                    hcf.setCreatedby("DATA NOT FOUND");
+                    hcf.setCreatedby(creator.getMessage());
                 }
                 hcf.setType(resultset.getString("HCFTYPE"));
                 hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
@@ -730,7 +736,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(listHCF));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
         } catch (SQLException | IOException ex) {
@@ -761,15 +767,10 @@ public class FetchMethods {
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
 
                 if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
-                        );
-                        tranch.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    } else {
-                        tranch.setCreatedby(creator.getMessage());
-                    }
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    tranch.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                 } else {
-                    tranch.setCreatedby("DATA NOT FOUND");
+                    tranch.setCreatedby(creator.getMessage());
                 }
                 tranch.setStats(resultset.getString("STATS"));
                 tranch.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
@@ -780,7 +781,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(listtranch));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -812,15 +813,10 @@ public class FetchMethods {
                 // userinfo.setAreaid(resultset.getString("AREAID"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
-                        );
-                        userinfo.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    } else {
-                        userinfo.setCreatedby(creator.getMessage());
-                    }
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    userinfo.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                 } else {
-                    userinfo.setCreatedby("DATA NOT FOUND");
+                    userinfo.setCreatedby(creator.getMessage());
                 }
                 userinfo.setStats(resultset.getString("STATS"));
                 listuserinfo.add(userinfo);
@@ -830,7 +826,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(listuserinfo));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
         } catch (SQLException | IOException ex) {
@@ -861,15 +857,10 @@ public class FetchMethods {
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
 
                 if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
-                        );
-                        userlevel.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    } else {
-                        userlevel.setCreatedby(creator.getMessage());
-                    }
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    userlevel.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                 } else {
-                    userlevel.setCreatedby("DATA NOT FOUND");
+                    userlevel.setCreatedby(creator.getMessage());
                 }
                 userlevel.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 userlevel.setStats(resultset.getString("STATS"));
@@ -880,7 +871,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(listuserlevel));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -895,6 +886,7 @@ public class FetchMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.ACR_PRO(); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
@@ -906,21 +898,35 @@ public class FetchMethods {
                 pro.setProid(resultset.getString("PROID"));
                 pro.setProname(resultset.getString("PRONAME"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-
                 if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
-                        );
-                        pro.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    } else {
-                        pro.setCreatedby(creator.getMessage());
-                    }
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    pro.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                 } else {
-                    pro.setCreatedby("DATA NOT FOUND");
+                    pro.setCreatedby(creator.getMessage());
                 }
                 pro.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
                 pro.setStats(resultset.getString("STATS"));
                 pro.setProcode(resultset.getString("PROCODE"));
+                //======================================================
+                ACRGBWSResult restA = methods.GETROLEMULITPLE(dataSource, resultset.getString("PROCODE"));
+                List<String> hcfcodeList = Arrays.asList(restA.getResult().split(","));
+                Double totalcom = 0.00;
+                for (int x = 0; x < hcfcodeList.size(); x++) {
+                    ACRGBWSResult getProbudget = this.GETCONBYCODE(dataSource, hcfcodeList.get(x));
+                    if (getProbudget.isSuccess()) {
+                        Contract con = utility.ObjectMapper().readValue(getProbudget.getResult(), Contract.class);
+                        totalcom += Double.parseDouble(con.getAmount());
+                    }
+                }
+                pro.setConamount(String.valueOf(totalcom));
+
+//                ACRGBWSResult getProbudget = this.GETCONBYCODE(dataSource, resultset.getString("PROCODE"));
+//                if (getProbudget.isSuccess()) {
+//                    Contract con = utility.ObjectMapper().readValue(getProbudget.getResult(), Contract.class);
+//
+//                } else {
+//
+//                }
                 prolist.add(pro);
             }
             if (!prolist.isEmpty()) {
@@ -928,9 +934,9 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(prolist));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -975,15 +981,10 @@ public class FetchMethods {
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
 
                 if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
-                        );
-                        user.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    } else {
-                        user.setCreatedby(creator.getMessage());
-                    }
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    user.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                 } else {
-                    user.setCreatedby("DATA NOT FOUND");
+                    user.setCreatedby(creator.getMessage());
                 }
                 listuser.add(user);
             }
@@ -992,7 +993,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(listuser));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
         } catch (SQLException | IOException ex) {
@@ -1019,9 +1020,8 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(resultset.getString("PERCENTAGE"));
             } else {
-                result.setMessage("TRANCH NOT FOUND");
+                result.setMessage("N/A");
             }
-
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1046,9 +1046,8 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(resultset.getString("AMOUNT"));
             } else {
-                result.setMessage("CONTRACT NOT FOUND");
+                result.setMessage("N/A");
             }
-
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1073,9 +1072,8 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(resultset.getString("LEVNAME"));
             } else {
-                result.setMessage("ROLE NAME NOT FOUND");
+                result.setMessage("N/A");
             }
-
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1113,7 +1111,7 @@ public class FetchMethods {
                         assets.setCreatedby(creator.getMessage());
                     }
                 } else {
-                    assets.setCreatedby("DATA NOT FOUND");
+                    assets.setCreatedby(creator.getMessage());
                 }
                 assets.setDatereleased(dateformat.format(resultset.getDate("DATERELEASED")));//resultset.getString("DATERELEASED"));
                 assets.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
@@ -1124,7 +1122,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(assetslist));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
         } catch (SQLException | IOException ex) {
@@ -1151,21 +1149,13 @@ public class FetchMethods {
                 useractivity.setActid(resultset.getString("ACTID"));
                 useractivity.setActdate(datetimeformat.format(resultset.getTimestamp("ACTDATE")));
                 useractivity.setActdetails(resultset.getString("ACTDETAILS"));
-
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("ACTBY").trim());
-
                 if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
-                        );
-                        useractivity.setActby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    } else {
-                        useractivity.setActby(creator.getMessage());
-                    }
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    useractivity.setActby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                 } else {
-                    useractivity.setActby("DATA NOT FOUND");
+                    useractivity.setActby(creator.getMessage());
                 }
-
                 logslist.add(useractivity);
             }
             if (!logslist.isEmpty()) {
@@ -1173,7 +1163,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(logslist));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
         } catch (SQLException | IOException ex) {
@@ -1207,7 +1197,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(nclaimsdata));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -1216,6 +1206,7 @@ public class FetchMethods {
         return result;
     }
 
+    //THIS METHOD IS SERVE FOR REPORTING MATTER
     public ACRGBWSResult GETCOMPUTATION(final DataSource dataSource, final String u_accreno, final String u_date, final String u_tags) {
 
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -1232,6 +1223,7 @@ public class FetchMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = dataSource.getConnection()) {
             ArrayList<ManagingBoard> mblist = new ArrayList<>();
             //-------------------------------------------------------
@@ -1241,33 +1233,56 @@ public class FetchMethods {
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             while (resultset.next()) {
                 ManagingBoard mb = new ManagingBoard();
+
+//                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+//                LocalDateTime now = LocalDateTime.now();
+//                System.out.println("Date Now : " + String.valueOf(dtf.format(now)));
                 mb.setMbid(resultset.getString("MBID"));
                 mb.setMbname(resultset.getString("MBNAME"));
                 mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                //System.out.println("Date From DB : "+dateformat.format(resultset.getDate("DATECREATED")));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
-                        );
-                        mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    } else {
-                        mb.setCreatedby(creator.getMessage());
-                    }
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                 } else {
-                    mb.setCreatedby("NO DATA FOUND");
+                    mb.setCreatedby(creator.getMessage());
                 }
                 mb.setControlnumber(resultset.getString("CONNUMBER"));
                 mb.setStatus(resultset.getString("STATUS"));
+                ACRGBWSResult accreResult = this.GETACCREDITATION(dataSource, resultset.getString("CONNUMBER"));
+                if (accreResult.isSuccess()) {
+                    Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class);
+                    mb.setLicensedatefrom(accree.getDatefrom());
+                    mb.setLicensedateto(accree.getDateto());
+                } else {
+                    mb.setLicensedatefrom(accreResult.getMessage());
+                    mb.setLicensedateto(accreResult.getMessage());
+                }
+
+                ACRGBWSResult getPro = methods.GETROLEREVERESEMULTIPLE(dataSource, resultset.getString("CONNUMBER"));
+                if (getPro.isSuccess()) {
+                    // GetProWithPROID
+                    List<String> accesslist = Arrays.asList(getPro.getResult().split(","));
+                    for (int u = 0; u < accesslist.size(); u++) {
+                        ACRGBWSResult getProValue = methods.GetProWithPROID(dataSource, accesslist.get(u));
+                        if (getProValue.isSuccess()) {
+                            Pro pro = utility.ObjectMapper().readValue(getProValue.getResult(), Pro.class);
+                            mb.setPro(pro.getProname());
+                        }
+                    }
+                } else {
+                    mb.setPro(getPro.getMessage());
+                }
                 mblist.add(mb);
             }
             //-------------------------------------------------------
-
             if (mblist.size() > 0) {
                 result.setResult(utility.ObjectMapper().writeValueAsString(mblist));
                 result.setMessage("OK");
                 result.setSuccess(true);
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -1296,7 +1311,7 @@ public class FetchMethods {
                 result.setMessage("OK");
                 result.setSuccess(true);
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
         } catch (SQLException | IOException ex) {
@@ -1327,7 +1342,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(tr));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
         } catch (SQLException | IOException ex) {
@@ -1355,7 +1370,7 @@ public class FetchMethods {
                 result.setMessage("OK");
                 result.setSuccess(true);
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
         } catch (SQLException | IOException ex) {
@@ -1383,9 +1398,8 @@ public class FetchMethods {
                 result.setMessage("OK");
                 result.setSuccess(true);
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
-
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1414,20 +1428,16 @@ public class FetchMethods {
                 if (facility.isSuccess()) {
                     contract.setHcfid(facility.getResult());
                 } else {
-                    contract.setHcfid("NOT DATA FOUND");
+                    contract.setHcfid(facility.getMessage());
                 }
                 //END OF GET NETWORK FULL DETAILS
                 contract.setAmount(resultset.getString("AMOUNT"));
                 contract.setStats(resultset.getString("STATS"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        contract.setCreatedby(creator.getResult());
-                    } else {
-                        contract.setCreatedby(creator.getMessage());
-                    }
+                    contract.setCreatedby(creator.getResult());
                 } else {
-                    contract.setCreatedby("DATA NOT FOUND");
+                    contract.setCreatedby(creator.getMessage());
                 }
                 contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
@@ -1438,7 +1448,7 @@ public class FetchMethods {
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                 result.setSuccess(true);
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
         } catch (Exception ex) {
@@ -1495,7 +1505,7 @@ public class FetchMethods {
                         contract.setTotalclaims(fca.getTotalclaims());
                         contract.setRemainingbalance(String.valueOf(product));
                     } else {
-                        contract.setTotalclaims("NO DATA FOUND");
+                        contract.setTotalclaims("N/A");
                         contract.setRemainingbalance(resultset.getString("AMOUNT"));
                     }
                 }
@@ -1514,7 +1524,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (Exception ex) {
             result.setMessage(ex.toString());
@@ -1570,7 +1580,7 @@ public class FetchMethods {
                         contract.setTotalclaims(fca.getTotalclaims());
                         contract.setRemainingbalance(String.valueOf(product));
                     } else {
-                        contract.setTotalclaims("NO DATA FOUND");
+                        contract.setTotalclaims("N/A");
                         contract.setRemainingbalance(resultset.getString("AMOUNT"));
                     }
                 }
@@ -1589,7 +1599,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (Exception ex) {
             result.setMessage(ex.toString());
@@ -1632,25 +1642,17 @@ public class FetchMethods {
                 assets.setAmount(resultset.getString("AMOUNT"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
-                        assets.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    } else {
-                        assets.setCreatedby(creator.getMessage());
-                    }
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    assets.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                 } else {
-                    assets.setCreatedby("DATA NOT FOUND");
+                    assets.setCreatedby(creator.getMessage());
                 }
                 assets.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
                 ACRGBWSResult getcon = this.GETCONTRACTCONID(dataSource, resultset.getString("CONID").trim());
                 if (getcon.isSuccess()) {
-                    if (!getcon.getResult().isEmpty()) {
-                        assets.setConid(getcon.getResult());
-                    } else {
-                        assets.setConid(getcon.getMessage());
-                    }
+                    assets.setConid(getcon.getResult());
                 } else {
-                    assets.setCreatedby("DATA NOT FOUND");
+                    assets.setConid(getcon.getMessage());
                 }
                 assets.setStatus(resultset.getString("STATS"));
                 listassets.add(assets);
@@ -1660,13 +1662,138 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(listassets));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
         } catch (Exception ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
-
         return result;
     }
+
+    //GET ACCREDITATION NUMBER BY ACCOUNTCODE
+    public ACRGBWSResult GETACCREDITATION(final DataSource dataSource, final String uaccreno) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETACCREDITATION(:uaccreno); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("uaccreno", uaccreno);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                Accreditation accree = new Accreditation();
+                accree.setAccreno(resultset.getString("ACCRENO"));
+                accree.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));
+                accree.setDateto(dateformat.format(resultset.getDate("DATETO")));
+                accree.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    accree.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                } else {
+                    accree.setCreatedby(creator.getMessage());
+                }
+                accree.setStatus(resultset.getString("STATUS"));
+                result.setResult(utility.ObjectMapper().writeValueAsString(accree));
+                result.setMessage("OK");
+                result.setSuccess(true);
+            } else {
+                result.setMessage("N/A");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET ACCREDITATION NUMBER BY ACCOUNTCODE
+    public ACRGBWSResult GETCONBYCODE(final DataSource dataSource, final String ucode) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONBYCODE(:ucode); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("ucode", ucode);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                Contract con = new Contract();
+                con.setConid(resultset.getString("CONID"));
+                con.setHcfid(resultset.getString("HCFID"));
+                con.setAmount(resultset.getString("AMOUNT"));
+                con.setStats(resultset.getString("STATS"));
+                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    con.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                } else {
+                    con.setCreatedby(creator.getMessage());
+                }
+                con.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                con.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));
+                con.setDateto(dateformat.format(resultset.getDate("DATETO")));
+                con.setTranscode(resultset.getString("TRANSCODE"));
+                con.setBaseamount(resultset.getString("BASEAMOUNT"));
+                con.setRemarks(resultset.getString("REMARKS"));
+                if (resultset.getDate("ENDDATE") == null) {
+                    con.setEnddate("N/A");
+                } else {
+                    con.setEnddate(dateformat.format(resultset.getDate("ENDDATE")));
+                }
+                result.setResult(utility.ObjectMapper().writeValueAsString(con));
+                result.setMessage("OK");
+                result.setSuccess(true);
+            } else {
+                result.setMessage("N/A");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET APPELLATE CONTROL
+    public ACRGBWSResult GETAPPELLATE(final DataSource dataSource, final String controlcode) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+
+        //  ArrayList<UserRoleIndex> rolelist = new ArrayList<>();
+        ArrayList<String> accesslist = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETAPPELLATE(:ucontrolcode); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("ucontrolcode", controlcode);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+//                UserRoleIndex userrole = new UserRoleIndex();
+//                userrole.setRoleid(resultset.getString("ID"));
+//                userrole.setUserid(resultset.getString("ACCESSCODE"));
+//                userrole.setAccessid(resultset.getString("CONTROLCODE"));
+//                rolelist.add(userrole);
+                accesslist.add(resultset.getString("ACCESSCODE"));
+            }
+            if (!accesslist.isEmpty()) {
+                result.setSuccess(true);
+                result.setResult(String.join(",", accesslist));
+                result.setMessage("OK");
+            } else {
+                result.setMessage("N/A");
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
 }

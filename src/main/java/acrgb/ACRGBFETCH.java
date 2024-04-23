@@ -573,6 +573,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
+//------------------------------------------------------------
 
     @GET
     @Path("GetMBUsingMBID/{pid}")
@@ -611,7 +612,6 @@ public class ACRGBFETCH {
                     result.setSuccess(getResult.isSuccess());
                     break;
                 case "FACILITY":
-
                     break;
                 default:
                     break;
@@ -624,17 +624,30 @@ public class ACRGBFETCH {
 
     //GETTING THE DATE SETTINGS
     @GET
-    @Path("GetDateSettings")
+    @Path("GetDateSettings/{datecompute}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetDateSettings() throws ParseException {
+    public ACRGBWSResult GetDateSettings(@PathParam("datecompute") String datecompute) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.GETDATESETTINGS(dataSource);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
+        switch (datecompute.toUpperCase()) {
+            case "YEARCOMPUTE":
+                ACRGBWSResult getResult = fetchmethods.GETDATESETTINGS(dataSource);
+                result.setMessage(getResult.getMessage());
+                result.setResult(getResult.getResult());
+                result.setSuccess(getResult.isSuccess());
+                break;
+            case "SKIPYEAR":
+                ACRGBWSResult getResultS = fetchmethods.GETSKIPYEAR(dataSource);
+                result.setMessage(getResultS.getMessage());
+                result.setResult(getResultS.getResult());
+                result.setSuccess(getResultS.isSuccess());
+                break;
+            default:
+                result.setMessage("NO FOUND LEVEL");
+                break;
+        }
         return result;
     }
 
@@ -697,20 +710,19 @@ public class ACRGBFETCH {
         result.setResult("");
         result.setSuccess(false);
         switch (accesslevel.toUpperCase().trim()) {
-            case "HCPN":
-                ACRGBWSResult hdcpnledger = lm.HCPNLedger(dataSource, datefrom, dateto, accessid);
-                result.setMessage(hdcpnledger.getMessage());
-                result.setResult(hdcpnledger.getResult());
-                result.setSuccess(hdcpnledger.isSuccess());
+            case "HCPN"://GET LEDGER PER HCPN
+                ACRGBWSResult hcpnledger = lm.HCPNLedger(dataSource, datefrom, dateto, accessid);
+                result.setMessage(hcpnledger.getMessage());
+                result.setResult(hcpnledger.getResult());
+                result.setSuccess(hcpnledger.isSuccess());
                 break;
-            case "HCF":
-                result.setMessage("");
-                result.setResult("");
-                result.setSuccess(false);
+            case "HCF"://GET LEDGER PER FACILITY
+                ACRGBWSResult hcfledger = lm.HCFLedger(dataSource, datefrom, dateto, accessid);
+                result.setMessage(hcfledger.getMessage());
+                result.setResult(hcfledger.getResult());
+                result.setSuccess(hcfledger.isSuccess());
                 break;
-
         }
-
         return result;
     }
 

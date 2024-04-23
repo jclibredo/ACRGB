@@ -153,10 +153,27 @@ public class ACRGBPOST {
     public ACRGBWSResult INSERTDATESETTINGS(final DateSettings datesettings) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = insertmethods.INSERTDATESETTINGS(dataSource, datesettings);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        switch (datesettings.getTags().toUpperCase()) {
+            case "DATEDIF":
+                ACRGBWSResult insertresult = insertmethods.INSERTDATESETTINGS(dataSource, datesettings);
+                result.setMessage(insertresult.getMessage());
+                result.setSuccess(insertresult.isSuccess());
+                result.setResult(insertresult.getResult());
+                break;
+            case "DATESKIP":
+                ACRGBWSResult insertresultDate = insertmethods.INSERTSKIPYEAR(dataSource, datesettings);
+                result.setMessage(insertresultDate.getMessage());
+                result.setSuccess(insertresultDate.isSuccess());
+                result.setResult(insertresultDate.getResult());
+                break;
+            default:
+                result.setMessage("TAGS NOT FOUND");
+                break;
+        }
+
         return result;
     }
 
@@ -224,6 +241,21 @@ public class ACRGBPOST {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = insertmethods.INSEROLEINDEX(dataSource, userroleindex);
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
+
+    @POST
+    @Path("INSERTAPPELLATE")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult INSERTAPPELLATE(final UserRoleIndex userroleindex) throws SQLException, ParseException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = insertmethods.INSERTAPPELLATE(dataSource,
+                userroleindex.getUserid(),userroleindex.getAccessid());
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());

@@ -18,11 +18,13 @@ public class Ledger {
     }
     private String datetime;//DATE OF TRANSACTION
     private String particular;// SOURCE OF FUND OR TYPE
-    private String fundtransfer;//AMOUNT INSERTED OR RELEASED
+    private String credit;//AMOUNT INSERTED OR RELEASED
     private String totalclaims;//TOTAL NUMBER OF GOOD CLAIMS
     private String liquidation;//TOTAL CLAIMS AMOUNT
     private String balance;//REMAINING BALANCE
     private String contractnumber; //CONTRACT UNDER
-    private String fundreleased;
+    private String debit;
     private String facility;
+    private String account;
+    private String voucher;
 }
