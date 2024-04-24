@@ -353,10 +353,12 @@ public class UpdateMethods {
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);
-                    result.setMessage(getinsertresult.getString("Message"));
+                    ACRGBWSResult rest = this.CONSTATSUPDATE(datasource, Integer.parseInt(contract.getConid()), Integer.parseInt(contract.getStats()));
+                    result.setMessage(getinsertresult.getString("Message") + " " + rest.getMessage());
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
+
             }
         } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
@@ -364,8 +366,7 @@ public class UpdateMethods {
         }
         return result;
     }
-    
-    
+
     // REMOVED ACCESS LEVEL USING ROLE INDEX
     public ACRGBWSResult RemoveAppellate(final DataSource datasource, final String accesscode, final String controlcode) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -407,6 +408,33 @@ public class UpdateMethods {
         }
         return result;
     }
-    
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult CONSTATSUPDATE(final DataSource datasource, final int uconid, final int ustats) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.CONSTATSUPDATE(:Message,:Code,"
+                    + ":uconid,:ustats)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setInt("uconid", uconid);//CONID
+            getinsertresult.setInt("ustats", ustats); //STATS
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setSuccess(true);
+                result.setMessage(getinsertresult.getString("Message"));
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
 
 }

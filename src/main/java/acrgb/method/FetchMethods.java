@@ -15,6 +15,8 @@ import acrgb.structure.HealthCareFacility;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.NclaimsData;
 import acrgb.structure.Pro;
+import acrgb.structure.Summary;
+import acrgb.structure.Total;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserActivity;
@@ -302,6 +304,7 @@ public class FetchMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :assets_type := ACR_GB.ACRGBPKGFUNCTION.ACR_ASSETS(:tags,:phcfid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
@@ -323,9 +326,13 @@ public class FetchMethods {
                 if (facilityresult.isSuccess()) {
                     assets.setHcfid(facilityresult.getResult());
                 } else {
-                    assets.setHcfid(facilityresult.getMessage());
+                    ACRGBWSResult getHCPN = methods.GETMBWITHID(dataSource, resultset.getString("HCFID"));
+                    if (getHCPN.isSuccess()) {
+                        assets.setHcfid(getHCPN.getResult());
+                    } else {
+                        assets.setHcfid(getHCPN.getMessage());
+                    }
                 }
-
                 assets.setDatereleased(dateformat.format(resultset.getDate("DATERELEASED")));//resultset.getDate("DATERELEASED"));
                 assets.setReceipt(resultset.getString("RECEIPT"));
                 assets.setAmount(resultset.getString("AMOUNT"));
@@ -339,7 +346,7 @@ public class FetchMethods {
                         assets.setCreatedby(creator.getMessage());
                     }
                 } else {
-                    assets.setCreatedby("DATA NOT FOUND");
+                    assets.setCreatedby("N/A");
                 }
                 assets.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
                 ACRGBWSResult getcon = this.GETCONTRACTCONID(dataSource, resultset.getString("CONID").trim());
@@ -350,7 +357,7 @@ public class FetchMethods {
                         assets.setConid(getcon.getMessage());
                     }
                 } else {
-                    assets.setCreatedby("DATA NOT FOUND");
+                    assets.setCreatedby("N/A");
                 }
                 assets.setStatus(resultset.getString("STATS"));
                 listassets.add(assets);
@@ -401,35 +408,56 @@ public class FetchMethods {
                     contract.setConid(resultset.getString("CONID"));
                     ACRGBWSResult facility = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
                     if (facility.isSuccess()) {
-                        if (!facility.getResult().isEmpty()) {
-                            contract.setHcfid(facility.getResult());
-                        } else {
-                            contract.setHcfid("NOT DATA FOUND");
-                        }
+                        contract.setHcfid(facility.getResult());
                     } else {
-                        contract.setHcfid("NOT DATA FOUND");
+                        contract.setHcfid(facility.getMessage());
                     }
                     //END OF GET NETWORK FULL DETAILS
                     contract.setAmount(resultset.getString("AMOUNT"));
                     contract.setStats(resultset.getString("STATS"));
                     ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                     if (creator.isSuccess()) {
-                        if (!creator.getResult().isEmpty()) {
-                            contract.setCreatedby(creator.getResult());
-                        } else {
-                            contract.setCreatedby(creator.getMessage());
-                        }
+                        contract.setCreatedby(creator.getResult());
                     } else {
-                        contract.setCreatedby("DATA NOT FOUND");
+                        contract.setCreatedby(creator.getMessage());
                     }
                     contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                     contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
                     contract.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
                     contract.setTranscode(resultset.getString("TRANSCODE"));
                     contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                    //=============================================
+                    int numberofclaims = 0;
+                    Double percentage = 0.00;
+                    int tranches = 0;
+                    ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, hcflist.get(y));
+                    if (totalResult.isSuccess()) {
+                        Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
+                        tranches += Integer.parseInt(getResult.getCcount());
+                        //======================================
+                        Date u_from = resultset.getDate("DATEFROM");
+                        Date u_to = resultset.getDate("DATETO");
+                        ACRGBWSResult sumresult = this.GETNCLAIMS(dataSource, hcflist.get(y), "GOOD", u_from, u_to);
+                        if (sumresult.isSuccess()) {
+                            NclaimsData nclaimsdata = utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData.class);
+                            numberofclaims += Integer.parseInt(nclaimsdata.getTotalclaims());
+                            Double assetsamount = Double.parseDouble(getResult.getCtotal());
+                            Double totalclaimsamount = Double.parseDouble(nclaimsdata.getClaimamount());
+                            Double sums = totalclaimsamount / assetsamount * 100;
+                            if (sums > 100) {
+                                Double negvalue = 100 - sums;
+                                percentage += negvalue;
+                            } else {
+                                percentage += sums;
+                            }
+                        }
+                    }
+                    contract.setTotalclaims(String.valueOf(numberofclaims));
+                    contract.setTraches(String.valueOf(tranches));
+                    contract.setPercentage(String.valueOf(percentage));
                     contractlist.add(contract);
                 } else {
-                    result.setMessage("NO DATA FOUND");
+                    result.setMessage("N/A");
                 }
             }
 
@@ -438,7 +466,7 @@ public class FetchMethods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
 
         } catch (SQLException | IOException | ParseException ex) {
@@ -470,8 +498,6 @@ public class FetchMethods {
                             contractlist.add(conresult);
                         }
                     }
-                } else {
-                    result.setMessage("N/A");
                 }
             }
             //---------------------------------------------------------------
@@ -682,6 +708,36 @@ public class FetchMethods {
                     contract.setTranscode(resultset.getString("TRANSCODE"));
                     contract.setBaseamount(resultset.getString("BASEAMOUNT"));
                     contractlist.add(contract);
+                    //=============================================
+                    int numberofclaims = 0;
+                    Double percentage = 0.00;
+                    int tranches = 0;
+                    ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, hcflist.get(y));
+                    if (totalResult.isSuccess()) {
+                        Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
+                        tranches += Integer.parseInt(getResult.getCcount());
+                        //======================================
+                        Date u_from = resultset.getDate("DATEFROM");
+                        Date u_to = resultset.getDate("DATETO");
+                        ACRGBWSResult sumresult = this.GETNCLAIMS(dataSource, hcflist.get(y), "GOOD", u_from, u_to);
+                        if (sumresult.isSuccess()) {
+                            NclaimsData nclaimsdata = utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData.class);
+                            numberofclaims += Integer.parseInt(nclaimsdata.getTotalclaims());
+                            Double assetsamount = Double.parseDouble(getResult.getCtotal());
+                            Double totalclaimsamount = Double.parseDouble(nclaimsdata.getClaimamount());
+                            Double sums = totalclaimsamount / assetsamount * 100;
+                            if (sums > 100) {
+                                Double negvalue = 100 - sums;
+                                percentage += negvalue;
+                            } else {
+                                percentage += sums;
+                            }
+                        }
+                    }
+                    contract.setTotalclaims(String.valueOf(numberofclaims));
+                    contract.setTraches(String.valueOf(tranches));
+                    contract.setPercentage(String.valueOf(percentage));
+
                 }
             }
 
@@ -1444,6 +1500,47 @@ public class FetchMethods {
                 contract.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
                 contract.setBaseamount(resultset.getString("BASEAMOUNT"));
                 contract.setTranscode(resultset.getString("TRANSCODE"));
+
+                //SET OF NUMBER OF CLAIMS AND TRANCHES MOVEMENT
+                int numberofclaims = 0;
+                Double percentage = 0.00;
+                int tranches = 0;
+                ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, pcode);
+                if (totalResult.isSuccess()) {
+                    Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
+                    tranches += Integer.parseInt(getResult.getCcount());
+                    //======================================
+
+                    ACRGBWSResult restA = methods.GETROLEMULITPLE(dataSource, resultset.getString("HCFID"));
+                    if (restA.isSuccess()) {
+                        List<String> hcflist = Arrays.asList(restA.getResult().split(","));
+                        System.out.println(hcflist);
+                        for (int v = 0; v < hcflist.size(); v++) {
+                            Date u_from = resultset.getDate("DATEFROM");
+                            Date u_to = resultset.getDate("DATETO");
+                            ACRGBWSResult sumresult = this.GETNCLAIMS(dataSource, hcflist.get(v), "GOOD", u_from, u_to);
+                            if (sumresult.isSuccess()) {
+                                NclaimsData nclaimsdata = utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData.class);
+                                numberofclaims += Integer.parseInt(nclaimsdata.getTotalclaims());
+                                Double assetsamount = Double.parseDouble(getResult.getCtotal());
+                                Double totalclaimsamount = Double.parseDouble(nclaimsdata.getClaimamount());
+                                Double sums = totalclaimsamount / assetsamount * 100;
+                                if (sums > 100) {
+                                    Double negvalue = 100 - sums;
+                                    percentage += negvalue;
+                                } else {
+                                    percentage += sums;
+                                }
+
+                            }
+                        }
+
+                    }
+                }
+
+                contract.setTotalclaims(String.valueOf(numberofclaims));
+                contract.setTraches(String.valueOf(tranches));
+                contract.setPercentage(String.valueOf(percentage));
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                 result.setSuccess(true);

@@ -29,5 +29,6 @@ public class Contract {
     private String remainingbalance;
     private String traches;
     private String totalclaims;
+    private String percentage;
 
 }
