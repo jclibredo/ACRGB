@@ -726,4 +726,40 @@ public class ACRGBFETCH {
         return result;
     }
 
+    //LEDGER 
+    @GET
+    @Path("PerContractLedger/{hcpncode}/{contract}/{tags}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult PerContractLedger(
+            @PathParam("hcpncode") String hcpncode, //hcpncode  MUST BE HCPNCONTROLCODE
+            @PathParam("contract") String contract, //CONTRACT MUST BE CONID
+            @PathParam("tags") String tags) {   //TAGS MUST BE LEVELACCESS
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        switch (tags.toUpperCase().trim()) {
+            case "HCPN"://GET LEDGER PER HCPN
+                //hcpncode  MUST BE HCPNCONTROLCODE
+                //CONTRACT MUST BE CONID
+                //TAGS MUST BE HCPN
+                ACRGBWSResult getResultHCPN = lm.GETLedgerPerContractHCPN(dataSource, hcpncode, contract);
+                result.setMessage(getResultHCPN.getMessage());
+                result.setResult(getResultHCPN.getResult());
+                result.setSuccess(getResultHCPN.isSuccess());
+                break;
+            case "HCPNALL"://GET LEDGER PER FACILITY
+                 //hcpncode  MUST BE THE USERID OF PRO ACCOUNT
+                //CONTRACT DECLARE 0 VALUE
+                //TAGS MUST BE HCPNALL
+                
+                ACRGBWSResult getResultAllHCPN = lm.GETLedgerAllContractHCPN(dataSource, hcpncode);//hcpncode  user ID of account of PROUSER
+                result.setMessage(getResultAllHCPN.getMessage());
+                result.setResult(getResultAllHCPN.getResult());
+                result.setSuccess(getResultAllHCPN.isSuccess());
+                break;
+        }
+        return result;
+    }
+
 }

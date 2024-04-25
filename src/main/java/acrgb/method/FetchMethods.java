@@ -15,7 +15,6 @@ import acrgb.structure.HealthCareFacility;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.NclaimsData;
 import acrgb.structure.Pro;
-import acrgb.structure.Summary;
 import acrgb.structure.Total;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
@@ -1889,6 +1888,162 @@ public class FetchMethods {
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+    
+    public ACRGBWSResult GETASSETBYIDANDCONID(final DataSource dataSource, final String phcfid, final String uconid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        Methods methods = new Methods();
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :assets_type := ACR_GB.ACRGBPKGFUNCTION.GETASSETBYIDANDCONID(:phcfid,:uconid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("phcfid", phcfid);
+            statement.setString("uconid", uconid);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            ArrayList<Assets> listassets = new ArrayList<>();
+            while (resultset.next()) {
+                Assets assets = new Assets();
+                assets.setAssetid(resultset.getString("ASSETSID"));
+                ACRGBWSResult tranchresult = this.ACR_TRANCHWITHID(dataSource, resultset.getString("TRANCHID"));
+                if (tranchresult.isSuccess()) {
+                    assets.setTranchid(tranchresult.getResult());
+                } else {
+                    assets.setTranchid(tranchresult.getMessage());
+                }
+                ACRGBWSResult facilityresult = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
+                if (facilityresult.isSuccess()) {
+                    assets.setHcfid(facilityresult.getResult());
+                } else {
+                    ACRGBWSResult getHCPN = methods.GETMBWITHID(dataSource, resultset.getString("HCFID"));
+                    if (getHCPN.isSuccess()) {
+                        assets.setHcfid(getHCPN.getResult());
+                    } else {
+                        assets.setHcfid(getHCPN.getMessage());
+                    }
+                }
+                assets.setDatereleased(dateformat.format(resultset.getDate("DATERELEASED")));//resultset.getDate("DATERELEASED"));
+                assets.setReceipt(resultset.getString("RECEIPT"));
+                assets.setAmount(resultset.getString("AMOUNT"));
+                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    if (!creator.getResult().isEmpty()) {
+                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                        assets.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                    } else {
+                        assets.setCreatedby(creator.getMessage());
+                    }
+                } else {
+                    assets.setCreatedby("N/A");
+                }
+                assets.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                ACRGBWSResult getcon = this.GETCONTRACTCONID(dataSource, resultset.getString("CONID").trim());
+                if (getcon.isSuccess()) {
+                    if (!getcon.getResult().isEmpty()) {
+                        assets.setConid(getcon.getResult());
+                    } else {
+                        assets.setConid(getcon.getMessage());
+                    }
+                } else {
+                    assets.setCreatedby("N/A");
+                }
+                assets.setStatus(resultset.getString("STATS"));
+                listassets.add(assets);
+            }
+            if (!listassets.isEmpty()) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(listassets));
+            } else {
+                result.setMessage("N/A");
+            }
+
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+    
+    
+    
+     public ACRGBWSResult GETASSETSHCFID(final DataSource dataSource,final String phcfid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        Methods methods = new Methods();
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :assets_type := ACR_GB.ACRGBPKGFUNCTION.GETASSETSHCFID(:phcfid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("phcfid", phcfid);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            ArrayList<Assets> listassets = new ArrayList<>();
+            while (resultset.next()) {
+                Assets assets = new Assets();
+                assets.setAssetid(resultset.getString("ASSETSID"));
+                ACRGBWSResult tranchresult = this.ACR_TRANCHWITHID(dataSource, resultset.getString("TRANCHID"));
+                if (tranchresult.isSuccess()) {
+                    assets.setTranchid(tranchresult.getResult());
+                } else {
+                    assets.setTranchid(tranchresult.getMessage());
+                }
+                ACRGBWSResult facilityresult = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
+                if (facilityresult.isSuccess()) {
+                    assets.setHcfid(facilityresult.getResult());
+                } else {
+                    ACRGBWSResult getHCPN = methods.GETMBWITHID(dataSource, resultset.getString("HCFID"));
+                    if (getHCPN.isSuccess()) {
+                        assets.setHcfid(getHCPN.getResult());
+                    } else {
+                        assets.setHcfid(getHCPN.getMessage());
+                    }
+                }
+                assets.setDatereleased(dateformat.format(resultset.getDate("DATERELEASED")));//resultset.getDate("DATERELEASED"));
+                assets.setReceipt(resultset.getString("RECEIPT"));
+                assets.setAmount(resultset.getString("AMOUNT"));
+
+                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    if (!creator.getResult().isEmpty()) {
+                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                        assets.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                    } else {
+                        assets.setCreatedby(creator.getMessage());
+                    }
+                } else {
+                    assets.setCreatedby("N/A");
+                }
+                assets.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                ACRGBWSResult getcon = this.GETCONTRACTCONID(dataSource, resultset.getString("CONID").trim());
+                if (getcon.isSuccess()) {
+                    if (!getcon.getResult().isEmpty()) {
+                        assets.setConid(getcon.getResult());
+                    } else {
+                        assets.setConid(getcon.getMessage());
+                    }
+                } else {
+                    assets.setCreatedby("N/A");
+                }
+                assets.setStatus(resultset.getString("STATS"));
+                listassets.add(assets);
+            }
+            if (!listassets.isEmpty()) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(listassets));
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
