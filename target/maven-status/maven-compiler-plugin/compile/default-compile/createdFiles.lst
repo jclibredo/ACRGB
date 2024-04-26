@@ -29,6 +29,8 @@ acrgb\structure\ReportsParam.class
 acrgb\utility\Cryptor.class
 acrgb\structure\Accreditation.class
 acrgb\structure\ManagingBoard.class
+acrgb\structure\PaymentType.class
+acrgb\structure\Book.class
 acrgb\method\InsertMethods.class
 acrgb\structure\Tranch.class
 acrgb\structure\Pro.class

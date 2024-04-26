@@ -196,12 +196,14 @@ public class Methods {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERDETAILS(:Message,:Code,"
-                    + ":p_firstname,:p_lastname,:p_middlename,:p_did,:p_hcfid)");
+                    + ":p_firstname,:p_lastname,:p_middlename,:p_did,:p_email,:p_contact)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("p_firstname", userinfo.getFirstname().toUpperCase());
             getinsertresult.setString("p_lastname", userinfo.getLastname().toUpperCase());
             getinsertresult.setString("p_middlename", userinfo.getMiddlename().toUpperCase());
+            getinsertresult.setString("p_email", userinfo.getEmail());
+            getinsertresult.setString("p_contact", userinfo.getContact());
             getinsertresult.setString("p_did", userinfo.getDid());
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
@@ -232,7 +234,8 @@ public class Methods {
                     result.setSuccess(false);
                     result.setMessage("PASSWORD IS NOT VALID");
                 } else {
-                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,:userid,:p_username,:p_password,:p_stats)");
+                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,"
+                            + ":userid,:p_username,:p_password,:p_stats)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                     getinsertresult.setString("userid", userid);

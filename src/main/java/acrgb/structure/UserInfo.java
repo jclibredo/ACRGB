@@ -13,6 +13,7 @@ import lombok.Data;
  */
 @Data
 public class UserInfo {
+
     private String did;
     private String firstname;
     private String lastname;
@@ -20,6 +21,6 @@ public class UserInfo {
     private String datecreated;
     private String createdby;
     private String stats;
+    private String email;
+    private String contact;
 }
-
-

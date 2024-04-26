@@ -13,14 +13,18 @@ import lombok.Data;
  */
 @Data
 public class NclaimsData {
+
     public NclaimsData() {
     }
     private String id;
-    private String accreno;
-    private String datesubmitted;
-    private String claimamount;
-    private String series;
+    private String accreno; //uaccreno
+    private String datesubmitted; //udatefiled
+    private String dateadmission; //udateadmission
+    private String claimamount;  //uclaimamount
+    private String series;  //useries
     private String claimid;
-    private String tags;
+    private String tags;  //utags
     private String totalclaims;
+    private String booknum;  //ubooknum
+    private String caserate;  //ucaserate
 }

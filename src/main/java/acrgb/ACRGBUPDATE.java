@@ -16,6 +16,7 @@ import acrgb.structure.DateSettings;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
+import acrgb.structure.UserInfo;
 import acrgb.structure.UserLevel;
 import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
@@ -280,6 +281,20 @@ public class ACRGBUPDATE {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = updatemethods.RemoveAppellate(dataSource, userroleindex.getUserid(), userroleindex.getAccessid());
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
+
+    @PUT
+    @Path("UPDATEUSERDETAILS")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult UPDATEUSERDETAILS(final UserInfo userinfo) throws SQLException, ParseException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = methods.UPDATEUSERDETAILS(dataSource, userinfo);
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());

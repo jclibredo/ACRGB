@@ -862,6 +862,8 @@ public class FetchMethods {
                 UserInfo userinfo = new UserInfo();
                 userinfo.setDid(resultset.getString("DID"));
                 userinfo.setFirstname(resultset.getString("FIRSTNAME"));
+                userinfo.setEmail(resultset.getString("EMAIL"));
+                userinfo.setContact(resultset.getString("CONTACT"));
                 userinfo.setLastname(resultset.getString("LASTNAME"));
                 userinfo.setMiddlename(resultset.getString("MIDDLENAME"));
                 userinfo.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
@@ -963,25 +965,46 @@ public class FetchMethods {
                 pro.setStats(resultset.getString("STATS"));
                 pro.setProcode(resultset.getString("PROCODE"));
                 //======================================================
-                ACRGBWSResult restA = methods.GETROLEMULITPLE(dataSource, resultset.getString("PROCODE"));
-                List<String> hcfcodeList = Arrays.asList(restA.getResult().split(","));
-                Double totalcom = 0.00;
-                for (int x = 0; x < hcfcodeList.size(); x++) {
-                    ACRGBWSResult getProbudget = this.GETCONBYCODE(dataSource, hcfcodeList.get(x));
-                    if (getProbudget.isSuccess()) {
-                        Contract con = utility.ObjectMapper().readValue(getProbudget.getResult(), Contract.class);
-                        totalcom += Double.parseDouble(con.getAmount());
-                    }
-                }
-                pro.setConamount(String.valueOf(totalcom));
+                Double baseamount = 0.00;
+                Double utilize = 0.00;
+                Double contractamount = 0.00;
+                ACRGBWSResult getProFund = this.GETCONBYCODE(dataSource, resultset.getString("PROCODE"));
+                if (getProFund.isSuccess()) {
+                    Contract contract = utility.ObjectMapper().readValue(getProFund.getResult(), Contract.class);
+                    contractamount += Double.parseDouble(contract.getAmount());
+                    ACRGBWSResult restA = methods.GETROLEMULITPLE(dataSource, resultset.getString("PROCODE"));
+                    List<String> hcpncodeList = Arrays.asList(restA.getResult().split(","));
+                    for (int x = 0; x < hcpncodeList.size(); x++) {
+                        ACRGBWSResult getProbudget = this.GETCONBYCODE(dataSource, hcpncodeList.get(x));
+                        if (getProbudget.isSuccess()) {
+                            Contract con = utility.ObjectMapper().readValue(getProbudget.getResult(), Contract.class);
+                            baseamount += Double.parseDouble(con.getBaseamount());
 
-//                ACRGBWSResult getProbudget = this.GETCONBYCODE(dataSource, resultset.getString("PROCODE"));
-//                if (getProbudget.isSuccess()) {
-//                    Contract con = utility.ObjectMapper().readValue(getProbudget.getResult(), Contract.class);
-//
-//                } else {
-//
-//                }
+                            //GET TRANCH PER NETWORK
+                            ACRGBWSResult tranche = this.GETASSETSBYCONID(dataSource, con.getConid());
+                            if (tranche.isSuccess()) {
+                                List<Assets> assetsList = Arrays.asList(utility.ObjectMapper().readValue(tranche.getResult(), Assets[].class));
+                                for (int p = 0; p < assetsList.size(); p++) {
+                                    utilize += Double.parseDouble(assetsList.get(p).getAmount());
+                                }
+                            }
+                        }
+                    }
+                    Double totalper = utilize / contractamount * 100;
+                    pro.setUtilize(String.valueOf(utilize));
+                    pro.setUnutilize(String.valueOf(contractamount - utilize));
+                    pro.setPercentage(String.valueOf(totalper));
+                    pro.setConamount(String.valueOf(baseamount));
+                    pro.setContractamount(contract.getAmount());
+                    pro.setTranscode(contract.getTranscode());
+                } else {
+                    pro.setUtilize("N/A");
+                    pro.setUnutilize("N/A");
+                    pro.setPercentage("0");
+                    pro.setConamount("N/A");
+                    pro.setContractamount("N/A");
+                    pro.setTranscode("N/A");
+                }
                 prolist.add(pro);
             }
             if (!prolist.isEmpty()) {
@@ -1891,7 +1914,7 @@ public class FetchMethods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GETASSETBYIDANDCONID(final DataSource dataSource, final String phcfid, final String uconid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1968,10 +1991,8 @@ public class FetchMethods {
         }
         return result;
     }
-    
-    
-    
-     public ACRGBWSResult GETASSETSHCFID(final DataSource dataSource,final String phcfid) {
+
+    public ACRGBWSResult GETASSETSHCFID(final DataSource dataSource, final String phcfid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");

@@ -23,5 +23,10 @@ public class Pro {
     private String stats;
     private String procode;
     private String conamount;
+    private String contractamount;
+    private String utilize;
+    private String unutilize;
+    private String percentage;
+    private String transcode;
 
 }

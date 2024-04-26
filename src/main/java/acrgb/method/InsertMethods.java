@@ -8,11 +8,14 @@ package acrgb.method;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Accreditation;
 import acrgb.structure.Assets;
+import acrgb.structure.Book;
 import acrgb.structure.Contract;
 import acrgb.structure.DateSettings;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.LogStatus;
 import acrgb.structure.ManagingBoard;
+import acrgb.structure.NclaimsData;
+import acrgb.structure.PaymentType;
 import acrgb.structure.Pro;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
@@ -286,7 +289,7 @@ public class InsertMethods {
                     result.setMessage("DATE FORMAT IS NOT VALID");
                 } else {
                     CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSERDETAILS(:Message,:Code,"
-                            + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_createdby)");
+                            + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_createdby,:p_email,:p_contact)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                     getinsertresult.setString("p_firstname", userinfo.getFirstname().toUpperCase());
@@ -294,6 +297,8 @@ public class InsertMethods {
                     getinsertresult.setString("p_middlename", userinfo.getMiddlename().toUpperCase());
                     getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(userinfo.getDatecreated()).getTime()));//userinfo.getDatecreated());
                     getinsertresult.setString("p_createdby", userinfo.getCreatedby());
+                    getinsertresult.setString("p_email", userinfo.getEmail());
+                    getinsertresult.setString("p_contact", userinfo.getContact());
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
                         result.setSuccess(true);
@@ -705,7 +710,6 @@ public class InsertMethods {
                             result.setMessage(insertRole.getMessage());
                         }
                     }
-
                 } else {
                     result.setMessage(restA.getMessage());
                 }
@@ -816,6 +820,108 @@ public class InsertMethods {
                 result.setMessage(errorList.toString());
             }
 
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //INSERT PAYMENT TYPE
+    public ACRGBWSResult ACRPAYMENTTYPE(final DataSource datasource, final PaymentType paymentType) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            //------------------------------------------------------------------------------------------------
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACRPAYMENTTYPE(:Message,:Code,"
+                    + ":uaccount,:udatecreted,:uconid,:udatefrom,:udateto,:ucreatedby,:upaymenttype,:ureference)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("uaccount", paymentType.getUaccount());
+            getinsertresult.setString("udatecreted", paymentType.getUdatecreted());
+            getinsertresult.setString("uconid", paymentType.getUconid());
+            getinsertresult.setString("udatefrom", paymentType.getUdatefrom());
+            getinsertresult.setString("udateto", paymentType.getUdateto());
+            getinsertresult.setString("ucreatedby", paymentType.getUcreatedby());
+            getinsertresult.setString("upaymenttype", paymentType.getUpaymenttype());
+            getinsertresult.setString("ureference", paymentType.getUreference());
+            getinsertresult.execute();
+            //------------------------------------------------------------------------------------------------
+            if (!getinsertresult.getString("Message").equals("SUCC")) {
+                result.setSuccess(true);
+                result.setMessage(getinsertresult.getString("Message"));
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //INSERT BOOK
+    public ACRGBWSResult ACRBOOKING(final DataSource datasource, final Book book) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            //------------------------------------------------------------------------------------------------
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACRBOOKING(:Message,:Code,"
+                    + ":ubooknum,:uconid,:udatecreated,:ucreatedby)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("ubooknum", book.getBooknum());
+            getinsertresult.setString("uconid", book.getConid());
+            getinsertresult.setString("udatecreated", book.getDatecreated());
+            getinsertresult.setString("ucreatedby", book.getCreatedby());
+            getinsertresult.execute();
+            //------------------------------------------------------------------------------------------------
+            if (!getinsertresult.getString("Message").equals("SUCC")) {
+                result.setSuccess(true);
+                result.setMessage(getinsertresult.getString("Message"));
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //INSERT BOOK DATA
+    public ACRGBWSResult ACRBOOKINGDATA(final DataSource datasource, final NclaimsData nclaims) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            //------------------------------------------------------------------------------------------------
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACRBOOKING(:Message,:Code,"
+                    + ":useries,:uaccreno,:udateadmission,:udatefiled,:uclaimamount,:ubooknum,:utags,:ucaserate)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("useries", nclaims.getSeries());
+            getinsertresult.setString("uaccreno", nclaims.getAccreno());
+            getinsertresult.setString("udateadmission", nclaims.getDateadmission());
+            getinsertresult.setString("udatefiled", nclaims.getDatesubmitted());
+            getinsertresult.setString("uclaimamount", nclaims.getClaimamount());
+            getinsertresult.setString("ubooknum", nclaims.getBooknum());
+            getinsertresult.setString("utags", nclaims.getTags());
+            getinsertresult.setString("ucaserate", nclaims.getCaserate());
+            getinsertresult.execute();
+            //------------------------------------------------------------------------------------------------
+            if (!getinsertresult.getString("Message").equals("SUCC")) {
+                result.setSuccess(true);
+                result.setMessage(getinsertresult.getString("Message"));
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);

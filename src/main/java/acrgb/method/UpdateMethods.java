@@ -58,25 +58,9 @@ public class UpdateMethods {
                 result.setSuccess(false);
             } else if (utility.IsValidNumber(assets.getHcfid()) && utility.IsValidNumber(assets.getTranchid())) {
                 ACRGBWSResult tranchresult = fm.GETTRANCHAMOUNT(datasource, assets.getTranchid());
-                ACRGBWSResult hcfresult = fm.ACR_HCF(datasource);
-                int countresult = 0;
-                if (hcfresult.isSuccess()) {
-                    if (!hcfresult.getResult().isEmpty()) {
-                        List<HealthCareFacility> hcflist = Arrays.asList(utility.ObjectMapper().readValue(hcfresult.getResult(), HealthCareFacility[].class));
-                        for (int x = 0; x < hcflist.size(); x++) {
-                            if (hcflist.get(x).getHcfid().equals(assets.getHcfid())) {
-                                countresult++;
-                            }
-                        }
-                    }
-                }
-
                 if (!tranchresult.isSuccess()) {
                     result.setMessage(tranchresult.getMessage());
                     result.setSuccess(false);
-                } else if (countresult == 0) {
-                    result.setSuccess(false);
-                    result.setMessage("HEALTH CARE FACILITY NOT FOUND");
                 } else if (!utility.IsValidDate(assets.getDatereleased())) {
                     result.setSuccess(false);
                     result.setMessage("DATE FORMAT IS NOT VALID");
@@ -103,7 +87,6 @@ public class UpdateMethods {
                                         count++;
                                     }
                                 }
-
                                 if (transcount == 0) {
                                     result.setSuccess(false);
                                     result.setMessage("TRANCH VALUE NOT FOUND");
@@ -132,7 +115,7 @@ public class UpdateMethods {
                                         }
                                         result.setResult(utility.ObjectMapper().writeValueAsString(assets));
                                     } else {
-                                        result.setMessage("TRANCH VALUE IS ALREADY ASSIGN TO HCF");
+                                        result.setMessage("TRANCH VALUE IS ALREADY ASSIGN");
                                     }
                                 }
                             } else {
