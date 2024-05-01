@@ -100,7 +100,7 @@ public class Utility {
     }
 
     public boolean IsValidDateDifference(String string) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");
         sdf.setLenient(false);
         try {
             sdf.parse(string);
@@ -112,13 +112,11 @@ public class Utility {
 
     public Date StringToDate(String stringdate) throws ParseException {
         java.util.Date sf = this.SimpleDateFormat("MM-dd-yyyy").parse(stringdate);
-        // Date dateCovered = (Date) new Date(sf.getTime());
         return sf;
     }
 
     public Date StringToDateTime(String stringdatetime) throws ParseException {
         java.util.Date sf = this.SimpleDateFormat("MM-dd-yyyy hh:mm a").parse(stringdatetime);
-        // Date dateCovered = (Date) new Date(sf.getTime());
         return sf;
     }
 

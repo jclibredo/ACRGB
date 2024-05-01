@@ -13,10 +13,8 @@ import acrgb.structure.FacilityComputedAmount;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.MBRequestSummary;
 import acrgb.structure.ManagingBoard;
-import acrgb.structure.NclaimsData;
 import acrgb.structure.Pro;
 import acrgb.structure.ReportsHCPNSummary;
-import acrgb.structure.Summary;
 import acrgb.structure.Total;
 import acrgb.structure.User;
 import acrgb.structure.UserActivity;
@@ -46,10 +44,10 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class Methods {
-    
+
     public Methods() {
     }
-    
+
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
     private final Cryptor cryptor = new Cryptor();
@@ -102,7 +100,7 @@ public class Methods {
                         result.setMessage("CREDENTIAL NOT FOUND");
                     }
                 }
-                
+
                 if (resultcounter == 0) {
                     result.setMessage("CREDENTIAL NOT FOUND");
                     result.setResult("INVALID USERNAME AND PASSWORD");
@@ -116,18 +114,18 @@ public class Methods {
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
-        
+
     }
 
     //-------------------------- NEW OBJECT -----------------
     public class UserPassword {
-        
+
         private String dbpass;
-        
+
         public String getDbpass() {
             return dbpass;
         }
-        
+
         public void setDbpass(String dbpass) {
             this.dbpass = dbpass;
         }
@@ -212,7 +210,7 @@ public class Methods {
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-            
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -228,32 +226,32 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            ACRGBWSResult usernameResult = this.ACRUSERNAME(dataSource, p_username);
-            if (usernameResult.isSuccess()) {
-                if (!utility.validatePassword(p_password)) {
-                    result.setSuccess(false);
-                    result.setMessage("PASSWORD IS NOT VALID");
-                } else {
-                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,"
-                            + ":userid,:p_username,:p_password,:p_stats)");
-                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                    getinsertresult.setString("userid", userid);
-                    getinsertresult.setString("p_username", p_username);
-                    getinsertresult.setString("p_password", cryptor.encrypt(p_password, p_password, "ACRGB"));
-                    getinsertresult.setString("p_stats", "2");
-                    getinsertresult.execute();
-                    if (getinsertresult.getString("Message").equals("SUCC")) {
-                        result.setSuccess(true);
-                        result.setMessage(getinsertresult.getString("Message"));
-                    } else {
-                        result.setMessage(getinsertresult.getString("Message"));
-                    }
-                }
+//            ACRGBWSResult usernameResult = this.ACRUSERNAME(dataSource, p_username);
+//            if (usernameResult.isSuccess()) {
+            if (!utility.validatePassword(p_password)) {
+                result.setSuccess(false);
+                result.setMessage("PASSWORD IS NOT VALID");
             } else {
-                result.setMessage(usernameResult.getMessage());
-                result.setSuccess(usernameResult.isSuccess());
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,"
+                        + ":userid,:p_username,:p_password,:p_stats)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("userid", userid);
+                getinsertresult.setString("p_username", p_username);
+                getinsertresult.setString("p_password", cryptor.encrypt(p_password, p_password, "ACRGB"));
+                getinsertresult.setString("p_stats", "2");
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    result.setSuccess(true);
+                    result.setMessage(getinsertresult.getString("Message"));
+                } else {
+                    result.setMessage(getinsertresult.getString("Message"));
+                }
             }
+//            } else {
+//                result.setMessage(usernameResult.getMessage());
+//                result.setSuccess(usernameResult.isSuccess());
+//            }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -268,33 +266,33 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            ACRGBWSResult usernameResult = this.ACRUSERNAME(dataSource, p_username);
-            if (usernameResult.isSuccess()) {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERNAME(:Message,:Code,:p_userid,:p_username,:p_stats)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("p_userid", userid);
-                getinsertresult.setString("p_username", p_username);
-                getinsertresult.setString("p_stats", "2");
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setSuccess(true);
-                    result.setMessage(getinsertresult.getString("Message"));
-                } else {
-                    result.setMessage(getinsertresult.getString("Message"));
-                }
-                
+//            ACRGBWSResult usernameResult = this.ACRUSERNAME(dataSource, p_username);
+//            if (usernameResult.isSuccess()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERNAME(:Message,:Code,:p_userid,:p_username,:p_stats)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("p_userid", userid);
+            getinsertresult.setString("p_username", p_username);
+            getinsertresult.setString("p_stats", "2");
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setSuccess(true);
+                result.setMessage(getinsertresult.getString("Message"));
             } else {
-                result.setMessage(usernameResult.getMessage());
-                result.setSuccess(usernameResult.isSuccess());
+                result.setMessage(getinsertresult.getString("Message"));
             }
+
+//            } else {
+//                result.setMessage(usernameResult.getMessage());
+//                result.setSuccess(usernameResult.isSuccess());
+//            }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
+
     public ACRGBWSResult RESETPASSWORD(final DataSource dataSource, final String userid, final String p_password) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -416,68 +414,246 @@ public class Methods {
 
     //--------------------------------------------------------
     //ACR GB GET SUMMARY
-    public ACRGBWSResult JOINCONHCFTBL(final DataSource dataSource) {
+    public ACRGBWSResult GetBaseAmount(final DataSource dataSource, final String tags, final String userid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.JOINCONHCFTBL(); end;");
-            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.execute();
-            ArrayList<Summary> summarylist = new ArrayList<>();
-            ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            while (resultset.next()) {
-                String u_accreno = resultset.getString("HCFCODE");
-                Date u_from = resultset.getDate("DATEFROM");
-                Date u_to = resultset.getDate("DATETO");
-                String u_tags = "GOOD";
-                Summary summary = new Summary();
-                ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, u_accreno, u_tags, u_from, u_to);
-                if (sumresult.isSuccess()) {
-                    NclaimsData nclaimsdata = utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData.class);
-                    ACRGBWSResult totalResult = this.GETSUMMARY(dataSource, resultset.getString("HCFID"));
-                    if (totalResult.isSuccess()) {
-                        Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
-                        summary.setTranchcount(getResult.getCcount());
-                        Double assetsamount = Double.parseDouble(getResult.getCtotal());
-                        Double totalclaimsamount = Double.parseDouble(nclaimsdata.getClaimamount());
-                        Double sums = totalclaimsamount / assetsamount * 100;
-                        if (sums > 100) {
-                            Double negvalue = 100 - sums;
-                            summary.setTotalpercentage(String.valueOf(Math.round(negvalue)));
+        try {
+            switch (tags.toUpperCase()) {
+                case "USERPRO"://USERID IS PRO ACCOUNT USERID
+                    ACRGBWSResult getPRO = this.GETROLE(dataSource, userid);
+                    if (getPRO.isSuccess()) {
+                        ACRGBWSResult getHCPNUnderUsingProCode = this.GETROLEMULITPLE(dataSource, getPRO.getResult());
+                        if (getHCPNUnderUsingProCode.isSuccess()) {
+                            ArrayList<String> HCIList = new ArrayList<>();
+                            List<String> ListOFHCPN = Arrays.asList(getHCPNUnderUsingProCode.getResult().split(","));
+                            for (int hcpn = 0; hcpn < ListOFHCPN.size(); hcpn++) {
+                                ACRGBWSResult getHCIUisngHCPNCode = this.GETROLEMULITPLE(dataSource, ListOFHCPN.get(hcpn));
+                                if (getHCIUisngHCPNCode.isSuccess()) {
+                                    List<String> ListOHCI = Arrays.asList(getHCIUisngHCPNCode.getResult().split(","));
+                                    for (int hci = 0; hci < ListOHCI.size(); hci++) {
+                                        HCIList.add(ListOHCI.get(hci));
+                                    }
+                                }
+                            }
+                            Double totalSkipYearClaimAmount = 0.00;
+                            Double totalDateSettingYearClaimAmount = 0.00;
+                            int totalclaimcountskipyear = 0;
+                            int totalclaimcountdatesetting = 0;
+                            FacilityComputedAmount totalcompute = new FacilityComputedAmount();
+                            for (int x = 0; x < HCIList.size(); x++) {
+                                ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, HCIList.get(x));
+                                if (restA.isSuccess()) {
+                                    FacilityComputedAmount fcaA = utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount.class);
+                                    totalcompute.setYearfrom(fcaA.getYearfrom());
+                                    totalcompute.setYearto(fcaA.getYearto());
+                                    //GET SKIP YEAR AMOUNT
+                                    ACRGBWSResult restB = this.GetAmountPerFacilitySkipYear(dataSource, HCIList.get(x));
+                                    if (restB.isSuccess()) {
+                                        FacilityComputedAmount fcaB = utility.ObjectMapper().readValue(restB.getResult(), FacilityComputedAmount.class);
+                                        //SKIP YEAR VALUE
+                                        totalSkipYearClaimAmount += Double.parseDouble(fcaB.getTotalamount());
+                                        totalclaimcountskipyear += Integer.parseInt(fcaB.getTotalclaims());
+                                        //DATE SETTINGS
+                                        totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.getTotalamount());
+                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.getTotalclaims());
+                                        //===========================================================
+                                    } else {
+                                        totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.getTotalamount());
+                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.getTotalclaims());
+                                    }
+                                }
+                            }
+                            totalcompute.setTotalamount(String.valueOf(totalDateSettingYearClaimAmount - totalSkipYearClaimAmount));
+                            totalcompute.setTotalclaims(String.valueOf(totalclaimcountdatesetting - totalclaimcountskipyear));
+                            ACRGBWSResult getPROCode = this.GetProWithPROID(dataSource, getPRO.getResult());
+                            if (getPROCode.isSuccess()) {
+                                totalcompute.setHospital(getPROCode.getResult());
+                            } else {
+                                totalcompute.setHospital(getPROCode.getMessage());
+                            }
+                            if (HCIList.isEmpty()) {
+                                result.setMessage("OK");
+                                result.setResult(utility.ObjectMapper().writeValueAsString(totalcompute));
+                                result.setSuccess(true);
+                            } else {
+                                result.setMessage("N/A");
+                            }
+
                         } else {
-                            summary.setTotalpercentage(String.valueOf(Math.round(sums)));
+                            result.setMessage(getHCPNUnderUsingProCode.getMessage());
                         }
-                        
                     } else {
-                        summary.setTotalpercentage(totalResult.getMessage());
+                        result.setMessage(getPRO.getMessage());
                     }
-                    summary.setTotalclaims(nclaimsdata.getTotalclaims());
-                    summary.setAccreno(u_accreno);
-                    summary.setHcfid(resultset.getString("HCFID"));
-                    summary.setRemarks("YES");
-                    summarylist.add(summary);
-                    
-                } else {
-                    summary.setAccreno(u_accreno);
-                    summary.setHcfid(resultset.getString("HCFID"));
-                    summary.setTotalpercentage("");
-                    summary.setTranchcount("");
-                    summary.setRemarks("NO");
-                    summarylist.add(summary);
-                }
+                    break;
+                case "PRO"://USERID IS PROCODE
+                    ACRGBWSResult getHCPNUnder = this.GETROLEMULITPLE(dataSource, userid);
+                    if (getHCPNUnder.isSuccess()) {
+                        ArrayList<String> finalListofHCPN = new ArrayList<>();
+                        List<String> HCPNList = Arrays.asList(getHCPNUnder.getResult().split(","));
+                        for (int pro = 0; pro < HCPNList.size(); pro++) {
+                            ACRGBWSResult getHCFUnder = this.GETROLEMULITPLE(dataSource, HCPNList.get(pro));
+                            if (getHCFUnder.isSuccess()) {
+                                List<String> HCFList = Arrays.asList(getHCFUnder.getResult().split(","));
+                                for (int hcf = 0; hcf < HCFList.size(); hcf++) {
+                                    finalListofHCPN.add(HCFList.get(hcf));
+                                }
+                            }
+                        }
+
+                        Double totalSkipYearClaimAmount = 0.00;
+                        Double totalDateSettingYearClaimAmount = 0.00;
+                        int totalclaimcountskipyear = 0;
+                        int totalclaimcountdatesetting = 0;
+                        FacilityComputedAmount totalcompute = new FacilityComputedAmount();
+                        for (int listhci = 0; listhci < finalListofHCPN.size(); listhci++) {
+                            ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, finalListofHCPN.get(listhci));
+                            if (restA.isSuccess()) {
+                                FacilityComputedAmount fcaA = utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount.class);
+                                totalcompute.setYearfrom(fcaA.getYearfrom());
+                                totalcompute.setYearto(fcaA.getYearto());
+                                //GET SKIP YEAR AMOUNT
+                                ACRGBWSResult restB = this.GetAmountPerFacilitySkipYear(dataSource, finalListofHCPN.get(listhci));
+                                if (restB.isSuccess()) {
+                                    FacilityComputedAmount fcaB = utility.ObjectMapper().readValue(restB.getResult(), FacilityComputedAmount.class);
+                                    //SKIP YEAR VALUE
+                                    totalSkipYearClaimAmount += Double.parseDouble(fcaB.getTotalamount());
+                                    totalclaimcountskipyear += Integer.parseInt(fcaB.getTotalclaims());
+                                    //DATE SETTINGS
+                                    totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.getTotalamount());
+                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.getTotalclaims());
+                                    //===========================================================
+                                } else {
+                                    totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.getTotalamount());
+                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.getTotalclaims());
+                                }
+                            }
+                        }
+                        totalcompute.setTotalamount(String.valueOf(totalDateSettingYearClaimAmount - totalSkipYearClaimAmount));
+                        totalcompute.setTotalclaims(String.valueOf(totalclaimcountdatesetting - totalclaimcountskipyear));
+                        //----------------------------------------------------------
+                        ACRGBWSResult getPROCode = this.GetProWithPROID(dataSource, userid);
+                        if (getPROCode.isSuccess()) {
+                            totalcompute.setHospital(getPROCode.getResult());
+                        } else {
+                            totalcompute.setHospital(getPROCode.getMessage());
+                        }
+                        //----------------------------------------------------------
+                        if (finalListofHCPN.isEmpty()) {
+                            result.setMessage("OK");
+                            result.setResult(utility.ObjectMapper().writeValueAsString(totalcompute));
+                            result.setSuccess(true);
+                        } else {
+                            result.setMessage("N/A");
+                        }
+                    } else {
+                        result.setMessage(getHCPNUnder.getMessage());
+                    }
+                    break;
+                case "FACILITY"://USERID IS HCFCODE/ACCRENO
+                    FacilityComputedAmount totalcompute = new FacilityComputedAmount();
+                    ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, userid);
+                    if (restA.isSuccess()) {
+                        FacilityComputedAmount fcaA = utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount.class);
+                        //GET FACILITY
+                        ACRGBWSResult getFacility = fm.GETFACILITYID(dataSource, userid);
+                        if (getFacility.isSuccess()) {
+                            totalcompute.setHospital(getFacility.getResult());
+                        } else {
+                            totalcompute.setHospital(getFacility.getMessage());
+                        }
+                        //GET SKIP YEAR AMOUNT
+                        ACRGBWSResult restB = this.GetAmountPerFacilitySkipYear(dataSource, userid);
+                        if (restB.isSuccess()) {
+                            FacilityComputedAmount fcaB = utility.ObjectMapper().readValue(restB.getResult(), FacilityComputedAmount.class);
+                            //SKIP YEAR VALUE
+                            Double skipclaimsValue = Double.parseDouble(fcaB.getTotalamount());
+                            int skipclaimcount = Integer.parseInt(fcaB.getTotalclaims());
+                            //DATE SETTINGS
+                            Double datesettingsclaimsValue = Double.parseDouble(fcaA.getTotalamount());
+                            int dateclaimcount = Integer.parseInt(fcaA.getTotalclaims());
+                            //===========================================================
+                            totalcompute.setTotalamount(String.valueOf(datesettingsclaimsValue - skipclaimsValue));
+                            totalcompute.setTotalclaims(String.valueOf(dateclaimcount - skipclaimcount));
+                            totalcompute.setYearfrom(fcaA.getYearfrom());
+                            totalcompute.setYearto(fcaA.getYearto());
+                        } else {
+                            Double datesettingsclaimsValue = Double.parseDouble(fcaA.getTotalamount());
+                            int dateclaimcount = Integer.parseInt(fcaA.getTotalclaims());
+                            totalcompute.setTotalamount(String.valueOf(datesettingsclaimsValue));
+                            totalcompute.setTotalclaims(String.valueOf(dateclaimcount));
+                            totalcompute.setYearfrom(fcaA.getYearfrom());
+                            totalcompute.setYearto(fcaA.getYearto());
+                        }
+                        result.setResult(utility.ObjectMapper().writeValueAsString(totalcompute));
+                        result.setMessage("OK");
+                        result.setSuccess(true);
+                    } else {
+                        result.setMessage(restA.getMessage());
+                    }
+                    break;
+                case "HCPN"://USERID IS HCPNCODE/ACCRENO
+                    //GET ALL FACILITY UNDER OF HCPN
+                    ACRGBWSResult getFacilityUnder = this.GETROLEMULITPLE(dataSource, userid);
+                    FacilityComputedAmount totalcomputeHCPN = new FacilityComputedAmount();
+                    if (getFacilityUnder.isSuccess()) {
+                        List<String> hcflist = Arrays.asList(getFacilityUnder.getResult().split(","));
+                        Double totalSkipYearClaimAmount = 0.00;
+                        Double totalDateSettingYearClaimAmount = 0.00;
+                        int totalclaimcountskipyear = 0;
+                        int totalclaimcountdatesetting = 0;
+                        for (int y = 0; y < hcflist.size(); y++) {
+                            ACRGBWSResult restC = this.GetAmountPerFacility(dataSource, hcflist.get(y));
+                            if (restC.isSuccess()) {
+                                FacilityComputedAmount fcaA = utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount.class);
+                                //GET SKIP YEAR AMOUNT
+                                ACRGBWSResult restB = this.GetAmountPerFacilitySkipYear(dataSource, hcflist.get(y));
+                                if (restB.isSuccess()) {
+                                    FacilityComputedAmount fcaB = utility.ObjectMapper().readValue(restB.getResult(), FacilityComputedAmount.class);
+                                    //SKIP YEAR VALUE
+                                    Double skipclaimsValue = Double.parseDouble(fcaB.getTotalamount());
+                                    totalSkipYearClaimAmount += skipclaimsValue;
+                                    int skipclaimcount = Integer.parseInt(fcaB.getTotalclaims());
+                                    totalclaimcountskipyear += skipclaimcount;
+                                    //DATE SETTINGS
+                                    Double datesettingsclaimsValue = Double.parseDouble(fcaA.getTotalamount());
+                                    totalDateSettingYearClaimAmount += datesettingsclaimsValue;
+                                    int dateclaimcount = Integer.parseInt(fcaA.getTotalclaims());
+                                    totalclaimcountdatesetting += dateclaimcount;
+                                } else {
+                                    Double datesettingsclaimsValue = Double.parseDouble(fcaA.getTotalamount());
+                                    totalDateSettingYearClaimAmount += datesettingsclaimsValue;
+                                    int dateclaimcount = Integer.parseInt(fcaA.getTotalclaims());
+                                    totalclaimcountdatesetting += dateclaimcount;
+                                }
+                            }
+                        }
+                        totalcomputeHCPN.setTotalamount(String.valueOf(totalDateSettingYearClaimAmount - totalSkipYearClaimAmount));
+                        totalcomputeHCPN.setTotalclaims(String.valueOf(totalclaimcountdatesetting - totalclaimcountskipyear));
+                        //GET HCPN
+                        ACRGBWSResult getHCPN = this.GETMBWITHID(dataSource, userid);
+                        if (getHCPN.isSuccess()) {
+                            totalcomputeHCPN.setHospital(getHCPN.getResult());
+                        } else {
+                            totalcomputeHCPN.setHospital(getHCPN.getMessage());
+                        }
+                        //END OF GETTING HCPN
+                        if (hcflist.isEmpty()) {
+                            result.setMessage("OK");
+                            result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeHCPN));
+                            result.setSuccess(true);
+                        } else {
+                            result.setMessage("N/A");
+                        }
+                    } else {
+                        result.setMessage(getFacilityUnder.getMessage());
+                    }
+                    break;
             }
-            
-            if (summarylist.size() > 0) {
-                result.setMessage("OK");
-                result.setResult(utility.ObjectMapper().writeValueAsString(summarylist));
-                result.setSuccess(true);
-            } else {
-                result.setMessage("NO DATA FOUND");
-            }
-            
-        } catch (SQLException | IOException | ParseException ex) {
+
+        } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -504,7 +680,7 @@ public class Methods {
                 result.setMessage(getinsertresult.getString("Message"));
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
-                
+
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
@@ -519,7 +695,6 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        java.util.Date d1 = new java.util.Date();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETLOGSWITHID(:userid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
@@ -538,7 +713,7 @@ public class Methods {
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -547,47 +722,40 @@ public class Methods {
     }
 
     //GET AMOUNT PER FACILITY
-    //public ACRGBWSResult GetAmountPerFacility(DataSource dataSource, final String uaccreno, final String udatefrom, final String diff) {
     public ACRGBWSResult GetAmountPerFacility(final DataSource dataSource, final String uaccreno) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        String utags = "GOOD";
         try (Connection connection = dataSource.getConnection()) {
             ACRGBWSResult getdatesettings = fm.GETDATESETTINGS(dataSource);
             if (getdatesettings.isSuccess()) {
-                if (!getdatesettings.getResult().isEmpty()) {
-                    DateSettings ds = utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings.class);
-                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:ulevel,:uaccreno,:utags,:udatefrom,:udateto); end;");
-                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                    statement.setString("ulevel", "TWO");
-                    statement.setString("uaccreno", uaccreno);
-                    statement.setString("utags", utags);
-                    statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(ds.getDatefrom()).getTime()));
-                    statement.setDate("udateto", (Date) new Date(utility.StringToDate(ds.getDateto()).getTime()));
-                    statement.execute();
-                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                    if (resultset.next()) {
-                        FacilityComputedAmount fca = new FacilityComputedAmount();
-                        fca.setHospital(resultset.getString("ACCRENO"));
-                        fca.setTotalamount(resultset.getString("CTOTAL"));
-                        fca.setYearfrom(ds.getDatefrom());
-                        fca.setYearto(ds.getDateto());
-                        fca.setTotalclaims(resultset.getString("COUNTVAL"));
-                        result.setResult(utility.ObjectMapper().writeValueAsString(fca));
-                        result.setMessage("OK");
-                        result.setSuccess(true);
-                    } else {
-                        result.setMessage("N/A");
-                    }
+                DateSettings ds = utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings.class);
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:ulevel,:uaccreno,:utags,:udatefrom,:udateto); end;");
+                statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                statement.setString("ulevel", "TWO");
+                statement.setString("uaccreno", uaccreno);
+                statement.setString("utags", ds.getTags());
+                statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(ds.getDatefrom()).getTime()));
+                statement.setDate("udateto", (Date) new Date(utility.StringToDate(ds.getDateto()).getTime()));
+                statement.execute();
+                ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                if (resultset.next()) {
+                    FacilityComputedAmount fca = new FacilityComputedAmount();
+                    fca.setHospital(resultset.getString("ACCRENO"));
+                    fca.setTotalamount(resultset.getString("CTOTAL"));
+                    fca.setYearfrom(ds.getDatefrom());
+                    fca.setYearto(ds.getDateto());
+                    fca.setTotalclaims(resultset.getString("COUNTVAL"));
+                    result.setResult(utility.ObjectMapper().writeValueAsString(fca));
+                    result.setMessage("OK");
+                    result.setSuccess(true);
                 } else {
                     result.setMessage("N/A");
                 }
             } else {
                 result.setMessage("N/A");
             }
-            
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -601,7 +769,6 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        String utags = "GOOD";
         try (Connection connection = dataSource.getConnection()) {
             ACRGBWSResult skipyear = fm.GETSKIPYEAR(dataSource);
             if (skipyear.isSuccess()) {
@@ -609,7 +776,7 @@ public class Methods {
                 CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSKIPYEARAMOUNT(:uaccreno,:utags,:udatefrom,:udateto); end;");
                 statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                 statement.setString("uaccreno", uaccreno);
-                statement.setString("utags", utags);
+                statement.setString("utags", ds.getTags());
                 statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(ds.getDatefrom()).getTime()));
                 statement.setDate("udateto", (Date) new Date(utility.StringToDate(ds.getDateto()).getTime()));
                 statement.execute();
@@ -626,11 +793,11 @@ public class Methods {
                 } else {
                     result.setMessage("N/A");
                 }
-                
+
             } else {
                 result.setMessage(skipyear.getMessage());
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -686,7 +853,7 @@ public class Methods {
                                 errorList.add(getinsertresult.getString("Message"));
                             }
                         }
-                        
+
                         if (errCounter == 0) {
                             result.setMessage("OK");
                             result.setSuccess(true);
@@ -696,9 +863,9 @@ public class Methods {
                     } else {
                         result.setMessage(getinsertresult.getString("Message"));
                     }
-                    
+
                 }
-                
+
             }
         } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
@@ -752,7 +919,7 @@ public class Methods {
                                     hcf.setProid(getproid.getMessage());
                                 }
                             } else {
-                                hcf.setProid("N/A");
+                                hcf.setProid(restC.getMessage());
                             }
                             //GET PRO
                         } else {
@@ -790,7 +957,7 @@ public class Methods {
                             hcf.setAmount(getBadgetFirst.getTotalamount());
                         }
                         hcf.setTotalclaims(getBadgetFirst.getTotalclaims());
-                        
+
                     } else {
                         hcf.setAmount(getBadgetResult.getMessage());
                     }
@@ -805,7 +972,7 @@ public class Methods {
                 result.setResult(utility.ObjectMapper().writeValueAsString(listHCF));
                 result.setSuccess(true);
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -832,12 +999,9 @@ public class Methods {
                 while (resultset.next()) {
                     HealthCareFacility hcf = new HealthCareFacility();
                     hcf.setHcfid(resultset.getString("HCFID"));
-
                     //GET MANAGING BOARD USING FACILITY ID
                     ACRGBWSResult restB = this.GETROLEREVERESE(dataSource, resultset.getString("HCFID"));
-                    
                     if (restB.isSuccess()) {
-                        
                         ACRGBWSResult mgresult = this.GETMBWITHID(dataSource, restB.getResult());
                         if (mgresult.isSuccess()) {
                             ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
@@ -868,14 +1032,10 @@ public class Methods {
                     //GET DATE CREATOR
                     ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                     if (creator.isSuccess()) {
-                        if (!creator.getResult().isEmpty()) {
-                            UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
-                            hcf.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                        } else {
-                            hcf.setCreatedby(creator.getMessage());
-                        }
+                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                        hcf.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                     } else {
-                        hcf.setCreatedby("DATA NOT FOUND");
+                        hcf.setCreatedby(creator.getMessage());
                     }
                     //END OF GET DATE CREATOR
                     hcf.setType(resultset.getString("HCFTYPE"));
@@ -893,13 +1053,12 @@ public class Methods {
                                 Double totalamount = Double.parseDouble(getBadgetFirst.getTotalamount());
                                 String diff = String.valueOf(totalamount - skipamount);
                                 hcf.setAmount(diff);
-                                
                             } else {
                                 hcf.setAmount(getBadgetFirst.getTotalamount());
                             }
                             hcf.setTotalclaims(getBadgetFirst.getTotalclaims());
                         } else {
-                            hcf.setAmount("NO DATA FOUND");
+                            hcf.setAmount("N/A");
                         }
                     } else {
                         hcf.setAmount(getBadgetResult.getMessage());
@@ -907,15 +1066,15 @@ public class Methods {
                     listHCF.add(hcf);
                 }
             }
-            
+
             if (listHCF.size() < 1) {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             } else {
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(listHCF));
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -950,15 +1109,15 @@ public class Methods {
                 mbrequest.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
                 mbrequestlist.add(mbrequest);
             }
-            
+
             if (!mbrequestlist.isEmpty()) {
                 result.setResult(utility.ObjectMapper().writeValueAsString(mbrequestlist));
                 result.setMessage("OK");
                 result.setSuccess(true);
             } else {
-                result.setMessage("NO DATA FOUND");
+                result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1010,7 +1169,6 @@ public class Methods {
                                 mblist.add(managingboard);
                             }
                         }
-                        
                     } else {
                         result.setMessage("NO DATA FOUND");
                     }
@@ -1056,17 +1214,17 @@ public class Methods {
                             }
                         }
                     } else {
-                        result.setMessage("NO DATA FOUND");
+                        result.setMessage("N/A");
                     }
                     if (healthcarefacilitylist.size() > 0) {
                         result.setResult(utility.ObjectMapper().writeValueAsString(healthcarefacilitylist));
                         result.setMessage("OK");
                         result.setSuccess(true);
                     } else {
-                        result.setMessage("NO DATA FOUND");
+                        result.setMessage("N/A");
                     }
                 } else {
-                    result.setMessage("NO DATA FOUND");
+                    result.setMessage(restA.getMessage());
                 }
             }
         } catch (IOException | ParseException ex) {
@@ -1089,7 +1247,7 @@ public class Methods {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
                 //---------------------------------------------------- 
-                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETMBWITHID(:pid); end;");
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                 statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                 statement.setString("pid", pid);
                 statement.execute();
@@ -1188,7 +1346,7 @@ public class Methods {
                     List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                     for (int x = 0; x < fchlist.size(); x++) {
                         //---------------------------------------------------- 
-                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETMBWITHID(:pid); end;");
+                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                         statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                         statement.setString("pid", fchlist.get(x));
                         statement.execute();
@@ -1263,7 +1421,7 @@ public class Methods {
                     result.setMessage("NO DATA FOUND");
                 }
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1286,7 +1444,7 @@ public class Methods {
                 List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                 for (int x = 0; x < fchlist.size(); x++) {
                     //---------------------------------------------------- 
-                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETMBWITHID(:pid); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("pid", fchlist.get(x));
                     statement.execute();
@@ -1330,7 +1488,7 @@ public class Methods {
                                     } else {
                                         totaldiff += Double.parseDouble(getBadgetFirst.getTotalamount());
                                     }
-                                    
+
                                 } else {
                                     totaldiff += 0.00;
                                 }
@@ -1360,7 +1518,7 @@ public class Methods {
                     result.setMessage("NO DATA FOUND");
                 }
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1431,7 +1589,7 @@ public class Methods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GetProWithPROID(final DataSource dataSource, final String pproid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1458,7 +1616,7 @@ public class Methods {
                 } else {
                     pro.setCreatedby("N/A");
                 }
-                
+
                 pro.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
                 pro.setProcode(resultset.getString("PROCODE"));
                 result.setResult(utility.ObjectMapper().writeValueAsString(pro));
@@ -1473,7 +1631,7 @@ public class Methods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GETROLE(final DataSource dataSource, final String puserid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1498,7 +1656,7 @@ public class Methods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GETROLEMULITPLE(final DataSource dataSource, final String puserid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1514,7 +1672,7 @@ public class Methods {
             while (resultset.next()) {
                 listresult.add(resultset.getString("ACCESSID"));
             }
-            
+
             if (listresult.size() > 0) {
                 result.setMessage("OK");
                 result.setSuccess(true);
@@ -1528,7 +1686,7 @@ public class Methods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GETROLEREVERESE(final DataSource dataSource, final String puserid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1553,7 +1711,7 @@ public class Methods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GETROLEREVERESEMULTIPLE(final DataSource dataSource, final String puserid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1682,7 +1840,7 @@ public class Methods {
             } else {
                 result.setMessage(resultreports.getMessage());
             }
-            
+
             if (rmblist.size() > 0) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(rmblist));
@@ -1749,7 +1907,7 @@ public class Methods {
             } else {
                 result.setMessage(resultreports.getMessage());
             }
-            
+
             if (rmblist.size() > 0) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(rmblist));
@@ -1815,7 +1973,7 @@ public class Methods {
             } else {
                 result.setMessage(resultreports.getMessage());
             }
-            
+
             if (rmblist.size() > 0) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(rmblist));
@@ -1872,7 +2030,7 @@ public class Methods {
             } else {
                 result.setMessage("N/A ");
             }
-            
+
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1907,7 +2065,7 @@ public class Methods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
             }
-            
+
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1942,14 +2100,14 @@ public class Methods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
             }
-            
+
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
+
     public ACRGBWSResult GetAmount(final DataSource dataSource, final String pan, final String datestart, final String dateend) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1979,7 +2137,7 @@ public class Methods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2029,12 +2187,12 @@ public class Methods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (IOException | SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
+
 }

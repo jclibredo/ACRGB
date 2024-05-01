@@ -125,8 +125,33 @@ public class InsertMethods {
                                         getinsertresult.setString("p_conid", assets.getConid());
                                         getinsertresult.execute();
                                         if (getinsertresult.getString("Message").equals("SUCC")) {
+                                            //INSERT TO ACTIVITY LOGS
+                                            UserActivity userlogs = utility.UserActivity();
+                                            ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, assets.getHcfid());
+                                            if (getSubject.isSuccess()) {
+                                                HealthCareFacility hcf = utility.ObjectMapper().readValue(getSubject.getResult(), HealthCareFacility.class);
+                                                String actdetails = "INSERT ASSETS TO " + hcf.getHcfname();
+                                                userlogs.setActby(assets.getCreatedby());
+                                                userlogs.setActdate(assets.getDatecreated());
+                                                userlogs.setActdetails(actdetails);
+                                                ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+                                                result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
+                                            } else {
+                                                ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, assets.getHcfid());
+                                                userlogs.setActby(assets.getCreatedby());
+                                                userlogs.setActdate(assets.getDatecreated());
+                                                if (getSubjectA.isSuccess()) {
+                                                    ManagingBoard mb = utility.ObjectMapper().readValue(getSubjectA.getResult(), ManagingBoard.class);
+                                                    String actdetails = "INSERT ASSETS TO " + mb.getMbname();
+                                                    userlogs.setActdetails(actdetails);
+                                                } else {
+                                                    String actdetails = "INSERT ASSETS TO HCPN ";
+                                                    userlogs.setActdetails(actdetails);
+                                                }
+                                                ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+                                                result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
+                                            }
                                             result.setSuccess(true);
-                                            result.setMessage(getinsertresult.getString("Message"));
                                         } else {
                                             result.setMessage(getinsertresult.getString("Message"));
                                         }
@@ -192,35 +217,35 @@ public class InsertMethods {
                     getinsertresult.setString("p_baseamount", contract.getBaseamount());
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
-                        result.setSuccess(true);
-                        result.setMessage(getinsertresult.getString("Message"));
-                    } else {
-                        result.setMessage(getinsertresult.getString("Message"));
-                    }
-                    //INSERT TO ACTIVITY LOGS
-                    UserActivity userlogs = utility.UserActivity();
-                    ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, contract.getHcfid());
-                    if (getSubject.isSuccess()) {
-                        HealthCareFacility hcf = utility.ObjectMapper().readValue(getSubject.getResult(), HealthCareFacility.class);
-                        String actdetails = "INSERT CONTRACT TO " + hcf.getHcfname();
-                        userlogs.setActby(contract.getCreatedby());
-                        userlogs.setActdate(contract.getDatecreated());
-                        userlogs.setActdetails(actdetails);
-                        ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
-                    } else {
-                        ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, contract.getHcfid());
-                        userlogs.setActby(contract.getCreatedby());
-                        userlogs.setActdate(contract.getDatecreated());
-                        if (getSubjectA.isSuccess()) {
-                            ManagingBoard mb = utility.ObjectMapper().readValue(getSubjectA.getResult(), ManagingBoard.class);
-                            String actdetails = "INSERT CONTRACT TO " + mb.getMbname();
+                        //INSERT TO ACTIVITY LOGS
+                        UserActivity userlogs = utility.UserActivity();
+                        ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, contract.getHcfid());
+                        if (getSubject.isSuccess()) {
+                            HealthCareFacility hcf = utility.ObjectMapper().readValue(getSubject.getResult(), HealthCareFacility.class);
+                            String actdetails = "INSERT CONTRACT TO " + hcf.getHcfname();
+                            userlogs.setActby(contract.getCreatedby());
+                            userlogs.setActdate(contract.getDatecreated());
                             userlogs.setActdetails(actdetails);
+                            ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+                            result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
                         } else {
-                            String actdetails = "INSERT CONTRACT TO HCPN ";
-                            userlogs.setActdetails(actdetails);
+                            ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, contract.getHcfid());
+                            userlogs.setActby(contract.getCreatedby());
+                            userlogs.setActdate(contract.getDatecreated());
+                            if (getSubjectA.isSuccess()) {
+                                ManagingBoard mb = utility.ObjectMapper().readValue(getSubjectA.getResult(), ManagingBoard.class);
+                                String actdetails = "INSERT CONTRACT TO " + mb.getMbname();
+                                userlogs.setActdetails(actdetails);
+                            } else {
+                                String actdetails = "INSERT CONTRACT TO HCPN ";
+                                userlogs.setActdetails(actdetails);
+                            }
+                            ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+                            result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
                         }
-                        ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
-
+                        result.setSuccess(true);
+                    } else {
+                        result.setMessage(getinsertresult.getString("Message"));
                     }
 
                 }
@@ -301,8 +326,15 @@ public class InsertMethods {
                     getinsertresult.setString("p_contact", userinfo.getContact());
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
+                        UserActivity userlogs = utility.UserActivity();
+                        String actdetails = "INSERT USER DETAILS" + userinfo.getContact() + " "
+                                + " " + userinfo.getLastname() + " , " + userinfo.getFirstname();
+                        userlogs.setActby(userinfo.getCreatedby());
+                        userlogs.setActdate(userinfo.getDatecreated());
+                        userlogs.setActdetails(actdetails);
+                        ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+                        result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
                         result.setSuccess(true);
-                        result.setMessage(getinsertresult.getString("Message"));
                     } else {
                         result.setMessage(getinsertresult.getString("Message"));
                     }
@@ -380,7 +412,7 @@ public class InsertMethods {
             }
             if (!utility.validatePassword(user.getUserpassword())) {
                 result.setSuccess(false);
-                result.setMessage("PASSWORD IS NOT VALID NOT MEET WITH THE REQUIREMENTS");
+                result.setMessage("PASSWORD NOT MEET THE REQUIREMENTS");
             } else if (!utility.IsValidDate(user.getDatecreated())) {
                 result.setSuccess(false);
                 result.setMessage("DATE FORMAT IS NOT VALID");

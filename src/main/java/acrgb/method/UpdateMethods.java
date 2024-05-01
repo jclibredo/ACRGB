@@ -40,7 +40,6 @@ public class UpdateMethods {
 
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEASSETS(final DataSource datasource, Assets assets) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -266,7 +265,7 @@ public class UpdateMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.FACILITYTAGGING(:Message,:Code,:p_hcfidcode,"
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKG.FACILITYTAGGING(:Message,:Code,:p_hcfidcode,"
                     + ":p_type)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -341,7 +340,6 @@ public class UpdateMethods {
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
-
             }
         } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());

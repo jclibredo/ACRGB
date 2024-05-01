@@ -237,14 +237,14 @@ public class ACRGBFETCH {
     }
 
     @GET
-    @Path("GetSummary")
+    @Path("GetSummary/{tags}/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetSummary() {
+    public ACRGBWSResult GetSummary(@PathParam("tags") String tags, @PathParam("userid") String userid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = methods.JOINCONHCFTBL(dataSource);
+        ACRGBWSResult getResult = methods.GetBaseAmount(dataSource, tags, userid);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());
@@ -360,19 +360,7 @@ public class ACRGBFETCH {
         return result;
     }
 
-    //Get Facility using FHID
-//    @GET
-//    @Path("GETFACILITY/{uhcfid}")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public ACRGBWSResult GETFACILITY(@PathParam("uhcfid") String uhcfid) {
-//        ACRGBWSResult result = utility.ACRGBWSResult();
-//        ACRGBWSResult hcf = fetchmethods.GETFACILITYID(dataSource, uhcfid);
-//        result.setMessage(hcf.getMessage());
-//        result.setSuccess(hcf.isSuccess());
-//        result.setResult(hcf.getResult());
-//        return result;
-//
-//    }
+  
     @GET
     @Path("GetHealthFacilityBadget/{accesstags}/{puserid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -749,10 +737,9 @@ public class ACRGBFETCH {
                 result.setSuccess(getResultHCPN.isSuccess());
                 break;
             case "HCPNALL"://GET LEDGER PER FACILITY
-                 //hcpncode  MUST BE THE USERID OF PRO ACCOUNT
+                //hcpncode  MUST BE THE USERID OF PRO ACCOUNT
                 //CONTRACT DECLARE 0 VALUE
                 //TAGS MUST BE HCPNALL
-                
                 ACRGBWSResult getResultAllHCPN = lm.GETLedgerAllContractHCPN(dataSource, hcpncode);//hcpncode  user ID of account of PROUSER
                 result.setMessage(getResultAllHCPN.getMessage());
                 result.setResult(getResultAllHCPN.getResult());
