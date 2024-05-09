@@ -20,8 +20,7 @@ public class Contract {
     private String stats; // THIS
     private String createdby;
     private String datecreated;
-    private String datefrom;
-    private String dateto;
+    private String contractdate;
     private String transcode;
     private String baseamount;
     private String enddate;// THIS

@@ -8,6 +8,7 @@ package acrgb.method;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Accreditation;
 import acrgb.structure.Contract;
+import acrgb.structure.ContractDate;
 import acrgb.structure.DateSettings;
 import acrgb.structure.FacilityComputedAmount;
 import acrgb.structure.HealthCareFacility;
@@ -50,6 +51,7 @@ public class Methods {
 
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
+    private final ContractMethod contractdate = new ContractMethod();
     private final Cryptor cryptor = new Cryptor();
     private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm a");
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
@@ -473,7 +475,7 @@ public class Methods {
                             } else {
                                 totalcompute.setHospital(getPROCode.getMessage());
                             }
-                            if (HCIList.isEmpty()) {
+                            if (!HCIList.isEmpty()) {
                                 result.setMessage("OK");
                                 result.setResult(utility.ObjectMapper().writeValueAsString(totalcompute));
                                 result.setSuccess(true);
@@ -541,7 +543,7 @@ public class Methods {
                             totalcompute.setHospital(getPROCode.getMessage());
                         }
                         //----------------------------------------------------------
-                        if (finalListofHCPN.isEmpty()) {
+                        if (!finalListofHCPN.isEmpty()) {
                             result.setMessage("OK");
                             result.setResult(utility.ObjectMapper().writeValueAsString(totalcompute));
                             result.setSuccess(true);
@@ -608,6 +610,8 @@ public class Methods {
                             ACRGBWSResult restC = this.GetAmountPerFacility(dataSource, hcflist.get(y));
                             if (restC.isSuccess()) {
                                 FacilityComputedAmount fcaA = utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount.class);
+                                totalcomputeHCPN.setYearfrom(fcaA.getYearfrom());
+                                totalcomputeHCPN.setYearto(fcaA.getYearto());
                                 //GET SKIP YEAR AMOUNT
                                 ACRGBWSResult restB = this.GetAmountPerFacilitySkipYear(dataSource, hcflist.get(y));
                                 if (restB.isSuccess()) {
@@ -640,7 +644,7 @@ public class Methods {
                             totalcomputeHCPN.setHospital(getHCPN.getMessage());
                         }
                         //END OF GETTING HCPN
-                        if (hcflist.isEmpty()) {
+                        if (!hcflist.isEmpty()) {
                             result.setMessage("OK");
                             result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeHCPN));
                             result.setSuccess(true);
@@ -1801,16 +1805,16 @@ public class Methods {
                 if (!resultreports.getResult().isEmpty()) {
                     List<Contract> conlist = Arrays.asList(utility.ObjectMapper().readValue(resultreports.getResult(), Contract[].class));
                     for (int x = 0; x < conlist.size(); x++) {
-//                        //-------------------------------------
-                        // System.out.println(conlist.get(x).getHcfid());
-                        // ManagingBoard mb = utility.ObjectMapper().readValue(conlist.get(x).getHcfid(), ManagingBoard.class);
-////                        ACRGBWSResult facilitylist = this.GETROLEMULITPLE(dataSource, mb.getMbid());
-////                        if (facilitylist.isSuccess()) {
-//                          List<String> restist = Arrays.asList(facilitylist.getResult().split(","));
                         ReportsHCPNSummary rmb = new ReportsHCPNSummary();
                         rmb.setHcpnname(conlist.get(x).getHcfid());
-                        rmb.setContractadateto(conlist.get(x).getDateto());
-                        rmb.setContractadatefrom(conlist.get(x).getDatefrom());
+                        if (!conlist.get(x).getContractdate().isEmpty()) {
+                            ContractDate condate = utility.ObjectMapper().readValue(conlist.get(x).getContractdate(), ContractDate.class);
+                            rmb.setContractadateto(condate.getDateto());
+                            rmb.setContractadatefrom(condate.getDatefrom());
+                        } else {
+                            rmb.setContractadateto(conlist.get(x).getContractdate());
+                            rmb.setContractadatefrom(conlist.get(x).getContractdate());
+                        }
                         rmb.setConctractamount(conlist.get(x).getAmount());
                         rmb.setContractnumber(conlist.get(x).getTranscode());
                         CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
@@ -1866,18 +1870,19 @@ public class Methods {
             ACRGBWSResult resultreports = fm.ACR_CONTRACTPROID(dataSource, tags, puserid);//GET CONTRACT USING USERID OF PRO USER ACCOUNT
             if (resultreports.isSuccess()) {
                 if (!resultreports.getResult().isEmpty()) {
-//
                     List<Contract> conlist = Arrays.asList(utility.ObjectMapper().readValue(resultreports.getResult(), Contract[].class));
                     for (int x = 0; x < conlist.size(); x++) {
-//                        //-------------------------------------
                         ManagingBoard mb = utility.ObjectMapper().readValue(conlist.get(x).getHcfid(), ManagingBoard.class);
-////                        ACRGBWSResult facilitylist = this.GETROLEMULITPLE(dataSource, mb.getMbid());
-////                        if (facilitylist.isSuccess()) {
-//                        //  List<String> restist = Arrays.asList(facilitylist.getResult().split(","));
                         ReportsHCPNSummary rmb = new ReportsHCPNSummary();
                         rmb.setHcpnname(mb.getMbname());
-                        rmb.setContractadateto(conlist.get(x).getDateto());
-                        rmb.setContractadatefrom(conlist.get(x).getDatefrom());
+                        if (!conlist.get(x).getContractdate().isEmpty()) {
+                            ContractDate condate = utility.ObjectMapper().readValue(conlist.get(x).getContractdate(), ContractDate.class);
+                            rmb.setContractadateto(condate.getDateto());
+                            rmb.setContractadatefrom(condate.getDatefrom());
+                        } else {
+                            rmb.setContractadateto(conlist.get(x).getContractdate());
+                            rmb.setContractadatefrom(conlist.get(x).getContractdate());
+                        }
                         rmb.setConctractamount(conlist.get(x).getAmount());
                         rmb.setContractnumber(conlist.get(x).getTranscode());
                         CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
@@ -1935,15 +1940,18 @@ public class Methods {
                 if (!resultreports.getResult().isEmpty()) {
                     List<Contract> conlist = Arrays.asList(utility.ObjectMapper().readValue(resultreports.getResult(), Contract[].class));
                     for (int x = 0; x < conlist.size(); x++) {
-//                        //-------------------------------------
                         ManagingBoard mb = utility.ObjectMapper().readValue(conlist.get(x).getHcfid(), ManagingBoard.class);
-////                        ACRGBWSResult facilitylist = this.GETROLEMULITPLE(dataSource, mb.getMbid());
-////                        if (facilitylist.isSuccess()) {
-//                        //  List<String> restist = Arrays.asList(facilitylist.getResult().split(","));
                         ReportsHCPNSummary rmb = new ReportsHCPNSummary();
                         rmb.setHcpnname(mb.getMbname());
-                        rmb.setContractadateto(conlist.get(x).getDateto());
-                        rmb.setContractadatefrom(conlist.get(x).getDatefrom());
+
+                        if (!conlist.get(x).getContractdate().isEmpty()) {
+                            ContractDate condate = utility.ObjectMapper().readValue(conlist.get(x).getContractdate(), ContractDate.class);
+                            rmb.setContractadateto(condate.getDateto());
+                            rmb.setContractadatefrom(condate.getDatefrom());
+                        } else {
+                            rmb.setContractadateto(conlist.get(x).getContractdate());
+                            rmb.setContractadatefrom(conlist.get(x).getContractdate());
+                        }
                         rmb.setConctractamount(conlist.get(x).getAmount());
                         rmb.setContractnumber(conlist.get(x).getTranscode());
                         CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");

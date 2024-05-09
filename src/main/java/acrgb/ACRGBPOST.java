@@ -10,6 +10,7 @@ import acrgb.method.Methods;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
+import acrgb.structure.ContractDate;
 import acrgb.structure.DateSettings;
 import acrgb.structure.MBRequestSummary;
 import acrgb.structure.ManagingBoard;
@@ -255,7 +256,21 @@ public class ACRGBPOST {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = insertmethods.INSERTAPPELLATE(dataSource,
-                userroleindex.getUserid(),userroleindex.getAccessid());
+                userroleindex.getUserid(), userroleindex.getAccessid());
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
+
+    @POST
+    @Path("INSERTCONDATE")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult INSERTCONDATE(final ContractDate contractdate) throws SQLException, ParseException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = insertmethods.INSERTCONDATE(dataSource, contractdate);
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());

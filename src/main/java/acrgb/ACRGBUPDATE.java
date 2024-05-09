@@ -12,8 +12,10 @@ import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Archived;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
+import acrgb.structure.ContractDate;
 import acrgb.structure.DateSettings;
 import acrgb.structure.HealthCareFacility;
+import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserInfo;
@@ -136,9 +138,6 @@ public class ACRGBUPDATE {
         }
         return result;
     }
-    
-    
-    
 
     @PUT
     @Path("UPDATEUSERLEVELID")
@@ -243,10 +242,10 @@ public class ACRGBUPDATE {
             con.setEnddate(contract.getEnddate());
             switch (contract.getStats()) {
                 case "NONRENEW":
-                    con.setStats("3");
+                    con.setStats("3");//END CONTRACT
                     break;
                 case "RENEW":
-                    con.setStats("4");
+                    con.setStats("4");//RENEW
                     break;
                 case "TERMINATE":
                     con.setStats("5");
@@ -298,6 +297,34 @@ public class ACRGBUPDATE {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = methods.UPDATEUSERDETAILS(dataSource, userinfo);
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
+
+    @PUT
+    @Path("APPROVEDHCPN")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult APPROVEDHCPN(final ManagingBoard mb) throws SQLException, ParseException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = updatemethods.APPROVEDHCPN(dataSource, mb);
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
+
+    @PUT
+    @Path("UPDATECONTRACTDATE")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult APPROVEDHCPN(final ContractDate contractdate) throws SQLException, ParseException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = updatemethods.UPDATECONDATE(dataSource, contractdate);
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());

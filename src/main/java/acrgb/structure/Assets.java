@@ -13,6 +13,7 @@ import lombok.Data;
  */
 @Data
 public class Assets {
+
     private String assetid;
     private String hcfid;
     private String tranchid;
@@ -23,6 +24,7 @@ public class Assets {
     private String datereleased;
     private String datecreated;
     private String status;
-
+    private String releasedamount;
+    private String previousbalance;
 
 }

@@ -10,6 +10,7 @@ import acrgb.structure.Accreditation;
 import acrgb.structure.Assets;
 import acrgb.structure.Book;
 import acrgb.structure.Contract;
+import acrgb.structure.ContractDate;
 import acrgb.structure.DateSettings;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.LogStatus;
@@ -51,7 +52,6 @@ public class InsertMethods {
     }
     private final Utility utility = new Utility();
     private final Cryptor cryptor = new Cryptor();
-    private final Methods methods = new Methods();
     private final FetchMethods fm = new FetchMethods();
 
     //----------------------------------------------------------------------------------------------------------
@@ -60,118 +60,124 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             //GET TRANCH PERCENTAGE
-            if (assets.getCreatedby().isEmpty()
-                    || assets.getDatecreated().isEmpty()
-                    || assets.getDatereleased().isEmpty()
-                    || assets.getHcfid().isEmpty()
-                    || assets.getReceipt().isEmpty()
-                    || assets.getTranchid().isEmpty()) {
-                result.setMessage("SOME REQUIRED FIELDS IS EMPTY");
-                result.setSuccess(false);
-            } else if (utility.IsValidNumber(assets.getHcfid()) && utility.IsValidNumber(assets.getTranchid())) {
-                ACRGBWSResult tranchresult = fm.GETTRANCHAMOUNT(datasource, assets.getTranchid());
-                if (!tranchresult.isSuccess()) {
-                    result.setMessage(tranchresult.getMessage());
-                } else if (!utility.IsValidDate(assets.getDatecreated()) || !utility.IsValidDate(assets.getDatereleased())) {
-                    result.setMessage("DATE FORMAT IS NOT VALID");
+//            if (assets.getCreatedby().isEmpty()
+//                    || assets.getDatecreated().isEmpty()
+//                    || assets.getDatereleased().isEmpty()
+//                    || assets.getHcfid().isEmpty()
+//                    || assets.getReceipt().isEmpty()
+//                    || assets.getTranchid().isEmpty()) {
+//                result.setMessage("SOME REQUIRED FIELDS IS EMPTY");
+//                result.setSuccess(false);
+//            } else if (utility.IsValidNumber(assets.getHcfid()) && utility.IsValidNumber(assets.getTranchid())) {
+            //ACRGBWSResult tranchresult = fm.GETTRANCHAMOUNT(datasource, assets.getTranchid());
+//                if (!tranchresult.isSuccess()) {
+//                    result.setMessage(tranchresult.getMessage());
+//                } else if (!utility.IsValidDate(assets.getDatecreated()) || !utility.IsValidDate(assets.getDatereleased())) {
+//                    result.setMessage("DATE FORMAT IS NOT VALID");
+//                } else {
+            // ACRGBWSResult conresult = fm.GETCONTRACTAMOUNT(datasource, assets.getHcfid());
+//                    if (conresult.isSuccess()) {
+//                        ACRGBWSResult transresult = fm.ACR_ASSETS(datasource, "active", "0");
+//                        if (transresult.isSuccess()) {
+//                            ACRGBWSResult trans = fm.ACR_TRANCH(datasource, "active");
+//                            if (trans.isSuccess()) {
+//                                int transcount = 0;
+//                                List<Tranch> tranchlist = Arrays.asList(utility.ObjectMapper().readValue(trans.getResult(), Tranch[].class));
+//                                for (int x = 0; x < tranchlist.size(); x++) {
+//                                    if (tranchlist.get(x).getTranchid().equals(assets.getTranchid())) {
+//                                        transcount++;
+//                                    }
+//                                }
+//
+//                                //---------------------------------------------------------------
+//                                int count = 0;
+//                                List<Assets> assetslist = Arrays.asList(utility.ObjectMapper().readValue(transresult.getResult(), Assets[].class));
+//                                for (int x = 0; x < assetslist.size(); x++) {
+//                                    if (assets.getHcfid().trim().equals(assetslist.get(x).getHcfid().trim())
+//                                            && assets.getTranchid().trim().equals(assetslist.get(x).getTranchid().trim())
+//                                            && assetslist.get(x).getStatus().equals("2")) {
+//                                        count++;
+//                                    }
+//                                }
+//
+//                                if (transcount == 0) {
+//                                    result.setSuccess(false);
+//                                    result.setMessage("TRANCH VALUE NOT FOUND");
+//                                } else {
+//                                    if (count < 1) {
+            //==================================================
+//            Double percentage = Double.parseDouble(tranchresult.getResult());//60 percent
+//            Double totalpercent = percentage / 100;
+//            Double amount = Double.parseDouble(conresult.getResult());//contract amount
+//            Double p_amount = amount * totalpercent;
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTASSETS(:Message,:Code,:p_hcfid,:p_tranchid ,:p_receipt,:p_amount"
+                    + ",:p_createdby,:p_datereleased,:p_datecreated,:p_conid,:p_releasedamount,:p_previousbal)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("p_hcfid", assets.getHcfid());
+            getinsertresult.setString("p_tranchid", assets.getTranchid());
+            getinsertresult.setString("p_receipt", assets.getReceipt());
+            getinsertresult.setString("p_amount", assets.getAmount());
+            getinsertresult.setString("p_createdby", assets.getCreatedby());
+            getinsertresult.setDate("p_datereleased", (Date) new Date(utility.StringToDate(assets.getDatecreated()).getTime())); //assets.getDatereleased());
+            getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(assets.getDatecreated()).getTime()));//assets.getDatecreated());
+            getinsertresult.setString("p_conid", assets.getConid());
+            getinsertresult.setString("p_releasedamount", assets.getReleasedamount());
+            getinsertresult.setString("p_previousbal", assets.getPreviousbalance());
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                //INSERT TO ACTIVITY LOGS
+                UserActivity userlogs = utility.UserActivity();
+                ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, assets.getHcfid());
+                if (getSubject.isSuccess()) {
+                    HealthCareFacility hcf = utility.ObjectMapper().readValue(getSubject.getResult(), HealthCareFacility.class);
+                    String actdetails = "INSERT ASSETS TO " + hcf.getHcfname();
+                    userlogs.setActby(assets.getCreatedby());
+                    userlogs.setActdate(assets.getDatecreated());
+                    userlogs.setActdetails(actdetails);
+                    ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+                    result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
                 } else {
-                    ACRGBWSResult conresult = fm.GETCONTRACTAMOUNT(datasource, assets.getHcfid());
-                    if (conresult.isSuccess()) {
-                        ACRGBWSResult transresult = fm.ACR_ASSETS(datasource, "active", "0");
-                        if (transresult.isSuccess()) {
-                            ACRGBWSResult trans = fm.ACR_TRANCH(datasource, "active");
-                            if (trans.isSuccess()) {
-                                int transcount = 0;
-                                List<Tranch> tranchlist = Arrays.asList(utility.ObjectMapper().readValue(trans.getResult(), Tranch[].class));
-                                for (int x = 0; x < tranchlist.size(); x++) {
-                                    if (tranchlist.get(x).getTranchid().equals(assets.getTranchid())) {
-                                        transcount++;
-                                    }
-                                }
-
-                                //---------------------------------------------------------------
-                                int count = 0;
-                                List<Assets> assetslist = Arrays.asList(utility.ObjectMapper().readValue(transresult.getResult(), Assets[].class));
-                                for (int x = 0; x < assetslist.size(); x++) {
-                                    if (assets.getHcfid().trim().equals(assetslist.get(x).getHcfid().trim())
-                                            && assets.getTranchid().trim().equals(assetslist.get(x).getTranchid().trim())
-                                            && assetslist.get(x).getStatus().equals("2")) {
-                                        count++;
-                                    }
-                                }
-
-                                if (transcount == 0) {
-                                    result.setSuccess(false);
-                                    result.setMessage("TRANCH VALUE NOT FOUND");
-                                } else {
-                                    if (count < 1) {
-                                        Double percentage = Double.parseDouble(tranchresult.getResult());//60 percent
-                                        Double totalpercent = percentage / 100;
-                                        Double amount = Double.parseDouble(conresult.getResult());//contract amount
-                                        Double p_amount = amount * totalpercent;
-                                        CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTASSETS(:Message,:Code,:p_hcfid,:p_tranchid ,:p_receipt,:p_amount"
-                                                + ",:p_createdby,:p_datereleased,:p_datecreated,:p_conid)");
-                                        getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                                        getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                                        getinsertresult.setString("p_hcfid", assets.getHcfid());
-                                        getinsertresult.setString("p_tranchid", assets.getTranchid());
-                                        getinsertresult.setString("p_receipt", assets.getReceipt());
-                                        getinsertresult.setString("p_amount", String.valueOf(p_amount));
-                                        getinsertresult.setString("p_createdby", assets.getCreatedby());
-                                        getinsertresult.setDate("p_datereleased", (Date) new Date(utility.StringToDate(assets.getDatecreated()).getTime())); //assets.getDatereleased());
-                                        getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(assets.getDatecreated()).getTime()));//assets.getDatecreated());
-                                        getinsertresult.setString("p_conid", assets.getConid());
-                                        getinsertresult.execute();
-                                        if (getinsertresult.getString("Message").equals("SUCC")) {
-                                            //INSERT TO ACTIVITY LOGS
-                                            UserActivity userlogs = utility.UserActivity();
-                                            ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, assets.getHcfid());
-                                            if (getSubject.isSuccess()) {
-                                                HealthCareFacility hcf = utility.ObjectMapper().readValue(getSubject.getResult(), HealthCareFacility.class);
-                                                String actdetails = "INSERT ASSETS TO " + hcf.getHcfname();
-                                                userlogs.setActby(assets.getCreatedby());
-                                                userlogs.setActdate(assets.getDatecreated());
-                                                userlogs.setActdetails(actdetails);
-                                                ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
-                                                result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
-                                            } else {
-                                                ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, assets.getHcfid());
-                                                userlogs.setActby(assets.getCreatedby());
-                                                userlogs.setActdate(assets.getDatecreated());
-                                                if (getSubjectA.isSuccess()) {
-                                                    ManagingBoard mb = utility.ObjectMapper().readValue(getSubjectA.getResult(), ManagingBoard.class);
-                                                    String actdetails = "INSERT ASSETS TO " + mb.getMbname();
-                                                    userlogs.setActdetails(actdetails);
-                                                } else {
-                                                    String actdetails = "INSERT ASSETS TO HCPN ";
-                                                    userlogs.setActdetails(actdetails);
-                                                }
-                                                ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
-                                                result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
-                                            }
-                                            result.setSuccess(true);
-                                        } else {
-                                            result.setMessage(getinsertresult.getString("Message"));
-                                        }
-                                    } else {
-                                        result.setMessage("TRANCH VALUE IS ALREADY ASSIGN TO FACILITY");
-                                    }
-                                }
-                            } else {
-                                result.setMessage(trans.getMessage());
-                            }
-                        } else {
-                            result.setMessage(transresult.getMessage());
-                        }
+                    ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, assets.getHcfid());
+                    userlogs.setActby(assets.getCreatedby());
+                    userlogs.setActdate(assets.getDatecreated());
+                    if (getSubjectA.isSuccess()) {
+                        ManagingBoard mb = utility.ObjectMapper().readValue(getSubjectA.getResult(), ManagingBoard.class);
+                        String actdetails = "INSERT ASSETS TO " + mb.getMbname();
+                        userlogs.setActdetails(actdetails);
                     } else {
-                        result.setMessage(conresult.getMessage());
+                        String actdetails = "INSERT ASSETS TO HCPN ";
+                        userlogs.setActdetails(actdetails);
                     }
+                    ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+                    result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
                 }
+                result.setSuccess(true);
             } else {
-                result.setMessage("NUMBER FORMAT IS NOT VALID");
+                result.setMessage(getinsertresult.getString("Message") + " HERE");
             }
+
+            //==================================================
+//                                    } else {
+//                                        result.setMessage("TRANCH VALUE IS ALREADY ASSIGN TO FACILITY");
+//                                    }
+//                                }
+//                            } else {
+//                                result.setMessage(trans.getMessage()+" FIRST");
+//                            }
+//                        } else {
+//                            result.setMessage(transresult.getMessage()+" SECOND");
+//                        }
+//                    } else {
+//                        result.setMessage(conresult.getMessage()+" THIRD");
+//                    }
+//                }
+//            } else {
+//                result.setMessage("NUMBER FORMAT IS NOT VALID");
+//            }
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -185,13 +191,12 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-
+        Methods methods = new Methods();
+        UpdateMethods um = new UpdateMethods();
         try (Connection connection = datasource.getConnection()) {
             if (contract.getAmount().isEmpty()
                     || contract.getCreatedby().isEmpty()
                     || contract.getDatecreated().isEmpty()
-                    || contract.getDatefrom().isEmpty()
-                    || contract.getDateto().isEmpty()
                     || contract.getHcfid().isEmpty()) {
                 result.setMessage("SOME REQUIRED FIELDS IS EMPTY");
                 result.setSuccess(false);
@@ -199,20 +204,19 @@ public class InsertMethods {
                 result.setMessage("NUMBER FORMAT IS NOT VALID");
                 result.setSuccess(false);
             } else {
-                if (!utility.IsValidDate(contract.getDatecreated()) || !utility.IsValidDate(contract.getDatefrom()) || !utility.IsValidDate(contract.getDateto())) {
+                if (!utility.IsValidDate(contract.getDatecreated())) {
                     result.setSuccess(false);
                     result.setMessage("DATE FORMAT IS NOT VALID");
                 } else {
                     CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONTRACT(:Message,:Code,:p_hcfid,:p_amount"
-                            + ",:p_createdby,:p_datecreated,:p_datefrom,:p_dateto,:p_transcode,:p_baseamount)");
+                            + ",:p_createdby,:p_datecreated,:p_contractdate,:p_transcode,:p_baseamount)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                     getinsertresult.setString("p_hcfid", contract.getHcfid());//PAN Number or MB Accreditaion Number
                     getinsertresult.setString("p_amount", contract.getAmount());
                     getinsertresult.setString("p_createdby", contract.getCreatedby());
                     getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(contract.getDatecreated()).getTime()));//contract.getDatecreated());
-                    getinsertresult.setDate("p_datefrom", (Date) new Date(utility.StringToDate(contract.getDatefrom()).getTime()));
-                    getinsertresult.setDate("p_dateto", (Date) new Date(utility.StringToDate(contract.getDateto()).getTime()));
+                    getinsertresult.setString("p_contractdate", contract.getContractdate());
                     getinsertresult.setString("p_transcode", contract.getTranscode());
                     getinsertresult.setString("p_baseamount", contract.getBaseamount());
                     getinsertresult.execute();
@@ -243,6 +247,10 @@ public class InsertMethods {
                             ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                             result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
                         }
+
+                        ACRGBWSResult insertRoleIndex = um.UPDATEROLEINDEX(datasource,
+                                contract.getHcfid(), contract.getContractdate());
+
                         result.setSuccess(true);
                     } else {
                         result.setMessage(getinsertresult.getString("Message"));
@@ -307,6 +315,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             if (userinfo.getFirstname() != null && userinfo.getLastname() != null) {
                 if (!utility.IsValidDate(userinfo.getDatecreated())) {
@@ -390,6 +399,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             ACRGBWSResult levelresult = fm.GETUSERLEVEL(datasource, user.getLeveid());
             int countresult = 0;
@@ -685,16 +695,16 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             if (!utility.IsValidDate(mb.getDatecreated())) {
                 result.setMessage("DATE FORMAT IS NOT VALID");
             } else {
                 ACRGBWSResult restA = methods.GETROLE(datasource, mb.getCreatedby());
-                System.out.println(restA);
                 if (restA.isSuccess()) {
                     ACRGBWSResult getProCode = methods.GetProWithPROID(datasource, restA.getResult());
                     if (!getProCode.isSuccess()) {
-                        result.setMessage(getProCode.getMessage());
+                        result.setMessage(getProCode.getMessage() + " here");
                     } else {
                         Pro pro = utility.ObjectMapper().readValue(getProCode.getResult(), Pro.class);
                         UserRoleIndex indexrole = new UserRoleIndex();
@@ -705,15 +715,20 @@ public class InsertMethods {
                         ACRGBWSResult insertRole = this.INSEROLEINDEX(datasource, indexrole);
                         if (insertRole.isSuccess()) {
                             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTHCPN(:Message,:Code,"
-                                    + ":umbname,:udatecreated,:ucreatedby,:uaccreno)");
+                                    + ":umbname,:udatecreated,:ucreatedby,:uaccreno,:uaddress,:ubankaccount,:ubankname)");
                             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                             getinsertresult.setString("umbname", mb.getMbname().toUpperCase());
                             getinsertresult.setDate("udatecreated", (Date) new Date(utility.StringToDate(mb.getDatecreated()).getTime()));
                             getinsertresult.setString("ucreatedby", mb.getCreatedby());
                             getinsertresult.setString("uaccreno", mb.getControlnumber());
+                            getinsertresult.setString("uaddress", mb.getAddress());
+                            getinsertresult.setString("ubankaccount", mb.getBankaccount());
+                            getinsertresult.setString("ubankname", mb.getBankname());
                             getinsertresult.execute();
                             if (getinsertresult.getString("Message").equals("SUCC")) {
+//                                result.setMessage(getinsertresult.getString("Message"));
+//                                result.setSuccess(true);
                                 //MAPPING OF ACCREDITATION DATA
                                 Accreditation acree = new Accreditation();
                                 acree.setAccreno(mb.getControlnumber());
@@ -786,8 +801,8 @@ public class InsertMethods {
         }
         return result;
     }
-    //INSERT LOGS STATUS
 
+    //INSERT LOGS STATUS
     public ACRGBWSResult INSERTSTATSLOG(final DataSource datasource, final LogStatus logs) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -951,6 +966,35 @@ public class InsertMethods {
             if (!getinsertresult.getString("Message").equals("SUCC")) {
                 result.setSuccess(true);
                 result.setMessage(getinsertresult.getString("Message"));
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //INSERT LOGS STATUS
+    public ACRGBWSResult INSERTCONDATE(final DataSource datasource, final ContractDate contractdate) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONDATE(:Message,:Code,"
+                    + ":udatefrom,:udateto,:ucreatedby,:udatecreated)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(contractdate.getDatefrom()).getTime()));
+            getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(contractdate.getDateto()).getTime()));
+            getinsertresult.setString("ucreatedby", contractdate.getCreatedby());
+            getinsertresult.setDate("udatecreated", (Date) new Date(utility.StringToDate(contractdate.getDatecreated()).getTime()));
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setMessage(getinsertresult.getString("Message"));
+                result.setSuccess(true);
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }

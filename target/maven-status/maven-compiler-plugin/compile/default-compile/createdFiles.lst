@@ -13,6 +13,7 @@ acrgb\method\Methods$UserPassword.class
 acrgb\structure\Summary.class
 acrgb\structure\AssetsType.class
 acrgb\structure\Assets.class
+acrgb\structure\ContractDate.class
 acrgb\structure\MBRequestSummary.class
 acrgb\method\LedgerMethod.class
 acrgb\structure\LogStatus.class
@@ -31,6 +32,7 @@ acrgb\structure\Accreditation.class
 acrgb\structure\ManagingBoard.class
 acrgb\structure\PaymentType.class
 acrgb\structure\Book.class
+acrgb\method\ContractMethod.class
 acrgb\method\InsertMethods.class
 acrgb\structure\Tranch.class
 acrgb\structure\Pro.class
@@ -40,6 +42,7 @@ acrgb\utility\NamedParameterStatement.class
 acrgb\structure\Archived.class
 acrgb\structure\Total.class
 acrgb\ApplicationConfig.class
+acrgb\method\Reports.class
 acrgb\structure\UserLevel.class
 acrgb\structure\UserRoleIndex.class
 acrgb\structure\MBFacilityUnderRequest.class

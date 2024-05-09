@@ -5,6 +5,7 @@
  */
 package acrgb;
 
+import acrgb.method.ContractMethod;
 import acrgb.method.FetchMethods;
 import acrgb.method.LedgerMethod;
 import acrgb.method.Methods;
@@ -48,6 +49,7 @@ public class ACRGBFETCH {
     private final FetchMethods fetchmethods = new FetchMethods();
     private final Methods methods = new Methods();
     private final LedgerMethod lm = new LedgerMethod();
+    private final ContractMethod con = new ContractMethod();
 
     //GET ASSETS TYPE TBL
     @GET
@@ -360,7 +362,6 @@ public class ACRGBFETCH {
         return result;
     }
 
-  
     @GET
     @Path("GetHealthFacilityBadget/{accesstags}/{puserid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -408,14 +409,14 @@ public class ACRGBFETCH {
 
     //GET HCPN
     @GET
-    @Path("GetManagingBoard")
+    @Path("GetManagingBoard/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetManagingBoard() throws ParseException {
+    public ACRGBWSResult GetManagingBoard(@PathParam("tags") String tags) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = fetchmethods.GetManagingBoard(dataSource);
+        ACRGBWSResult getResult = fetchmethods.GetManagingBoard(dataSource, tags);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());
@@ -704,12 +705,12 @@ public class ACRGBFETCH {
                 result.setResult(hcpnledger.getResult());
                 result.setSuccess(hcpnledger.isSuccess());
                 break;
-            case "HCF"://GET LEDGER PER FACILITY
-                ACRGBWSResult hcfledger = lm.HCFLedger(dataSource, datefrom, dateto, accessid);
-                result.setMessage(hcfledger.getMessage());
-                result.setResult(hcfledger.getResult());
-                result.setSuccess(hcfledger.isSuccess());
-                break;
+//            case "HCF"://GET LEDGER PER FACILITY
+//                ACRGBWSResult hcfledger = lm.HCFLedger(dataSource, datefrom, dateto, accessid);
+//                result.setMessage(hcfledger.getMessage());
+//                result.setResult(hcfledger.getResult());
+//                result.setSuccess(hcfledger.isSuccess());
+//                break;
         }
         return result;
     }
@@ -746,6 +747,55 @@ public class ACRGBFETCH {
                 result.setSuccess(getResultAllHCPN.isSuccess());
                 break;
         }
+        return result;
+    }
+
+    //LEDGER 
+//    @GET
+//    @Path("GetAllContract/{puserid}/{tags}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult GetAllContract(
+//            @PathParam("puserid") String puserid, //hcpncode  MUST BE HCPNCONTROLCODE
+//            @PathParam("tags") String tags) {   //TAGS MUST BE LEVELACCESS
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        switch (tags.toUpperCase().trim()) {
+//            case "HCPNPRO"://GET LEDGER PER HCPN
+//                //hcpncode  MUST BE HCPNCONTROLCODE
+//                //CONTRACT MUST BE CONID
+//                //TAGS MUST BE HCPN
+//                ACRGBWSResult getResultHCPN = con.GetAllContract(dataSource, puserid);
+//                result.setMessage(getResultHCPN.getMessage());
+//                result.setResult(getResultHCPN.getResult());
+//                result.setSuccess(getResultHCPN.isSuccess());
+//                break;
+//            case "HCPNPHIC"://GET LEDGER PER FACILITY
+//                //hcpncode  MUST BE THE USERID OF PRO ACCOUNT
+//                //CONTRACT DECLARE 0 VALUE
+//                //TAGS MUST BE HCPNALL
+//                ACRGBWSResult getResultAllHCPN = lm.GETLedgerAllContractHCPN(dataSource, hcpncode);//hcpncode  user ID of account of PROUSER
+//                result.setMessage(getResultAllHCPN.getMessage());
+//                result.setResult(getResultAllHCPN.getResult());
+//                result.setSuccess(getResultAllHCPN.isSuccess());
+//                break;
+//        }
+//        return result;
+//    }
+    @GET
+    @Path("GetContractDate/{tags}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetContractDate( //hcpncode  MUST BE HCPNCONTROLCODE
+            @PathParam("tags") String tags) {   //TAGS MUST BE LEVELACCESS
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult getConDateResult = con.GETCONDATE(dataSource, tags);
+        result.setMessage(getConDateResult.getMessage());
+        result.setResult(getConDateResult.getResult());
+        result.setSuccess(getConDateResult.isSuccess());
         return result;
     }
 

@@ -6,10 +6,14 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.Accreditation;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
+import acrgb.structure.ContractDate;
 import acrgb.structure.DateSettings;
 import acrgb.structure.HealthCareFacility;
+import acrgb.structure.LogStatus;
+import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;
 import acrgb.structure.UserLevel;
 import acrgb.utility.Utility;
@@ -40,6 +44,10 @@ public class UpdateMethods {
 
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
+    private final InsertMethods im = new InsertMethods();
+    private final Methods methods = new Methods();
+    private final ContractMethod cm = new ContractMethod();
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEASSETS(final DataSource datasource, Assets assets) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -145,8 +153,6 @@ public class UpdateMethods {
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
             if (contract.getAmount().isEmpty()
-                    || contract.getDatefrom().isEmpty()
-                    || contract.getDateto().isEmpty()
                     || contract.getHcfid().isEmpty()) {
                 result.setMessage("SOME REQUIRED FIELDS IS EMPTY");
                 result.setSuccess(false);
@@ -154,31 +160,26 @@ public class UpdateMethods {
                 result.setMessage("NUMBER FORMAT IS NOT VALID");
                 result.setSuccess(false);
             } else {
-                if (!utility.IsValidDate(contract.getDatefrom()) || !utility.IsValidDate(contract.getDateto())) {
-                    result.setSuccess(false);
-                    result.setMessage("DATE FORMAT IS NOT VALID");
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATECONTRACT(:Message,:Code,:p_conid,:p_hcfid,:p_amount"
+                        + ",:p_contractdate,:p_transcode)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("p_conid", contract.getConid());
+                getinsertresult.setString("p_hcfid", contract.getHcfid());
+                getinsertresult.setString("p_amount", contract.getAmount());
+                getinsertresult.setString("p_contractdate", contract.getContractdate());
+                getinsertresult.setString("p_transcode", contract.getTranscode());
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    result.setSuccess(true);
+                    result.setMessage("OK");
                 } else {
-                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATECONTRACT(:Message,:Code,:p_conid,:p_hcfid,:p_amount"
-                            + ",:p_datefrom,:p_dateto,:p_transcode)");
-                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                    getinsertresult.setString("p_conid", contract.getConid());
-                    getinsertresult.setString("p_hcfid", contract.getHcfid());
-                    getinsertresult.setString("p_amount", contract.getAmount());
-                    getinsertresult.setDate("p_datefrom", (Date) new Date(utility.StringToDate(contract.getDatefrom()).getTime()));
-                    getinsertresult.setDate("p_dateto", (Date) new Date(utility.StringToDate(contract.getDateto()).getTime()));
-                    getinsertresult.setString("p_transcode", contract.getTranscode());
-                    getinsertresult.execute();
-                    if (getinsertresult.getString("Message").equals("SUCC")) {
-                        result.setSuccess(true);
-                        result.setMessage("OK");
-                    } else {
-                        result.setMessage(getinsertresult.getString("Message"));
-                    }
-                    result.setResult(utility.ObjectMapper().writeValueAsString(contract));
+                    result.setMessage(getinsertresult.getString("Message"));
                 }
+                result.setResult(utility.ObjectMapper().writeValueAsString(contract));
+
             }
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -333,15 +334,42 @@ public class UpdateMethods {
                 getinsertresult.setDate("pendate", (Date) new Date(utility.StringToDate(contract.getEnddate()).getTime()));//END DATE
                 getinsertresult.setString("premarks", contract.getRemarks());//REMARKS
                 getinsertresult.execute();
+                ArrayList<String> hcicontractaggingError = new ArrayList<>();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setSuccess(true);
-                    ACRGBWSResult rest = this.CONSTATSUPDATE(datasource, Integer.parseInt(contract.getConid()), Integer.parseInt(contract.getStats()));
-                    result.setMessage(getinsertresult.getString("Message") + " " + rest.getMessage());
+                    ACRGBWSResult rest = this.CONSTATSUPDATE(datasource, Integer.parseInt(contract.getConid()),
+                            Integer.parseInt(contract.getStats()), contract.getRemarks(), contract.getEnddate());
+                    if (rest.isSuccess()) {
+                        ACRGBWSResult getCon = fm.GETCONTRACTCONID(datasource, contract.getConid());
+                        if (getCon.isSuccess()) {
+                            Contract updatecontract = utility.ObjectMapper().readValue(getCon.getResult(), Contract.class);
+                            ACRGBWSResult restA = methods.GETROLEMULITPLE(datasource, updatecontract.getHcfid());
+                            if (restA.isSuccess()) {
+                                List<String> hciList = Arrays.asList(restA.getResult().split(","));
+                                for (int x = 0; x < hciList.size(); x++) {
+                                    ACRGBWSResult getConA = cm.GETCONTRACT(datasource, "ACTIVE", hciList.get(x));
+                                    if (getConA.isSuccess()) {
+                                        Contract updatecontracts = utility.ObjectMapper().readValue(getCon.getResult(), Contract.class);
+                                        ACRGBWSResult tagHCIunder = this.CONSTATSUPDATE(datasource, Integer.parseInt(updatecontracts.getConid()),
+                                                Integer.parseInt(contract.getStats()), contract.getRemarks(), contract.getEnddate());
+                                        if (!tagHCIunder.isSuccess()) {
+                                            hcicontractaggingError.add(tagHCIunder.getMessage());
+                                        }
+                                    }
+                                }
+                                result.setSuccess(true);
+                                result.setMessage(rest.getMessage());
+                                result.setResult("Error For HCI Contract tagging:" + hcicontractaggingError.toString());
+                            }
+                        }
+
+                    } else {
+                        result.setMessage(rest.getMessage());
+                    }
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
             }
-        } catch (SQLException | ParseException ex) {
+        } catch (SQLException | ParseException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -391,22 +419,198 @@ public class UpdateMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult CONSTATSUPDATE(final DataSource datasource, final int uconid, final int ustats) {
+    public ACRGBWSResult CONSTATSUPDATE(final DataSource datasource, final int uconid, final int ustats, final String uremarks, final String uenddate) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.CONSTATSUPDATE(:Message,:Code,"
-                    + ":uconid,:ustats)");
+                    + ":uconid,:ustats,:uremarks,:uenddate)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setInt("uconid", uconid);//CONID
             getinsertresult.setInt("ustats", ustats); //STATS
+            getinsertresult.setString("uremarks", uremarks); //REMAKRS
+            getinsertresult.setDate("uenddate", (Date) new Date(utility.StringToDate(uenddate).getTime()));//END DATE
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setSuccess(true);
                 result.setMessage(getinsertresult.getString("Message"));
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+        } catch (SQLException | ParseException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult UPDATEHCPN(final DataSource datasource, final ManagingBoard mb) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEHCPN(:Message,:Code,"
+                    + ":umbname,:uaccreno,:uaddress,:ubankaccount,:ubankname)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("umbname", mb.getMbname().toUpperCase());
+            getinsertresult.setString("uaccreno", mb.getControlnumber());
+            getinsertresult.setString("uaddress", mb.getAddress());
+            getinsertresult.setString("ubankaccount", mb.getBankaccount());
+            getinsertresult.setString("ubankname", mb.getBankname());
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setMessage(getinsertresult.getString("Message"));
+                result.setSuccess(true);
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult UPDATEHCPNSTATS(final DataSource datasource, final LogStatus logstats) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEHCPNSTATS(:Message,:Code,"
+                    + ":uaccount,:ustats)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("uaccount", logstats.getAccount());
+            getinsertresult.setString("ustats", "3");
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                ACRGBWSResult insertLogsStatus = im.INSERTSTATSLOG(datasource, logstats);
+                if (insertLogsStatus.isSuccess()) {
+                    result.setMessage(insertLogsStatus.getMessage());
+                    result.setSuccess(true);
+                } else {
+                    result.setMessage(insertLogsStatus.getMessage());
+                }
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult APPROVEDHCPN(final DataSource datasource, final ManagingBoard mb) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.APPROVEDMB(:Message,:Code,"
+                    + ":uremarks,:ustatus,:ucontrolnumber)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("uremarks", mb.getRemarks());
+            getinsertresult.setString("ustatus", mb.getStatus());
+            getinsertresult.setString("ucontrolnumber", mb.getControlnumber());
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                if (!mb.getStatus().equals("2")) {
+                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setSuccess(true);
+                } else {
+                    //MAPPING OF ACCREDITATION DATA
+                    Accreditation acree = new Accreditation();
+                    acree.setAccreno(mb.getControlnumber());
+                    acree.setCreatedby(mb.getCreatedby());
+                    acree.setDatecreated(mb.getDatecreated());
+                    acree.setDatefrom(mb.getLicensedatefrom());
+                    acree.setDateto(mb.getLicensedateto());
+                    ACRGBWSResult accreResult = im.INSERTACCREDITAION(datasource, acree);
+                    //MAPPING LOGSTATUS VALUE
+                    LogStatus logstats = new LogStatus();
+                    logstats.setAccount(mb.getControlnumber());
+                    logstats.setActby(mb.getCreatedby());
+                    logstats.setDatechange(mb.getDatecreated());
+                    logstats.setStatus("2");
+                    ACRGBWSResult logsResult = im.INSERTSTATSLOG(datasource, logstats);
+                    if (logsResult.isSuccess() && accreResult.isSuccess()) {
+                        result.setMessage(logsResult.getMessage() + " , " + accreResult.getMessage());
+                        result.setSuccess(true);
+                    } else {
+                        result.setMessage(logsResult.getMessage() + " , " + accreResult.getMessage());
+                    }
+                }
+
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult UPDATECONDATE(final DataSource datasource, final ContractDate contractdate) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATECONDATE(:Message,:Code,"
+                    + ":ucondateid,:udatefrom,:udateto)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("ucondateid", contractdate.getCondateid());
+            getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(contractdate.getDatefrom()).getTime()));
+            getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(contractdate.getDateto()).getTime()));
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setMessage(getinsertresult.getString("Message"));
+                result.setSuccess(true);
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult UPDATEROLEINDEX(final DataSource datasource, final String uuserid, final String ucondate) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEROLEINDEX(:Message,:Code,"
+                    + ":uuserid,:ucondate)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("uuserid", uuserid);
+            getinsertresult.setString("ucondate", ucondate);
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setMessage(getinsertresult.getString("Message"));
+                result.setSuccess(true);
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }

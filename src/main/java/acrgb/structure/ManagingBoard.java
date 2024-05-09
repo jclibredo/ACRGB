@@ -26,4 +26,8 @@ public class ManagingBoard {
     private String licensedatefrom;//DATE OF LICENSE EXPIRED
     private String licensedateto;//
     private String pro;
+    private String address;
+    private String bankaccount;
+    private String bankname;
+    private String remarks;
 }

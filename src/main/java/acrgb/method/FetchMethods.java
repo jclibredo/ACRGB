@@ -9,6 +9,7 @@ import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Accreditation;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
+import acrgb.structure.ContractDate;
 import acrgb.structure.DateSettings;
 import acrgb.structure.FacilityComputedAmount;
 import acrgb.structure.HealthCareFacility;
@@ -46,14 +47,15 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class FetchMethods {
-    
+
     public FetchMethods() {
     }
-    
+
     private final Utility utility = new Utility();
+    // private final ContractMethod contractmethod = new ContractMethod();
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
     private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm:ss a");
-    
+
     public ACRGBWSResult GETFACILITYID(final DataSource dataSource, final String uhcfid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -110,7 +112,7 @@ public class FetchMethods {
                 if (creator.isSuccess()) {
                     UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
                     hcf.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    
+
                 } else {
                     hcf.setCreatedby(creator.getMessage());
                 }
@@ -172,7 +174,7 @@ public class FetchMethods {
                             hcf.setMb(mgresult.getMessage());
                         }
                     }
-                    
+
                 }
 
                 //GET FACILITY BUDGET BASE AMOUNT
@@ -211,7 +213,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -335,8 +337,11 @@ public class FetchMethods {
                 }
                 assets.setDatereleased(dateformat.format(resultset.getDate("DATERELEASED")));//resultset.getDate("DATERELEASED"));
                 assets.setReceipt(resultset.getString("RECEIPT"));
+                assets.setReleasedamount(resultset.getString("RELEASEDAMOUNT"));
+                assets.setPreviousbalance(resultset.getString("PREVIOUSBAL"));
+
                 assets.setAmount(resultset.getString("AMOUNT"));
-                
+
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
                     if (!creator.getResult().isEmpty()) {
@@ -369,7 +374,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -384,6 +389,7 @@ public class FetchMethods {
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
+        ContractMethod contractmethod = new ContractMethod();
         try (Connection connection = dataSource.getConnection()) {
             ArrayList<Contract> contractlist = new ArrayList<>();
             ArrayList<String> hcflist = new ArrayList<>();
@@ -422,11 +428,12 @@ public class FetchMethods {
                         contract.setCreatedby(creator.getMessage());
                     }
                     contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                    contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
-                    contract.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
+                    ACRGBWSResult getcondateA = contractmethod.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+                    contract.setContractdate(getcondateA.getResult());
                     contract.setTranscode(resultset.getString("TRANSCODE"));
                     contract.setBaseamount(resultset.getString("BASEAMOUNT"));
                     //=============================================
+                    ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class);
                     int numberofclaims = 0;
                     Double percentage = 0.00;
                     int tranches = 0;
@@ -435,9 +442,8 @@ public class FetchMethods {
                         Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
                         tranches += Integer.parseInt(getResult.getCcount());
                         //======================================
-                        Date u_from = resultset.getDate("DATEFROM");
-                        Date u_to = resultset.getDate("DATETO");
-                        ACRGBWSResult sumresult = this.GETNCLAIMS(dataSource, hcflist.get(y), "GOOD", u_from, u_to);
+                        ACRGBWSResult sumresult = this.GETNCLAIMS(dataSource, hcflist.get(y), "GOOD",
+                                condate.getDatefrom(), condate.getDateto());
                         if (sumresult.isSuccess()) {
                             NclaimsData nclaimsdata = utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData.class);
                             numberofclaims += Integer.parseInt(nclaimsdata.getTotalclaims());
@@ -456,11 +462,9 @@ public class FetchMethods {
                     contract.setTraches(String.valueOf(tranches));
                     contract.setPercentage(String.valueOf(percentage));
                     contractlist.add(contract);
-                } else {
-                    result.setMessage("N/A");
                 }
             }
-            
+
             if (!contractlist.isEmpty()) {
                 result.setMessage("OK");
                 result.setSuccess(true);
@@ -468,7 +472,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -525,7 +529,7 @@ public class FetchMethods {
         // Methods methods = new Methods();
         try {
             ArrayList<Contract> contractlist = new ArrayList<>();
-            ACRGBWSResult mblist = this.GetManagingBoard(dataSource);
+            ACRGBWSResult mblist = this.GetManagingBoard(dataSource, "ACTIVE");
             if (mblist.isSuccess()) {
                 List<ManagingBoard> mblistresult = Arrays.asList(utility.ObjectMapper().readValue(mblist.getResult(), ManagingBoard[].class));
                 for (int x = 0; x < mblistresult.size(); x++) {
@@ -543,7 +547,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -559,6 +563,7 @@ public class FetchMethods {
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
+        ContractMethod contractmethod = new ContractMethod();
         try (Connection connection = dataSource.getConnection()) {
             ArrayList<Contract> contractlist = new ArrayList<>();
             ACRGBWSResult reatA = methods.GETROLE(dataSource, userid);
@@ -594,12 +599,16 @@ public class FetchMethods {
                         contract.setCreatedby("N/A");
                     }
                     contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                    contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
-                    contract.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
+                    ACRGBWSResult getcondateA = contractmethod.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+                    if (getcondateA.isSuccess()) {
+                        contract.setContractdate(getcondateA.getResult());
+                    } else {
+                        contract.setContractdate(getcondateA.getMessage());
+                    }
                     contract.setBaseamount(resultset.getString("BASEAMOUNT"));
                     contractlist.add(contract);
                 }
-                
+
             } else {
                 result.setMessage("N/A");
             }
@@ -610,7 +619,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -625,6 +634,7 @@ public class FetchMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        ContractMethod contractmethod = new ContractMethod();
         try (Connection connection = dataSource.getConnection()) {
             //--------------------------------------------------------
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONTRACTCONID(:pconid); end;");
@@ -646,8 +656,13 @@ public class FetchMethods {
                     contract.setCreatedby(creator.getMessage());
                 }
                 contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
-                contract.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
+                ACRGBWSResult getcondateA = contractmethod.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+                if (getcondateA.isSuccess()) {
+                    contract.setContractdate(getcondateA.getResult());
+                } else {
+                    contract.setContractdate(getcondateA.getMessage());
+                }
+
                 contract.setTranscode(resultset.getString("TRANSCODE"));
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
@@ -655,7 +670,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -670,6 +685,7 @@ public class FetchMethods {
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
+        ContractMethod contractmethod = new ContractMethod();
         try (Connection connection = dataSource.getConnection()) {
             ArrayList<Contract> contractlist = new ArrayList<>();
             //-------------- GET APEX FACILITY
@@ -703,8 +719,9 @@ public class FetchMethods {
                         contract.setCreatedby(creator.getMessage());
                     }
                     contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                    contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
-                    contract.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
+                    ACRGBWSResult getcondateA = contractmethod.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+                    contract.setContractdate(getcondateA.getResult());
+                    ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class);
                     contract.setTranscode(resultset.getString("TRANSCODE"));
                     contract.setBaseamount(resultset.getString("BASEAMOUNT"));
                     contractlist.add(contract);
@@ -717,9 +734,10 @@ public class FetchMethods {
                         Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
                         tranches += Integer.parseInt(getResult.getCcount());
                         //======================================
-                        Date u_from = resultset.getDate("DATEFROM");
-                        Date u_to = resultset.getDate("DATETO");
-                        ACRGBWSResult sumresult = this.GETNCLAIMS(dataSource, hcflist.get(y), "GOOD", u_from, u_to);
+//                        Date u_from = resultset.getDate("DATEFROM");
+//                        Date u_to = resultset.getDate("DATETO");
+                        ACRGBWSResult sumresult = this.GETNCLAIMS(dataSource, hcflist.get(y), "GOOD",
+                                condate.getDatefrom(), condate.getDateto());
                         if (sumresult.isSuccess()) {
                             NclaimsData nclaimsdata = utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData.class);
                             numberofclaims += Integer.parseInt(nclaimsdata.getTotalclaims());
@@ -737,10 +755,10 @@ public class FetchMethods {
                     contract.setTotalclaims(String.valueOf(numberofclaims));
                     contract.setTraches(String.valueOf(tranches));
                     contract.setPercentage(String.valueOf(percentage));
-                    
+
                 }
             }
-            
+
             if (!contractlist.isEmpty()) {
                 result.setMessage("OK");
                 result.setSuccess(true);
@@ -748,7 +766,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -769,7 +787,7 @@ public class FetchMethods {
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<HealthCareFacility> listHCF = new ArrayList<>();
             while (resultset.next()) {
-                
+
                 HealthCareFacility hcf = new HealthCareFacility();
                 hcf.setHcfid(resultset.getString("HCFID"));
                 hcf.setHcfname(resultset.getString("HCFNAME"));
@@ -785,7 +803,7 @@ public class FetchMethods {
                 hcf.setType(resultset.getString("HCFTYPE"));
                 hcf.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 listHCF.add(hcf);
-                
+
             }
             if (listHCF.size() > 0) {
                 result.setMessage("OK");
@@ -794,7 +812,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -821,7 +839,7 @@ public class FetchMethods {
                 tranch.setTranchtype(resultset.getString("TRANCHTYPE").toUpperCase());
                 tranch.setPercentage(resultset.getString("PERCENTAGE"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                
+
                 if (creator.isSuccess()) {
                     UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
                     tranch.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
@@ -886,7 +904,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -913,7 +931,7 @@ public class FetchMethods {
                 userlevel.setLevdetails(resultset.getString("LEVDETAILS"));
                 userlevel.setLevname(resultset.getString("LEVNAME"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                
+
                 if (creator.isSuccess()) {
                     UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
                     userlevel.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
@@ -1021,7 +1039,7 @@ public class FetchMethods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult ACR_USER(final DataSource dataSource, final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1053,12 +1071,12 @@ public class FetchMethods {
                 } else {
                     user.setUserpassword(resultset.getString("USERPASSWORD"));
                 }
-                
+
                 user.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 user.setStatus(resultset.getString("STATS"));
                 user.setDid(resultset.getString("DID"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                
+
                 if (creator.isSuccess()) {
                     UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
                     user.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
@@ -1074,7 +1092,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1181,6 +1199,8 @@ public class FetchMethods {
                 assets.setTranchid(resultset.getString("TRANCHID"));
                 assets.setReceipt(resultset.getString("RECEIPT"));
                 assets.setAmount(resultset.getString("AMOUNT"));
+                assets.setReleasedamount(resultset.getString("RELEASEDAMOUNT"));
+                assets.setPreviousbalance(resultset.getString("PREVIOUSBAL"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
                     if (!creator.getResult().isEmpty()) {
@@ -1203,7 +1223,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1244,7 +1264,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1253,7 +1273,8 @@ public class FetchMethods {
     }
 
     //GET NCLAIMS DATA AND AMOUNT OF ITS CLAIMS TOTAL
-    public ACRGBWSResult GETNCLAIMS(final DataSource dataSource, final String u_accreno, final String u_tags, final Date u_from, final Date u_to) throws ParseException {
+    public ACRGBWSResult GETNCLAIMS(final DataSource dataSource, final String u_accreno, final String u_tags,
+            final String u_from, final String u_to) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -1263,8 +1284,8 @@ public class FetchMethods {
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("u_accreno", u_accreno);
             statement.setString("u_tags", u_tags);
-            statement.setDate("u_from", u_from);
-            statement.setDate("u_to", u_to);
+            statement.setDate("u_from", (Date) new Date(utility.StringToDate(u_from).getTime()));
+            statement.setDate("u_to", (Date) new Date(utility.StringToDate(u_to).getTime()));
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             if (resultset.next()) {
@@ -1287,17 +1308,17 @@ public class FetchMethods {
 
     //THIS METHOD IS SERVE FOR REPORTING MATTER
     public ACRGBWSResult GETCOMPUTATION(final DataSource dataSource, final String u_accreno, final String u_date, final String u_tags) {
-        
+
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(true);
-        
+
         return null;
     }
 
     //GET MANAGING BOARD ALL
-    public ACRGBWSResult GetManagingBoard(final DataSource dataSource) throws ParseException {
+    public ACRGBWSResult GetManagingBoard(final DataSource dataSource, final String tags) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -1306,18 +1327,19 @@ public class FetchMethods {
         try (Connection connection = dataSource.getConnection()) {
             ArrayList<ManagingBoard> mblist = new ArrayList<>();
             //-------------------------------------------------------
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMB(); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMB(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("tags", tags.toUpperCase());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             while (resultset.next()) {
                 ManagingBoard mb = new ManagingBoard();
-
-//                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM-dd-yyyy");
-//                LocalDateTime now = LocalDateTime.now();
-//                System.out.println("Date Now : " + String.valueOf(dtf.format(now)));
                 mb.setMbid(resultset.getString("MBID"));
                 mb.setMbname(resultset.getString("MBNAME"));
+                mb.setAddress(resultset.getString("ADDRESS"));
+                mb.setBankaccount(resultset.getString("BANKACCOUNT"));
+                mb.setBankname(resultset.getString("BANKNAME"));
+                mb.setRemarks(resultset.getString("REMARKS"));
                 mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
                 //System.out.println("Date From DB : "+dateformat.format(resultset.getDate("DATECREATED")));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
@@ -1338,7 +1360,7 @@ public class FetchMethods {
                     mb.setLicensedatefrom(accreResult.getMessage());
                     mb.setLicensedateto(accreResult.getMessage());
                 }
-                
+
                 ACRGBWSResult getPro = methods.GETROLEREVERESEMULTIPLE(dataSource, resultset.getString("CONNUMBER"));
                 if (getPro.isSuccess()) {
                     // GetProWithPROID
@@ -1369,7 +1391,7 @@ public class FetchMethods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GETROLETWOPARAM(final DataSource dataSource, final String puserid, final String paccessid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1392,7 +1414,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1423,14 +1445,14 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
+
     public ACRGBWSResult GETDATESETTINGS(final DataSource dataSource) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1452,14 +1474,14 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
+
     public ACRGBWSResult GETSKIPYEAR(final DataSource dataSource) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1495,6 +1517,7 @@ public class FetchMethods {
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
+        ContractMethod contractmethod = new ContractMethod();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
@@ -1521,8 +1544,13 @@ public class FetchMethods {
                     contract.setCreatedby(creator.getMessage());
                 }
                 contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
-                contract.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
+                ACRGBWSResult getcondateA = contractmethod.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+                ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class);
+//                if (getcondateA.isSuccess()) {
+                contract.setContractdate(getcondateA.getResult());
+//                } else {
+//                    contract.setContractdate(getcondateA.getMessage());
+//                }
                 contract.setBaseamount(resultset.getString("BASEAMOUNT"));
                 contract.setTranscode(resultset.getString("TRANSCODE"));
 
@@ -1539,11 +1567,9 @@ public class FetchMethods {
                     ACRGBWSResult restA = methods.GETROLEMULITPLE(dataSource, resultset.getString("HCFID"));
                     if (restA.isSuccess()) {
                         List<String> hcflist = Arrays.asList(restA.getResult().split(","));
-                        System.out.println(hcflist);
                         for (int v = 0; v < hcflist.size(); v++) {
-                            Date u_from = resultset.getDate("DATEFROM");
-                            Date u_to = resultset.getDate("DATETO");
-                            ACRGBWSResult sumresult = this.GETNCLAIMS(dataSource, hcflist.get(v), "GOOD", u_from, u_to);
+                            ACRGBWSResult sumresult = this.GETNCLAIMS(dataSource, hcflist.get(v), "GOOD",
+                                    condate.getDatefrom(), condate.getDateto());
                             if (sumresult.isSuccess()) {
                                 NclaimsData nclaimsdata = utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData.class);
                                 numberofclaims += Integer.parseInt(nclaimsdata.getTotalclaims());
@@ -1556,10 +1582,10 @@ public class FetchMethods {
                                 } else {
                                     percentage += sums;
                                 }
-                                
+
                             }
                         }
-                        
+
                     }
                 }
                 contract.setTotalclaims(String.valueOf(numberofclaims));
@@ -1571,12 +1597,12 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (Exception ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return result;
     }
 
@@ -1587,6 +1613,7 @@ public class FetchMethods {
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
+        ContractMethod contractmethod = new ContractMethod();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTERMINATECON(:pan); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
@@ -1605,8 +1632,13 @@ public class FetchMethods {
                     contract.setCreatedby(creator.getMessage());
                 }
                 contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
-                contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));
-                contract.setDateto(dateformat.format(resultset.getDate("DATETO")));
+                ACRGBWSResult getcondateA = contractmethod.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+                if (getcondateA.isSuccess()) {
+                    contract.setContractdate(getcondateA.getResult());
+                } else {
+                    contract.setContractdate(getcondateA.getMessage());
+                }
+
                 contract.setEnddate(dateformat.format(resultset.getDate("ENDDATE")));
                 ACRGBWSResult facility = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
                 if (facility.isSuccess()) {
@@ -1651,7 +1683,7 @@ public class FetchMethods {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return result;
     }
 
@@ -1662,6 +1694,7 @@ public class FetchMethods {
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
+        ContractMethod contractmethod = new ContractMethod();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETENDCON(:pan); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
@@ -1680,8 +1713,14 @@ public class FetchMethods {
                     contract.setCreatedby(creator.getMessage());
                 }
                 contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
-                contract.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));
-                contract.setDateto(dateformat.format(resultset.getDate("DATETO")));
+
+                ACRGBWSResult getcondateA = contractmethod.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+                if (getcondateA.isSuccess()) {
+                    contract.setContractdate(getcondateA.getResult());
+                } else {
+                    contract.setContractdate(getcondateA.getMessage());
+                }
+
                 contract.setEnddate(dateformat.format(resultset.getDate("ENDDATE")));
                 ACRGBWSResult facility = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
                 if (facility.isSuccess()) {
@@ -1726,7 +1765,7 @@ public class FetchMethods {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         return result;
     }
 
@@ -1837,6 +1876,7 @@ public class FetchMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        ContractMethod contractmethod = new ContractMethod();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONBYCODE(:ucode); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
@@ -1857,8 +1897,13 @@ public class FetchMethods {
                     con.setCreatedby(creator.getMessage());
                 }
                 con.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
-                con.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));
-                con.setDateto(dateformat.format(resultset.getDate("DATETO")));
+
+                ACRGBWSResult getcondateA = contractmethod.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+                if (getcondateA.isSuccess()) {
+                    con.setContractdate(getcondateA.getResult());
+                } else {
+                    con.setContractdate(getcondateA.getMessage());
+                }
                 con.setTranscode(resultset.getString("TRANSCODE"));
                 con.setBaseamount(resultset.getString("BASEAMOUNT"));
                 con.setRemarks(resultset.getString("REMARKS"));
@@ -1916,7 +1961,7 @@ public class FetchMethods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GETASSETBYIDANDCONID(final DataSource dataSource, final String phcfid, final String uconid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1986,14 +2031,14 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
+
     public ACRGBWSResult GETASSETSHCFID(final DataSource dataSource, final String phcfid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -2030,7 +2075,7 @@ public class FetchMethods {
                 assets.setDatereleased(dateformat.format(resultset.getDate("DATERELEASED")));//resultset.getDate("DATERELEASED"));
                 assets.setReceipt(resultset.getString("RECEIPT"));
                 assets.setAmount(resultset.getString("AMOUNT"));
-                
+
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
                     if (!creator.getResult().isEmpty()) {
@@ -2063,12 +2108,12 @@ public class FetchMethods {
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
+
 }
