@@ -9,6 +9,7 @@ import acrgb.method.ContractMethod;
 import acrgb.method.FetchMethods;
 import acrgb.method.LedgerMethod;
 import acrgb.method.Methods;
+import acrgb.method.UpdateMethods;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.UserLevel;
 import acrgb.utility.Utility;
@@ -50,6 +51,7 @@ public class ACRGBFETCH {
     private final Methods methods = new Methods();
     private final LedgerMethod lm = new LedgerMethod();
     private final ContractMethod con = new ContractMethod();
+    private final UpdateMethods um = new UpdateMethods();
 
     //GET ASSETS TYPE TBL
     @GET
@@ -796,6 +798,24 @@ public class ACRGBFETCH {
         result.setMessage(getConDateResult.getMessage());
         result.setResult(getConDateResult.getResult());
         result.setSuccess(getConDateResult.isSuccess());
+        return result;
+    }
+
+    //GET TRIGGER AUTOEND CONTRACT DATE
+    @GET
+    @Path("AutoEndContractDate/{ucondateid}/{tagss}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult AutoEndContractDate(@PathParam("ucondateid") String ucondateid,
+            @PathParam("tagss") String tagss) throws ParseException {   //TAGS MUST BE LEVELACCESS
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult updatecondate = um.UPDATEROLEINDEX(dataSource, "00", ucondateid, "NONUPDATE");
+        result.setMessage(updatecondate.getMessage());
+        result.setResult(updatecondate.getResult());
+        result.setSuccess(updatecondate.isSuccess());
+
         return result;
     }
 

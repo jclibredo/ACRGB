@@ -595,27 +595,67 @@ public class UpdateMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult UPDATEROLEINDEX(final DataSource datasource, final String uuserid, final String ucondate) throws ParseException {
+    public ACRGBWSResult UPDATEROLEINDEX(final DataSource datasource, final String uuserid, final String ucondate, final String tagsss) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEROLEINDEX(:Message,:Code,"
-                    + ":uuserid,:ucondate)");
-            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("uuserid", uuserid);
-            getinsertresult.setString("ucondate", ucondate);
-            getinsertresult.execute();
-            if (getinsertresult.getString("Message").equals("SUCC")) {
-                result.setMessage(getinsertresult.getString("Message"));
-                result.setSuccess(true);
+
+            if (!tagsss.toUpperCase().equals("ENDCONDATE")) {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEROLEINDEX(:Message,:Code,"
+                        + ":utags,:uuserid,:ucondate)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("utags", "UPDATE");
+                getinsertresult.setString("uuserid", uuserid);
+                getinsertresult.setString("ucondate", ucondate);
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setSuccess(true);
+                } else {
+                    result.setMessage(getinsertresult.getString("Message"));
+                }
             } else {
-                result.setMessage(getinsertresult.getString("Message"));
+
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEROLEINDEX(:Message,:Code,"
+                        + ":utags,:uuserid,:ucondate)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("utags", "NONUPDATE");
+                getinsertresult.setString("uuserid", uuserid);
+                getinsertresult.setString("ucondate", ucondate);
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    ACRGBWSResult getConDateByid = cm.GETCONDATEBYID(datasource, ucondate);
+                    if (getConDateByid.isSuccess()) {
+                        ContractDate contractdate = utility.ObjectMapper().readValue(getConDateByid.getResult(), ContractDate.class);
+                        ACRGBWSResult getResult = cm.GETCONTRACTBYCONDATEID(datasource, ucondate);
+                        if (getResult.isSuccess()) {
+                            List<String> RestA = Arrays.asList(getResult.getResult().split(","));
+                            for (int x = 0; x < RestA.size(); x++) {
+                                Contract con = new Contract();
+                                con.setConid(RestA.get(x));
+                                con.setEnddate(contractdate.getDateto());
+                                con.setRemarks("CONTRACT ENDED");
+                                con.setStats("3");
+                                ACRGBWSResult tagContract = this.TAGGINGCONTRACT(datasource, con);
+                            }
+                            result.setMessage(getinsertresult.getString("Message"));
+                            result.setSuccess(true);
+                        } else {
+                            result.setMessage(getResult.getMessage());
+                        }
+                    } else {
+                        result.setMessage(getConDateByid.getMessage());
+                    }
+                } else {
+                    result.setMessage(getinsertresult.getString("Message"));
+                }
             }
 
-        } catch (SQLException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -249,7 +249,7 @@ public class InsertMethods {
                         }
 
                         ACRGBWSResult insertRoleIndex = um.UPDATEROLEINDEX(datasource,
-                                contract.getHcfid(), contract.getContractdate());
+                                contract.getHcfid(), contract.getContractdate(), "UPDATE");
 
                         result.setSuccess(true);
                     } else {

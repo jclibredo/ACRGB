@@ -276,4 +276,36 @@ public class ContractMethod {
         return result;
     }
 
+    //GET CONTRACT BY DATECOVERED
+    public ACRGBWSResult GETCONTRACTBYCONDATEID(final DataSource dataSource, final String ucondateid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONTRACTBYCONDATEID(:ucondateid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("ucondateid", ucondateid);
+            statement.execute();
+            // ArrayList<Contract> contractList = new ArrayList<>();
+            ArrayList<String> conidlist = new ArrayList<>();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                conidlist.add(resultset.getString("CONID"));
+            }
+            if (!conidlist.isEmpty()) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(conidlist));
+            } else {
+                result.setMessage("N/A");
+            }
+
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
 }
