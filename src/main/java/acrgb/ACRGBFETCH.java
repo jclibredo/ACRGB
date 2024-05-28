@@ -811,7 +811,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult updatecondate = um.UPDATEROLEINDEX(dataSource, "00", ucondateid, "NONUPDATE");
+        ACRGBWSResult updatecondate = um.UPDATEROLEINDEX(dataSource, "00", ucondateid, "NONUPDATE"); //ENDCONDATE
         result.setMessage(updatecondate.getMessage());
         result.setResult(updatecondate.getResult());
         result.setSuccess(updatecondate.isSuccess());

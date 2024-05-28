@@ -586,7 +586,6 @@ public class UpdateMethods {
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -601,12 +600,13 @@ public class UpdateMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-
+            //====================================================================
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEROLEINDEX(:Message,:Code,"
+                    + ":utags,:uuserid,:ucondate)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            //=====================================================================
             if (!tagsss.toUpperCase().equals("ENDCONDATE")) {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEROLEINDEX(:Message,:Code,"
-                        + ":utags,:uuserid,:ucondate)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("utags", "UPDATE");
                 getinsertresult.setString("uuserid", uuserid);
                 getinsertresult.setString("ucondate", ucondate);
@@ -618,11 +618,7 @@ public class UpdateMethods {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
             } else {
-
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEROLEINDEX(:Message,:Code,"
-                        + ":utags,:uuserid,:ucondate)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                //PROCESS AUTO END CONTRACT
                 getinsertresult.setString("utags", "NONUPDATE");
                 getinsertresult.setString("uuserid", uuserid);
                 getinsertresult.setString("ucondate", ucondate);
@@ -654,7 +650,6 @@ public class UpdateMethods {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
             }
-
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
