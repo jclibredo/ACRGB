@@ -336,26 +336,38 @@ public class UpdateMethods {
                 getinsertresult.execute();
                 ArrayList<String> hcicontractaggingError = new ArrayList<>();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
-                    ACRGBWSResult rest = this.CONSTATSUPDATE(datasource, Integer.parseInt(contract.getConid()),
-                            Integer.parseInt(contract.getStats()), contract.getRemarks(), contract.getEnddate());
+                    //---------------------------------------------------------
+                    ACRGBWSResult rest = this.CONSTATSUPDATE(datasource, 
+                            Integer.parseInt(contract.getConid()),
+                            Integer.parseInt(contract.getStats()), 
+                            contract.getRemarks(), 
+                            contract.getEnddate());
+                    //---------------------------------------------------------
                     if (rest.isSuccess()) {
                         ACRGBWSResult getCon = fm.GETCONTRACTCONID(datasource, contract.getConid());
                         if (getCon.isSuccess()) {
                             Contract updatecontract = utility.ObjectMapper().readValue(getCon.getResult(), Contract.class);
                             ACRGBWSResult restA = methods.GETROLEMULITPLE(datasource, updatecontract.getHcfid());
                             if (restA.isSuccess()) {
+                                //--------------------------------------------------
                                 List<String> hciList = Arrays.asList(restA.getResult().split(","));
                                 for (int x = 0; x < hciList.size(); x++) {
                                     ACRGBWSResult getConA = cm.GETCONTRACT(datasource, "ACTIVE", hciList.get(x));
                                     if (getConA.isSuccess()) {
                                         Contract updatecontracts = utility.ObjectMapper().readValue(getCon.getResult(), Contract.class);
-                                        ACRGBWSResult tagHCIunder = this.CONSTATSUPDATE(datasource, Integer.parseInt(updatecontracts.getConid()),
-                                                Integer.parseInt(contract.getStats()), contract.getRemarks(), contract.getEnddate());
+                                        //-------------------------------------------
+                                        ACRGBWSResult tagHCIunder = this.CONSTATSUPDATE(datasource, 
+                                                Integer.parseInt(updatecontracts.getConid()),
+                                                Integer.parseInt(contract.getStats()), 
+                                                contract.getRemarks(), 
+                                                contract.getEnddate());
+                                        //---------------------------------------------
                                         if (!tagHCIunder.isSuccess()) {
                                             hcicontractaggingError.add(tagHCIunder.getMessage());
                                         }
                                     }
                                 }
+                                //-----------------------------------------------------
                                 result.setSuccess(true);
                                 result.setMessage(rest.getMessage());
                                 result.setResult("Error For HCI Contract tagging:" + hcicontractaggingError.toString());

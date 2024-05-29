@@ -5,6 +5,7 @@
  */
 package acrgb;
 
+import acrgb.method.Forgetpassword;
 import acrgb.method.InsertMethods;
 import acrgb.method.Methods;
 import acrgb.structure.ACRGBWSResult;
@@ -12,6 +13,7 @@ import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.DateSettings;
+import acrgb.structure.ForgetPassword;
 import acrgb.structure.MBRequestSummary;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;
@@ -21,6 +23,7 @@ import acrgb.structure.UserInfo;
 import acrgb.structure.UserLevel;
 import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
+import com.sun.jersey.multipart.FormDataParam;
 import java.sql.SQLException;
 import java.text.ParseException;
 import javax.annotation.Resource;
@@ -28,10 +31,13 @@ import javax.enterprise.context.RequestScoped;
 import javax.sql.DataSource;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
+//--------------------------------------
 
+//---------------------------------------
 /**
  * REST Web Service
  *
@@ -271,6 +277,22 @@ public class ACRGBPOST {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = insertmethods.INSERTCONDATE(dataSource, contractdate);
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
+
+    //TEST PASSWORD RESETTER
+    @POST
+    @Path("FORGETPASSWORD")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult FORGETPASSWORD(final ForgetPassword emailto) {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        Forgetpassword pass = new Forgetpassword();
+        ACRGBWSResult insertresult = pass.Forgetpassword(emailto.getEmailto(),"");
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());

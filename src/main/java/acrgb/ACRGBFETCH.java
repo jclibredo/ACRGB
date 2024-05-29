@@ -7,6 +7,7 @@ package acrgb;
 
 import acrgb.method.ContractMethod;
 import acrgb.method.FetchMethods;
+import acrgb.method.GenerateRandomPassword;
 import acrgb.method.LedgerMethod;
 import acrgb.method.Methods;
 import acrgb.method.UpdateMethods;
@@ -815,8 +816,19 @@ public class ACRGBFETCH {
         result.setMessage(updatecondate.getMessage());
         result.setResult(updatecondate.getResult());
         result.setSuccess(updatecondate.isSuccess());
-
         return result;
     }
 
+    //GET TRIGGER AUTOEND CONTRACT DATE
+    @GET
+    @Path("GetRandomPasscode")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetRandomPasscode() {   //TAGS MUST BE LEVELACCESS
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        GenerateRandomPassword generaterandompasscode = new GenerateRandomPassword();
+        result.setMessage("Generated random passcode");
+        result.setResult(generaterandompasscode.GenerateRandomPassword(10));
+        result.setSuccess(true);
+        return result;
+    }
 }

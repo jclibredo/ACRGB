@@ -258,10 +258,8 @@ public class InsertMethods {
 
                 }
             }
-        } catch (SQLException | ParseException ex) {
+        } catch (SQLException | ParseException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -399,6 +397,8 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        GenerateRandomPassword passcode = new GenerateRandomPassword();
+        Forgetpassword emailsender = new Forgetpassword();
         Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             ACRGBWSResult levelresult = fm.GETUSERLEVEL(datasource, user.getLeveid());
@@ -420,10 +420,12 @@ public class InsertMethods {
                     }
                 }
             }
-            if (!utility.validatePassword(user.getUserpassword())) {
-                result.setSuccess(false);
-                result.setMessage("PASSWORD NOT MEET THE REQUIREMENTS");
-            } else if (!utility.IsValidDate(user.getDatecreated())) {
+//            if (!utility.validatePassword(user.getUserpassword())) {
+//                result.setSuccess(false);
+//                result.setMessage("PASSWORD NOT MEET THE REQUIREMENTS");
+//            } else 
+
+            if (!utility.IsValidDate(user.getDatecreated())) {
                 result.setSuccess(false);
                 result.setMessage("DATE FORMAT IS NOT VALID");
             } else if (countresult == 0) {
@@ -442,27 +444,18 @@ public class InsertMethods {
                         getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                         getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                         getinsertresult.setString("p_levelid", user.getLeveid());
-                        getinsertresult.setString("p_username", user.getUsername().toUpperCase());
-                        if (validateRole.getResult().equals("Admin")) {
-                            getinsertresult.setString("p_userpassword", encryptpword);
-                        } else {
-                            getinsertresult.setString("p_userpassword", user.getUserpassword());
-                        }
+                        getinsertresult.setString("p_username", user.getUsername());
+                        getinsertresult.setString("p_userpassword", encryptpword);
                         getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(user.getDatecreated()).getTime())); //userlevel.getDatecreated());//user.getDatecreated());
                         getinsertresult.setString("p_createdby", user.getCreatedby());
-                        if (validateRole.getResult().equals("Admin")) {
-                            getinsertresult.setString("p_stats", "2");
-
-                        } else {
-                            getinsertresult.setString("p_stats", "1");
-
-                        }
+                        getinsertresult.setString("p_stats", "2");
                         getinsertresult.setString("p_did", user.getDid());
                         getinsertresult.execute();
-
                         if (getinsertresult.getString("Message").equals("SUCC")) {
                             result.setSuccess(true);
-                            result.setMessage(getinsertresult.getString("Message"));
+                            //SEND PASSCODE TO EMAIL IF SUCCESS
+                            ACRGBWSResult emailResult = emailsender.Forgetpassword(user.getUsername().trim(), user.getUserpassword().trim());
+                            result.setMessage(getinsertresult.getString("Message") + " AND" + emailResult.getMessage());
                         } else {
                             result.setMessage(getinsertresult.getString("Message"));
                         }
