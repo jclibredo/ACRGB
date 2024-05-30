@@ -397,7 +397,6 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        GenerateRandomPassword passcode = new GenerateRandomPassword();
         Forgetpassword emailsender = new Forgetpassword();
         Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
@@ -420,11 +419,6 @@ public class InsertMethods {
                     }
                 }
             }
-//            if (!utility.validatePassword(user.getUserpassword())) {
-//                result.setSuccess(false);
-//                result.setMessage("PASSWORD NOT MEET THE REQUIREMENTS");
-//            } else 
-
             if (!utility.IsValidDate(user.getDatecreated())) {
                 result.setSuccess(false);
                 result.setMessage("DATE FORMAT IS NOT VALID");
@@ -454,12 +448,11 @@ public class InsertMethods {
                         if (getinsertresult.getString("Message").equals("SUCC")) {
                             result.setSuccess(true);
                             //SEND PASSCODE TO EMAIL IF SUCCESS
-                            ACRGBWSResult emailResult = emailsender.Forgetpassword(user.getUsername().trim(), user.getUserpassword().trim());
+                            ACRGBWSResult emailResult = emailsender.Forgetpassword(datasource, user.getUsername().trim(), user.getUserpassword().trim());
                             result.setMessage(getinsertresult.getString("Message") + " AND" + emailResult.getMessage());
                         } else {
                             result.setMessage(getinsertresult.getString("Message"));
                         }
-
                     } else {
                         result.setMessage(validateRole.getMessage());
                         result.setResult(validateRole.getResult());

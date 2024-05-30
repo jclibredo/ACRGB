@@ -292,7 +292,7 @@ public class ACRGBPOST {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         Forgetpassword pass = new Forgetpassword();
-        ACRGBWSResult insertresult = pass.Forgetpassword(emailto.getEmailto(),"");
+        ACRGBWSResult insertresult = pass.Forgetpassword(dataSource, emailto.getEmailto(), "");
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());

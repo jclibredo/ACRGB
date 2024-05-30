@@ -804,10 +804,9 @@ public class ACRGBFETCH {
 
     //GET TRIGGER AUTOEND CONTRACT DATE
     @GET
-    @Path("AutoEndContractDate/{ucondateid}/{tagss}")
+    @Path("AutoEndContractDate/{ucondateid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult AutoEndContractDate(@PathParam("ucondateid") String ucondateid,
-            @PathParam("tagss") String tagss) throws ParseException {   //TAGS MUST BE LEVELACCESS
+    public ACRGBWSResult AutoEndContractDate(@PathParam("ucondateid") String ucondateid) throws ParseException {   //TAGS MUST BE LEVELACCESS
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
