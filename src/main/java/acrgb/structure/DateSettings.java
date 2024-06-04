@@ -19,4 +19,6 @@ public class DateSettings {
     private String datefrom;
     private String dateto;
     private String tags;
+    private String createdby;
+    private String datecreated;
 }

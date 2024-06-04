@@ -6,6 +6,7 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.ConBalance;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.utility.Utility;
@@ -296,7 +297,52 @@ public class ContractMethod {
             if (!conidlist.isEmpty()) {
                 result.setMessage("OK");
                 result.setSuccess(true);
-                result.setResult(utility.ObjectMapper().writeValueAsString(conidlist));
+                result.setResult(String.join(",", conidlist));
+            } else {
+                result.setMessage("N/A");
+            }
+
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET CONTRACT BY DATECOVERED
+    public ACRGBWSResult GETPREVIOUSBALANCE(final DataSource dataSource, final String pconid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETPREVIOUSBALANCE(:pconid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("pconid", pconid);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                //------------------OBJECT MAPPING ----------------------
+                ConBalance conbal = new ConBalance();
+                conbal.setAccount(resultset.getString("ACCOUNT"));
+                conbal.setBooknum(resultset.getString("BOOKNUM"));
+                conbal.setConamount(resultset.getString("CONAMOUNT")); //CONTRACT AMOUNT
+                conbal.setConbalance(resultset.getString("CONBALANCE"));//CONTRACT REMAINING BALANCE
+                //GETCONDATEBYID
+                ACRGBWSResult getCondate = this.GETCONDATEBYID(dataSource, resultset.getString("CONID"));
+                if (getCondate.isSuccess()) {
+                    conbal.setCondateid(getCondate.getResult());
+                } else {
+                    conbal.setCondateid(getCondate.getMessage());
+                }
+                conbal.setConid(resultset.getString("CONID"));
+                conbal.setConutilized(resultset.getString("CONUTILIZED"));
+                conbal.setDatecreated(resultset.getString("DATECREATED"));
+                conbal.setStatus(resultset.getString("STATUS"));
+                //------------------  END OF OBJECT MAPPING ----------------------
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(conbal));
             } else {
                 result.setMessage("N/A");
             }

@@ -6,6 +6,7 @@
 package acrgb.utility;
 
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.Contract;
 import acrgb.structure.UserActivity;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -50,6 +51,10 @@ public class Utility {
 
     public UserActivity UserActivity() {
         return new UserActivity();
+    }
+
+    public Contract Contract() {
+        return new Contract();
     }
 
     public SimpleDateFormat SimpleDateFormat(String pattern) {
@@ -100,7 +105,7 @@ public class Utility {
     }
 
     public boolean IsValidDateDifference(String string) {
-        SimpleDateFormat sdf =new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         sdf.setLenient(false);
         try {
             sdf.parse(string);

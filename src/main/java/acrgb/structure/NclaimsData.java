@@ -26,5 +26,9 @@ public class NclaimsData {
     private String tags;  //utags
     private String totalclaims;
     private String booknum;  //ubooknum
-    private String caserate;  //ucaserate
+    private String caserate1;  //ucaserate
+    private String caserate2;  //ucaserate
+    private String trn;  //ucaserate
+    private String createdby;
+    private String datecreated;
 }

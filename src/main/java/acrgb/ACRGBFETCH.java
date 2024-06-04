@@ -118,7 +118,7 @@ public class ACRGBFETCH {
                     result.setResult(getResult.getResult());
                     result.setSuccess(getResult.isSuccess());
                     break;
-                }//GetFacilityContractUsingHCPNCode
+                }//GetFacilityContractUsingHCPNCode  GET FACILITY CONTRACT USING MB ACCOUNT USERID
                 case "HCPN":
                     ACRGBWSResult getResult = fetchmethods.GetFacilityContractUsingHCPNCode(dataSource, tags, puserid);//GET CONTRACT OF ALL APEX FACILITY
                     result.setMessage(getResult.getMessage());
@@ -521,14 +521,31 @@ public class ACRGBFETCH {
 
     //Get all facility (multiple)
     @GET
-    @Path("GETALLFACILITY")
+    @Path("GETALLFACILITY/{tags}/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GETALLFACILITY() {
+    public ACRGBWSResult GETALLFACILITY(@PathParam("tags") String tags,
+            @PathParam("userid") String userid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult hcf = fetchmethods.GETALLFACILITY(dataSource);
-        result.setMessage(hcf.getMessage());
-        result.setSuccess(hcf.isSuccess());
-        result.setResult(hcf.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        switch (tags.toUpperCase()) {
+            case "ALL":
+                ACRGBWSResult resultAll = fetchmethods.GETALLFACILITY(dataSource);
+                result.setMessage(resultAll.getMessage());
+                result.setSuccess(resultAll.isSuccess());
+                result.setResult(resultAll.getResult());
+                break;
+            case "HCPN"://GET FACILITY USINNG HCPN ACCOUNT USERID
+                ACRGBWSResult resultHCPN = fetchmethods.GETFACILITYUNDERMB(dataSource, userid);
+                result.setMessage(resultHCPN.getMessage());
+                result.setSuccess(resultHCPN.isSuccess());
+                result.setResult(resultHCPN.getResult());
+                break;
+            case "FACILITY"://GET FACILITY USINNG HCF CODE
+                break;
+
+        }
         return result;
     }
 
@@ -830,4 +847,36 @@ public class ACRGBFETCH {
         result.setSuccess(true);
         return result;
     }
+
+    //GET TRIGGER AUTOEND CONTRACT DATE
+    @GET
+    @Path("GetPreviousContract/{condid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetPreviousContract(@PathParam("condid") String condid) {   //TAGS MUST BE LEVELACCESS
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult getResult = con.GETPREVIOUSBALANCE(dataSource, condid);
+        result.setMessage(getResult.getMessage());
+        result.setResult(getResult.getResult());
+        result.setSuccess(getResult.isSuccess());
+        return result;
+    }
+    
+     //GET TRIGGER AUTOEND CONTRACT DATE
+    @GET
+    @Path("BookData/{condateid}/{accountcode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult BookData(@PathParam("condateid") String condateid,
+            @PathParam("accountcode") String accountcode) { 
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        return result;
+    }
+    
+    
+    
 }

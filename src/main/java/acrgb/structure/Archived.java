@@ -18,5 +18,6 @@ public class Archived {
     }
     private String tags;
     private String dataid;
-
+    private String createdby;
+    private String datecreated;
 }

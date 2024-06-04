@@ -20,4 +20,5 @@ public class UserActivity {
     private String actdate;
     private String actdetails;
     private String actby;
+    private String userlevel;
 }

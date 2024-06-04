@@ -250,10 +250,6 @@ public class Methods {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
             }
-//            } else {
-//                result.setMessage(usernameResult.getMessage());
-//                result.setSuccess(usernameResult.isSuccess());
-//            }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -268,8 +264,6 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-//            ACRGBWSResult usernameResult = this.ACRUSERNAME(dataSource, p_username);
-//            if (usernameResult.isSuccess()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERNAME(:Message,:Code,:p_userid,:p_username,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -283,11 +277,6 @@ public class Methods {
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-
-//            } else {
-//                result.setMessage(usernameResult.getMessage());
-//                result.setSuccess(usernameResult.isSuccess());
-//            }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1245,7 +1234,6 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-
             //  System.out.println(resultset.getString("MBNAME"));
             if (!utility.IsValidNumber(pid)) {
                 result.setMessage("INVALID NUMBER FORMAT");

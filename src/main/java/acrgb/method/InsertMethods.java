@@ -62,57 +62,6 @@ public class InsertMethods {
         result.setSuccess(false);
         Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
-            //GET TRANCH PERCENTAGE
-//            if (assets.getCreatedby().isEmpty()
-//                    || assets.getDatecreated().isEmpty()
-//                    || assets.getDatereleased().isEmpty()
-//                    || assets.getHcfid().isEmpty()
-//                    || assets.getReceipt().isEmpty()
-//                    || assets.getTranchid().isEmpty()) {
-//                result.setMessage("SOME REQUIRED FIELDS IS EMPTY");
-//                result.setSuccess(false);
-//            } else if (utility.IsValidNumber(assets.getHcfid()) && utility.IsValidNumber(assets.getTranchid())) {
-            //ACRGBWSResult tranchresult = fm.GETTRANCHAMOUNT(datasource, assets.getTranchid());
-//                if (!tranchresult.isSuccess()) {
-//                    result.setMessage(tranchresult.getMessage());
-//                } else if (!utility.IsValidDate(assets.getDatecreated()) || !utility.IsValidDate(assets.getDatereleased())) {
-//                    result.setMessage("DATE FORMAT IS NOT VALID");
-//                } else {
-            // ACRGBWSResult conresult = fm.GETCONTRACTAMOUNT(datasource, assets.getHcfid());
-//                    if (conresult.isSuccess()) {
-//                        ACRGBWSResult transresult = fm.ACR_ASSETS(datasource, "active", "0");
-//                        if (transresult.isSuccess()) {
-//                            ACRGBWSResult trans = fm.ACR_TRANCH(datasource, "active");
-//                            if (trans.isSuccess()) {
-//                                int transcount = 0;
-//                                List<Tranch> tranchlist = Arrays.asList(utility.ObjectMapper().readValue(trans.getResult(), Tranch[].class));
-//                                for (int x = 0; x < tranchlist.size(); x++) {
-//                                    if (tranchlist.get(x).getTranchid().equals(assets.getTranchid())) {
-//                                        transcount++;
-//                                    }
-//                                }
-//
-//                                //---------------------------------------------------------------
-//                                int count = 0;
-//                                List<Assets> assetslist = Arrays.asList(utility.ObjectMapper().readValue(transresult.getResult(), Assets[].class));
-//                                for (int x = 0; x < assetslist.size(); x++) {
-//                                    if (assets.getHcfid().trim().equals(assetslist.get(x).getHcfid().trim())
-//                                            && assets.getTranchid().trim().equals(assetslist.get(x).getTranchid().trim())
-//                                            && assetslist.get(x).getStatus().equals("2")) {
-//                                        count++;
-//                                    }
-//                                }
-//
-//                                if (transcount == 0) {
-//                                    result.setSuccess(false);
-//                                    result.setMessage("TRANCH VALUE NOT FOUND");
-//                                } else {
-//                                    if (count < 1) {
-            //==================================================
-//            Double percentage = Double.parseDouble(tranchresult.getResult());//60 percent
-//            Double totalpercent = percentage / 100;
-//            Double amount = Double.parseDouble(conresult.getResult());//contract amount
-//            Double p_amount = amount * totalpercent;
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTASSETS(:Message,:Code,:p_hcfid,:p_tranchid ,:p_receipt,:p_amount"
                     + ",:p_createdby,:p_datereleased,:p_datecreated,:p_conid,:p_releasedamount,:p_previousbal)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -157,27 +106,9 @@ public class InsertMethods {
                 }
                 result.setSuccess(true);
             } else {
-                result.setMessage(getinsertresult.getString("Message") + " HERE");
+                result.setMessage(getinsertresult.getString("Message"));
             }
 
-            //==================================================
-//                                    } else {
-//                                        result.setMessage("TRANCH VALUE IS ALREADY ASSIGN TO FACILITY");
-//                                    }
-//                                }
-//                            } else {
-//                                result.setMessage(trans.getMessage()+" FIRST");
-//                            }
-//                        } else {
-//                            result.setMessage(transresult.getMessage()+" SECOND");
-//                        }
-//                    } else {
-//                        result.setMessage(conresult.getMessage()+" THIRD");
-//                    }
-//                }
-//            } else {
-//                result.setMessage("NUMBER FORMAT IS NOT VALID");
-//            }
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -241,7 +172,7 @@ public class InsertMethods {
                                 String actdetails = "INSERT CONTRACT TO " + mb.getMbname();
                                 userlogs.setActdetails(actdetails);
                             } else {
-                                String actdetails = "INSERT CONTRACT TO HCPN ";
+                                String actdetails = "INSERT BUDGET TO PRO ";
                                 userlogs.setActdetails(actdetails);
                             }
                             ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
@@ -271,6 +202,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             if (!utility.IsValidDate(tranch.getDatecreated())) {
                 result.setSuccess(false);
@@ -294,8 +226,15 @@ public class InsertMethods {
                 getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(tranch.getDatecreated()).getTime()));//tranch.getDatecreated());
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
+                    UserActivity userlogs = utility.UserActivity();
+                    String actdetails = "ADD TRANCH DATA ["
+                            + tranch.getTranchtype() + "]";
+                    userlogs.setActby(tranch.getCreatedby());
+                    userlogs.setActdate(tranch.getDatecreated());
+                    userlogs.setActdetails(actdetails);
+                    ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                     result.setSuccess(true);
-                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setMessage(getinsertresult.getString("Message") + " LOGS STATUS: " + insertActivitylogs.getMessage());
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
@@ -320,30 +259,36 @@ public class InsertMethods {
                     result.setSuccess(false);
                     result.setMessage("DATE FORMAT IS NOT VALID");
                 } else {
-                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSERDETAILS(:Message,:Code,"
-                            + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_createdby,:p_email,:p_contact)");
-                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                    getinsertresult.setString("p_firstname", userinfo.getFirstname().toUpperCase());
-                    getinsertresult.setString("p_lastname", userinfo.getLastname().toUpperCase());
-                    getinsertresult.setString("p_middlename", userinfo.getMiddlename().toUpperCase());
-                    getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(userinfo.getDatecreated()).getTime()));//userinfo.getDatecreated());
-                    getinsertresult.setString("p_createdby", userinfo.getCreatedby());
-                    getinsertresult.setString("p_email", userinfo.getEmail());
-                    getinsertresult.setString("p_contact", userinfo.getContact());
-                    getinsertresult.execute();
-                    if (getinsertresult.getString("Message").equals("SUCC")) {
-                        UserActivity userlogs = utility.UserActivity();
-                        String actdetails = "INSERT USER DETAILS" + userinfo.getContact() + " "
-                                + " " + userinfo.getLastname() + " , " + userinfo.getFirstname();
-                        userlogs.setActby(userinfo.getCreatedby());
-                        userlogs.setActdate(userinfo.getDatecreated());
-                        userlogs.setActdetails(actdetails);
-                        ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
-                        result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
-                        result.setSuccess(true);
+                    ACRGBWSResult validateUsername = methods.ACRUSERNAME(datasource, userinfo.getEmail());
+                    if (validateUsername.isSuccess()) {
+                        CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSERDETAILS(:Message,:Code,"
+                                + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_createdby,:p_email,:p_contact)");
+                        getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                        getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                        getinsertresult.setString("p_firstname", userinfo.getFirstname().toUpperCase());
+                        getinsertresult.setString("p_lastname", userinfo.getLastname().toUpperCase());
+                        getinsertresult.setString("p_middlename", userinfo.getMiddlename().toUpperCase());
+                        getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(userinfo.getDatecreated()).getTime()));//userinfo.getDatecreated());
+                        getinsertresult.setString("p_createdby", userinfo.getCreatedby());
+                        getinsertresult.setString("p_email", userinfo.getEmail());
+                        getinsertresult.setString("p_contact", userinfo.getContact());
+                        getinsertresult.execute();
+                        if (getinsertresult.getString("Message").equals("SUCC")) {
+                            UserActivity userlogs = utility.UserActivity();
+                            String actdetails = "INSERT USER DETAILS " + userinfo.getContact() + " "
+                                    + " " + userinfo.getLastname() + " , " + userinfo.getFirstname();
+                            userlogs.setActby(userinfo.getCreatedby());
+                            userlogs.setActdate(userinfo.getDatecreated());
+                            userlogs.setActdetails(actdetails);
+                            ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+                            result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
+                            result.setSuccess(true);
+                        } else {
+                            result.setMessage(getinsertresult.getString("Message"));
+                        }
                     } else {
-                        result.setMessage(getinsertresult.getString("Message"));
+                        result.setMessage(validateUsername.getMessage());
+                        result.setResult(validateUsername.getResult());
                     }
                 }
             } else {
@@ -362,6 +307,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             if (!utility.IsValidDate(userlevel.getDatecreated())) {
                 result.setSuccess(false);
@@ -377,8 +323,14 @@ public class InsertMethods {
                 getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(userlevel.getDatecreated()).getTime())); //userlevel.getDatecreated());
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
+                    UserActivity userlogs = utility.UserActivity();
+                    String actdetails = "INSERT USER LEVEL " + userlevel.getLevname();
+                    userlogs.setActby(userlevel.getCreatedby());
+                    userlogs.setActdate(userlevel.getDatecreated());
+                    userlogs.setActdetails(actdetails);
+                    ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                     result.setSuccess(true);
-                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
@@ -449,7 +401,23 @@ public class InsertMethods {
                             result.setSuccess(true);
                             //SEND PASSCODE TO EMAIL IF SUCCESS
                             ACRGBWSResult emailResult = emailsender.Forgetpassword(datasource, user.getUsername().trim(), user.getUserpassword().trim());
-                            result.setMessage(getinsertresult.getString("Message") + " AND" + emailResult.getMessage());
+                            UserActivity userlogs = utility.UserActivity();
+                            String level = "";
+                            ACRGBWSResult levelname = fm.GETUSERLEVEL(datasource, user.getLeveid());
+                            if (levelname.isSuccess()) {
+                                level = levelname.getResult();
+                            } else {
+                                level = "Level not found";
+                            }
+                            String actdetails = "INSERT USER ACCOUNT " + user.getUsername() + " Level " + level;
+                            userlogs.setActby(user.getCreatedby());
+                            userlogs.setActdate(user.getDatecreated());
+                            userlogs.setActdetails(actdetails);
+                            ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+                            result.setSuccess(true);
+                            result.setMessage(getinsertresult.getString("Message") + ""
+                                    + " AND" + emailResult.getMessage() + " \n " + insertActivitylogs.getMessage());
+
                         } else {
                             result.setMessage(getinsertresult.getString("Message"));
                         }
@@ -475,6 +443,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             if (!utility.IsValidDate(userroleindex.getDatecreated())) {
                 result.setMessage("DATE FORMAT IS NOT VALID");
@@ -500,8 +469,14 @@ public class InsertMethods {
                     }
                 }
                 if (errCount == 0) {
+                    UserActivity userlogs = utility.UserActivity();
+                    String actdetails = "ADD ACCESS " + userroleindex.getUserid() + " TO " + userroleindex.getAccessid();
+                    userlogs.setActby(userroleindex.getCreatedby());
+                    userlogs.setActdate(userroleindex.getDatecreated());
+                    userlogs.setActdetails(actdetails);
+                    ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                     result.setSuccess(true);
-                    result.setMessage("OK");
+                    result.setMessage("ADD ACCESS OK , INSERT LOGS " + insertActivitylogs.getMessage());
                 } else {
                     result.setMessage(errorList.toString());
                 }
@@ -520,6 +495,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             ArrayList<String> errorList = new ArrayList<>();
             List<String> accesslist = Arrays.asList(userroleindex.getAccessid().split(","));
@@ -538,8 +514,14 @@ public class InsertMethods {
                 }
             }
             if (errCount == 0) {
+                UserActivity userlogs = utility.UserActivity();
+                String actdetails = "DELETE ACCESS " + userroleindex.getUserid() + " TO " + userroleindex.getAccessid();
+                userlogs.setActby(userroleindex.getCreatedby());
+                userlogs.setActdate(userroleindex.getDatecreated());
+                userlogs.setActdetails(actdetails);
+                ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                 result.setSuccess(true);
-                result.setMessage("OK");
+                result.setMessage("REMOVE ACCESS OK , INSERT LOGS " + insertActivitylogs.getMessage());
             } else {
                 result.setMessage(errorList.toString());
             }
@@ -552,11 +534,15 @@ public class InsertMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult INACTIVEDATA(final DataSource datasource, final String tags, final String dataid) throws ParseException {
+    public ACRGBWSResult INACTIVEDATA(final DataSource datasource, final String tags,
+            final String dataid,
+            final String createdby,
+            final String datecreated) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             if (!utility.IsValidNumber(dataid)) {
                 result.setMessage(" " + dataid + " NUMBER FORMAT IS NOT VALID");
@@ -569,8 +555,14 @@ public class InsertMethods {
                 getinsertresult.setInt("dataid", Integer.parseInt(dataid));
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
+                    UserActivity userlogs = utility.UserActivity();
+                    String actdetails = "UPDATE STATUS TO INACTIVE" + tags + " TO 3 Data ID" + dataid;
+                    userlogs.setActby(createdby);
+                    userlogs.setActdate(datecreated);
+                    userlogs.setActdetails(actdetails);
+                    ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                     result.setSuccess(true);
-                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setMessage(getinsertresult.getString("Message") + " Logs status :" + insertActivitylogs.getMessage());
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
@@ -583,11 +575,16 @@ public class InsertMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult ACTIVEDATA(final DataSource datasource, final String tags, final String dataid) throws ParseException {
+    public ACRGBWSResult ACTIVEDATA(final DataSource datasource,
+            final String tags,
+            final String dataid,
+            final String createdby,
+            final String datecreated) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             if (!utility.IsValidNumber(dataid)) {
                 result.setMessage(" " + dataid + " NUMBER FORMAT IS NOT VALID");
@@ -600,8 +597,14 @@ public class InsertMethods {
                 getinsertresult.setInt("dataid", Integer.parseInt(dataid));
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setMessage(getinsertresult.getString("Message"));
+                    UserActivity userlogs = utility.UserActivity();
+                    String actdetails = "UPDATE STATUS TO ACTIVE" + tags + " TO 3 Data ID" + dataid;
+                    userlogs.setActby(createdby);
+                    userlogs.setActdate(datecreated);
+                    userlogs.setActdetails(actdetails);
+                    ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                     result.setSuccess(true);
+                    result.setMessage(getinsertresult.getString("Message") + " Logs status :" + insertActivitylogs.getMessage());
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
@@ -619,6 +622,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             if (!utility.IsValidDate(datesettings.getDatefrom()) || !utility.IsValidDate(datesettings.getDateto())) {
                 result.setMessage("DATE FORMAT IS NOT VALID");
@@ -631,7 +635,14 @@ public class InsertMethods {
                 getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(datesettings.getDateto()).getTime()));
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setMessage(getinsertresult.getString("Message"));
+                    UserActivity userlogs = utility.UserActivity();
+                    String actdetails = "ADD DATE REFERENCE POSSIBLE BUDGET AMOUNT From :"
+                            + datesettings.getDatefrom() + " TO " + datesettings.getDateto();
+                    userlogs.setActby(datesettings.getCreatedby());
+                    userlogs.setActdate(datesettings.getDatecreated());
+                    userlogs.setActdetails(actdetails);
+                    ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+                    result.setMessage(getinsertresult.getString("Message") + " Logs status :" + insertActivitylogs.getMessage());
                     result.setSuccess(true);
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
@@ -650,6 +661,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             if (!utility.IsValidDate(datesettings.getDatefrom()) || !utility.IsValidDate(datesettings.getDateto())) {
                 result.setMessage("DATE FORMAT IS NOT VALID");
@@ -662,7 +674,14 @@ public class InsertMethods {
                 getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(datesettings.getDateto()).getTime()));
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setMessage(getinsertresult.getString("Message"));
+                    UserActivity userlogs = utility.UserActivity();
+                    String actdetails = "ADD DATE REFERENCE SKIP YEAR From :"
+                            + datesettings.getDatefrom() + " TO " + datesettings.getDateto();
+                    userlogs.setActby(datesettings.getCreatedby());
+                    userlogs.setActdate(datesettings.getDatecreated());
+                    userlogs.setActdetails(actdetails);
+                    ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+                    result.setMessage(getinsertresult.getString("Message") + " Logs status :" + insertActivitylogs.getMessage());
                     result.setSuccess(true);
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
@@ -739,6 +758,15 @@ public class InsertMethods {
                             } else {
                                 result.setMessage(getinsertresult.getString("Message"));
                             }
+
+                            UserActivity userlogs = utility.UserActivity();
+                            String actdetails = "INSERT NEW HCPN PROFILE :"
+                                    + mb.getMbname() + " , " + mb.getAddress() + " , " + mb.getControlnumber();
+                            userlogs.setActby(mb.getCreatedby());
+                            userlogs.setActdate(mb.getDatecreated());
+                            userlogs.setActdetails(actdetails);
+                            ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+
                         } else {
                             result.setMessage(insertRole.getMessage());
                         }
@@ -822,11 +850,12 @@ public class InsertMethods {
     }
 
     public ACRGBWSResult INSERTAPPELLATE(final DataSource datasource, final String uaccesscode,
-            final String ucontrolcode) throws ParseException {
+            final String ucontrolcode, final String createdby, final String datecreated) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             ArrayList<String> errorList = new ArrayList<>();
             List<String> accesslist = Arrays.asList(ucontrolcode.split(","));
@@ -847,8 +876,15 @@ public class InsertMethods {
                 }
             }
             if (errCount == 0) {
+                UserActivity userlogs = utility.UserActivity();
+                String actdetails = "ADD APPELATE APEX TO HCPN :"
+                        + ucontrolcode + " TO :" + uaccesscode;
+                userlogs.setActby(createdby);
+                userlogs.setActdate(datecreated);
+                userlogs.setActdetails(actdetails);
+                ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                 result.setSuccess(true);
-                result.setMessage("OK");
+                result.setMessage("OK ADD APPELATE, LOGS STATUS: " + insertActivitylogs.getMessage());
             } else {
                 result.setMessage(errorList.toString());
             }
@@ -882,7 +918,7 @@ public class InsertMethods {
             getinsertresult.setString("ureference", paymentType.getUreference());
             getinsertresult.execute();
             //------------------------------------------------------------------------------------------------
-            if (!getinsertresult.getString("Message").equals("SUCC")) {
+            if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setSuccess(true);
                 result.setMessage(getinsertresult.getString("Message"));
             } else {
@@ -902,6 +938,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             //------------------------------------------------------------------------------------------------
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACRBOOKING(:Message,:Code,"
@@ -914,9 +951,17 @@ public class InsertMethods {
             getinsertresult.setString("ucreatedby", book.getCreatedby());
             getinsertresult.execute();
             //------------------------------------------------------------------------------------------------
-            if (!getinsertresult.getString("Message").equals("SUCC")) {
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                UserActivity userlogs = utility.UserActivity();
+                String actdetails = "ADD BOOKING REFERENCES DATA :"
+                        + book.getBooknum() + " , for Contract " + book.getConid();
+                userlogs.setActby(book.getCreatedby());
+                userlogs.setActdate(book.getDatecreated());
+                userlogs.setActdetails(actdetails);
+                ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                 result.setSuccess(true);
-                result.setMessage(getinsertresult.getString("Message"));
+                result.setMessage(getinsertresult.getString("Message") + " LOGS STATUS: " + insertActivitylogs.getMessage());
+
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
@@ -933,10 +978,12 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             //------------------------------------------------------------------------------------------------
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACRBOOKING(:Message,:Code,"
-                    + ":useries,:uaccreno,:udateadmission,:udatefiled,:uclaimamount,:ubooknum,:utags,:ucaserate)");
+                    + ":useries,:uaccreno,:udateadmission,:udatefiled,:uclaimamount,:ubooknum,:utags,"
+                    + ":ucaserate1,:ucaserate2,:utrn)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("useries", nclaims.getSeries());
@@ -946,12 +993,22 @@ public class InsertMethods {
             getinsertresult.setString("uclaimamount", nclaims.getClaimamount());
             getinsertresult.setString("ubooknum", nclaims.getBooknum());
             getinsertresult.setString("utags", nclaims.getTags());
-            getinsertresult.setString("ucaserate", nclaims.getCaserate());
+            getinsertresult.setString("ucaserate", nclaims.getCaserate1());
+            getinsertresult.setString("ucaserate", nclaims.getCaserate2());
+            getinsertresult.setString("utrn", nclaims.getTrn());
             getinsertresult.execute();
             //------------------------------------------------------------------------------------------------
-            if (!getinsertresult.getString("Message").equals("SUCC")) {
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                UserActivity userlogs = utility.UserActivity();
+                String actdetails = "ADD BOOK CLAIMS DATA: Series["
+                        + nclaims.getSeries() + "] ,BookNum[" + nclaims.getBooknum() + "]";
+                userlogs.setActby(nclaims.getCreatedby());
+                userlogs.setActdate(nclaims.getDatecreated());
+                userlogs.setActdetails(actdetails);
+                ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                 result.setSuccess(true);
-                result.setMessage(getinsertresult.getString("Message"));
+                result.setMessage(getinsertresult.getString("Message") + " LOGS STATUS: " + insertActivitylogs.getMessage());
+
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
@@ -968,6 +1025,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONDATE(:Message,:Code,"
                     + ":udatefrom,:udateto,:ucreatedby,:udatecreated)");
@@ -979,8 +1037,15 @@ public class InsertMethods {
             getinsertresult.setDate("udatecreated", (Date) new Date(utility.StringToDate(contractdate.getDatecreated()).getTime()));
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
-                result.setMessage(getinsertresult.getString("Message"));
+                UserActivity userlogs = utility.UserActivity();
+                String actdetails = "ADD CONTRACT DATE FROM["
+                        + contractdate.getDatefrom() + "] , TO[" + contractdate.getDateto() + "]";
+                userlogs.setActby(contractdate.getCreatedby());
+                userlogs.setActdate(contractdate.getDatecreated());
+                userlogs.setActdetails(actdetails);
+                ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                 result.setSuccess(true);
+                result.setMessage(getinsertresult.getString("Message") + " LOGS STATUS: " + insertActivitylogs.getMessage());
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }

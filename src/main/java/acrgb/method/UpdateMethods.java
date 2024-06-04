@@ -619,7 +619,7 @@ public class UpdateMethods {
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             //=====================================================================
-            if (!tagsss.toUpperCase().equals("ENDCONDATE")) {
+            if (!tagsss.toUpperCase().equals("NONUPDATE")) {
                 getinsertresult.setString("utags", "UPDATE");
                 getinsertresult.setString("uuserid", uuserid);
                 getinsertresult.setString("ucondate", ucondate);
@@ -642,6 +642,7 @@ public class UpdateMethods {
                         ContractDate contractdate = utility.ObjectMapper().readValue(getConDateByid.getResult(), ContractDate.class);
                         ACRGBWSResult getResult = cm.GETCONTRACTBYCONDATEID(datasource, ucondate);
                         if (getResult.isSuccess()) {
+                            ArrayList<String> message = new ArrayList<>();
                             List<String> RestA = Arrays.asList(getResult.getResult().split(","));
                             for (int x = 0; x < RestA.size(); x++) {
                                 Contract con = new Contract();
@@ -653,9 +654,13 @@ public class UpdateMethods {
                                 ACRGBWSResult tagContract = this.TAGGINGCONTRACT(datasource, con);
                                 //UPDATE ASSETS UNDER CONTRACT
                                 ACRGBWSResult upDateAssets = this.UPDATEASSETSTATUS(datasource, RestA.get(x));
-
+                                //UPDATE CONTRACT DATE PERIOD
+                                message.add("Contract Tagging:[" + tagContract.getMessage() + "]");
+                                message.add("Assets Tagging:[" + upDateAssets.getMessage() + "]");
                             }
-                            result.setMessage(getinsertresult.getString("Message"));
+                            ACRGBWSResult upDateConDatePeriod = this.TAGCONTRACTPERIOD(datasource, ucondate);
+                            message.add("Assets Tagging:[" + upDateConDatePeriod.getMessage() + "]");
+                            result.setMessage(message.toString());
                             result.setSuccess(true);
                         } else {
                             result.setMessage(getResult.getMessage());
@@ -682,7 +687,7 @@ public class UpdateMethods {
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEASSETSTATUS(:Message,:Code,"
-                    + ":uconid");
+                    + ":uconid)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("uconid", uconid);
@@ -709,18 +714,68 @@ public class UpdateMethods {
         Cryptor cryptor = new Cryptor();
         try (Connection connection = datasource.getConnection()) {
             String encryptpword = cryptor.encrypt(ppasscode, ppasscode, "ACRGB");
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSCODE(:Message,:Code,"
-                    + ":pusername,:ppasscode");
-            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("pusername", pusername);
-            getinsertresult.setString("ppasscode", encryptpword);
-            getinsertresult.execute();
-            if (getinsertresult.getString("Message").equals("SUCC")) {
-                result.setMessage(getinsertresult.getString("Message"));
+            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSCODES(:Message,:Code,:pusername,:ppasscode)");
+            statement.registerOutParameter("Message", OracleTypes.VARCHAR);
+            statement.registerOutParameter("Code", OracleTypes.INTEGER);
+            statement.setString("pusername", pusername.trim());
+            statement.setString("ppasscode", encryptpword.trim());
+            statement.execute();
+            if (statement.getString("Message").equals("SUCC")) {
+                result.setMessage(statement.getString("Message"));
                 result.setSuccess(true);
             } else {
-                result.setMessage(getinsertresult.getString("Message"));
+                result.setMessage(statement.getString("Message"));
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //----------------------------------------------------------------
+    public ACRGBWSResult TAGCONTRACTPERIOD(final DataSource datasource, final String pcondateid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.TAGCONTRACTPERIOD(:Message,:Code,:pcondateid)");
+            statement.registerOutParameter("Message", OracleTypes.VARCHAR);
+            statement.registerOutParameter("Code", OracleTypes.INTEGER);
+            statement.setString("pcondateid", pcondateid);
+            statement.execute();
+            if (statement.getString("Message").equals("SUCC")) {
+                result.setMessage(statement.getString("Message"));
+                result.setSuccess(true);
+            } else {
+                result.setMessage(statement.getString("Message"));
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+    
+    
+    //----------------------------------------------------------------
+    public ACRGBWSResult UPDATECONBALANCESTATS(final DataSource datasource, final String pconid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATECONBALANCESTATS(:Message,:Code,:pconid)");
+            statement.registerOutParameter("Message", OracleTypes.VARCHAR);
+            statement.registerOutParameter("Code", OracleTypes.INTEGER);
+            statement.setString("pconid", pconid);
+            statement.execute();
+            if (statement.getString("Message").equals("SUCC")) {
+                result.setMessage(statement.getString("Message"));
+                result.setSuccess(true);
+            } else {
+                result.setMessage(statement.getString("Message"));
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());

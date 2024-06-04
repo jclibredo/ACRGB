@@ -1,5 +1,6 @@
 acrgb\structure\UserActivity.class
 acrgb\ACRGBUPDATE.class
+acrgb\method\BookingMethod.class
 acrgb\ACRGBPOST.class
 acrgb\structure\NclaimsData.class
 acrgb\method\UpdateMethods.class
@@ -20,6 +21,7 @@ acrgb\structure\Accreditation.class
 acrgb\method\GenerateRandomPassword.class
 acrgb\method\InsertMethods.class
 acrgb\structure\Tranch.class
+acrgb\structure\ConBalance.class
 acrgb\structure\Pro.class
 acrgb\structure\HealthCareFacility.class
 acrgb\method\Reports.class

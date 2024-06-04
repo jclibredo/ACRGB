@@ -174,7 +174,8 @@ public class ACRGBUPDATE {
     public ACRGBWSResult INACTIVE(final Archived arhived) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = insertmethods.INACTIVEDATA(dataSource, arhived.getTags(), arhived.getDataid());
+        ACRGBWSResult insertresult = insertmethods.INACTIVEDATA(dataSource,
+                arhived.getTags(), arhived.getDataid(), arhived.getCreatedby(), arhived.getDatecreated());
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());
@@ -188,7 +189,8 @@ public class ACRGBUPDATE {
     public ACRGBWSResult ACTIVE(final Archived arhived) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = insertmethods.ACTIVEDATA(dataSource, arhived.getTags(), arhived.getDataid());
+        ACRGBWSResult insertresult = insertmethods.ACTIVEDATA(dataSource, arhived.getTags(), 
+                arhived.getDataid(), arhived.getCreatedby(), arhived.getDatecreated());
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());

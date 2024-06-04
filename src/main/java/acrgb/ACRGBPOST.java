@@ -23,7 +23,6 @@ import acrgb.structure.UserInfo;
 import acrgb.structure.UserLevel;
 import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
-import com.sun.jersey.multipart.FormDataParam;
 import java.sql.SQLException;
 import java.text.ParseException;
 import javax.annotation.Resource;
@@ -31,7 +30,6 @@ import javax.enterprise.context.RequestScoped;
 import javax.sql.DataSource;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
@@ -262,7 +260,9 @@ public class ACRGBPOST {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = insertmethods.INSERTAPPELLATE(dataSource,
-                userroleindex.getUserid(), userroleindex.getAccessid());
+                userroleindex.getUserid(), userroleindex.getAccessid(), 
+                userroleindex.getCreatedby(), 
+                userroleindex.getDatecreated());
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());

@@ -6,7 +6,6 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
-import acrgb.utility.Cryptor;
 import acrgb.utility.Utility;
 import java.text.ParseException;
 import java.util.Properties;
@@ -19,6 +18,7 @@ import javax.mail.internet.MimeMessage;
 //-----------------------------------------------
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.context.RequestScoped;
 import javax.mail.PasswordAuthentication;
 import javax.sql.DataSource;
 //import jakarta.mail.internet.InternetAddress;
@@ -28,21 +28,19 @@ import javax.sql.DataSource;
  *
  * @author MinoSun
  */
+@RequestScoped
 public class Forgetpassword {
 
     private final Utility utility = new Utility();
-
     public ACRGBWSResult Forgetpassword(final DataSource dataSource, final String emailto, final String randpass) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setSuccess(false);
         result.setResult("");
         Methods methods = new Methods();
-        Cryptor cryptor = new Cryptor();
         UpdateMethods updatemethods = new UpdateMethods();
         GenerateRandomPassword generatepass = new GenerateRandomPassword();
         try {
-
             final String appUser = "roland.aboga@gmail.com";
             final String appPass = "bvyf bnrj nire gbvb";
             // Recipient's email ID needs to be mentioned.
@@ -79,15 +77,13 @@ public class Forgetpassword {
             if (randpass.length() > 0) {
                 // Now set the actual message
                 //message.setText("This is actual message");
-                message.setContent("<h2>Note : </h2><em>Dont share your account credentials</em><br><p>Username : </p><h1>" + emailto + "</h1>"
-                        + "<p>Passcode : /p><h1>" + randpass + "</h1>",
+                message.setContent("<button class='btn btn-success'>This is button </button><h2>Note : </h2><em>Dont share your account credentials</em><br><h1> Username : " + emailto + ""
+                        + "<br> Passcode :" + randpass + "</h1>",
                         "text/html");
-
                 Transport.send(message);
                 result.setResult(randpass);
                 result.setSuccess(true);
-                result.setMessage("Passcode successfully sent to " + emailto);
-
+                result.setMessage("Account credentials successfully sent to " + emailto);
             } else {
                 ACRGBWSResult validateUsername = methods.ACRUSERNAME(dataSource, emailto);
                 if (validateUsername.isSuccess()) {
@@ -96,14 +92,17 @@ public class Forgetpassword {
                     // Now set the actual message
                     //message.setText("This is actual message");
                     String newpass = generatepass.GenerateRandomPassword(10);
-                    message.setContent("<h2>Note : </h2><em>Dont share your account credentials</em><br><p>Username : </p><h1>" + emailto + "</h1>"
-                            + "<p>Passcode : /p><h1>" + newpass + "</h1>",
+                    message.setContent("<h2>Note : This account password was reset </h2><em>Dont share your account credentials</em><br><h1> Username : " + emailto + ""
+                            + "<br>New Passcode :" + newpass + "</h1>",
                             "text/html");
                     Transport.send(message);
                     ACRGBWSResult updatepassword = updatemethods.UPDATEPASSCODE(dataSource, emailto, newpass);
-                    result.setSuccess(true);
-                    result.setMessage("Update passcode update : " + updatepassword.getMessage());
-
+                    if (updatepassword.isSuccess()) {
+                        result.setSuccess(true);
+                        result.setMessage(updatepassword.getMessage());
+                    } else {
+                        result.setMessage(updatepassword.getMessage());
+                    }
                 }
             }
 
