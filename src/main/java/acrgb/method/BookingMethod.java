@@ -36,13 +36,13 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class BookingMethod {
-    
+
     public BookingMethod() {
     }
-    
+
     private final Utility utility = new Utility();
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
-    
+
     public ACRGBWSResult ACRBOOKING(final DataSource dataSource, final Book book) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -70,7 +70,7 @@ public class BookingMethod {
         }
         return result;
     }
-    
+
     public ACRGBWSResult INSERTCONBALANCE(final DataSource dataSource, final ConBalance conBalance) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -139,7 +139,7 @@ public class BookingMethod {
                         nclaims.setPmccno("N/A");
                     }
                 }
-                
+
                 nclaims.setAccreno(resultset.getString("ACCRENO"));
                 nclaims.setClaimamount(resultset.getString("CLAIMAMOUNT"));
                 // nclaims.setDatesubmitted(resultset.getString("DATESUBMITTED"));
@@ -170,7 +170,7 @@ public class BookingMethod {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -200,7 +200,7 @@ public class BookingMethod {
                     case "HCPN":
                         Double totalClaimAmount = 0.00;
                         Double totalClaimAssets = 0.00;
-                        
+
                         Contract HCPNContract = utility.ObjectMapper().readValue(getConResult.getResult(), Contract.class);
                         ContractDate contractdate = utility.ObjectMapper().readValue(HCPNContract.getContractdate(), ContractDate.class);
                         ACRGBWSResult FacilityList = methods.GETROLEMULITPLE(dataSource, book.getHcpncode().trim());
@@ -247,15 +247,17 @@ public class BookingMethod {
                                 conbal.setCreatedby(book.getCreatedby());
                                 conbal.setConid(book.getConid());
                                 ACRGBWSResult InsertPreviousba = this.INSERTCONBALANCE(dataSource, conbal);
-                                
+                                if (!InsertPreviousba.isSuccess()) {
+                                    errorList.add(InsertPreviousba.getMessage());
+                                }
                             }
-                            
+
                         } else {
                             result.setMessage(FacilityList.getMessage());
                         }
                         break;
                 }
-                
+
             } else {
                 result.setMessage(getConResult.getMessage());
             }
@@ -266,7 +268,7 @@ public class BookingMethod {
                 result.setMessage("N/A");
                 result.setResult(utility.ObjectMapper().writeValueAsString(errorList));
             }
-            
+
         } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
@@ -296,7 +298,7 @@ public class BookingMethod {
                         break;
                     case "HCPN":
                         Contract HCPNContract = utility.ObjectMapper().readValue(getConResult.getResult(), Contract.class);
-                        ContractDate contractdate = utility.ObjectMapper().readValue(HCPNContract.getContractdate(), ContractDate.class);                        
+                        ContractDate contractdate = utility.ObjectMapper().readValue(HCPNContract.getContractdate(), ContractDate.class);
                         ACRGBWSResult FacilityList = methods.GETROLEMULITPLE(dataSource, hcpncode.trim());
                         if (FacilityList.isSuccess()) {
                             List<String> HCFCodeList = Arrays.asList(FacilityList.getResult().split(","));
@@ -326,12 +328,12 @@ public class BookingMethod {
                 result.setMessage("N/A");
                 result.setResult(utility.ObjectMapper().writeValueAsString(errorList));
             }
-            
+
         } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
+
 }
