@@ -374,7 +374,6 @@ public class UpdateMethods {
                                 result.setResult("Error For HCI Contract tagging:" + hcicontractaggingError.toString());
                             }
                         }
-
                     } else {
                         result.setMessage(rest.getMessage());
                     }

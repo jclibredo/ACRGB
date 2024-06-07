@@ -5,16 +5,21 @@
  */
 package acrgb;
 
+import acrgb.method.BookingMethod;
 import acrgb.method.ContractMethod;
 import acrgb.method.FetchMethods;
+import acrgb.method.Forgetpassword;
 import acrgb.method.GenerateRandomPassword;
 import acrgb.method.LedgerMethod;
 import acrgb.method.Methods;
 import acrgb.method.UpdateMethods;
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.Book;
+import acrgb.structure.ForgetPassword;
 import acrgb.structure.UserLevel;
 import acrgb.utility.Utility;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
@@ -23,8 +28,10 @@ import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
 import javax.sql.DataSource;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
@@ -53,6 +60,7 @@ public class ACRGBFETCH {
     private final LedgerMethod lm = new LedgerMethod();
     private final ContractMethod con = new ContractMethod();
     private final UpdateMethods um = new UpdateMethods();
+    private final BookingMethod bm = new BookingMethod();
 
     //GET ASSETS TYPE TBL
     @GET
@@ -91,39 +99,46 @@ public class ACRGBFETCH {
             result.setSuccess(false);
         } else {
             switch (level.toUpperCase()) {
-                case "PRO": {//puserid = prouseraccount ID
-                    ACRGBWSResult getResult = fetchmethods.ACR_CONTRACTPROID(dataSource, tags, puserid);//GET CONTRACT USING USERID OF PRO USER ACCOUNT
-                    result.setMessage(getResult.getMessage());
-                    result.setResult(getResult.getResult());
-                    result.setSuccess(getResult.isSuccess());
+                case "PRO": //puserid = prouseraccount ID
+                    ACRGBWSResult getResultA = fetchmethods.ACR_CONTRACTPROID(dataSource, tags, puserid);//GET CONTRACT USING USERID OF PRO USER ACCOUNT
+                    result.setMessage(getResultA.getMessage());
+                    result.setResult(getResultA.getResult());
+                    result.setSuccess(getResultA.isSuccess());
                     break;
-                }
-                case "MB": {//puserid = hcpnuseraccount ID
-                    ACRGBWSResult getResult = fetchmethods.GETCONTRACTUNDERMB(dataSource, tags, puserid);//GET CONTRACT USING USERID OF HCPN USER ACCOUNT
-                    result.setMessage(getResult.getMessage());
-                    result.setResult(getResult.getResult());
-                    result.setSuccess(getResult.isSuccess());
+
+                case "MB": //puserid = hcpnuseraccount ID
+                    ACRGBWSResult getResultB = fetchmethods.GETCONTRACTUNDERMB(dataSource, tags, puserid);//GET CONTRACT USING USERID OF HCPN USER ACCOUNT
+                    result.setMessage(getResultB.getMessage());
+                    result.setResult(getResultB.getResult());
+                    result.setSuccess(getResultB.isSuccess());
                     break;
-                }
-                case "PHICAPEX": {//puserid = 0
-                    ACRGBWSResult getResult = fetchmethods.ACR_CONTRACT(dataSource, tags, puserid);//GET CONTRACT OF ALL APEX FACILITY
-                    result.setMessage(getResult.getMessage());
-                    result.setResult(getResult.getResult());
-                    result.setSuccess(getResult.isSuccess());
+
+                case "PHICAPEX": //puserid = 0
+                    ACRGBWSResult getResultC = fetchmethods.ACR_CONTRACT(dataSource, tags, puserid);//GET CONTRACT OF ALL APEX FACILITY
+                    result.setMessage(getResultC.getMessage());
+                    result.setResult(getResultC.getResult());
+                    result.setSuccess(getResultC.isSuccess());
                     break;
-                }
-                case "PHICHCPN": { //puserid = 0
-                    ACRGBWSResult getResult = fetchmethods.GETALLHCPNCONTRACT(dataSource, tags, puserid);//GET CONTRACT OF ALL APEX FACILITY
-                    result.setMessage(getResult.getMessage());
-                    result.setResult(getResult.getResult());
-                    result.setSuccess(getResult.isSuccess());
+
+                case "PHICHCPN":  //puserid = 0
+                    ACRGBWSResult getResultD = fetchmethods.GETALLHCPNCONTRACT(dataSource, tags, puserid);//GET CONTRACT OF ALL APEX FACILITY
+                    result.setMessage(getResultD.getMessage());
+                    result.setResult(getResultD.getResult());
+                    result.setSuccess(getResultD.isSuccess());
                     break;
-                }//GetFacilityContractUsingHCPNCode  GET FACILITY CONTRACT USING MB ACCOUNT USERID
+                //GetFacilityContractUsingHCPNCode  GET FACILITY CONTRACT USING MB ACCOUNT USERID
                 case "HCPN":
-                    ACRGBWSResult getResult = fetchmethods.GetFacilityContractUsingHCPNCode(dataSource, tags, puserid);//GET CONTRACT OF ALL APEX FACILITY
-                    result.setMessage(getResult.getMessage());
-                    result.setResult(getResult.getResult());
-                    result.setSuccess(getResult.isSuccess());
+                    ACRGBWSResult getResultE = fetchmethods.GetFacilityContractUsingHCPNAccountUserID(dataSource, tags, puserid);//GET CONTRACT OF ALL APEX FACILITY
+                    result.setMessage(getResultE.getMessage());
+                    result.setResult(getResultE.getResult());
+                    result.setSuccess(getResultE.isSuccess());
+                    break;
+                // GET ALL FACILITY CONTRACT USING HCPN CONTROL CODE   IN PRO LEVEL  
+                case "HCIHCPNCON":
+                    ACRGBWSResult getResultF = fetchmethods.GetFacilityContractUsingHCPNCodeS(dataSource, tags, puserid.toUpperCase());//GET CONTRACT OF ALL APEX FACILITY
+                    result.setMessage(getResultF.getMessage());
+                    result.setResult(getResultF.getResult());
+                    result.setSuccess(getResultF.isSuccess());
                     break;
                 default:
                     result.setMessage(level + " IS NOT VALID");
@@ -414,7 +429,7 @@ public class ACRGBFETCH {
     @GET
     @Path("GetManagingBoard/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetManagingBoard(@PathParam("tags") String tags) throws ParseException {
+    public ACRGBWSResult GetManagingBoard(@PathParam("tags") String tags) throws ParseException, SQLException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -770,39 +785,6 @@ public class ACRGBFETCH {
         return result;
     }
 
-    //LEDGER 
-//    @GET
-//    @Path("GetAllContract/{puserid}/{tags}")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public ACRGBWSResult GetAllContract(
-//            @PathParam("puserid") String puserid, //hcpncode  MUST BE HCPNCONTROLCODE
-//            @PathParam("tags") String tags) {   //TAGS MUST BE LEVELACCESS
-//        ACRGBWSResult result = utility.ACRGBWSResult();
-//        result.setMessage("");
-//        result.setResult("");
-//        result.setSuccess(false);
-//        switch (tags.toUpperCase().trim()) {
-//            case "HCPNPRO"://GET LEDGER PER HCPN
-//                //hcpncode  MUST BE HCPNCONTROLCODE
-//                //CONTRACT MUST BE CONID
-//                //TAGS MUST BE HCPN
-//                ACRGBWSResult getResultHCPN = con.GetAllContract(dataSource, puserid);
-//                result.setMessage(getResultHCPN.getMessage());
-//                result.setResult(getResultHCPN.getResult());
-//                result.setSuccess(getResultHCPN.isSuccess());
-//                break;
-//            case "HCPNPHIC"://GET LEDGER PER FACILITY
-//                //hcpncode  MUST BE THE USERID OF PRO ACCOUNT
-//                //CONTRACT DECLARE 0 VALUE
-//                //TAGS MUST BE HCPNALL
-//                ACRGBWSResult getResultAllHCPN = lm.GETLedgerAllContractHCPN(dataSource, hcpncode);//hcpncode  user ID of account of PROUSER
-//                result.setMessage(getResultAllHCPN.getMessage());
-//                result.setResult(getResultAllHCPN.getResult());
-//                result.setSuccess(getResultAllHCPN.isSuccess());
-//                break;
-//        }
-//        return result;
-//    }
     @GET
     @Path("GetContractDate/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -863,20 +845,65 @@ public class ACRGBFETCH {
         result.setSuccess(getResult.isSuccess());
         return result;
     }
-    
-     //GET TRIGGER AUTOEND CONTRACT DATE
-    @GET
-    @Path("BookData/{condateid}/{accountcode}")
+
+    //GET TRIGGER AUTOEND CONTRACT DATE
+    // 1.) CONTRACT ID
+    // 2.) DATE PERIOD 
+    // 3.) SELECT FACILITY AND FACILITY
+    @POST
+    @Path("BookData")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult BookData(@PathParam("condateid") String condateid,
-            @PathParam("accountcode") String accountcode) { 
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult BookData(final Book book) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
+        ACRGBWSResult BookingResult = bm.GETACTIVECONTRACT(dataSource, book);
+        result.setMessage(BookingResult.getMessage());
+        result.setResult(BookingResult.getResult());
+        result.setSuccess(BookingResult.isSuccess());
         return result;
     }
-    
-    
-    
+
+    @GET
+    @Path("GetClaims/{hcpncode}/{contractid}/{tags}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetClaims(@PathParam("hcpncode") String hcpncode,
+            @PathParam("contractid") String contractid,
+            @PathParam("tags") String tags) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult BookingResult = bm.GETALLCLAIMS(dataSource, hcpncode, contractid, tags);
+        result.setMessage(BookingResult.getMessage());
+        result.setResult(BookingResult.getResult());
+        result.setSuccess(BookingResult.isSuccess());
+        return result;
+    }
+
+    //GET EMAIL CREDEDNTIALS
+    @GET
+    @Path("GetEmailCredentials")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetEmailCredentials() {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        Forgetpassword forgetpass = new Forgetpassword();
+        ACRGBWSResult BookingResult = forgetpass.GetEmailSender(dataSource);
+        result.setMessage(BookingResult.getMessage());
+        result.setResult(BookingResult.getResult());
+        result.setSuccess(BookingResult.isSuccess());
+        return result;
+    }
+
+    //INSERT EMAIL CREDEDNTIALS
+    @POST
+    @Path("PostEmailCredentials")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult PostEmailCredentials(final ForgetPassword fp) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        Forgetpassword forgetpass = new Forgetpassword();
+        ACRGBWSResult BookingResult = forgetpass.InserEmailCred(dataSource, fp);
+        result.setMessage(BookingResult.getMessage());
+        result.setResult(BookingResult.getResult());
+        result.setSuccess(BookingResult.isSuccess());
+        return result;
+    }
+
 }

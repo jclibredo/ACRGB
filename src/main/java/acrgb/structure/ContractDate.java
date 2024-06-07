@@ -13,11 +13,15 @@ import lombok.Data;
  */
 @Data
 public class ContractDate {
+
+    public ContractDate() {
+    }
     private String condateid;
     private String status;
     private String datefrom;
     private String dateto;
     private String createdby;
     private String datecreated;
-    
+    private String accountunder;
+
 }

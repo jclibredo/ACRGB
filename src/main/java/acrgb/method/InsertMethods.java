@@ -295,7 +295,7 @@ public class InsertMethods {
                 result.setMessage("SOME REQUIRED FIELD IS EMPTY");
             }
         } catch (SQLException | ParseException ex) {
-            result.setMessage(ex.toString() + "YOUR ARE HERE");
+            result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -709,11 +709,11 @@ public class InsertMethods {
                 if (restA.isSuccess()) {
                     ACRGBWSResult getProCode = methods.GetProWithPROID(datasource, restA.getResult());
                     if (!getProCode.isSuccess()) {
-                        result.setMessage(getProCode.getMessage() + " here");
+                        result.setMessage(getProCode.getMessage());
                     } else {
                         Pro pro = utility.ObjectMapper().readValue(getProCode.getResult(), Pro.class);
                         UserRoleIndex indexrole = new UserRoleIndex();
-                        indexrole.setUserid(pro.getProcode());
+                        indexrole.setUserid("2024" + pro.getProcode());
                         indexrole.setAccessid(mb.getControlnumber());
                         indexrole.setCreatedby(mb.getCreatedby());
                         indexrole.setDatecreated(mb.getDatecreated());
@@ -973,7 +973,8 @@ public class InsertMethods {
     }
 
     //INSERT BOOK DATA
-    public ACRGBWSResult ACRBOOKINGDATA(final DataSource datasource, final NclaimsData nclaims) throws ParseException {
+    public ACRGBWSResult ACRBOOKINGDATA(final DataSource datasource,
+            final NclaimsData nclaims, final String booknum, final String datecreated, final String createdby) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -981,39 +982,58 @@ public class InsertMethods {
         Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             //------------------------------------------------------------------------------------------------
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACRBOOKING(:Message,:Code,"
-                    + ":useries,:uaccreno,:udateadmission,:udatefiled,:uclaimamount,:ubooknum,:utags,"
-                    + ":ucaserate1,:ucaserate2,:utrn)");
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACRBOOKINGDATA(:Message,:Code,"
+                    + ":useries,:uaccreno,:upmccno,:udateadmission,:udatesubmitted,:uclaimamount,:ubooknum,"
+                    + ":utags,:urvscode,:uicdcode,:utrn,:ubentype,:uclaimid,:uhcfname)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("useries", nclaims.getSeries());
             getinsertresult.setString("uaccreno", nclaims.getAccreno());
-            getinsertresult.setString("udateadmission", nclaims.getDateadmission());
-            getinsertresult.setString("udatefiled", nclaims.getDatesubmitted());
+            if (nclaims.getPmccno().equals("N/A")) {
+                getinsertresult.setString("upmccno", nclaims.getPmccno());
+            } else {
+                HealthCareFacility hci = utility.ObjectMapper().readValue(nclaims.getPmccno(), HealthCareFacility.class);
+                getinsertresult.setString("upmccno", hci.getHcfcode());
+            }
+            if (nclaims.getDateadmission() == null) {
+                getinsertresult.setString("udateadmission", nclaims.getDateadmission());
+            } else {
+                getinsertresult.setDate("udateadmission", (Date) new Date(utility.StringToDate(nclaims.getDateadmission()).getTime()));
+            }
+            if (nclaims.getDatesubmitted() == null) {
+                getinsertresult.setString("udatesubmitted", nclaims.getDatesubmitted());
+            } else {
+                getinsertresult.setDate("udatesubmitted", (Date) new Date(utility.StringToDate(nclaims.getDatesubmitted()).getTime()));
+            }
             getinsertresult.setString("uclaimamount", nclaims.getClaimamount());
-            getinsertresult.setString("ubooknum", nclaims.getBooknum());
+            getinsertresult.setString("ubooknum", booknum);
             getinsertresult.setString("utags", nclaims.getTags());
-            getinsertresult.setString("ucaserate", nclaims.getCaserate1());
-            getinsertresult.setString("ucaserate", nclaims.getCaserate2());
+            getinsertresult.setString("urvscode", nclaims.getRvscode());
+            getinsertresult.setString("uicdcode", nclaims.getIcdcode());
             getinsertresult.setString("utrn", nclaims.getTrn());
+            getinsertresult.setString("ubentype", nclaims.getBentype());
+            getinsertresult.setString("uclaimid", nclaims.getClaimid());
+            getinsertresult.setString("uhcfname", nclaims.getHcfname());
             getinsertresult.execute();
             //------------------------------------------------------------------------------------------------
             if (getinsertresult.getString("Message").equals("SUCC")) {
+                //FOR REVIEW THIS LINE   
                 UserActivity userlogs = utility.UserActivity();
                 String actdetails = "ADD BOOK CLAIMS DATA: Series["
-                        + nclaims.getSeries() + "] ,BookNum[" + nclaims.getBooknum() + "]";
-                userlogs.setActby(nclaims.getCreatedby());
-                userlogs.setActdate(nclaims.getDatecreated());
+                        + nclaims.getSeries() + "] ,BookNum[" + booknum + "]";
+                userlogs.setActby(createdby);
+                userlogs.setActdate(datecreated);
                 userlogs.setActdetails(actdetails);
                 ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                 result.setSuccess(true);
                 result.setMessage(getinsertresult.getString("Message") + " LOGS STATUS: " + insertActivitylogs.getMessage());
-
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

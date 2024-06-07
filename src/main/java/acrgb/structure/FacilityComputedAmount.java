@@ -21,5 +21,6 @@ public class FacilityComputedAmount {
     private String yearto;
     private String totalamount;
     private String totalclaims;
+    private String datefiled;
 
 }

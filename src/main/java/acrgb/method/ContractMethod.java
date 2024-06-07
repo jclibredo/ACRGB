@@ -9,6 +9,8 @@ import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.ConBalance;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
+import acrgb.structure.HealthCareFacility;
+import acrgb.structure.ManagingBoard;
 import acrgb.utility.Utility;
 import java.io.IOException;
 import java.sql.CallableStatement;
@@ -17,6 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.context.RequestScoped;
@@ -29,21 +33,20 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class ContractMethod {
-
+    
     public ContractMethod() {
     }
-
+    
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
-
+    
     public ACRGBWSResult GetAllContract(final DataSource dataSource, final String phcfcode, final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setSuccess(false);
         result.setResult("");
         try (Connection connection = dataSource.getConnection()) {
-
             switch (tags.toUpperCase()) {
                 case "HCPNPRO":
                     ArrayList<Contract> contractList = new ArrayList<>();
@@ -71,7 +74,7 @@ public class ContractMethod {
                         contract.setHcfid(resultset.getString("HCFID"));
                         contractList.add(contract);
                     }
-
+                    
                     if (contractList.isEmpty()) {
                         result.setSuccess(true);
                         result.setMessage("OK");
@@ -106,7 +109,7 @@ public class ContractMethod {
                         contracts.setHcfid(resultsets.getString("HCFID"));
                         contractLists.add(contracts);
                     }
-
+                    
                     if (contractLists.isEmpty()) {
                         result.setSuccess(true);
                         result.setMessage("OK");
@@ -116,13 +119,13 @@ public class ContractMethod {
                     }
                     break;
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
-
+        
     }
 
     //GET APPELLATE CONTROL
@@ -200,6 +203,16 @@ public class ContractMethod {
                     contractdate.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
                     contractdate.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
                     contractdate.setStatus(resultset.getString("STATUS"));
+                    //GET CONTRACT USING CONID
+
+                    ACRGBWSResult getAccountbyConid = this.GETCONTRACTBYCONDATEID(dataSource, resultset.getString("CONDATEID"));
+                    if (getAccountbyConid.isSuccess()) {
+                        // contractdate.setAccountunder(utility.ObjectMapper().writeValueAsString(getAccountbyConid.getMessage()));
+                        List<Contract> contratList = Arrays.asList(utility.ObjectMapper().readValue(getAccountbyConid.getMessage(), Contract[].class));
+                       // contractdate.setAccountunder(utility.ObjectMapper().writeValueAsString(contratList.get(0)));
+                    } else {
+                       //contractdate.setAccountunder(getAccountbyConid.getMessage());
+                    }
                     contractdatelist.add(contractdate);
                 }
                 if (!contractdatelist.isEmpty()) {
@@ -233,9 +246,9 @@ public class ContractMethod {
                 } else {
                     result.setMessage("N/A");
                 }
-
+                
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
@@ -269,7 +282,7 @@ public class ContractMethod {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
@@ -283,6 +296,7 @@ public class ContractMethod {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONTRACTBYCONDATEID(:ucondateid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
@@ -290,19 +304,48 @@ public class ContractMethod {
             statement.execute();
             // ArrayList<Contract> contractList = new ArrayList<>();
             ArrayList<String> conidlist = new ArrayList<>();
+            ArrayList<Contract> contractlist = new ArrayList<>();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             while (resultset.next()) {
                 conidlist.add(resultset.getString("CONID"));
+                Contract contract = new Contract();
+                contract.setAmount(resultset.getString("AMOUNT"));
+                contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                contract.setConid(resultset.getString("CONID"));
+                contract.setCreatedby(resultset.getString("CREATEDBY"));
+                contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                if (resultset.getString("ENDDATE") == null) {
+                    contract.setEnddate(resultset.getString("ENDDATE"));
+                } else {
+                    contract.setEnddate(dateformat.format(resultset.getDate("ENDDATE")));
+                }
+                //GET MANAGINGBOARD NAME
+                ACRGBWSResult GetMB = methods.GETMBWITHID(dataSource, resultset.getString("HCFID"));
+                if (GetMB.isSuccess()) {
+                    ManagingBoard mb = utility.ObjectMapper().readValue(GetMB.getResult(), ManagingBoard.class);
+                    contract.setHcfid(mb.getMbname());
+                } else {
+                    ACRGBWSResult GetHCI = fm.GETFACILITYID(dataSource, resultset.getString("HCFID"));
+                    if (GetHCI.isSuccess()) {
+                        HealthCareFacility hciname = utility.ObjectMapper().readValue(GetHCI.getResult(), HealthCareFacility.class);
+                        contract.setHcfid(hciname.getHcfname());
+                    } else {
+                        contract.setHcfid(resultset.getString("HCFID"));
+                    }
+                }
+                contract.setStats(resultset.getString("STATS"));
+                contract.setTranscode(resultset.getString("TRANSCODE"));
+                contractlist.add(contract);
             }
             if (!conidlist.isEmpty()) {
-                result.setMessage("OK");
+                result.setMessage(utility.ObjectMapper().writeValueAsString(contractlist));
                 result.setSuccess(true);
                 result.setResult(String.join(",", conidlist));
             } else {
                 result.setMessage("N/A");
             }
-
-        } catch (SQLException ex) {
+            
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -346,12 +389,12 @@ public class ContractMethod {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-
+    
 }

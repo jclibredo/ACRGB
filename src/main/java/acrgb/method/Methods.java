@@ -735,7 +735,7 @@ public class Methods {
                 ResultSet resultset = (ResultSet) statement.getObject("v_result");
                 if (resultset.next()) {
                     FacilityComputedAmount fca = new FacilityComputedAmount();
-                    fca.setHospital(resultset.getString("ACCRENO"));
+                    fca.setHospital(resultset.getString("PMCC_NO"));
                     fca.setTotalamount(resultset.getString("CTOTAL"));
                     fca.setYearfrom(ds.getDatefrom());
                     fca.setYearto(ds.getDateto());
@@ -776,7 +776,7 @@ public class Methods {
                 ResultSet resultset = (ResultSet) statement.getObject("v_result");
                 if (resultset.next()) {
                     FacilityComputedAmount fca = new FacilityComputedAmount();
-                    fca.setHospital(resultset.getString("ACCRENO"));
+                    fca.setHospital(resultset.getString("PMCC_NO"));
                     fca.setTotalamount(resultset.getString("CTOTAL"));
                     fca.setYearfrom(ds.getDatefrom());
                     fca.setYearto(ds.getDateto());
@@ -1362,6 +1362,9 @@ public class Methods {
                             }
                             mb.setStatus(resultset.getString("STATUS"));
                             mb.setControlnumber(resultset.getString("CONNUMBER"));
+                            mb.setBankaccount(resultset.getString("BANKACCOUNT"));
+                            mb.setBankname(resultset.getString("BANKNAME"));
+                            mb.setAddress(resultset.getString("ADDRESS"));
                             //-----------------------------------------------------
                             ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("CONNUMBER"));
                             List<String> hcfcodeList = Arrays.asList(reastC.getResult().split(","));
@@ -1460,6 +1463,9 @@ public class Methods {
                         }
                         mb.setStatus(resultset.getString("STATUS"));
                         mb.setControlnumber(resultset.getString("CONNUMBER"));
+                        mb.setBankaccount(resultset.getString("BANKACCOUNT"));
+                        mb.setBankname(resultset.getString("BANKNAME"));
+                        mb.setAddress(resultset.getString("ADDRESS"));
                         //-----------------------------------------------------
                         ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("CONNUMBER"));
                         List<String> hcfcodeList = Arrays.asList(reastC.getResult().split(","));
@@ -1588,28 +1594,15 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
+            String procode = pproid.substring(pproid.length() - 2);
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETPROWITHID(:pproid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("pproid", pproid);
+            statement.setString("pproid", procode);
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             if (resultset.next()) {
                 Pro pro = new Pro();
-                pro.setProid(resultset.getString("PROID"));
                 pro.setProname(resultset.getString("PRONAME"));
-                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                if (creator.isSuccess()) {
-                    if (!creator.getResult().isEmpty()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
-                        pro.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                    } else {
-                        pro.setCreatedby(creator.getMessage());
-                    }
-                } else {
-                    pro.setCreatedby("N/A");
-                }
-
-                pro.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
                 pro.setProcode(resultset.getString("PROCODE"));
                 result.setResult(utility.ObjectMapper().writeValueAsString(pro));
                 result.setMessage("OK");
@@ -1893,7 +1886,6 @@ public class Methods {
                         }
                         rmblist.add(rmb);
                     }
-//
                 } else {
                     result.setMessage("N/A");
                 }
@@ -2122,7 +2114,7 @@ public class Methods {
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             if (resultset.next()) {
                 FacilityComputedAmount fca = new FacilityComputedAmount();
-                fca.setHospital(resultset.getString("ACCRENO"));
+                fca.setHospital(resultset.getString("PMCC_NO"));
                 fca.setTotalamount(resultset.getString("CTOTAL"));
                 fca.setYearfrom(datestart);
                 fca.setYearto(dateend);

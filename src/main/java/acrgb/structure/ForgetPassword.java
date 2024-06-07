@@ -13,5 +13,10 @@ import lombok.Data;
  */
 @Data
 public class ForgetPassword {
+
     private String emailto;
+    private String appuser;
+    private String apppass;
+    private String createdby;
+    private String datecreated;
 }

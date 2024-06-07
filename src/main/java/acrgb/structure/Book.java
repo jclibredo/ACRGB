@@ -20,5 +20,7 @@ public class Book {
     private String conid;
     private String datecreated;
     private String createdby;
+    private String hcpncode;
+    private String tags;
 
 }
