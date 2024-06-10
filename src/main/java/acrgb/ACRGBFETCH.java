@@ -772,7 +772,7 @@ public class ACRGBFETCH {
                 result.setResult(getResultHCPN.getResult());
                 result.setSuccess(getResultHCPN.isSuccess());
                 break;
-            case "HCPNALL"://GET LEDGER PER FACILITY
+            case "FACILITY"://GET LEDGER PER FACILITY
                 //hcpncode  MUST BE THE USERID OF PRO ACCOUNT
                 //CONTRACT DECLARE 0 VALUE
                 //TAGS MUST BE HCPNALL
@@ -780,6 +780,9 @@ public class ACRGBFETCH {
                 result.setMessage(getResultAllHCPN.getMessage());
                 result.setResult(getResultAllHCPN.getResult());
                 result.setSuccess(getResultAllHCPN.isSuccess());
+                break;
+            default:
+                result.setMessage("TAGS NOT FOUND " + tags);
                 break;
         }
         return result;

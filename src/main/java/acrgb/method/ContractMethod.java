@@ -33,14 +33,14 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class ContractMethod {
-    
+
     public ContractMethod() {
     }
-    
+
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
-    
+
     public ACRGBWSResult GetAllContract(final DataSource dataSource, final String phcfcode, final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -74,7 +74,7 @@ public class ContractMethod {
                         contract.setHcfid(resultset.getString("HCFID"));
                         contractList.add(contract);
                     }
-                    
+
                     if (contractList.isEmpty()) {
                         result.setSuccess(true);
                         result.setMessage("OK");
@@ -109,7 +109,7 @@ public class ContractMethod {
                         contracts.setHcfid(resultsets.getString("HCFID"));
                         contractLists.add(contracts);
                     }
-                    
+
                     if (contractLists.isEmpty()) {
                         result.setSuccess(true);
                         result.setMessage("OK");
@@ -119,13 +119,13 @@ public class ContractMethod {
                     }
                     break;
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
-        
+
     }
 
     //GET APPELLATE CONTROL
@@ -207,11 +207,10 @@ public class ContractMethod {
 
                     ACRGBWSResult getAccountbyConid = this.GETCONTRACTBYCONDATEID(dataSource, resultset.getString("CONDATEID"));
                     if (getAccountbyConid.isSuccess()) {
-                        // contractdate.setAccountunder(utility.ObjectMapper().writeValueAsString(getAccountbyConid.getMessage()));
                         List<Contract> contratList = Arrays.asList(utility.ObjectMapper().readValue(getAccountbyConid.getMessage(), Contract[].class));
-                       // contractdate.setAccountunder(utility.ObjectMapper().writeValueAsString(contratList.get(0)));
+                        contractdate.setAccountunder(utility.ObjectMapper().writeValueAsString(contratList));
                     } else {
-                       //contractdate.setAccountunder(getAccountbyConid.getMessage());
+                        contractdate.setAccountunder(getAccountbyConid.getMessage());
                     }
                     contractdatelist.add(contractdate);
                 }
@@ -246,9 +245,9 @@ public class ContractMethod {
                 } else {
                     result.setMessage("N/A");
                 }
-                
+
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
@@ -282,7 +281,7 @@ public class ContractMethod {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
@@ -344,7 +343,7 @@ public class ContractMethod {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
@@ -389,12 +388,12 @@ public class ContractMethod {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
+
 }
