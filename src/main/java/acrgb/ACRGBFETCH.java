@@ -99,50 +99,54 @@ public class ACRGBFETCH {
             result.setSuccess(false);
         } else {
             switch (level.toUpperCase()) {
-                case "PRO": //puserid = prouseraccount ID
-                    ACRGBWSResult getResultA = fetchmethods.ACR_CONTRACTPROID(dataSource, tags, puserid);//GET CONTRACT USING USERID OF PRO USER ACCOUNT
+                case "PRO": {//puserid = prouseraccount ID
+                    ACRGBWSResult getResultA = fetchmethods.ACR_CONTRACTPROID(dataSource, tags.trim().toUpperCase(), puserid);//GET CONTRACT USING USERID OF PRO USER ACCOUNT
                     result.setMessage(getResultA.getMessage());
                     result.setResult(getResultA.getResult());
                     result.setSuccess(getResultA.isSuccess());
                     break;
-
-                case "MB": //puserid = hcpnuseraccount ID
-                    ACRGBWSResult getResultB = fetchmethods.GETCONTRACTUNDERMB(dataSource, tags, puserid);//GET CONTRACT USING USERID OF HCPN USER ACCOUNT
+                }
+                case "MB": { //puserid = hcpnuseraccount ID
+                    ACRGBWSResult getResultB = fetchmethods.GETCONTRACTUNDERMB(dataSource, tags.trim().toUpperCase(), puserid);//GET CONTRACT USING USERID OF HCPN USER ACCOUNT
                     result.setMessage(getResultB.getMessage());
                     result.setResult(getResultB.getResult());
                     result.setSuccess(getResultB.isSuccess());
                     break;
-
-                case "PHICAPEX": //puserid = 0
-                    ACRGBWSResult getResultC = fetchmethods.ACR_CONTRACT(dataSource, tags, puserid);//GET CONTRACT OF ALL APEX FACILITY
+                }
+                case "PHICAPEX": {//puserid = 0
+                    ACRGBWSResult getResultC = fetchmethods.ACR_CONTRACT(dataSource, tags.trim().toUpperCase(), puserid);//GET CONTRACT OF ALL APEX FACILITY
                     result.setMessage(getResultC.getMessage());
                     result.setResult(getResultC.getResult());
                     result.setSuccess(getResultC.isSuccess());
                     break;
-
-                case "PHICHCPN":  //puserid = 0
-                    ACRGBWSResult getResultD = fetchmethods.GETALLHCPNCONTRACT(dataSource, tags, puserid);//GET CONTRACT OF ALL APEX FACILITY
+                }
+                case "PHICHCPN": {//puserid = 0 
+                    ACRGBWSResult getResultD = fetchmethods.GETALLHCPNCONTRACT(dataSource, tags.trim().toUpperCase(), puserid);//GET CONTRACT OF ALL APEX FACILITY
                     result.setMessage(getResultD.getMessage());
                     result.setResult(getResultD.getResult());
                     result.setSuccess(getResultD.isSuccess());
                     break;
+                }
                 //GetFacilityContractUsingHCPNCode  GET FACILITY CONTRACT USING MB ACCOUNT USERID
-                case "HCPN":
-                    ACRGBWSResult getResultE = fetchmethods.GetFacilityContractUsingHCPNAccountUserID(dataSource, tags, puserid);//GET CONTRACT OF ALL APEX FACILITY
+                case "HCPN": {
+                    ACRGBWSResult getResultE = fetchmethods.GetFacilityContractUsingHCPNAccountUserID(dataSource, tags.trim().toUpperCase(), puserid);//GET CONTRACT OF ALL APEX FACILITY
                     result.setMessage(getResultE.getMessage());
                     result.setResult(getResultE.getResult());
                     result.setSuccess(getResultE.isSuccess());
                     break;
+                }
                 // GET ALL FACILITY CONTRACT USING HCPN CONTROL CODE   IN PRO LEVEL  
-                case "HCIHCPNCON":
-                    ACRGBWSResult getResultF = fetchmethods.GetFacilityContractUsingHCPNCodeS(dataSource, tags, puserid.toUpperCase());//GET CONTRACT OF ALL APEX FACILITY
+                case "HCIHCPNCON": {
+                    ACRGBWSResult getResultF = fetchmethods.GetFacilityContractUsingHCPNCodeS(dataSource, tags.trim().toUpperCase(), puserid.toUpperCase());//GET CONTRACT OF ALL APEX FACILITY
                     result.setMessage(getResultF.getMessage());
                     result.setResult(getResultF.getResult());
                     result.setSuccess(getResultF.isSuccess());
                     break;
-                default:
+                }
+                default: {
                     result.setMessage(level + " IS NOT VALID");
                     break;
+                }
             }
         }
         return result;
@@ -259,7 +263,8 @@ public class ACRGBFETCH {
     @GET
     @Path("GetSummary/{tags}/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetSummary(@PathParam("tags") String tags, @PathParam("userid") String userid) {
+    public ACRGBWSResult GetSummary(@PathParam("tags") String tags,
+            @PathParam("userid") String userid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -584,6 +589,12 @@ public class ACRGBFETCH {
                     result.setResult(getResult.getResult());
                     result.setSuccess(getResult.isSuccess());
                     break;
+                case "PROLEDGER":
+                    ACRGBWSResult getResultLedger = methods.GETALLMBWITHPROIDFORLEDGER(dataSource, proid);
+                    result.setMessage(getResultLedger.getMessage());
+                    result.setResult(getResultLedger.getResult());
+                    result.setSuccess(getResultLedger.isSuccess());
+                    break;
                 case "PHIC":
                     ACRGBWSResult getphicResult = methods.GETALLMBWITHPROCODE(dataSource, proid);
                     result.setMessage(getphicResult.getMessage());
@@ -721,40 +732,40 @@ public class ACRGBFETCH {
     }
 
     //LEDGER 
-    @GET
-    @Path("ProcessLedger/{datefrom}/{dateto}/{accessid}/{accesslevel}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult ProcessLedger(
-            @PathParam("datefrom") String datefrom,
-            @PathParam("dateto") String dateto,
-            @PathParam("accessid") String accessid,
-            @PathParam("accesslevel") String accesslevel) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        switch (accesslevel.toUpperCase().trim()) {
-            case "HCPN"://GET LEDGER PER HCPN
-                ACRGBWSResult hcpnledger = lm.HCPNLedger(dataSource, datefrom, dateto, accessid);
-                result.setMessage(hcpnledger.getMessage());
-                result.setResult(hcpnledger.getResult());
-                result.setSuccess(hcpnledger.isSuccess());
-                break;
-//            case "HCF"://GET LEDGER PER FACILITY
-//                ACRGBWSResult hcfledger = lm.HCFLedger(dataSource, datefrom, dateto, accessid);
-//                result.setMessage(hcfledger.getMessage());
-//                result.setResult(hcfledger.getResult());
-//                result.setSuccess(hcfledger.isSuccess());
+//    @GET
+//    @Path("ProcessLedger/{datefrom}/{dateto}/{accessid}/{accesslevel}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult ProcessLedger(
+//            @PathParam("datefrom") String datefrom,
+//            @PathParam("dateto") String dateto,
+//            @PathParam("accessid") String accessid,
+//            @PathParam("accesslevel") String accesslevel) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        switch (accesslevel.toUpperCase().trim()) {
+//            case "HCPN"://GET LEDGER PER HCPN
+//                ACRGBWSResult hcpnledger = lm.HCPNLedger(dataSource, datefrom, dateto, accessid);
+//                result.setMessage(hcpnledger.getMessage());
+//                result.setResult(hcpnledger.getResult());
+//                result.setSuccess(hcpnledger.isSuccess());
 //                break;
-        }
-        return result;
-    }
-
+////            case "HCF"://GET LEDGER PER FACILITY
+////                ACRGBWSResult hcfledger = lm.HCFLedger(dataSource, datefrom, dateto, accessid);
+////                result.setMessage(hcfledger.getMessage());
+////                result.setResult(hcfledger.getResult());
+////                result.setSuccess(hcfledger.isSuccess());
+////                break;
+//        }
+//        return result;
+//    }
     //LEDGER 
     @GET
-    @Path("PerContractLedger/{hcpncode}/{contract}/{tags}")
+    @Path("PerContractLedger/{hcpncode}/{contract}/{tags}/{type}")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult PerContractLedger(
+            @PathParam("type") String type,
             @PathParam("hcpncode") String hcpncode, //hcpncode  MUST BE HCPNCONTROLCODE
             @PathParam("contract") String contract, //CONTRACT MUST BE CONID
             @PathParam("tags") String tags) {   //TAGS MUST BE LEVELACCESS
@@ -763,23 +774,57 @@ public class ACRGBFETCH {
         result.setResult("");
         result.setSuccess(false);
         switch (tags.toUpperCase().trim()) {
-            case "HCPN"://GET LEDGER PER HCPN
+            case "HCPN": //GET LEDGER PER HCPN
                 //hcpncode  MUST BE HCPNCONTROLCODE
                 //CONTRACT MUST BE CONID
                 //TAGS MUST BE HCPN
-                ACRGBWSResult getResultHCPN = lm.GETLedgerPerContractHCPN(dataSource, hcpncode, contract);
-                result.setMessage(getResultHCPN.getMessage());
-                result.setResult(getResultHCPN.getResult());
-                result.setSuccess(getResultHCPN.isSuccess());
+                switch (type.toUpperCase()) {
+                    case "ACTIVE": {
+                        ACRGBWSResult getResultHCPN = lm.GETLedgerPerContractHCPN(dataSource, hcpncode, contract);
+                        result.setMessage(getResultHCPN.getMessage());
+                        result.setResult(getResultHCPN.getResult());
+                        result.setSuccess(getResultHCPN.isSuccess());
+                        break;
+                    }
+                    case "INACTIVE": {
+                        ACRGBWSResult getResultHCPN = lm.GETLedgerPerContractHCPNLedger(dataSource, hcpncode, contract);
+                        result.setMessage(getResultHCPN.getMessage());
+                        result.setResult(getResultHCPN.getResult());
+                        result.setSuccess(getResultHCPN.isSuccess());
+                        break;
+                    }
+                    default: {
+                        result.setMessage("Contract type not found");
+                        break;
+                    }
+                }
                 break;
             case "FACILITY"://GET LEDGER PER FACILITY
                 //hcpncode  MUST BE THE USERID OF PRO ACCOUNT
                 //CONTRACT DECLARE 0 VALUE
                 //TAGS MUST BE HCPNALL
-                ACRGBWSResult getResultAllHCPN = lm.GETLedgerAllContractHCPN(dataSource, hcpncode);//hcpncode  user ID of account of PROUSER
-                result.setMessage(getResultAllHCPN.getMessage());
-                result.setResult(getResultAllHCPN.getResult());
-                result.setSuccess(getResultAllHCPN.isSuccess());
+                switch (type.toUpperCase()) {
+                    case "ACTIVE": {
+                        ACRGBWSResult getResultAllHCPN = lm.GETLedgerAllContractAPEXActive(dataSource, hcpncode, contract);//hcpncode  user ID of account of PROUSER
+                        result.setMessage(getResultAllHCPN.getMessage());
+                        result.setResult(getResultAllHCPN.getResult());
+                        result.setSuccess(getResultAllHCPN.isSuccess());
+                        break;
+                    }
+                    case "INACTIVE": {
+                        ACRGBWSResult getResultAllHCPN = lm.GETLedgerAllContractAPEXInactive(dataSource, hcpncode, contract);//hcpncode  user ID of account of PROUSER
+                        result.setMessage(getResultAllHCPN.getMessage());
+                        result.setResult(getResultAllHCPN.getResult());
+                        result.setSuccess(getResultAllHCPN.isSuccess());
+                        break;
+                    }
+                    default: {
+                        result.setMessage("Contract type not found");
+                        break;
+                    }
+
+                }
+
                 break;
             default:
                 result.setMessage("TAGS NOT FOUND " + tags);
@@ -835,14 +880,15 @@ public class ACRGBFETCH {
 
     //GET TRIGGER AUTOEND CONTRACT DATE
     @GET
-    @Path("GetPreviousContract/{condid}")
+    @Path("GetPreviousContract/{paccount}/{contractid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetPreviousContract(@PathParam("condid") String condid) {   //TAGS MUST BE LEVELACCESS
+    public ACRGBWSResult GetPreviousContract(@PathParam("paccount") String paccount,
+            @PathParam("contractid") String contractid) {   //TAGS MUST BE LEVELACCESS
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult getResult = con.GETPREVIOUSBALANCE(dataSource, condid);
+        ACRGBWSResult getResult = con.GETPREVIOUSBALANCE(dataSource, paccount, contractid);
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());

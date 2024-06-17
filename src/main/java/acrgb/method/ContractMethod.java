@@ -352,14 +352,17 @@ public class ContractMethod {
     }
 
     //GET CONTRACT BY DATECOVERED
-    public ACRGBWSResult GETPREVIOUSBALANCE(final DataSource dataSource, final String pconid) {
+    public ACRGBWSResult GETPREVIOUSBALANCE(final DataSource dataSource, 
+            final String paccount,
+            final String pconid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETPREVIOUSBALANCE(:pconid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETPREVIOUSBALANCE(:paccount,:pconid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+              statement.setString("paccount", paccount);
             statement.setString("pconid", pconid);
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
@@ -379,7 +382,11 @@ public class ContractMethod {
                 }
                 conbal.setConid(resultset.getString("CONID"));
                 conbal.setConutilized(resultset.getString("CONUTILIZED"));
-                conbal.setDatecreated(resultset.getString("DATECREATED"));
+                if (resultset.getString("DATECREATED") == null) {
+                    conbal.setDatecreated(resultset.getString("DATECREATED"));
+                } else {
+                    conbal.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                }
                 conbal.setStatus(resultset.getString("STATUS"));
                 //------------------  END OF OBJECT MAPPING ----------------------
                 result.setMessage("OK");

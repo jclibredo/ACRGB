@@ -93,6 +93,11 @@ public class Utility {
         }
     }
 
+    public boolean isValidPhoneNumber(String phone_number) {
+        boolean isValid = phone_number.matches("\\d{11}");
+        return isValid;
+    }
+
     public boolean IsValidDate(String string) {
         SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
         sdf.setLenient(false);

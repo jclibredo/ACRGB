@@ -23,4 +23,7 @@ public class UserInfo {
     private String stats;
     private String email;
     private String contact;
+    private String designation;
+    private String role;
+    private String id;
 }

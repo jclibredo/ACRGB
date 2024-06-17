@@ -413,14 +413,14 @@ public class Methods {
         try {
             switch (tags.toUpperCase()) {
                 case "USERPRO"://USERID IS PRO ACCOUNT USERID
-                    ACRGBWSResult getPRO = this.GETROLE(dataSource, userid);
+                    ACRGBWSResult getPRO = this.GETROLE(dataSource, userid, "ACTIVE");
                     if (getPRO.isSuccess()) {
-                        ACRGBWSResult getHCPNUnderUsingProCode = this.GETROLEMULITPLE(dataSource, getPRO.getResult());
+                        ACRGBWSResult getHCPNUnderUsingProCode = this.GETROLEMULITPLE(dataSource, getPRO.getResult(), "ACTIVE");
                         if (getHCPNUnderUsingProCode.isSuccess()) {
                             ArrayList<String> HCIList = new ArrayList<>();
                             List<String> ListOFHCPN = Arrays.asList(getHCPNUnderUsingProCode.getResult().split(","));
                             for (int hcpn = 0; hcpn < ListOFHCPN.size(); hcpn++) {
-                                ACRGBWSResult getHCIUisngHCPNCode = this.GETROLEMULITPLE(dataSource, ListOFHCPN.get(hcpn));
+                                ACRGBWSResult getHCIUisngHCPNCode = this.GETROLEMULITPLE(dataSource, ListOFHCPN.get(hcpn), "ACTIVE");
                                 if (getHCIUisngHCPNCode.isSuccess()) {
                                     List<String> ListOHCI = Arrays.asList(getHCIUisngHCPNCode.getResult().split(","));
                                     for (int hci = 0; hci < ListOHCI.size(); hci++) {
@@ -432,30 +432,40 @@ public class Methods {
                             Double totalDateSettingYearClaimAmount = 0.00;
                             int totalclaimcountskipyear = 0;
                             int totalclaimcountdatesetting = 0;
-                            FacilityComputedAmount totalcompute = new FacilityComputedAmount();
+                            ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
                             for (int x = 0; x < HCIList.size(); x++) {
                                 ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, HCIList.get(x));
                                 if (restA.isSuccess()) {
-                                    FacilityComputedAmount fcaA = utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount.class);
-                                    totalcompute.setYearfrom(fcaA.getYearfrom());
-                                    totalcompute.setYearto(fcaA.getYearto());
+                                    List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
+
                                     //GET SKIP YEAR AMOUNT
                                     ACRGBWSResult restB = this.GetAmountPerFacilitySkipYear(dataSource, HCIList.get(x));
                                     if (restB.isSuccess()) {
-                                        FacilityComputedAmount fcaB = utility.ObjectMapper().readValue(restB.getResult(), FacilityComputedAmount.class);
+                                        FacilityComputedAmount fcabList = utility.ObjectMapper().readValue(restB.getResult(), FacilityComputedAmount.class);
                                         //SKIP YEAR VALUE
-                                        totalSkipYearClaimAmount += Double.parseDouble(fcaB.getTotalamount());
-                                        totalclaimcountskipyear += Integer.parseInt(fcaB.getTotalclaims());
-                                        //DATE SETTINGS
-                                        totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.getTotalamount());
-                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.getTotalclaims());
-                                        //===========================================================
-                                    } else {
-                                        totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.getTotalamount());
-                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.getTotalclaims());
+                                        totalSkipYearClaimAmount += Double.parseDouble(fcabList.getTotalamount());
+                                        totalclaimcountskipyear += Integer.parseInt(fcabList.getTotalclaims());
+                                    }
+                                    //DATE SETTINGS
+                                    for (int f = 0; f < fcaA.size(); f++) {
+                                        FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                        totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.get(f).getTotalamount());
+                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                        totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                        totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                        totalcomputeA.setTotalamount(fcaA.get(f).getTotalamount());
+                                        totalcomputeA.setTotalclaims(fcaA.get(f).getTotalclaims());
+                                        ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
+                                        if (getFacilityA.isSuccess()) {
+                                            totalcomputeA.setHospital(getFacilityA.getResult());
+                                        } else {
+                                            totalcomputeA.setHospital(getFacilityA.getMessage());
+                                        }
+                                        totalcomputeList.add(totalcomputeA);
                                     }
                                 }
                             }
+                            FacilityComputedAmount totalcompute = new FacilityComputedAmount();
                             totalcompute.setTotalamount(String.valueOf(totalDateSettingYearClaimAmount - totalSkipYearClaimAmount));
                             totalcompute.setTotalclaims(String.valueOf(totalclaimcountdatesetting - totalclaimcountskipyear));
                             ACRGBWSResult getPROCode = this.GetProWithPROID(dataSource, getPRO.getResult());
@@ -464,14 +474,15 @@ public class Methods {
                             } else {
                                 totalcompute.setHospital(getPROCode.getMessage());
                             }
-                            if (!HCIList.isEmpty()) {
+                            totalcomputeList.add(totalcompute);
+                            //-------------------------------------------------------------------
+                            if (totalcomputeList.size() > 0) {
                                 result.setMessage("OK");
-                                result.setResult(utility.ObjectMapper().writeValueAsString(totalcompute));
+                                result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeList));
                                 result.setSuccess(true);
                             } else {
                                 result.setMessage("N/A");
                             }
-
                         } else {
                             result.setMessage(getHCPNUnderUsingProCode.getMessage());
                         }
@@ -480,12 +491,12 @@ public class Methods {
                     }
                     break;
                 case "PRO"://USERID IS PROCODE
-                    ACRGBWSResult getHCPNUnder = this.GETROLEMULITPLE(dataSource, userid);
+                    ACRGBWSResult getHCPNUnder = this.GETROLEMULITPLE(dataSource, userid, "ACTIVE");
                     if (getHCPNUnder.isSuccess()) {
                         ArrayList<String> finalListofHCPN = new ArrayList<>();
                         List<String> HCPNList = Arrays.asList(getHCPNUnder.getResult().split(","));
                         for (int pro = 0; pro < HCPNList.size(); pro++) {
-                            ACRGBWSResult getHCFUnder = this.GETROLEMULITPLE(dataSource, HCPNList.get(pro));
+                            ACRGBWSResult getHCFUnder = this.GETROLEMULITPLE(dataSource, HCPNList.get(pro), "ACTIVE");
                             if (getHCFUnder.isSuccess()) {
                                 List<String> HCFList = Arrays.asList(getHCFUnder.getResult().split(","));
                                 for (int hcf = 0; hcf < HCFList.size(); hcf++) {
@@ -498,13 +509,12 @@ public class Methods {
                         Double totalDateSettingYearClaimAmount = 0.00;
                         int totalclaimcountskipyear = 0;
                         int totalclaimcountdatesetting = 0;
-                        FacilityComputedAmount totalcompute = new FacilityComputedAmount();
+                        ArrayList<FacilityComputedAmount> computationList = new ArrayList<>();
                         for (int listhci = 0; listhci < finalListofHCPN.size(); listhci++) {
                             ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, finalListofHCPN.get(listhci));
                             if (restA.isSuccess()) {
-                                FacilityComputedAmount fcaA = utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount.class);
-                                totalcompute.setYearfrom(fcaA.getYearfrom());
-                                totalcompute.setYearto(fcaA.getYearto());
+                                List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount.class));
+
                                 //GET SKIP YEAR AMOUNT
                                 ACRGBWSResult restB = this.GetAmountPerFacilitySkipYear(dataSource, finalListofHCPN.get(listhci));
                                 if (restB.isSuccess()) {
@@ -512,16 +522,28 @@ public class Methods {
                                     //SKIP YEAR VALUE
                                     totalSkipYearClaimAmount += Double.parseDouble(fcaB.getTotalamount());
                                     totalclaimcountskipyear += Integer.parseInt(fcaB.getTotalclaims());
-                                    //DATE SETTINGS
-                                    totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.getTotalamount());
-                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.getTotalclaims());
-                                    //===========================================================
-                                } else {
-                                    totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.getTotalamount());
-                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.getTotalclaims());
+                                }
+
+                                for (int f = 0; f < fcaA.size(); f++) {
+                                    FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                    totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.get(f).getTotalamount());
+                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                    totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                    totalcomputeA.setTotalamount(fcaA.get(f).getTotalamount());
+                                    totalcomputeA.setTotalclaims(fcaA.get(f).getTotalclaims());
+                                    totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                    totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                    ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
+                                    if (getFacilityA.isSuccess()) {
+                                        totalcomputeA.setHospital(getFacilityA.getResult());
+                                    } else {
+                                        totalcomputeA.setHospital(getFacilityA.getMessage());
+                                    }
+                                    computationList.add(totalcomputeA);
                                 }
                             }
                         }
+                        FacilityComputedAmount totalcompute = new FacilityComputedAmount();
                         totalcompute.setTotalamount(String.valueOf(totalDateSettingYearClaimAmount - totalSkipYearClaimAmount));
                         totalcompute.setTotalclaims(String.valueOf(totalclaimcountdatesetting - totalclaimcountskipyear));
                         //----------------------------------------------------------
@@ -531,10 +553,11 @@ public class Methods {
                         } else {
                             totalcompute.setHospital(getPROCode.getMessage());
                         }
+                        computationList.add(totalcompute);
                         //----------------------------------------------------------
-                        if (!finalListofHCPN.isEmpty()) {
+                        if (computationList.size() > 0) {
                             result.setMessage("OK");
-                            result.setResult(utility.ObjectMapper().writeValueAsString(totalcompute));
+                            result.setResult(utility.ObjectMapper().writeValueAsString(computationList));
                             result.setSuccess(true);
                         } else {
                             result.setMessage("N/A");
@@ -544,10 +567,43 @@ public class Methods {
                     }
                     break;
                 case "FACILITY"://USERID IS HCFCODE/ACCRENO
-                    FacilityComputedAmount totalcompute = new FacilityComputedAmount();
+
                     ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, userid);
                     if (restA.isSuccess()) {
-                        FacilityComputedAmount fcaA = utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount.class);
+
+                        ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
+                        int skipclaimcount = 0;
+                        double skipclaimsValue = 0.00;
+                        int dateclaimcount = 0;
+                        double datesettingsclaimsValue = 0.00;
+                        List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
+
+                        //GET SKIP YEAR AMOUNT
+                        ACRGBWSResult restB = this.GetAmountPerFacilitySkipYear(dataSource, userid);
+                        if (restB.isSuccess()) {
+                            FacilityComputedAmount fcaB = utility.ObjectMapper().readValue(restB.getResult(), FacilityComputedAmount.class);
+                            //SKIP YEAR VALUE
+                            skipclaimsValue += Double.parseDouble(fcaB.getTotalamount());
+                            skipclaimcount += Integer.parseInt(fcaB.getTotalclaims());
+                        }
+                        //DATE SETTINGS AREA
+                        for (int datese = 0; datese < fcaA.size(); datese++) {
+                            FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                            ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(datese).getHospital());
+                            if (getFacilityA.isSuccess()) {
+                                totalcomputeA.setHospital(getFacilityA.getResult());
+                            } else {
+                                totalcomputeA.setHospital(getFacilityA.getMessage());
+                            }
+                            datesettingsclaimsValue += Double.parseDouble(fcaA.get(datese).getTotalamount());
+                            dateclaimcount += Integer.parseInt(fcaA.get(datese).getTotalclaims());
+                            totalcomputeA.setDatefiled(fcaA.get(datese).getDatefiled());
+                            totalcomputeA.setTotalamount(fcaA.get(datese).getTotalamount());
+                            totalcomputeA.setTotalclaims(fcaA.get(datese).getTotalclaims());
+                            totalcomputeList.add(totalcomputeA);
+
+                        }
+                        FacilityComputedAmount totalcompute = new FacilityComputedAmount();
                         //GET FACILITY
                         ACRGBWSResult getFacility = fm.GETFACILITYID(dataSource, userid);
                         if (getFacility.isSuccess()) {
@@ -555,41 +611,30 @@ public class Methods {
                         } else {
                             totalcompute.setHospital(getFacility.getMessage());
                         }
-                        //GET SKIP YEAR AMOUNT
-                        ACRGBWSResult restB = this.GetAmountPerFacilitySkipYear(dataSource, userid);
-                        if (restB.isSuccess()) {
-                            FacilityComputedAmount fcaB = utility.ObjectMapper().readValue(restB.getResult(), FacilityComputedAmount.class);
-                            //SKIP YEAR VALUE
-                            Double skipclaimsValue = Double.parseDouble(fcaB.getTotalamount());
-                            int skipclaimcount = Integer.parseInt(fcaB.getTotalclaims());
-                            //DATE SETTINGS
-                            Double datesettingsclaimsValue = Double.parseDouble(fcaA.getTotalamount());
-                            int dateclaimcount = Integer.parseInt(fcaA.getTotalclaims());
-                            //===========================================================
-                            totalcompute.setTotalamount(String.valueOf(datesettingsclaimsValue - skipclaimsValue));
-                            totalcompute.setTotalclaims(String.valueOf(dateclaimcount - skipclaimcount));
-                            totalcompute.setYearfrom(fcaA.getYearfrom());
-                            totalcompute.setYearto(fcaA.getYearto());
+
+                        totalcompute.setTotalamount(String.valueOf(datesettingsclaimsValue - skipclaimsValue));
+                        totalcompute.setTotalclaims(String.valueOf(dateclaimcount - skipclaimcount));
+                        totalcompute.setYearfrom(fcaA.get(0).getYearfrom());
+                        totalcompute.setYearto(fcaA.get(0).getYearto());
+                        totalcomputeList.add(totalcompute);
+
+                        if (totalcomputeList.size() > 0) {
+                            result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeList));
+                            result.setMessage("OK");
+                            result.setSuccess(true);
                         } else {
-                            Double datesettingsclaimsValue = Double.parseDouble(fcaA.getTotalamount());
-                            int dateclaimcount = Integer.parseInt(fcaA.getTotalclaims());
-                            totalcompute.setTotalamount(String.valueOf(datesettingsclaimsValue));
-                            totalcompute.setTotalclaims(String.valueOf(dateclaimcount));
-                            totalcompute.setYearfrom(fcaA.getYearfrom());
-                            totalcompute.setYearto(fcaA.getYearto());
+                            result.setMessage("N/A");
                         }
-                        result.setResult(utility.ObjectMapper().writeValueAsString(totalcompute));
-                        result.setMessage("OK");
-                        result.setSuccess(true);
+
                     } else {
                         result.setMessage(restA.getMessage());
                     }
                     break;
                 case "HCPN"://USERID IS HCPNCODE/ACCRENO
                     //GET ALL FACILITY UNDER OF HCPN
-                    ACRGBWSResult getFacilityUnder = this.GETROLEMULITPLE(dataSource, userid);
-                    FacilityComputedAmount totalcomputeHCPN = new FacilityComputedAmount();
+                    ACRGBWSResult getFacilityUnder = this.GETROLEMULITPLE(dataSource, userid, "ACTIVE");
                     if (getFacilityUnder.isSuccess()) {
+                        ArrayList<FacilityComputedAmount> totalcomputeHCPNList = new ArrayList<>();
                         List<String> hcflist = Arrays.asList(getFacilityUnder.getResult().split(","));
                         Double totalSkipYearClaimAmount = 0.00;
                         Double totalDateSettingYearClaimAmount = 0.00;
@@ -598,44 +643,60 @@ public class Methods {
                         for (int y = 0; y < hcflist.size(); y++) {
                             ACRGBWSResult restC = this.GetAmountPerFacility(dataSource, hcflist.get(y));
                             if (restC.isSuccess()) {
-                                FacilityComputedAmount fcaA = utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount.class);
-                                totalcomputeHCPN.setYearfrom(fcaA.getYearfrom());
-                                totalcomputeHCPN.setYearto(fcaA.getYearto());
-                                //GET SKIP YEAR AMOUNT
-                                ACRGBWSResult restB = this.GetAmountPerFacilitySkipYear(dataSource, hcflist.get(y));
-                                if (restB.isSuccess()) {
-                                    FacilityComputedAmount fcaB = utility.ObjectMapper().readValue(restB.getResult(), FacilityComputedAmount.class);
-                                    //SKIP YEAR VALUE
-                                    Double skipclaimsValue = Double.parseDouble(fcaB.getTotalamount());
-                                    totalSkipYearClaimAmount += skipclaimsValue;
-                                    int skipclaimcount = Integer.parseInt(fcaB.getTotalclaims());
-                                    totalclaimcountskipyear += skipclaimcount;
-                                    //DATE SETTINGS
-                                    Double datesettingsclaimsValue = Double.parseDouble(fcaA.getTotalamount());
-                                    totalDateSettingYearClaimAmount += datesettingsclaimsValue;
-                                    int dateclaimcount = Integer.parseInt(fcaA.getTotalclaims());
-                                    totalclaimcountdatesetting += dateclaimcount;
-                                } else {
-                                    Double datesettingsclaimsValue = Double.parseDouble(fcaA.getTotalamount());
-                                    totalDateSettingYearClaimAmount += datesettingsclaimsValue;
-                                    int dateclaimcount = Integer.parseInt(fcaA.getTotalclaims());
-                                    totalclaimcountdatesetting += dateclaimcount;
+                                //DATE SETTINGS
+
+                                List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
+
+                                for (int gets = 0; gets < fcaA.size(); gets++) {
+                                    FacilityComputedAmount totalcomputeHCPN = new FacilityComputedAmount();
+                                    totalcomputeHCPN.setYearfrom(fcaA.get(gets).getYearfrom());
+                                    totalcomputeHCPN.setYearto(fcaA.get(gets).getYearto());
+                                    totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                    totalcomputeHCPN.setTotalamount(String.valueOf(fcaA.get(gets).getTotalamount()));
+                                    totalcomputeHCPN.setTotalclaims(String.valueOf(fcaA.get(gets).getTotalclaims()));
+                                    //GET FACILITY
+                                    ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(gets).getHospital());
+                                    if (getHCI.isSuccess()) {
+                                        totalcomputeHCPN.setHospital(getHCI.getResult());
+                                    } else {
+                                        totalcomputeHCPN.setHospital(getHCI.getMessage());
+                                    }
+                                    totalcomputeHCPN.setDatefiled(fcaA.get(gets).getDatefiled());
+                                    //ADD TO LIST
+                                    totalcomputeHCPNList.add(totalcomputeHCPN);
+
                                 }
                             }
+                            //SKIP YEAR
+                            ACRGBWSResult restB = this.GetAmountPerFacilitySkipYear(dataSource, hcflist.get(y));
+                            if (restB.isSuccess()) {
+                                FacilityComputedAmount fcaB = utility.ObjectMapper().readValue(restB.getResult(), FacilityComputedAmount.class);
+                                totalSkipYearClaimAmount += Double.parseDouble(fcaB.getTotalamount());
+                                totalclaimcountskipyear += Integer.parseInt(fcaB.getTotalclaims());
+                            }
+
                         }
-                        totalcomputeHCPN.setTotalamount(String.valueOf(totalDateSettingYearClaimAmount - totalSkipYearClaimAmount));
-                        totalcomputeHCPN.setTotalclaims(String.valueOf(totalclaimcountdatesetting - totalclaimcountskipyear));
+
+                        FacilityComputedAmount totalcomputeHCPNA = new FacilityComputedAmount();
+                        totalcomputeHCPNA.setYearfrom("");
+                        totalcomputeHCPNA.setYearto("");
+                        totalcomputeHCPNA.setTotalamount(String.valueOf(totalDateSettingYearClaimAmount - totalSkipYearClaimAmount));
+                        totalcomputeHCPNA.setTotalclaims(String.valueOf(totalclaimcountdatesetting - totalclaimcountskipyear));
+
                         //GET HCPN
                         ACRGBWSResult getHCPN = this.GETMBWITHID(dataSource, userid);
                         if (getHCPN.isSuccess()) {
-                            totalcomputeHCPN.setHospital(getHCPN.getResult());
+                            totalcomputeHCPNA.setHospital(getHCPN.getResult());
                         } else {
-                            totalcomputeHCPN.setHospital(getHCPN.getMessage());
+                            totalcomputeHCPNA.setHospital(getHCPN.getMessage());
                         }
+                        totalcomputeHCPNList.add(totalcomputeHCPNA);
+
                         //END OF GETTING HCPN
-                        if (!hcflist.isEmpty()) {
+                        if (!totalcomputeHCPNList.isEmpty()) {
                             result.setMessage("OK");
-                            result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeHCPN));
+                            result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeHCPNList));
                             result.setSuccess(true);
                         } else {
                             result.setMessage("N/A");
@@ -722,26 +783,38 @@ public class Methods {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             ACRGBWSResult getdatesettings = fm.GETDATESETTINGS(dataSource);
+            ArrayList<FacilityComputedAmount> listOfcomputedamount = new ArrayList<>();
             if (getdatesettings.isSuccess()) {
                 DateSettings ds = utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings.class);
                 CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:ulevel,:uaccreno,:utags,:udatefrom,:udateto); end;");
                 statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                 statement.setString("ulevel", "TWO");
-                statement.setString("uaccreno", uaccreno);
+                statement.setString("uaccreno", uaccreno.trim());
                 statement.setString("utags", ds.getTags());
                 statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(ds.getDatefrom()).getTime()));
                 statement.setDate("udateto", (Date) new Date(utility.StringToDate(ds.getDateto()).getTime()));
                 statement.execute();
                 ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                if (resultset.next()) {
+                while (resultset.next()) {
                     FacilityComputedAmount fca = new FacilityComputedAmount();
                     fca.setHospital(resultset.getString("PMCC_NO"));
                     fca.setTotalamount(resultset.getString("CTOTAL"));
                     fca.setYearfrom(ds.getDatefrom());
                     fca.setYearto(ds.getDateto());
                     fca.setTotalclaims(resultset.getString("COUNTVAL"));
+                    if (resultset.getString("DATESUB") != null) {
+                        fca.setDatefiled(dateformat.format(resultset.getDate("DATESUB")));
+                    } else {
+                        fca.setDatefiled("");
+                    }
                     result.setResult(utility.ObjectMapper().writeValueAsString(fca));
                     result.setMessage("OK");
+                    result.setSuccess(true);
+                    listOfcomputedamount.add(fca);
+                }
+                if (listOfcomputedamount.size() > 0) {
+                    result.setMessage("OK");
+                    result.setResult(utility.ObjectMapper().writeValueAsString(listOfcomputedamount));
                     result.setSuccess(true);
                 } else {
                     result.setMessage("N/A");
@@ -813,7 +886,7 @@ public class Methods {
                 result.setMessage("AMOUNT FORMAT IS NOT VALID");
                 result.setSuccess(false);
             } else {
-                ACRGBWSResult restA = this.GETROLE(dataSource, mbrequestsummry.getRequestor());
+                ACRGBWSResult restA = this.GETROLE(dataSource, mbrequestsummry.getRequestor(), "ACTIVE");
                 if (restA.isSuccess()) {
                     CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUEST(:Message,:Code,:udaterequest,:udatefrom,"
                             + ":udateto,:urequestor,:utranscode,:uremarks,:uamount,:udatecreated)");
@@ -875,9 +948,9 @@ public class Methods {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             ArrayList<String> accessidlist = new ArrayList<>();
-            ACRGBWSResult restA = this.GETROLE(dataSource, puserid);
+            ACRGBWSResult restA = this.GETROLE(dataSource, puserid, "ACTIVE");
             if (restA.isSuccess()) {
-                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult());
+                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), "ACTIVE");
                 List<String> restist = Arrays.asList(restB.getResult().split(","));
                 for (int y = 0; y < restist.size(); y++) {
                     accessidlist.add(restist.get(y));
@@ -894,14 +967,14 @@ public class Methods {
                     HealthCareFacility hcf = new HealthCareFacility();
                     hcf.setHcfid(resultset.getString("HCFID"));
                     // GET MANAGING BOARD USING FACILITY ID
-                    ACRGBWSResult restB = this.GETROLEREVERESE(dataSource, resultset.getString("HCFCODE"));
+                    ACRGBWSResult restB = this.GETROLEREVERESE(dataSource, resultset.getString("HCFCODE"), "ACTIVE");
                     if (restB.isSuccess()) {
                         ACRGBWSResult mgresult = this.GETMBWITHID(dataSource, restB.getResult());
                         if (mgresult.isSuccess()) {
                             ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
                             hcf.setMb(mb.getMbname());
                             //GET PRO
-                            ACRGBWSResult restC = this.GETROLEREVERESE(dataSource, mb.getControlnumber());
+                            ACRGBWSResult restC = this.GETROLEREVERESE(dataSource, mb.getControlnumber(), "ACTIVE");
                             if (restC.isSuccess()) {
                                 //GET PRO USING PROID
                                 ACRGBWSResult getproid = this.GetProWithPROID(dataSource, restC.getResult());
@@ -980,7 +1053,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            ACRGBWSResult restA = this.GETROLEMULITPLE(dataSource, mbid);
+            ACRGBWSResult restA = this.GETROLEMULITPLE(dataSource, mbid, "ACTIVE");
             List<String> accessidlist = Arrays.asList(restA.getResult().split(","));
             ArrayList<HealthCareFacility> listHCF = new ArrayList<>();
             for (int t = 0; t < accessidlist.size(); t++) {
@@ -993,14 +1066,14 @@ public class Methods {
                     HealthCareFacility hcf = new HealthCareFacility();
                     hcf.setHcfid(resultset.getString("HCFID"));
                     //GET MANAGING BOARD USING FACILITY ID
-                    ACRGBWSResult restB = this.GETROLEREVERESE(dataSource, resultset.getString("HCFID"));
+                    ACRGBWSResult restB = this.GETROLEREVERESE(dataSource, resultset.getString("HCFID"), "ACTIVE");
                     if (restB.isSuccess()) {
                         ACRGBWSResult mgresult = this.GETMBWITHID(dataSource, restB.getResult());
                         if (mgresult.isSuccess()) {
                             ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
                             hcf.setMb(mb.getMbname());
                             //GET PRO
-                            ACRGBWSResult restC = this.GETROLEREVERESE(dataSource, mb.getMbid());
+                            ACRGBWSResult restC = this.GETROLEREVERESE(dataSource, mb.getMbid(), "ACTIVE");
                             if (restC.isSuccess()) {
                                 //GET PRO USING PROID
                                 ACRGBWSResult getproid = this.GetProWithPROID(dataSource, restC.getResult());
@@ -1128,9 +1201,9 @@ public class Methods {
             if (!utility.IsValidNumber(pid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
-                ACRGBWSResult restA = this.GETROLE(dataSource, pid);
+                ACRGBWSResult restA = this.GETROLE(dataSource, pid, "ACTIVE");
                 if (restA.isSuccess()) {
-                    ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult());
+                    ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), "ACTIVE");
                     List<String> accessidlist = Arrays.asList(restB.getResult().split(","));
                     ArrayList<ManagingBoard> mblist = new ArrayList<>();
                     ArrayList<HealthCareFacility> facilitylist = new ArrayList<>();
@@ -1140,7 +1213,7 @@ public class Methods {
                             if (getmbresult.isSuccess()) {
                                 ManagingBoard managingboard = utility.ObjectMapper().readValue(getmbresult.getResult(), ManagingBoard.class);
                                 //GET FALCITY UNDER EVERY MB
-                                ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, managingboard.getControlnumber());
+                                ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, managingboard.getControlnumber(), "ACTIVE");
                                 List<String> facilityidlist = Arrays.asList(restC.getResult().split(","));
                                 for (int y = 0; y < facilityidlist.size(); y++) {
                                     ACRGBWSResult getfacility = fm.GETFACILITYID(dataSource, facilityidlist.get(y));
@@ -1193,9 +1266,9 @@ public class Methods {
             if (!utility.IsValidNumber(pid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
-                ACRGBWSResult restA = this.GETROLE(dataSource, pid);
+                ACRGBWSResult restA = this.GETROLE(dataSource, pid, "ACTIVE");
                 if (restA.isSuccess()) {
-                    ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult());
+                    ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), "ACTIVE");
                     List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                     ArrayList<HealthCareFacility> healthcarefacilitylist = new ArrayList<>();
                     if (fchlist.size() > 0) {
@@ -1331,10 +1404,10 @@ public class Methods {
             if (!utility.IsValidNumber(proid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
-                ACRGBWSResult restA = this.GETROLE(dataSource, proid);
+                ACRGBWSResult restA = this.GETROLE(dataSource, proid, "ACTIVE");
                 ArrayList<ManagingBoard> mblist = new ArrayList<>();
                 if (restA.isSuccess()) {
-                    ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult());
+                    ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), "ACTIVE");
                     List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                     for (int x = 0; x < fchlist.size(); x++) {
                         //---------------------------------------------------- 
@@ -1358,7 +1431,7 @@ public class Methods {
                                     mb.setCreatedby(creator.getMessage());
                                 }
                             } else {
-                                mb.setCreatedby("DATA NOT FOUND");
+                                mb.setCreatedby("N/A");
                             }
                             mb.setStatus(resultset.getString("STATUS"));
                             mb.setControlnumber(resultset.getString("CONNUMBER"));
@@ -1366,7 +1439,114 @@ public class Methods {
                             mb.setBankname(resultset.getString("BANKNAME"));
                             mb.setAddress(resultset.getString("ADDRESS"));
                             //-----------------------------------------------------
-                            ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("CONNUMBER"));
+                            ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("CONNUMBER"), "ACTIVE");
+                            List<String> hcfcodeList = Arrays.asList(reastC.getResult().split(","));
+                            Double totaldiff = 0.00;
+                            for (int f = 0; f < hcfcodeList.size(); f++) {
+                                //FacilityComputedAmount
+                                ACRGBWSResult getBadgetResult = this.GetAmountPerFacility(dataSource, hcfcodeList.get(f));//GET TOTAL CLAIMS AMOUNT FOR GOOD TAGS
+                                if (getBadgetResult.isSuccess()) {
+                                    if (!getBadgetResult.getResult().isEmpty()) {
+
+                                        List<FacilityComputedAmount> getBadgetFirst = Arrays.asList(utility.ObjectMapper().readValue(getBadgetResult.getResult(), FacilityComputedAmount[].class));
+
+                                        for (int yous = 0; yous < getBadgetFirst.size(); yous++) {
+                                            ACRGBWSResult getBadgetFirstSecond = this.GetAmountPerFacilitySkipYear(dataSource, getBadgetFirst.get(yous).getHospital());//GET TOTAL BADGET FROM SKIP YEAR
+                                            if (getBadgetFirstSecond.isSuccess()) {
+                                                FacilityComputedAmount combadget = utility.ObjectMapper().readValue(getBadgetFirstSecond.getResult(), FacilityComputedAmount.class);
+                                                Double skipamount = Double.parseDouble(combadget.getTotalamount());
+                                                Double totalamount = Double.parseDouble(getBadgetFirst.get(yous).getTotalamount());
+//                                            String diff = String.valueOf(totalamount - skipamount);
+                                                totaldiff += totalamount - skipamount;
+                                            } else {
+                                                totaldiff += Double.parseDouble(getBadgetFirst.get(yous).getTotalamount());
+                                            }
+                                        }
+                                    } else {
+                                        totaldiff += 0.00;
+                                    }
+                                } else {
+                                    totaldiff += 0.00;
+                                }
+                            }
+                            mb.setBaseamount(String.valueOf(totaldiff));
+                            //GET ACCREDITATION USING CODE
+                            ACRGBWSResult accreResult = fm.GETACCREDITATION(dataSource, resultset.getString("CONNUMBER"));
+                            if (accreResult.isSuccess()) {
+                                Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class);
+                                mb.setLicensedatefrom(accree.getDatefrom());
+                                mb.setLicensedateto(accree.getDateto());
+                            } else {
+                                mb.setLicensedatefrom(accreResult.getMessage());
+                                mb.setLicensedateto(accreResult.getMessage());
+                            }
+                            mblist.add(mb);
+                            //------------------------------------------------------
+                        }
+                    }
+                }
+                if (mblist.size() > 0) {
+                    result.setMessage("OK");
+                    result.setSuccess(true);
+                    result.setResult(utility.ObjectMapper().writeValueAsString(mblist));
+                } else {
+                    result.setMessage("NO DATA FOUND");
+                }
+            }
+
+        } catch (SQLException | IOException | ParseException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET MB WITH ID
+    public ACRGBWSResult GETALLMBWITHPROIDFORLEDGER(final DataSource dataSource, final String proid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            if (!utility.IsValidNumber(proid)) {
+                result.setMessage("INVALID NUMBER FORMAT");
+            } else {
+                ACRGBWSResult restA = this.GETROLE(dataSource, proid, "ACTIVE");
+                ArrayList<ManagingBoard> mblist = new ArrayList<>();
+                if (restA.isSuccess()) {
+                    ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), "INACTIVE");
+                    List<String> fchlist = Arrays.asList(restB.getResult().split(","));
+                    for (int x = 0; x < fchlist.size(); x++) {
+                        //---------------------------------------------------- 
+                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                        statement.setString("pid", fchlist.get(x));
+                        statement.execute();
+                        ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                        while (resultset.next()) {
+                            //--------------------------------------------------------
+                            ManagingBoard mb = new ManagingBoard();
+                            mb.setMbid(resultset.getString("MBID"));
+                            mb.setMbname(resultset.getString("MBNAME"));
+                            mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                            ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                            if (creator.isSuccess()) {
+                                if (!creator.getResult().isEmpty()) {
+                                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                                    mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                                } else {
+                                    mb.setCreatedby(creator.getMessage());
+                                }
+                            } else {
+                                mb.setCreatedby("N/A");
+                            }
+                            mb.setStatus(resultset.getString("STATUS"));
+                            mb.setControlnumber(resultset.getString("CONNUMBER"));
+                            mb.setBankaccount(resultset.getString("BANKACCOUNT"));
+                            mb.setBankname(resultset.getString("BANKNAME"));
+                            mb.setAddress(resultset.getString("ADDRESS"));
+                            //-----------------------------------------------------
+                            ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("CONNUMBER"), "INACTIVE");
                             List<String> hcfcodeList = Arrays.asList(reastC.getResult().split(","));
                             Double totaldiff = 0.00;
                             for (int f = 0; f < hcfcodeList.size(); f++) {
@@ -1435,7 +1615,7 @@ public class Methods {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
                 ArrayList<ManagingBoard> mblist = new ArrayList<>();
-                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, proid);
+                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, proid, "ACTIVE");
                 List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                 for (int x = 0; x < fchlist.size(); x++) {
                     //---------------------------------------------------- 
@@ -1467,7 +1647,7 @@ public class Methods {
                         mb.setBankname(resultset.getString("BANKNAME"));
                         mb.setAddress(resultset.getString("ADDRESS"));
                         //-----------------------------------------------------
-                        ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("CONNUMBER"));
+                        ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("CONNUMBER"), "ACTIVE");
                         List<String> hcfcodeList = Arrays.asList(reastC.getResult().split(","));
                         Double totaldiff = 0.00;
                         for (int f = 0; f < hcfcodeList.size(); f++) {
@@ -1535,7 +1715,7 @@ public class Methods {
             if (!utility.IsValidNumber(proid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
-                ACRGBWSResult restA = this.GETROLEMULITPLE(dataSource, proid);
+                ACRGBWSResult restA = this.GETROLEMULITPLE(dataSource, proid, "ACTIVE");
                 List<String> resultlist = Arrays.asList(restA.getResult().split(","));
                 ArrayList<HealthCareFacility> fchlist = new ArrayList<>();
                 for (int x = 0; x < resultlist.size(); x++) {
@@ -1617,14 +1797,16 @@ public class Methods {
         return result;
     }
 
-    public ACRGBWSResult GETROLE(final DataSource dataSource, final String puserid) throws ParseException {
+    public ACRGBWSResult GETROLE(final DataSource dataSource, final String puserid,
+            final String utags) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("utags", utags);
             statement.setString("pid", puserid);
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
@@ -1642,14 +1824,16 @@ public class Methods {
         return result;
     }
 
-    public ACRGBWSResult GETROLEMULITPLE(final DataSource dataSource, final String puserid) throws ParseException {
+    public ACRGBWSResult GETROLEMULITPLE(final DataSource dataSource,
+            final String puserid, final String utags) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("utags", utags);
             statement.setString("pid", puserid);
             statement.execute();
             ArrayList<String> listresult = new ArrayList<>();
@@ -1672,14 +1856,15 @@ public class Methods {
         return result;
     }
 
-    public ACRGBWSResult GETROLEREVERESE(final DataSource dataSource, final String puserid) throws ParseException {
+    public ACRGBWSResult GETROLEREVERESE(final DataSource dataSource, final String puserid, final String utags) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("utags", utags);
             statement.setString("pid", puserid);
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
@@ -1697,14 +1882,16 @@ public class Methods {
         return result;
     }
 
-    public ACRGBWSResult GETROLEREVERESEMULTIPLE(final DataSource dataSource, final String puserid) throws ParseException {
+    public ACRGBWSResult GETROLEREVERESEMULTIPLE(final DataSource dataSource,
+            final String puserid, final String utags) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("utags", utags);
             statement.setString("pid", puserid);
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
@@ -1985,13 +2172,13 @@ public class Methods {
         ArrayList<Contract> contractlist = new ArrayList<>();
         try {
             //GET FACILITY UNDER PRO LEVEL USING USERID ACCOUNT
-            ACRGBWSResult restA = this.GETROLE(dataSource, userid);//GET PRO ID USING USER ID
+            ACRGBWSResult restA = this.GETROLE(dataSource, userid, "INACTIVE");//GET PRO ID USING USER ID
             if (restA.isSuccess()) {
-                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult());//GET MB UNDER PRO USING PRO ID
+                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), "ACTIVE");//GET MB UNDER PRO USING PRO ID
                 if (restB.isSuccess()) {
                     List<String> restBList = Arrays.asList(restB.getResult().split(","));
                     for (int x = 0; x < restBList.size(); x++) {
-                        ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, restBList.get(x));//GET MB UNDER PRO USING PRO ID
+                        ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, restBList.get(x), "ACTIVE");//GET MB UNDER PRO USING PRO ID
                         if (restC.isSuccess()) {
                             List<String> restCList = Arrays.asList(restC.getResult().split(","));
                             for (int y = 0; y < restCList.size(); y++) {
@@ -2101,7 +2288,7 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        String utags = "GOOD";
+        String utags = "G";
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:ulevel,:uaccreno,:utags,:udatefrom,:udateto); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
@@ -2142,13 +2329,13 @@ public class Methods {
         ArrayList<Contract> contractlist = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
             //GET FACILITY UNDER PRO LEVEL USING USERID ACCOUNT
-            ACRGBWSResult restA = this.GETROLE(dataSource, userid);//GET PRO ID USING USER ID
+            ACRGBWSResult restA = this.GETROLE(dataSource, userid, "INACTIVE");//GET PRO ID USING USER ID
             if (restA.isSuccess()) {
-                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult());//GET MB UNDER PRO USING PRO ID
+                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), "INACTIVE");//GET MB UNDER PRO USING PRO ID
                 if (restB.isSuccess()) {
                     List<String> restBList = Arrays.asList(restB.getResult().split(","));
                     for (int x = 0; x < restBList.size(); x++) {
-                        ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, restBList.get(x));//GET MB UNDER PRO USING PRO ID
+                        ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, restBList.get(x), "INACTIVE");//GET MB UNDER PRO USING PRO ID
                         if (restC.isSuccess()) {
                             List<String> restCList = Arrays.asList(restC.getResult().split(","));
                             for (int y = 0; y < restCList.size(); y++) {
@@ -2182,5 +2369,42 @@ public class Methods {
         }
         return result;
     }
+    
+    //GET ROLE INDEX FOR END CONTRACT AND ACCESS LEVEL
+    public ACRGBWSResult GETROLEMULITPLEFORENDROLE(final DataSource dataSource,
+            final String puserid, 
+            final String utags,
+            final String condateid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDFORENDROLE(:utags,:pid,:pcondateid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("utags", utags);
+            statement.setString("pid", puserid);
+             statement.setString("pcondateid", condateid);
+            statement.execute();
+            ArrayList<String> listresult = new ArrayList<>();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                listresult.add(resultset.getString("ACCESSID"));
+            }
+
+            if (listresult.size() > 0) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(String.join(",", listresult));
+            } else {
+                result.setMessage("N/A");
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
 
 }

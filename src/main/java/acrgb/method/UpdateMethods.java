@@ -178,7 +178,6 @@ public class UpdateMethods {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
-
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -300,7 +299,7 @@ public class UpdateMethods {
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setDate("pdatefrom", (Date) new Date(utility.StringToDate(datesettings.getDatefrom()).getTime()));
-            getinsertresult.setDate("pdatefrom", (Date) new Date(utility.StringToDate(datesettings.getDateto()).getTime()));
+            getinsertresult.setDate("pdateto", (Date) new Date(utility.StringToDate(datesettings.getDateto()).getTime()));
             getinsertresult.setString("ptags", datesettings.getTags().toUpperCase());//GET HOSPITAL CODE
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
@@ -345,10 +344,10 @@ public class UpdateMethods {
                             contract.getEnddate());
                     //---------------------------------------------------------
                     if (rest.isSuccess()) {
-                        ACRGBWSResult getCon = fm.GETCONTRACTCONID(datasource, contract.getConid());
+                        ACRGBWSResult getCon = fm.GETCONTRACTCONID(datasource, contract.getConid(), "ACTIVE");
                         if (getCon.isSuccess()) {
                             Contract updatecontract = utility.ObjectMapper().readValue(getCon.getResult(), Contract.class);
-                            ACRGBWSResult restA = methods.GETROLEMULITPLE(datasource, updatecontract.getHcfid());
+                            ACRGBWSResult restA = methods.GETROLEMULITPLE(datasource, updatecontract.getHcfid(), "ACTIVE");
                             if (restA.isSuccess()) {
                                 //--------------------------------------------------
                                 List<String> hciList = Arrays.asList(restA.getResult().split(","));
@@ -459,7 +458,6 @@ public class UpdateMethods {
         return result;
     }
 
-    
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEHCPN(final DataSource datasource, final ManagingBoard mb) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -757,8 +755,7 @@ public class UpdateMethods {
         }
         return result;
     }
-    
-    
+
     //----------------------------------------------------------------
     public ACRGBWSResult UPDATECONBALANCESTATS(final DataSource datasource, final String pconid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();

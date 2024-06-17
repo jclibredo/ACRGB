@@ -5,6 +5,7 @@
  */
 package acrgb;
 
+import acrgb.method.FetchMethods;
 import acrgb.method.Forgetpassword;
 import acrgb.method.InsertMethods;
 import acrgb.method.Methods;
@@ -23,8 +24,14 @@ import acrgb.structure.UserInfo;
 import acrgb.structure.UserLevel;
 import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
 import javax.sql.DataSource;
@@ -54,6 +61,7 @@ public class ACRGBPOST {
     private final Utility utility = new Utility();
     private final InsertMethods insertmethods = new InsertMethods();
     private final Methods methods = new Methods();
+    private final FetchMethods fm = new FetchMethods();
 
     /**
      * Retrieves representation of an instance of acrgb.ACRGB
@@ -260,8 +268,8 @@ public class ACRGBPOST {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = insertmethods.INSERTAPPELLATE(dataSource,
-                userroleindex.getUserid(), userroleindex.getAccessid(), 
-                userroleindex.getCreatedby(), 
+                userroleindex.getUserid(), userroleindex.getAccessid(),
+                userroleindex.getCreatedby(),
                 userroleindex.getDatecreated());
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
@@ -283,7 +291,7 @@ public class ACRGBPOST {
         return result;
     }
 
-    //TEST PASSWORD RESETTER
+    //PASSWORD RESETTER
     @POST
     @Path("FORGETPASSWORD")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -296,6 +304,122 @@ public class ACRGBPOST {
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());
+        return result;
+    }
+
+    // USER ACCOUNT BATCH UPLOAD
+    @POST
+    @Path("USERACCOUNTBATCH")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult USERACCOUNTBATCH(final List<UserInfo> userinfo) {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        Collection errorList = new ArrayList<>();
+        try {
+            for (int x = 0; x < userinfo.size(); x++) {
+                ArrayList<String> error = new ArrayList<>();
+                //CHECK DATE VALID FORMAT
+                if (!utility.IsValidDate(userinfo.get(x).getDatecreated())) {
+                    error.add(userinfo.get(x).getDatecreated() + " NOT VALID DATE");
+                } else if (userinfo.get(x).getContact().trim().isEmpty()) {
+                    error.add("DATE CREATED IS REQUIRED");
+                }
+                //CHECK USERNAME
+                if (!methods.ACRUSERNAME(dataSource, userinfo.get(x).getEmail().trim()).isSuccess()) {
+                    error.add(userinfo.get(x).getEmail().trim() + " DUPLICATE");
+                } else if (userinfo.get(x).getContact().trim().isEmpty()) {
+                    error.add("| EMAIL IS REQUIRED");
+                }
+                //CHECK VALID NUMBER FORMAT
+                if (!utility.isValidPhoneNumber(userinfo.get(x).getContact().trim())) {
+                    error.add(userinfo.get(x).getContact() + " INVALID CONTACT");
+                } else if (userinfo.get(x).getContact().trim().isEmpty()) {
+                    error.add("| CONTACT NUMBER IS REQUIRED");
+                }
+                //CHECK FIRSTNAME
+                if (userinfo.get(x).getFirstname().trim().isEmpty()) {
+                    error.add("| FIRSTNAME IS REQUIRED");
+                }
+                //CHECK LASTNAME
+                if (userinfo.get(x).getLastname().trim().isEmpty()) {
+                    error.add("| LASTNAME IS REQUIRED");
+                }
+                //CHECK ROLE
+                if (userinfo.get(x).getRole().trim().isEmpty()) {
+                    error.add("| ROLE IS REQUIRED");
+                }
+                //CHECK DESIGNATION
+                if (userinfo.get(x).getDesignation().isEmpty()) {
+                    error.add("| DESIGNATION IS REQUIRED");
+                }
+                //VALIDATE USER LEVEL
+                if (!fm.FORUSERLEVEL(dataSource, userinfo.get(x).getRole()).isSuccess()) {
+                    error.add("| ROLE NOT VALID");
+                } else {
+                    UserLevel level = utility.ObjectMapper().readValue(fm.FORUSERLEVEL(dataSource, userinfo.get(x).getRole()).getResult(), UserLevel.class);
+                    switch (level.getLevname().toLowerCase().trim()) {
+                        case "PRO": {
+                            if (!methods.GetProWithPROID(dataSource, userinfo.get(x).getDesignation().trim()).isSuccess()) {
+                                error.add("| PRO CODE "+userinfo.get(x).getDesignation()+" NOT VALID");
+                            }
+                            break;
+                        }
+                        case "HCPN": {
+                            if (!methods.GETMBWITHID(dataSource, userinfo.get(x).getDesignation()).isSuccess()) {
+                                error.add("| HCPN CODE "+userinfo.get(x).getDesignation()+" NOT VALID");
+                            }
+                            break;
+                        }
+                        case "HCF": {
+                            if (!fm.GETFACILITYID(dataSource, userinfo.get(x).getDesignation()).isSuccess()) {
+                                error.add("| HCF CODE NOT "+userinfo.get(x).getDesignation()+" VALID");
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if (error.size() > 0) {
+                    error.add("| LINE NUMBER[" + userinfo.get(x).getId() + "]");
+                    errorList.add(error);
+                } else {
+                    //CALL THE METHOD OF INSERTION OF USER
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.setContact(userinfo.get(x).getContact());
+                    userInfo.setCreatedby(userinfo.get(x).getCreatedby());
+                    userInfo.setDatecreated(userinfo.get(x).getDatecreated());
+                    userInfo.setFirstname(userinfo.get(x).getFirstname());
+                    userInfo.setEmail(userinfo.get(x).getEmail());
+                    userInfo.setMiddlename(userinfo.get(x).getMiddlename());
+                    userInfo.setLastname(userinfo.get(x).getLastname());
+                    userInfo.setRole(userinfo.get(x).getRole());
+                    if (fm.FORUSERLEVEL(dataSource, userinfo.get(x).getRole()).isSuccess()) {
+                        UserLevel level = utility.ObjectMapper().readValue(fm.FORUSERLEVEL(dataSource, userinfo.get(x).getRole()).getResult(), UserLevel.class);
+                        if (level.getLevname().toUpperCase().equals("PRO")) {
+                            userInfo.setDesignation("2024" + userinfo.get(x).getDesignation());
+                        } else {
+                            userInfo.setDesignation(userinfo.get(x).getDesignation());
+                        }
+                    }
+                    ACRGBWSResult InsertCleanData = insertmethods.INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo);
+                    if (!insertmethods.INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo).isSuccess()) {
+                        error.add("| LINE NUMBER[" + userinfo.get(x).getId() + "]");
+                        error.add(InsertCleanData.getMessage());
+                    }
+                }
+            }
+            result.setMessage("PLEASE SEE UPLOAD RESULT STATUS");
+            result.setSuccess(true);
+            result.setResult(utility.ObjectMapper().writeValueAsString(errorList));
+        } catch (IOException | ParseException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(ACRGBPOST.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         return result;
     }
 

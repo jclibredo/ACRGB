@@ -60,6 +60,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UpdateMethods updatemethods = new UpdateMethods();
         Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTASSETS(:Message,:Code,:p_hcfid,:p_tranchid ,:p_receipt,:p_amount"
@@ -71,7 +72,7 @@ public class InsertMethods {
             getinsertresult.setString("p_receipt", assets.getReceipt());
             getinsertresult.setString("p_amount", assets.getAmount());
             getinsertresult.setString("p_createdby", assets.getCreatedby());
-            getinsertresult.setDate("p_datereleased", (Date) new Date(utility.StringToDate(assets.getDatecreated()).getTime())); //assets.getDatereleased());
+            getinsertresult.setDate("p_datereleased", (Date) new Date(utility.StringToDate(assets.getDatereleased()).getTime())); //assets.getDatereleased());
             getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(assets.getDatecreated()).getTime()));//assets.getDatecreated());
             getinsertresult.setString("p_conid", assets.getConid());
             getinsertresult.setString("p_releasedamount", assets.getReleasedamount());
@@ -103,6 +104,10 @@ public class InsertMethods {
                     }
                     ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                     result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
+                }
+                Tranch tranch = utility.ObjectMapper().readValue(fm.ACR_TRANCHWITHID(datasource, assets.getTranchid()).getResult(), Tranch.class);
+                if (tranch.getTranchtype().trim().equals("1ST")) {
+                    updatemethods.UPDATECONBALANCESTATS(datasource, assets.getHcfid());
                 }
                 result.setSuccess(true);
             } else {
@@ -359,7 +364,7 @@ public class InsertMethods {
                     countresult++;
                 }
             }
-            ACRGBWSResult infolistresult = fm.ACR_USER_DETAILS(datasource, "active");
+            ACRGBWSResult infolistresult = fm.ACR_USER_DETAILS(datasource, "ACTIVE");
             int countinfo = 0;
             if (levelresult.isSuccess()) {
                 if (!infolistresult.getResult().isEmpty()) {
@@ -457,8 +462,8 @@ public class InsertMethods {
                             + ":a_userid,:a_accessid,:a_createdby,:a_datecreated)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                    getinsertresult.setString("a_userid", userroleindex.getUserid());
-                    getinsertresult.setString("a_accessid", accesslist.get(x));
+                    getinsertresult.setString("a_userid", userroleindex.getUserid().trim());
+                    getinsertresult.setString("a_accessid", accesslist.get(x).trim());
                     getinsertresult.setString("a_createdby", userroleindex.getCreatedby());
                     getinsertresult.setDate("a_datecreated", (Date) new Date(utility.StringToDate(userroleindex.getDatecreated()).getTime()));
                     getinsertresult.execute();
@@ -705,7 +710,7 @@ public class InsertMethods {
             if (!utility.IsValidDate(mb.getDatecreated())) {
                 result.setMessage("DATE FORMAT IS NOT VALID");
             } else {
-                ACRGBWSResult restA = methods.GETROLE(datasource, mb.getCreatedby());
+                ACRGBWSResult restA = methods.GETROLE(datasource, mb.getCreatedby(), "ACTIVE");
                 if (restA.isSuccess()) {
                     ACRGBWSResult getProCode = methods.GetProWithPROID(datasource, restA.getResult());
                     if (!getProCode.isSuccess()) {
@@ -1070,6 +1075,81 @@ public class InsertMethods {
                 result.setMessage(getinsertresult.getString("Message"));
             }
         } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //INSERT USER ACCOUNT BATCH UPLOAD
+    public ACRGBWSResult INSERTUSERACCOUNTBATCHUPLOAD(final DataSource datasource, final UserInfo userinfo) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        Methods methods = new Methods();
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSERDETAILS(:Message,:Code,"
+                    + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_createdby,:p_email,:p_contact)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("p_firstname", userinfo.getFirstname().toUpperCase());
+            getinsertresult.setString("p_lastname", userinfo.getLastname().toUpperCase());
+            getinsertresult.setString("p_middlename", userinfo.getMiddlename().toUpperCase());
+            getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(userinfo.getDatecreated()).getTime()));//userinfo.getDatecreated());
+            getinsertresult.setString("p_createdby", userinfo.getCreatedby());
+            getinsertresult.setString("p_email", userinfo.getEmail());
+            getinsertresult.setString("p_contact", userinfo.getContact());
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                UserActivity userlogs = utility.UserActivity();
+                String actdetails = "INSERT USER DETAILS " + userinfo.getContact() + " "
+                        + " " + userinfo.getLastname() + " , " + userinfo.getFirstname();
+                userlogs.setActby(userinfo.getCreatedby());
+                userlogs.setActdate(userinfo.getDatecreated());
+                userlogs.setActdetails(actdetails);
+                ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+                //CREATE ACCOUNT DIRECT
+                ACRGBWSResult getUserInfoUsingEmail = fm.GETUSERINFOUSINGEMAIL(datasource, userinfo.getEmail());
+                if (getUserInfoUsingEmail.isSuccess()) {
+                    UserInfo userinfoResult = utility.ObjectMapper().readValue(getUserInfoUsingEmail.getResult(), UserInfo.class);
+                    //MAP USER ACCOUNT
+                    User user = new User();
+                    user.setCreatedby(userinfo.getCreatedby());
+                    user.setDid(userinfoResult.getDid());
+                    user.setUsername(userinfo.getEmail());
+                    //GENERATE PASS
+                    GenerateRandomPassword createpass = new GenerateRandomPassword();
+                    user.setUserpassword(createpass.GenerateRandomPassword(10));
+                    //END GENERATE PASS
+                    user.setDatecreated(userinfo.getDatecreated());
+                    user.setLeveid(userinfo.getRole());
+                    ACRGBWSResult insertNewAccount = this.INSERTUSER(datasource, user);
+                    if (insertNewAccount.isSuccess()) {
+                        //INSERT USER ROLE
+                        ACRGBWSResult getUserUsingEmail = fm.GETACCOUNTUSINGEMAIL(datasource, userinfo.getEmail());
+                        if (getUserUsingEmail.isSuccess()) {
+                            User userResult = utility.ObjectMapper().readValue(getUserUsingEmail.getResult(), User.class);
+                            UserRoleIndex userrole = new UserRoleIndex();
+                            userrole.setUserid(userResult.getUserid());
+                            userrole.setAccessid(userinfo.getDesignation());
+                            userrole.setCreatedby(userinfo.getCreatedby());
+                            userrole.setDatecreated(userinfo.getDatecreated());
+                            //INSERT TO SELECTED DESIGNATION
+                            ACRGBWSResult insertRoleIndex = this.INSEROLEINDEX(datasource, userrole);
+                            if (insertRoleIndex.isSuccess()) {
+                            }
+                        }
+                    }
+                }
+                result.setMessage(getinsertresult.getString("Message") + ""
+                        + " , " + insertActivitylogs.getMessage() + " , "
+                        + getUserInfoUsingEmail.getMessage());
+                result.setSuccess(true);
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
