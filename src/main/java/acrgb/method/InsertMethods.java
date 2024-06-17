@@ -145,7 +145,8 @@ public class InsertMethods {
                     result.setMessage("DATE FORMAT IS NOT VALID");
                 } else {
                     CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONTRACT(:Message,:Code,:p_hcfid,:p_amount"
-                            + ",:p_createdby,:p_datecreated,:p_contractdate,:p_transcode,:p_baseamount)");
+                            + ",:p_createdby,:p_datecreated,:p_contractdate,:p_transcode,"
+                            + ":p_baseamount,:c_claimsvol,:t_claimsvol)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                     getinsertresult.setString("p_hcfid", contract.getHcfid());//PAN Number or MB Accreditaion Number
@@ -155,6 +156,8 @@ public class InsertMethods {
                     getinsertresult.setString("p_contractdate", contract.getContractdate());
                     getinsertresult.setString("p_transcode", contract.getTranscode());
                     getinsertresult.setString("p_baseamount", contract.getBaseamount());
+                    getinsertresult.setString("c_claimsvol", contract.getComittedClaimsVol());
+                    getinsertresult.setString("t_claimsvol", contract.getComputedClaimsVol());
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
                         //INSERT TO ACTIVITY LOGS

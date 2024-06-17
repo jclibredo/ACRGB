@@ -29,5 +29,7 @@ public class Contract {
     private String traches;
     private String totalclaims;
     private String percentage;
+    private String comittedClaimsVol;
+    private String computedClaimsVol;
 
 }

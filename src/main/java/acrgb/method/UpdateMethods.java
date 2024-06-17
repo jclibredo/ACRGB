@@ -162,7 +162,7 @@ public class UpdateMethods {
                 result.setSuccess(false);
             } else {
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATECONTRACT(:Message,:Code,:p_conid,:p_hcfid,:p_amount"
-                        + ",:p_contractdate,:p_transcode)");
+                        + ",:p_contractdate,:p_transcode,:c_claimsvol)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("p_conid", contract.getConid());
@@ -170,6 +170,7 @@ public class UpdateMethods {
                 getinsertresult.setString("p_amount", contract.getAmount());
                 getinsertresult.setString("p_contractdate", contract.getContractdate());
                 getinsertresult.setString("p_transcode", contract.getTranscode());
+                getinsertresult.setString("c_claimsvol", contract.getComittedClaimsVol());
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);

@@ -334,6 +334,8 @@ public class ContractMethod {
                 }
                 contract.setStats(resultset.getString("STATS"));
                 contract.setTranscode(resultset.getString("TRANSCODE"));
+                contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+                contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
                 contractlist.add(contract);
             }
             if (!conidlist.isEmpty()) {

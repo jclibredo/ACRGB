@@ -405,7 +405,11 @@ public class Methods {
 
     //--------------------------------------------------------
     //ACR GB GET SUMMARY
-    public ACRGBWSResult GetBaseAmount(final DataSource dataSource, final String tags, final String userid) {
+    public ACRGBWSResult GetBaseAmount(final DataSource dataSource,
+            final String tags,
+            final String userid,
+            final String datefrom,
+            final String dateto) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2369,10 +2373,10 @@ public class Methods {
         }
         return result;
     }
-    
+
     //GET ROLE INDEX FOR END CONTRACT AND ACCESS LEVEL
     public ACRGBWSResult GETROLEMULITPLEFORENDROLE(final DataSource dataSource,
-            final String puserid, 
+            final String puserid,
             final String utags,
             final String condateid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -2384,7 +2388,7 @@ public class Methods {
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags);
             statement.setString("pid", puserid);
-             statement.setString("pcondateid", condateid);
+            statement.setString("pcondateid", condateid);
             statement.execute();
             ArrayList<String> listresult = new ArrayList<>();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
@@ -2405,6 +2409,5 @@ public class Methods {
         }
         return result;
     }
-
 
 }

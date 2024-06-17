@@ -261,9 +261,12 @@ public class ACRGBFETCH {
     }
 
     @GET
-    @Path("GetSummary/{tags}/{userid}")
+    @Path("GetSummary/{tags}/{userid}/{datefrom}/{dateto}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetSummary(@PathParam("tags") String tags,
+    public ACRGBWSResult GetSummary(
+            @PathParam("datefrom") String datefrom,
+            @PathParam("dateto") String dateto,
+            @PathParam("tags") String tags,
             @PathParam("userid") String userid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");

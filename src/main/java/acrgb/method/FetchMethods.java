@@ -590,6 +590,8 @@ public class FetchMethods {
                     contract.setContractdate(getcondateA.getResult());
                     contract.setTranscode(resultset.getString("TRANSCODE"));
                     contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                    contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+                    contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
                     //=============================================
                     ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class);
                     int numberofclaims = 0;
@@ -764,6 +766,8 @@ public class FetchMethods {
                         contract.setContractdate(getcondateA.getMessage());
                     }
                     contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                    contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+                    contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
                     contractlist.add(contract);
                 }
 
@@ -822,6 +826,8 @@ public class FetchMethods {
                     contract.setContractdate(getcondateA.getResult());
                 }
                 contract.setTranscode(resultset.getString("TRANSCODE"));
+                contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+                contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                 result.setSuccess(true);
@@ -884,6 +890,8 @@ public class FetchMethods {
                         ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class);
                         contract.setTranscode(resultset.getString("TRANSCODE"));
                         contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                        contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+                        contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
                         contractlist.add(contract);
                         //=============================================
                         int numberofclaims = 0;
@@ -1723,6 +1731,8 @@ public class FetchMethods {
 //                }
                 contract.setBaseamount(resultset.getString("BASEAMOUNT"));
                 contract.setTranscode(resultset.getString("TRANSCODE"));
+                contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+                contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
 
                 //SET OF NUMBER OF CLAIMS AND TRANCHES MOVEMENT
                 int numberofclaims = 0;
@@ -2360,6 +2370,8 @@ public class FetchMethods {
                     ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class);
                     contract.setTranscode(resultset.getString("TRANSCODE"));
                     contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                    contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+                    contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
                     contractlist.add(contract);
                     //=============================================
                     int numberofclaims = 0;
