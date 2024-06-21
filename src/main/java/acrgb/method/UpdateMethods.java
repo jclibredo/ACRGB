@@ -11,7 +11,6 @@ import acrgb.structure.Appellate;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
-import acrgb.structure.DateSettings;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.LogStatus;
 import acrgb.structure.ManagingBoard;
@@ -354,7 +353,7 @@ public class UpdateMethods {
                                 //--------------------------------------------------
                                 List<String> hciList = Arrays.asList(restA.getResult().split(","));
                                 for (int x = 0; x < hciList.size(); x++) {
-                                    ACRGBWSResult getConA = cm.GETCONTRACT(datasource, "ACTIVE", hciList.get(x));
+                                    ACRGBWSResult getConA = fm.GETCONTRACTCONID(datasource, "ACTIVE", hciList.get(x));
                                     if (getConA.isSuccess()) {
                                         Contract updatecontracts = utility.ObjectMapper().readValue(getCon.getResult(), Contract.class);
                                         //-------------------------------------------

@@ -11,12 +11,15 @@ import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.ManagingBoard;
+import acrgb.structure.NclaimsData;
+import acrgb.structure.Total;
 import acrgb.utility.Utility;
 import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -163,6 +166,10 @@ public class ContractMethod {
                 }
                 contract.setTranscode(resultset.getString("TRANSCODE"));
                 contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+                contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
+                contract.setSb(resultset.getString("SB"));
+                contract.setAddamount(resultset.getString("ADDAMOUNT"));
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
@@ -354,7 +361,7 @@ public class ContractMethod {
     }
 
     //GET CONTRACT BY DATECOVERED
-    public ACRGBWSResult GETPREVIOUSBALANCE(final DataSource dataSource, 
+    public ACRGBWSResult GETPREVIOUSBALANCE(final DataSource dataSource,
             final String paccount,
             final String pconid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -364,7 +371,7 @@ public class ContractMethod {
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETPREVIOUSBALANCE(:paccount,:pconid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-              statement.setString("paccount", paccount);
+            statement.setString("paccount", paccount);
             statement.setString("pconid", pconid);
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
@@ -401,6 +408,176 @@ public class ContractMethod {
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET CONTRACT OF FACILITY USING ACCOUNT USERID
+    public ACRGBWSResult GETCONTRACTOFFACILITY(final DataSource dataSource, final String tags, final String userid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        Methods methods = new Methods();
+        try {
+            ACRGBWSResult GetRole = methods.GETROLE(dataSource, userid, tags);
+            if (GetRole.isSuccess()) {
+                //GETCONTRACT
+                ACRGBWSResult GetFacilityContract = this.GETCONTRACT(dataSource, tags, GetRole.getResult().trim());
+                if (GetFacilityContract.isSuccess()) {
+                    Contract MapContract = utility.ObjectMapper().readValue(GetFacilityContract.getResult(), Contract.class);
+                    //--------------------------------------------------------
+                    Contract contract = new Contract();
+                    //--------------------------------------
+                    ACRGBWSResult GetFacility = fm.GETFACILITYID(dataSource, userid);
+                    if (GetFacility.isSuccess()) {
+                        contract.setHcfid(GetFacility.getResult());
+                    } else {
+                        contract.setHcfid(GetFacility.getResult());
+                    }
+                    //END OF GET NETWORK FULL DETAILS
+                    contract.setAmount(MapContract.getAmount());
+                    contract.setStats(MapContract.getStats());
+                    contract.setCreatedby(MapContract.getCreatedby());
+                    contract.setDatecreated(MapContract.getDatecreated());//resultset.getString("DATECREATED"));
+                    contract.setContractdate(MapContract.getContractdate());
+                    contract.setTranscode(MapContract.getTranscode());
+                    contract.setBaseamount(MapContract.getBaseamount());
+                    contract.setComittedClaimsVol(MapContract.getComittedClaimsVol());
+                    contract.setComputedClaimsVol(MapContract.getComputedClaimsVol());
+                    contract.setSb(MapContract.getSb());
+                    contract.setAddamount(MapContract.getAddamount());
+                    //=============================================
+                    ContractDate condate = utility.ObjectMapper().readValue(MapContract.getContractdate(), ContractDate.class);
+                    int numberofclaims = 0;
+                    Double percentage = 0.00;
+                    int tranches = 0;
+                    ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, MapContract.getHcfid());
+                    if (totalResult.isSuccess()) {
+                        Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
+                        tranches += Integer.parseInt(getResult.getCcount());
+                        //======================================
+                        ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, MapContract.getHcfid().trim(), "G", condate.getDatefrom(), condate.getDateto(), "CURRENTSTATUS");
+                        if (sumresult.isSuccess()) {
+                            List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
+                            for (int i = 0; i < nclaimsdata.size(); i++) {
+                                numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                Double assetsamount = Double.parseDouble(getResult.getCtotal());
+                                Double totalclaimsamount = Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                Double sums = totalclaimsamount / assetsamount * 100;
+                                if (sums > 100) {
+                                    Double negvalue = 100 - sums;
+                                    percentage += negvalue;
+                                } else {
+                                    percentage += sums;
+                                }
+                            }
+                        }
+                    }
+                    contract.setTotalclaims(String.valueOf(numberofclaims));
+                    contract.setTraches(String.valueOf(tranches));
+                    contract.setPercentage(String.valueOf(percentage));
+                    result.setMessage("OK");
+                    result.setSuccess(true);
+                    result.setResult(utility.ObjectMapper().writeValueAsString(contract));
+                } else {
+                    result.setMessage(GetFacilityContract.getMessage());
+                }
+            } else {
+                result.setMessage(methods.GETROLE(dataSource, userid, tags).getMessage());
+            }
+        } catch (IOException | ParseException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET CONTRACT OF HCPN USING ACCOUNT USERID
+    public ACRGBWSResult GETCONTRACTOFHCPN(final DataSource dataSource, final String tags, final String userid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        Methods methods = new Methods();
+        try {
+            ACRGBWSResult GetRole = methods.GETROLE(dataSource, userid, tags);
+            if (GetRole.isSuccess()) {
+                //GETCONTRACT
+                ACRGBWSResult GetFacilityContract = this.GETCONTRACT(dataSource, tags, GetRole.getResult().trim());
+                if (GetFacilityContract.isSuccess()) {
+                    Contract MapContract = utility.ObjectMapper().readValue(GetFacilityContract.getResult(), Contract.class);
+                    //--------------------------------------------------------
+                    Contract contract = new Contract();
+                    //--------------------------------------
+                    ACRGBWSResult GetHCPN = methods.GETMBWITHID(dataSource, GetRole.getResult());
+                    if (GetHCPN.isSuccess()) {
+                        contract.setHcfid(GetHCPN.getResult());
+                    } else {
+                        contract.setHcfid(GetHCPN.getResult());
+                    }
+                    //END OF GET NETWORK FULL DETAILS
+                    contract.setAmount(MapContract.getAmount());
+                    contract.setStats(MapContract.getStats());
+                    contract.setCreatedby(MapContract.getCreatedby());
+                    contract.setDatecreated(MapContract.getDatecreated());//resultset.getString("DATECREATED"));
+                    contract.setContractdate(MapContract.getContractdate());
+                    contract.setTranscode(MapContract.getTranscode());
+                    contract.setBaseamount(MapContract.getBaseamount());
+                    contract.setComittedClaimsVol(MapContract.getComittedClaimsVol());
+                    contract.setComputedClaimsVol(MapContract.getComputedClaimsVol());
+                    contract.setSb(MapContract.getSb());
+                    contract.setAddamount(MapContract.getAddamount());
+                    //=============================================
+                    ContractDate condate = utility.ObjectMapper().readValue(MapContract.getContractdate(), ContractDate.class);
+                    int numberofclaims = 0;
+                    Double percentage = 0.00;
+                    int tranches = 0;
+                    //GET ALL FACILITY UNDER HCPN
+                    ACRGBWSResult GetAccessList = methods.GETROLEMULITPLE(dataSource, GetRole.getResult().trim(), tags.trim());
+                    if (GetAccessList.isSuccess()) {
+                        List<String> HCIList = Arrays.asList(GetAccessList.getResult().trim().split(","));
+                        for (int x = 0; x < HCIList.size(); x++) {
+                            ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, HCIList.get(x).trim());
+                            if (totalResult.isSuccess()) {
+                                Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
+                                tranches += Integer.parseInt(getResult.getCcount());
+                                //======================================
+                                ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, HCIList.get(x).trim(), "G", condate.getDatefrom(), condate.getDateto(), "CURRENTSTATUS");
+                                if (sumresult.isSuccess()) {
+                                    List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
+                                    for (int i = 0; i < nclaimsdata.size(); i++) {
+                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                        Double assetsamount = Double.parseDouble(getResult.getCtotal());
+                                        Double totalclaimsamount = Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                        Double sums = totalclaimsamount / assetsamount * 100;
+                                        if (sums > 100) {
+                                            Double negvalue = 100 - sums;
+                                            percentage += negvalue;
+                                        } else {
+                                            percentage += sums;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    //-------------------------------------------------
+                    contract.setTotalclaims(String.valueOf(numberofclaims));
+                    contract.setTraches(String.valueOf(tranches));
+                    contract.setPercentage(String.valueOf(percentage));
+                    result.setMessage("OK");
+                    result.setSuccess(true);
+                    result.setResult(utility.ObjectMapper().writeValueAsString(contract));
+                } else {
+                    result.setMessage(GetFacilityContract.getMessage());
+                }
+            } else {
+                result.setMessage(methods.GETROLE(dataSource, userid, tags).getMessage());
+            }
+        } catch (IOException | ParseException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

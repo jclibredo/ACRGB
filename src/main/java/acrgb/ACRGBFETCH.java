@@ -137,6 +137,24 @@ public class ACRGBFETCH {
                     result.setSuccess(getResultF.isSuccess());
                     break;
                 }
+
+                // GET FACILITY CONTRACT USING ACCOUNT USERID
+                case "FACILITYCONOWN": {
+                    ACRGBWSResult GetResult = con.GETCONTRACTOFFACILITY(dataSource, tags, puserid);
+                    result.setMessage(GetResult.getMessage());
+                    result.setResult(GetResult.getResult());
+                    result.setSuccess(false);
+                    break;
+                }
+                // GET HCPN CONTRACT USING ACCOUNT USERID
+                case "HCPNCONOWN": {
+                   ACRGBWSResult GetResult = con.GETCONTRACTOFHCPN(dataSource, tags, puserid);
+                    result.setMessage(GetResult.getMessage());
+                    result.setResult(GetResult.getResult());
+                    result.setSuccess(false);
+                    break;
+                }
+
                 default: {
                     result.setMessage(level + " IS NOT VALID");
                     break;

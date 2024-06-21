@@ -789,8 +789,11 @@ public class FetchMethods {
                     contract.setContractdate(getcondateA.getResult());
                 }
                 contract.setTranscode(resultset.getString("TRANSCODE"));
+                contract.setBaseamount(resultset.getString("BASEAMOUNT"));
                 contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
                 contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
+                contract.setSb(resultset.getString("SB"));
+                contract.setAddamount(resultset.getString("ADDAMOUNT"));
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                 result.setSuccess(true);
