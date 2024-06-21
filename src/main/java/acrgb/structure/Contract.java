@@ -31,5 +31,7 @@ public class Contract {
     private String percentage;
     private String comittedClaimsVol;
     private String computedClaimsVol;
+    private String sb;
+    private String addamount;
 
 }

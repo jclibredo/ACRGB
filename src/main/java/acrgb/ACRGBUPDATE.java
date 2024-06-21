@@ -9,11 +9,11 @@ import acrgb.method.InsertMethods;
 import acrgb.method.Methods;
 import acrgb.method.UpdateMethods;
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.Appellate;
 import acrgb.structure.Archived;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
-import acrgb.structure.DateSettings;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;
@@ -189,7 +189,7 @@ public class ACRGBUPDATE {
     public ACRGBWSResult ACTIVE(final Archived arhived) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = insertmethods.ACTIVEDATA(dataSource, arhived.getTags(), 
+        ACRGBWSResult insertresult = insertmethods.ACTIVEDATA(dataSource, arhived.getTags(),
                 arhived.getDataid(), arhived.getCreatedby(), arhived.getDatecreated());
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
@@ -263,19 +263,19 @@ public class ACRGBUPDATE {
     }
 
     //DATE SETTINGS
-    @PUT
-    @Path("UPDATESETTINGS")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATESETTINGS(final DateSettings datesetting) throws SQLException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult taggingresult = updatemethods.UPDATESETTINGS(dataSource, datesetting);
-        result.setMessage(taggingresult.getMessage());
-        result.setSuccess(taggingresult.isSuccess());
-        result.setResult(taggingresult.getResult());
-        return result;
-    }
+//    @PUT
+//    @Path("UPDATESETTINGS")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult UPDATESETTINGS(final DateSettings datesetting) throws SQLException {
+//        //TODO return proper representation object
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        ACRGBWSResult taggingresult = updatemethods.UPDATESETTINGS(dataSource, datesetting);
+//        result.setMessage(taggingresult.getMessage());
+//        result.setSuccess(taggingresult.isSuccess());
+//        result.setResult(taggingresult.getResult());
+//        return result;
+//    }
 
     @PUT
     @Path("RemoveAppellate")
@@ -327,6 +327,34 @@ public class ACRGBUPDATE {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = updatemethods.UPDATECONDATE(dataSource, contractdate);
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
+
+    @PUT
+    @Path("UPDATEHCPN")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult UPDATEHCPN(final ManagingBoard mb) throws SQLException, ParseException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = updatemethods.UPDATEHCPN(dataSource, mb);
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
+        return result;
+    }
+
+    @PUT
+    @Path("UPDATEAPELLATE")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult UPDATEAPELLATE(final Appellate appellate) throws SQLException, ParseException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult insertresult = updatemethods.UPDATEAPELLATE(dataSource, "UPDATE", appellate);
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());

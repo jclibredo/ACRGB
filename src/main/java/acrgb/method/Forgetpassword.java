@@ -88,9 +88,7 @@ public class Forgetpassword {
                 if (randpass.length() > 0) {
                     // Now set the actual message
                     //message.setText("This is actual message");
-                    message.setContent("<button class='btn btn-success'>This is button </button><h2>Note : </h2><em>Dont share your account credentials</em><br><h1> Username : " + emailto + ""
-                            + "<br> Passcode :" + randpass + "</h1>",
-                            "text/html");
+                    message.setContent(utility.EmailTemplate(emailto, randpass), "text/html");
                     Transport.send(message);
                     result.setResult(randpass);
                     result.setSuccess(true);
@@ -103,9 +101,7 @@ public class Forgetpassword {
                         // Now set the actual message
                         //message.setText("This is actual message");
                         String newpass = generatepass.GenerateRandomPassword(10);
-                        message.setContent("<h2>Note : This account password was reset </h2><em>Dont share your account credentials</em><br><h1> Username : " + emailto + ""
-                                + "<br>New Passcode :" + newpass + "</h1>",
-                                "text/html");
+                        message.setContent(utility.EmailTemplate(emailto, newpass), "text/html");
                         Transport.send(message);
                         ACRGBWSResult updatepassword = updatemethods.UPDATEPASSCODE(dataSource, emailto, newpass);
                         if (updatepassword.isSuccess()) {

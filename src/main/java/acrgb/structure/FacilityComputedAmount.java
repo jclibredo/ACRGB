@@ -22,5 +22,7 @@ public class FacilityComputedAmount {
     private String totalamount;
     private String totalclaims;
     private String datefiled;
+    private String sb;
+    private String thirty;
 
 }

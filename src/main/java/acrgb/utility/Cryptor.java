@@ -33,9 +33,7 @@ public class Cryptor {
     private static final int ITERATION_COUNT = 65536;
 
     public String decrypt(String strToDecrypt, String secretKey, String salt) {
-
         try {
-
             byte[] encryptedData = Base64.getDecoder().decode(strToDecrypt);
             byte[] iv = new byte[16];
             System.arraycopy(encryptedData, 0, iv, 0, iv.length);
@@ -55,8 +53,8 @@ public class Cryptor {
             byte[] decryptedText = cipher.doFinal(cipherText);
             return new String(decryptedText, "UTF-8");
         } catch (UnsupportedEncodingException | InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | InvalidKeySpecException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e) {
-     
-            return null;
+
+            return e.toString();
         }
     }
 
@@ -78,8 +76,8 @@ public class Cryptor {
             System.arraycopy(cipherText, 0, encryptedData, iv.length, cipherText.length);
             return Base64.getEncoder().encodeToString(encryptedData);
         } catch (UnsupportedEncodingException | InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | InvalidKeySpecException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e) {
-    
-            return null;
+
+            return e.toString();
         }
 
     }

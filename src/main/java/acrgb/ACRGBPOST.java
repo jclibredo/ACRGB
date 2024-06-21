@@ -159,36 +159,36 @@ public class ACRGBPOST {
         return result;
     }
 
-    @POST
-    @Path("INSERTDATESETTINGS")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTDATESETTINGS(final DateSettings datesettings) throws SQLException, ParseException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        switch (datesettings.getTags().toUpperCase()) {
-            case "DATEDIF":
-                ACRGBWSResult insertresult = insertmethods.INSERTDATESETTINGS(dataSource, datesettings);
-                result.setMessage(insertresult.getMessage());
-                result.setSuccess(insertresult.isSuccess());
-                result.setResult(insertresult.getResult());
-                break;
-            case "DATESKIP":
-                ACRGBWSResult insertresultDate = insertmethods.INSERTSKIPYEAR(dataSource, datesettings);
-                result.setMessage(insertresultDate.getMessage());
-                result.setSuccess(insertresultDate.isSuccess());
-                result.setResult(insertresultDate.getResult());
-                break;
-            default:
-                result.setMessage("TAGS NOT FOUND");
-                break;
-        }
-
-        return result;
-    }
+//    @POST
+//    @Path("INSERTDATESETTINGS")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult INSERTDATESETTINGS(final DateSettings datesettings) throws SQLException, ParseException {
+//        //TODO return proper representation object
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        switch (datesettings.getTags().toUpperCase()) {
+//            case "DATEDIF":
+//                ACRGBWSResult insertresult = insertmethods.INSERTDATESETTINGS(dataSource, datesettings);
+//                result.setMessage(insertresult.getMessage());
+//                result.setSuccess(insertresult.isSuccess());
+//                result.setResult(insertresult.getResult());
+//                break;
+//            case "DATESKIP":
+//                ACRGBWSResult insertresultDate = insertmethods.INSERTSKIPYEAR(dataSource, datesettings);
+//                result.setMessage(insertresultDate.getMessage());
+//                result.setSuccess(insertresultDate.isSuccess());
+//                result.setResult(insertresultDate.getResult());
+//                break;
+//            default:
+//                result.setMessage("TAGS NOT FOUND");
+//                break;
+//        }
+//
+//        return result;
+//    }
 
     @POST
     @Path("INSERTUSER")
@@ -329,7 +329,9 @@ public class ACRGBPOST {
                     error.add("DATE CREATED IS REQUIRED");
                 }
                 //CHECK USERNAME
-                if (!methods.ACRUSERNAME(dataSource, userinfo.get(x).getEmail().trim()).isSuccess()) {
+                if (!utility.isValidEmail(userinfo.get(x).getEmail().trim())) {
+                    error.add("| EMAIL IS INVALID");
+                } else if (!methods.ACRUSERNAME(dataSource, userinfo.get(x).getEmail().trim()).isSuccess()) {
                     error.add(userinfo.get(x).getEmail().trim() + " DUPLICATE");
                 } else if (userinfo.get(x).getContact().trim().isEmpty()) {
                     error.add("| EMAIL IS REQUIRED");
@@ -364,19 +366,19 @@ public class ACRGBPOST {
                     switch (level.getLevname().toLowerCase().trim()) {
                         case "PRO": {
                             if (!methods.GetProWithPROID(dataSource, userinfo.get(x).getDesignation().trim()).isSuccess()) {
-                                error.add("| PRO CODE "+userinfo.get(x).getDesignation()+" NOT VALID");
+                                error.add("| PRO CODE " + userinfo.get(x).getDesignation() + " NOT VALID");
                             }
                             break;
                         }
                         case "HCPN": {
                             if (!methods.GETMBWITHID(dataSource, userinfo.get(x).getDesignation()).isSuccess()) {
-                                error.add("| HCPN CODE "+userinfo.get(x).getDesignation()+" NOT VALID");
+                                error.add("| HCPN CODE " + userinfo.get(x).getDesignation() + " NOT VALID");
                             }
                             break;
                         }
                         case "HCF": {
                             if (!fm.GETFACILITYID(dataSource, userinfo.get(x).getDesignation()).isSuccess()) {
-                                error.add("| HCF CODE NOT "+userinfo.get(x).getDesignation()+" VALID");
+                                error.add("| HCF CODE NOT " + userinfo.get(x).getDesignation() + " VALID");
                             }
                             break;
                         }

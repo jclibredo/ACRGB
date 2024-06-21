@@ -50,7 +50,6 @@ public class LedgerMethod {
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
     //private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm:ss a");
 
-  
     //GET ASSESTS USING CONTRACT ID
     public ACRGBWSResult GetAssetsUsingConID(final DataSource dataSource, final String conid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -113,7 +112,6 @@ public class LedgerMethod {
         return result;
     }
 
- 
     public ACRGBWSResult GETASSETSBYHCF(final DataSource dataSource, final String phcfid, final String pdatefrom, final String pdateto) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -259,7 +257,8 @@ public class LedgerMethod {
     //PROCESS LEDGER PER CONTRACT UNDER HCPN
     public ACRGBWSResult GETLedgerPerContractHCPN(final DataSource dataSource,
             final String hcpncode,
-            final String conid) {
+            final String conid,
+            final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -281,7 +280,7 @@ public class LedgerMethod {
                 ledgersss.setBalance(String.valueOf(begin));
                 ledgerlist.add(ledgersss);
             }
-            ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, hcpncode, conid, "ACTIVE");
+            ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, hcpncode, conid, tags);
             if (restA.isSuccess()) {
                 List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
                 for (int x = 0; x < assetlist.size(); x++) {
@@ -304,8 +303,8 @@ public class LedgerMethod {
                     ledgerlist.add(ledger);
                     //====================================================
                     //GET LIQUIDATION PART
-                    ACRGBWSResult hcflist = m.GETROLEMULITPLE(dataSource, hcpncode, "ACTIVE");
-                    ACRGBWSResult getContractDate = fm.GETCONTRACTCONID(dataSource, conid, "ACTIVE");
+                    ACRGBWSResult hcflist = m.GETROLEMULITPLE(dataSource, hcpncode, tags);
+                    ACRGBWSResult getContractDate = fm.GETCONTRACTCONID(dataSource, conid, tags);
                     if (getContractDate.isSuccess()) {
                         Contract cons = utility.ObjectMapper().readValue(getContractDate.getResult(), Contract.class);
                         ContractDate contractdate = utility.ObjectMapper().readValue(cons.getContractdate(), ContractDate.class);
@@ -651,7 +650,7 @@ public class LedgerMethod {
                     ACRGBWSResult getContractDate = fm.GETCONTRACTCONID(dataSource, contractid, "ACTIVE");
                     if (getContractDate.isSuccess()) {
                         Contract cons = utility.ObjectMapper().readValue(getContractDate.getResult(), Contract.class);
-                        ContractDate contractdate = utility.ObjectMapper().readValue(cons.getContractdate(), ContractDate.class);              
+                        ContractDate contractdate = utility.ObjectMapper().readValue(cons.getContractdate(), ContractDate.class);
                         if ((x + 1) < assetlist.size()) {
                             SimpleDateFormat sdf = utility.SimpleDateFormat("MM-dd-yyyy");
                             String convertedDateto = String.valueOf(sdf.format(sdf.parse(assetlist.get(x + 1).getDatereleased()).getTime() - 1));
@@ -764,9 +763,8 @@ public class LedgerMethod {
         }
         return result;
     }
-    
-    
-     //PROCESS LEDGER PER CONTRACT OF SELECTED APEX FACILITY ACTIVE
+
+    //PROCESS LEDGER PER CONTRACT OF SELECTED APEX FACILITY ACTIVE
     public ACRGBWSResult GETLedgerAllContractAPEXInactive(final DataSource dataSource,
             final String upmmc_no,
             final String contractid) {
@@ -816,7 +814,7 @@ public class LedgerMethod {
                     ACRGBWSResult getContractDate = fm.GETCONTRACTCONID(dataSource, contractid, "INACTIVE");
                     if (getContractDate.isSuccess()) {
                         Contract cons = utility.ObjectMapper().readValue(getContractDate.getResult(), Contract.class);
-                        ContractDate contractdate = utility.ObjectMapper().readValue(cons.getContractdate(), ContractDate.class);              
+                        ContractDate contractdate = utility.ObjectMapper().readValue(cons.getContractdate(), ContractDate.class);
                         if ((x + 1) < assetlist.size()) {
                             SimpleDateFormat sdf = utility.SimpleDateFormat("MM-dd-yyyy");
                             String convertedDateto = String.valueOf(sdf.format(sdf.parse(assetlist.get(x + 1).getDatereleased()).getTime() - 1));
@@ -929,6 +927,6 @@ public class LedgerMethod {
         }
         return result;
     }
-    
 
+   
 }
