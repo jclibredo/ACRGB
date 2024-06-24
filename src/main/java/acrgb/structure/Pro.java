@@ -28,5 +28,6 @@ public class Pro {
     private String unutilize;
     private String percentage;
     private String transcode;
+    private String proaddress;
 
 }

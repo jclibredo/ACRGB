@@ -75,9 +75,9 @@ public class UpdateMethods {
                 } else {
                     ACRGBWSResult conresult = fm.GETCONTRACTAMOUNT(datasource, assets.getHcfid());
                     if (conresult.isSuccess()) {
-                        ACRGBWSResult transresult = fm.ACR_ASSETS(datasource, "active", "0");
+                        ACRGBWSResult transresult = fm.ACR_ASSETS(datasource, "ACTIVE", "0");
                         if (transresult.isSuccess()) {
-                            ACRGBWSResult trans = fm.ACR_TRANCH(datasource, "active");
+                            ACRGBWSResult trans = fm.ACR_TRANCH(datasource, "ACTIVE");
                             if (trans.isSuccess()) {
                                 int transcount = 0;
                                 List<Tranch> tranchlist = Arrays.asList(utility.ObjectMapper().readValue(trans.getResult(), Tranch[].class));
@@ -162,7 +162,7 @@ public class UpdateMethods {
                 result.setSuccess(false);
             } else {
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATECONTRACT(:Message,:Code,:p_conid,:p_hcfid,:p_amount"
-                        + ",:p_contractdate,:p_transcode,:c_claimsvol)");
+                        + ",:p_contractdate,:p_transcode,:c_claimsvol,:p_quarter)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("p_conid", contract.getConid());
@@ -171,6 +171,7 @@ public class UpdateMethods {
                 getinsertresult.setString("p_contractdate", contract.getContractdate());
                 getinsertresult.setString("p_transcode", contract.getTranscode());
                 getinsertresult.setString("c_claimsvol", contract.getComittedClaimsVol());
+                getinsertresult.setString("p_quarter", contract.getQuarter());
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);
@@ -315,7 +316,6 @@ public class UpdateMethods {
 //        }
 //        return result;
 //    }
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult TAGGINGCONTRACT(final DataSource datasource, Contract contract) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -665,12 +665,11 @@ public class UpdateMethods {
                             appellate.setConid(ucondate);
                             appellate.setStatus("3");
                             ACRGBWSResult UpdateAppellate = this.UPDATEAPELLATE(datasource, "NONUPDATE", appellate);
-                             message.add("Appellate Tagging:[" + UpdateAppellate.getMessage() + "]");
+                            message.add("Appellate Tagging:[" + UpdateAppellate.getMessage() + "]");
                             //UPDATE CONTRACT DATE PERIOD
                             ACRGBWSResult upDateConDatePeriod = this.TAGCONTRACTPERIOD(datasource, ucondate);
                             message.add("Con Date Period Tagging:[" + upDateConDatePeriod.getMessage() + "]");
-                            
-                            
+
                             result.setMessage(message.toString());
                             result.setSuccess(true);
                         } else {

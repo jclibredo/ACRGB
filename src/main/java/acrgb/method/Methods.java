@@ -407,7 +407,8 @@ public class Methods {
             final String userid,
             final String datefrom,
             final String dateto,
-            final String stats) {
+            final String stats,
+            final String facilitylist) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -634,15 +635,107 @@ public class Methods {
                     break;
                 case "HCPN"://USERID IS HCPNCODE/ACCRENO
                     //GET ALL FACILITY UNDER OF HCPN
-                    ACRGBWSResult getFacilityUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
-                    if (getFacilityUnder.isSuccess()) {
+                    if (facilitylist.trim().equals("OLD")) {
+                        ACRGBWSResult getFacilityUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
+                        if (getFacilityUnder.isSuccess()) {
+                            ArrayList<FacilityComputedAmount> totalcomputeHCPNList = new ArrayList<>();
+                            List<String> hcflist = Arrays.asList(getFacilityUnder.getResult().split(","));
+                            double totalDateSettingYearClaimAmount = 0.00;
+                            int totalclaimcountdatesetting = 0;
+                            double claims30percent = 0.00;
+                            double claimsSb = 0.00;
+                            double TotalBaseAmount = 0.00;
+                            for (int y = 0; y < hcflist.size(); y++) {
+                                ACRGBWSResult restC = this.GetAmountPerFacility(dataSource, hcflist.get(y), datefrom.trim(), dateto.trim());
+                                if (restC.isSuccess()) {
+                                    //DATE SETTINGS
+                                    List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
+                                    for (int gets = 0; gets < fcaA.size(); gets++) {
+                                        FacilityComputedAmount totalcomputeHCPN = new FacilityComputedAmount();
+                                        totalcomputeHCPN.setYearfrom(fcaA.get(gets).getYearfrom());
+                                        totalcomputeHCPN.setYearto(fcaA.get(gets).getYearto());
+                                        //GET FACILITY
+                                        ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(gets).getHospital());
+                                        if (getHCI.isSuccess()) {
+                                            HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class);
+                                            switch (hci.getHcilevel().toUpperCase().trim()) {
+                                                case "T1":
+                                                case "T2":
+                                                case "SH": {
+                                                    double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
+                                                    double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30;
+                                                    double add10 = Baseadd30 * 0.10;
+                                                    double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30 + add10;
+                                                    claims30percent += add30;
+                                                    claimsSb += add10;
+                                                    totalDateSettingYearClaimAmount += total;
+                                                    TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                    totalcomputeHCPN.setTotalamount(fcaA.get(gets).getTotalamount());
+                                                    totalcomputeHCPN.setThirty(String.valueOf(add30));
+                                                    totalcomputeHCPN.setSb(String.valueOf(add10));
+                                                    break;
+                                                }
+                                                default: {
+                                                    double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
+                                                    double origamount = Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                    double total = origamount + add30;
+                                                    claims30percent += add30;
+                                                    totalDateSettingYearClaimAmount += total;
+                                                    TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                    totalcomputeHCPN.setThirty(String.valueOf(add30));
+                                                    totalcomputeHCPN.setTotalamount(fcaA.get(gets).getTotalamount());
+                                                    break;
+                                                }
+                                            }
+                                            totalcomputeHCPN.setHospital(getHCI.getResult());
+                                        }
+                                        totalcomputeHCPN.setDatefiled(fcaA.get(gets).getDatefiled());
+                                        totalcomputeHCPN.setTotalclaims(String.valueOf(fcaA.get(gets).getTotalclaims()));
+                                        //ADD TO LIST
+                                        totalcomputeHCPNList.add(totalcomputeHCPN);
+                                    }
+                                }
+                            }
+                            FacilityComputedAmount totalcomputeHCPNA = new FacilityComputedAmount();
+                            totalcomputeHCPNA.setSb(String.valueOf(claimsSb));
+                            totalcomputeHCPNA.setThirty(String.valueOf(claims30percent));
+                            totalcomputeHCPNA.setYearfrom(datefrom);
+                            totalcomputeHCPNA.setYearto(dateto);
+                            totalcomputeHCPNA.setTotalamount(String.valueOf(TotalBaseAmount));
+                            totalcomputeHCPNA.setTotalclaims(String.valueOf(totalclaimcountdatesetting));
+                            //GET HCPN
+                            ACRGBWSResult getHCPN = this.GETMBWITHID(dataSource, userid);
+                            if (getHCPN.isSuccess()) {
+                                totalcomputeHCPNA.setHospital(getHCPN.getResult());
+                            } else {
+                                totalcomputeHCPNA.setHospital(getHCPN.getMessage());
+                            }
+                            totalcomputeHCPNList.add(totalcomputeHCPNA);
+
+                            //END OF GETTING HCPN
+                            if (!totalcomputeHCPNList.isEmpty()) {
+                                result.setMessage("OK");
+                                result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeHCPNList));
+                                result.setSuccess(true);
+                            } else {
+                                result.setMessage("N/A");
+                            }
+                        } else {
+                            result.setMessage(getFacilityUnder.getMessage());
+                        }
+
+                        //============================== COSTUMIZED LIST OF CAILITY
+                    } else {
                         ArrayList<FacilityComputedAmount> totalcomputeHCPNList = new ArrayList<>();
-                        List<String> hcflist = Arrays.asList(getFacilityUnder.getResult().split(","));
+                        List<String> hcflist = Arrays.asList(facilitylist.trim().split(","));
                         double totalDateSettingYearClaimAmount = 0.00;
                         int totalclaimcountdatesetting = 0;
                         double claims30percent = 0.00;
                         double claimsSb = 0.00;
                         double TotalBaseAmount = 0.00;
+                        
                         for (int y = 0; y < hcflist.size(); y++) {
                             ACRGBWSResult restC = this.GetAmountPerFacility(dataSource, hcflist.get(y), datefrom.trim(), dateto.trim());
                             if (restC.isSuccess()) {
@@ -689,15 +782,14 @@ public class Methods {
                                         }
                                         totalcomputeHCPN.setHospital(getHCI.getResult());
                                     }
-                                    
                                     totalcomputeHCPN.setDatefiled(fcaA.get(gets).getDatefiled());
                                     totalcomputeHCPN.setTotalclaims(String.valueOf(fcaA.get(gets).getTotalclaims()));
-
                                     //ADD TO LIST
                                     totalcomputeHCPNList.add(totalcomputeHCPN);
                                 }
                             }
                         }
+                        
                         FacilityComputedAmount totalcomputeHCPNA = new FacilityComputedAmount();
                         totalcomputeHCPNA.setSb(String.valueOf(claimsSb));
                         totalcomputeHCPNA.setThirty(String.valueOf(claims30percent));
@@ -713,7 +805,6 @@ public class Methods {
                             totalcomputeHCPNA.setHospital(getHCPN.getMessage());
                         }
                         totalcomputeHCPNList.add(totalcomputeHCPNA);
-
                         //END OF GETTING HCPN
                         if (!totalcomputeHCPNList.isEmpty()) {
                             result.setMessage("OK");
@@ -722,8 +813,6 @@ public class Methods {
                         } else {
                             result.setMessage("N/A");
                         }
-                    } else {
-                        result.setMessage(getFacilityUnder.getMessage());
                     }
                     break;
             }
@@ -734,9 +823,9 @@ public class Methods {
         }
         return result;
     }
-    
+
     // GET SUMMARY FOR INSERTING CONTRACT
-      //ACR GB GET SUMMARY
+    //ACR GB GET SUMMARY
     public ACRGBWSResult GetBaseAmountForContract(final DataSource dataSource,
             final String tags,
             final String userid,
@@ -984,9 +1073,6 @@ public class Methods {
                                 //DATE SETTINGS
                                 List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
                                 for (int gets = 0; gets < fcaA.size(); gets++) {
-//                                    FacilityComputedAmount totalcomputeHCPN = new FacilityComputedAmount();
-//                                    totalcomputeHCPN.setYearfrom(fcaA.get(gets).getYearfrom());
-//                                    totalcomputeHCPN.setYearto(fcaA.get(gets).getYearto());
                                     //GET FACILITY
                                     ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(gets).getHospital());
                                     if (getHCI.isSuccess()) {
@@ -1004,9 +1090,6 @@ public class Methods {
                                                 totalDateSettingYearClaimAmount += total;
                                                 TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
                                                 totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
-//                                                totalcomputeHCPN.setTotalamount(fcaA.get(gets).getTotalamount());
-//                                                totalcomputeHCPN.setThirty(String.valueOf(add30));
-//                                                totalcomputeHCPN.setSb(String.valueOf(add10));
                                                 break;
                                             }
                                             default: {
@@ -1017,19 +1100,10 @@ public class Methods {
                                                 totalDateSettingYearClaimAmount += total;
                                                 TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
                                                 totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
-//                                                totalcomputeHCPN.setThirty(String.valueOf(add30));
-//                                                totalcomputeHCPN.setTotalamount(fcaA.get(gets).getTotalamount());
                                                 break;
                                             }
                                         }
-//                                        totalcomputeHCPN.setHospital(getHCI.getResult());
                                     }
-                                    
-//                                    totalcomputeHCPN.setDatefiled(fcaA.get(gets).getDatefiled());
-//                                    totalcomputeHCPN.setTotalclaims(String.valueOf(fcaA.get(gets).getTotalclaims()));
-
-                                    //ADD TO LIST
-//                                    totalcomputeHCPNList.add(totalcomputeHCPN);
                                 }
                             }
                         }
@@ -1187,6 +1261,7 @@ public class Methods {
         }
         return result;
     }
+
     //INSERT MB REQUEST
     public ACRGBWSResult InsertMBRequest(DataSource dataSource, final MBRequestSummary mbrequestsummry) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -1335,7 +1410,6 @@ public class Methods {
 //        }
 //        return result;
 //    }
-
     //GET FHCI WITH BADGET USING MANAGING BOARD MBID
 //    public ACRGBWSResult MethodGetHealthFacilityBadgetUisngMBID(final DataSource dataSource,
 //            final String mbid,
@@ -1408,7 +1482,6 @@ public class Methods {
 //        }
 //        return result;
 //    }
-
     // GET ALL REQUEST USING MB USERID ACCOUNT
     public ACRGBWSResult FetchMBRequest(final DataSource dataSource, final String userid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -1560,7 +1633,6 @@ public class Methods {
 //        }
 //        return result;
 //    }
-
     //GET MB WITH ID
     public ACRGBWSResult GETMBWITHID(final DataSource dataSource, final String pid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -1947,7 +2019,8 @@ public class Methods {
             if (resultset.next()) {
                 Pro pro = new Pro();
                 pro.setProname(resultset.getString("PRONAME"));
-                pro.setProcode(resultset.getString("PROCODE"));
+                pro.setProaddress(resultset.getString("PROADDRESS"));
+                pro.setProcode("2024" + resultset.getString("PROCODE"));
                 result.setResult(utility.ObjectMapper().writeValueAsString(pro));
                 result.setMessage("OK");
                 result.setSuccess(true);
@@ -2178,7 +2251,6 @@ public class Methods {
 //        }
 //        return result;
 //    }
-
     //GET REPORTS FOR LIST OF SELECTED NETWORK
     public ACRGBWSResult GetReportsOfSelectedAPEXFacility(final DataSource dataSource, final String tags, final String puserid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -2317,7 +2389,7 @@ public class Methods {
 
     //GET COMPUTED REMAINING BALANCE FOR TERMINATED CONTRACT PER FACILITY
     public ACRGBWSResult GetRemainingBalanceForTerminatedContract(final DataSource dataSource, final String userid,
-    final String tags) throws ParseException {
+            final String tags) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");

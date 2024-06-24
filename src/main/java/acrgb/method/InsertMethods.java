@@ -46,7 +46,7 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class InsertMethods {
-    
+
     public InsertMethods() {
     }
     private final Utility utility = new Utility();
@@ -112,7 +112,7 @@ public class InsertMethods {
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -145,7 +145,7 @@ public class InsertMethods {
                 } else {
                     CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONTRACT(:Message,:Code,:p_hcfid,:p_amount"
                             + ",:p_createdby,:p_datecreated,:p_contractdate,:p_transcode,"
-                            + ":p_baseamount,:c_claimsvol,:t_claimsvol,:p_sb,:p_addamount)");
+                            + ":p_baseamount,:c_claimsvol,:t_claimsvol,:p_sb,:p_addamount,:p_quarter)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                     getinsertresult.setString("p_hcfid", contract.getHcfid());//PAN Number or MB Accreditaion Number
@@ -159,9 +159,11 @@ public class InsertMethods {
                     getinsertresult.setString("t_claimsvol", contract.getComputedClaimsVol());
                     getinsertresult.setString("p_sb", contract.getSb());
                     getinsertresult.setString("p_addamount", contract.getAddamount());
+                    getinsertresult.setString("p_quarter", contract.getQuarter());
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
                         //INSERT TO ACTIVITY LOGS
+                        int countpro = 0;
                         UserActivity userlogs = utility.UserActivity();
                         ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, contract.getHcfid());
                         if (getSubject.isSuccess()) {
@@ -181,25 +183,29 @@ public class InsertMethods {
                                 String actdetails = "INSERT CONTRACT TO " + mb.getMbname();
                                 userlogs.setActdetails(actdetails);
                             } else {
-                                String actdetails = "INSERT BUDGET TO PRO ";
+                                ACRGBWSResult getSubjectB = methods.GetProWithPROID(datasource, contract.getHcfid());
+                                Pro pro = utility.ObjectMapper().readValue(getSubjectB.getResult(), Pro.class);
+                                String actdetails = "INSERT BUDGET TO " + pro.getProname();
                                 userlogs.setActdetails(actdetails);
+                                countpro++;
                             }
                             ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                             result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
                         }
-                        //INSERT CONTRACT ID TO ROLE INDEX TABLE
-                        ACRGBWSResult insertRoleIndex = um.UPDATEROLEINDEX(datasource,
-                                contract.getHcfid(), contract.getContractdate(), "UPDATE");
-                        //END INSERT CONTRACT ID TO ROLE INDEX TABLE
 
-                        //INSERT CONTRACT ID TO APPELLATE TABLE
-                        Appellate appellate = new Appellate();
-                        appellate.setAccesscode(contract.getHcfid());
-                        appellate.setStatus("2");
-                        appellate.setConid(contract.getContractdate());
-                        ACRGBWSResult insertAppellate = um.UPDATEAPELLATE(datasource, "NONUPDATE", appellate);
-                        //END INSERT CONTRACT ID TO APPELLATE TABLE
-
+                        if (countpro == 0) {
+                            //INSERT CONTRACT ID TO ROLE INDEX TABLE
+                            ACRGBWSResult insertRoleIndex = um.UPDATEROLEINDEX(datasource,
+                                    contract.getHcfid(), contract.getContractdate(), "UPDATE");
+                            //END INSERT CONTRACT ID TO ROLE INDEX TABLE
+                            //INSERT CONTRACT ID TO APPELLATE TABLE
+                            Appellate appellate = new Appellate();
+                            appellate.setAccesscode(contract.getHcfid());
+                            appellate.setStatus("2");
+                            appellate.setConid(contract.getContractdate());
+                            ACRGBWSResult insertAppellate = um.UPDATEAPELLATE(datasource, "NONUPDATE", appellate);
+                            //END INSERT CONTRACT ID TO APPELLATE TABLE
+                        }
                         result.setSuccess(true);
                     } else {
                         result.setMessage(getinsertresult.getString("Message"));
@@ -351,7 +357,7 @@ public class InsertMethods {
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
-                
+
             }
         } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
@@ -434,7 +440,7 @@ public class InsertMethods {
                             result.setSuccess(true);
                             result.setMessage(getinsertresult.getString("Message") + ""
                                     + " AND" + emailResult.getMessage() + " \n " + insertActivitylogs.getMessage());
-                            
+
                         } else {
                             result.setMessage(getinsertresult.getString("Message"));
                         }
@@ -498,7 +504,7 @@ public class InsertMethods {
                     result.setMessage(errorList.toString());
                 }
             }
-            
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -542,7 +548,7 @@ public class InsertMethods {
             } else {
                 result.setMessage(errorList.toString());
             }
-            
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -671,7 +677,6 @@ public class InsertMethods {
 //        }
 //        return result;
 //    }
-
 //    //----------------------------------------------------------------------------------------------------------
 //    public ACRGBWSResult INSERTSKIPYEAR(final DataSource datasource, final DateSettings datesettings) throws ParseException {
 //        ACRGBWSResult result = utility.ACRGBWSResult();
@@ -710,7 +715,6 @@ public class InsertMethods {
 //        }
 //        return result;
 //    }
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult INSERTHCPN(final DataSource datasource, final ManagingBoard mb) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -775,7 +779,7 @@ public class InsertMethods {
                             } else {
                                 result.setMessage(getinsertresult.getString("Message"));
                             }
-                            
+
                             UserActivity userlogs = utility.UserActivity();
                             String actdetails = "INSERT NEW HCPN PROFILE :"
                                     + mb.getMbname() + " , " + mb.getAddress() + " , " + mb.getControlnumber();
@@ -783,7 +787,7 @@ public class InsertMethods {
                             userlogs.setActdate(mb.getDatecreated());
                             userlogs.setActdetails(actdetails);
                             ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
-                            
+
                         } else {
                             result.setMessage(insertRole.getMessage());
                         }
@@ -865,7 +869,7 @@ public class InsertMethods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult INSERTAPPELLATE(final DataSource datasource, final String uaccesscode,
             final String ucontrolcode, final String createdby, final String datecreated) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -905,7 +909,7 @@ public class InsertMethods {
             } else {
                 result.setMessage(errorList.toString());
             }
-            
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -948,7 +952,6 @@ public class InsertMethods {
 //        }
 //        return result;
 //    }
-
     //INSERT BOOK
     public ACRGBWSResult ACRBOOKING(final DataSource datasource, final Book book) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -978,7 +981,7 @@ public class InsertMethods {
                 ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                 result.setSuccess(true);
                 result.setMessage(getinsertresult.getString("Message") + " LOGS STATUS: " + insertActivitylogs.getMessage());
-                
+
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
@@ -1167,5 +1170,5 @@ public class InsertMethods {
         }
         return result;
     }
-    
+
 }

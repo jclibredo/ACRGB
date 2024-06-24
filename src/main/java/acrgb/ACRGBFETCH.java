@@ -137,7 +137,6 @@ public class ACRGBFETCH {
                     result.setSuccess(getResultF.isSuccess());
                     break;
                 }
-
                 // GET FACILITY CONTRACT USING ACCOUNT USERID
                 case "FACILITYCONOWN": {
                     ACRGBWSResult GetResult = con.GETCONTRACTOFFACILITY(dataSource, tags, puserid);
@@ -148,13 +147,21 @@ public class ACRGBFETCH {
                 }
                 // GET HCPN CONTRACT USING ACCOUNT USERID
                 case "HCPNCONOWN": {
-                   ACRGBWSResult GetResult = con.GETCONTRACTOFHCPN(dataSource, tags, puserid);
+                    ACRGBWSResult GetResult = con.GETCONTRACTOFHCPN(dataSource, tags, puserid);
                     result.setMessage(GetResult.getMessage());
                     result.setResult(GetResult.getResult());
                     result.setSuccess(false);
                     break;
                 }
 
+                // GET PRO CONTRACT USING ACCOUNT USERID
+                case "PROCONOWN": {
+                    ACRGBWSResult GetResult = con.GETCONTRACTOFPRO(dataSource, tags, puserid);
+                    result.setMessage(GetResult.getMessage());
+                    result.setResult(GetResult.getResult());
+                    result.setSuccess(false);
+                    break;
+                }
                 default: {
                     result.setMessage(level + " IS NOT VALID");
                     break;
@@ -249,11 +256,11 @@ public class ACRGBFETCH {
     }
 
     @GET
-    @Path("GetPro")
+    @Path("GetPro/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetPro() {
+    public ACRGBWSResult GetPro(@PathParam("tags") String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult getResult = fetchmethods.ACR_PRO(dataSource);
+        ACRGBWSResult getResult = fetchmethods.ACR_PRO(dataSource, tags.trim());
         result.setMessage(getResult.getMessage());
         result.setResult(getResult.getResult());
         result.setSuccess(getResult.isSuccess());
@@ -272,16 +279,16 @@ public class ACRGBFETCH {
         return result;
     }
 //SUMMARY  / CONTRACT
-
     @GET
-    @Path("GetSummary/{tags}/{userid}/{datefrom}/{dateto}/{type}")
+    @Path("GetSummary/{tags}/{userid}/{datefrom}/{dateto}/{type}/{hcilist}")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetSummary(
             @PathParam("datefrom") String datefrom,
             @PathParam("dateto") String dateto,
             @PathParam("tags") String tags,
             @PathParam("userid") String userid,
-            @PathParam("type") String type) {
+            @PathParam("type") String type,
+            @PathParam("hcilist") String hcilist) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -289,7 +296,7 @@ public class ACRGBFETCH {
         if (utility.IsValidDate(datefrom) && utility.IsValidDate(dateto)) {
             switch (type.toUpperCase().trim()) {
                 case "SUMMARY": {
-                    ACRGBWSResult getResult = methods.GetBaseAmountForSummary(dataSource, tags, userid, datefrom, dateto, "ACTIVE".toUpperCase().trim());
+                    ACRGBWSResult getResult = methods.GetBaseAmountForSummary(dataSource, tags, userid, datefrom, dateto, "ACTIVE".toUpperCase().trim(), hcilist);
                     result.setMessage(getResult.getMessage());
                     result.setResult(getResult.getResult());
                     result.setSuccess(getResult.isSuccess());
@@ -481,30 +488,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-    //GET GET FACILITY USING MB USERID
-//    @GET
-//    @Path("GetMBUsingUserIDMBID/{pid}")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public ACRGBWSResult GetMBUsingUserIDMBID(@PathParam("pid") String pid) throws ParseException {
-//        ACRGBWSResult result = utility.ACRGBWSResult();
-//        result.setMessage("");
-//        result.setResult("");
-//        result.setSuccess(false);
-//        if (pid.isEmpty()) {
-//            result.setMessage("PATH PARAMETER IS EMPTY");
-//            result.setSuccess(false);
-//        } else if (!utility.IsValidNumber(pid)) {
-//            result.setMessage("NUMBER FORMAT IS NOT VALID");
-//        } else {
-//            ACRGBWSResult getResult = methods.GETFACILITYUNDERMBUSER(dataSource, pid);
-//            result.setMessage(getResult.getMessage());
-//            result.setResult(getResult.getResult());
-//            result.setSuccess(getResult.isSuccess());
-//        }
-//        return result;
-//    }
-//------------------------------------------------------------
-    //Get all facility (multiple)
 
     @GET
     @Path("GETALLFACILITY/{tags}/{userid}")

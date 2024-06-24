@@ -13,7 +13,6 @@ import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
-import acrgb.structure.DateSettings;
 import acrgb.structure.ForgetPassword;
 import acrgb.structure.MBRequestSummary;
 import acrgb.structure.ManagingBoard;
