@@ -629,12 +629,12 @@ public class Methods {
                         } else {
                             result.setMessage("N/A");
                         }
-                    } else {
+                    } else {           
                         result.setMessage(restA.getMessage());
                     }
                     break;
                 case "HCPN"://USERID IS HCPNCODE/ACCRENO
-                    //GET ALL FACILITY UNDER OF HCPN
+                    //GET ALL FACILITY UNDER OF HCPN                                                     
                     if (facilitylist.trim().equals("OLD")) {
                         ACRGBWSResult getFacilityUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
                         if (getFacilityUnder.isSuccess()) {

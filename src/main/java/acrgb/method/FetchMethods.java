@@ -378,7 +378,7 @@ public class FetchMethods {
         return result;
     }
 
-    // ACR___ASSETS
+    // ACR___ASSETS   BY CONTRACT ID
     public ACRGBWSResult ACR_ASSETS(final DataSource dataSource, final String tags, final String phcfid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
