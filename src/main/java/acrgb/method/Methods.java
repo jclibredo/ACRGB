@@ -737,7 +737,7 @@ public class Methods {
                         double TotalBaseAmount = 0.00;
                         
                         for (int y = 0; y < hcflist.size(); y++) {
-                            ACRGBWSResult restC = this.GetAmountPerFacility(dataSource, hcflist.get(y), datefrom.trim(), dateto.trim());
+                            ACRGBWSResult restC = this.GetAmountPerFacility(dataSource, hcflist.get(y).trim(), datefrom.trim(), dateto.trim());
                             if (restC.isSuccess()) {
                                 //DATE SETTINGS
                                 List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
