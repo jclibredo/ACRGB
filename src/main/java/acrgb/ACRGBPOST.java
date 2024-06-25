@@ -5,12 +5,14 @@
  */
 package acrgb;
 
+import acrgb.method.BookingMethod;
 import acrgb.method.FetchMethods;
 import acrgb.method.Forgetpassword;
 import acrgb.method.InsertMethods;
 import acrgb.method.Methods;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Assets;
+import acrgb.structure.Book;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.ForgetPassword;
@@ -39,8 +41,8 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
-//--------------------------------------
 
+//--------------------------------------
 //---------------------------------------
 /**
  * REST Web Service
@@ -61,6 +63,7 @@ public class ACRGBPOST {
     private final InsertMethods insertmethods = new InsertMethods();
     private final Methods methods = new Methods();
     private final FetchMethods fm = new FetchMethods();
+    private final BookingMethod bm = new BookingMethod();
 
     /**
      * Retrieves representation of an instance of acrgb.ACRGB
@@ -188,7 +191,6 @@ public class ACRGBPOST {
 //
 //        return result;
 //    }
-
     @POST
     @Path("INSERTUSER")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -421,6 +423,38 @@ public class ACRGBPOST {
             Logger.getLogger(ACRGBPOST.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+        return result;
+    }
+
+    //GET TRIGGER AUTOEND CONTRACT DATE
+    // 1.) CONTRACT ID
+    // 2.) DATE PERIOD 
+    // 3.) SELECT FACILITY AND FACILITY
+    @POST
+    @Path("BookData")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult BookData(final Book book) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult BookingResult = bm.GETACTIVECONTRACT(dataSource, book);
+        result.setMessage(BookingResult.getMessage());
+        result.setResult(BookingResult.getResult());
+        result.setSuccess(BookingResult.isSuccess());
+        return result;
+    }
+
+    //INSERT EMAIL CREDEDNTIALS
+    @POST
+    @Path("PostEmailCredentials")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult PostEmailCredentials(final ForgetPassword fp) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        Forgetpassword forgetpass = new Forgetpassword();
+        ACRGBWSResult BookingResult = forgetpass.InserEmailCred(dataSource, fp);
+        result.setMessage(BookingResult.getMessage());
+        result.setResult(BookingResult.getResult());
+        result.setSuccess(BookingResult.isSuccess());
         return result;
     }
 

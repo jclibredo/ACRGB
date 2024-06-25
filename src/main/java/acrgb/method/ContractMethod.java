@@ -558,10 +558,10 @@ public class ContractMethod {
                     }
                     contract.setTotalclaims(String.valueOf(numberofclaims));
                     contract.setTraches(String.valueOf(tranches));
-                    contract.setPercentage(String.valueOf(Math.round(percentageA)));
+                    contract.setPercentage(String.valueOf(percentageA));
                     contract.setTotaltrancheamount(String.valueOf(trancheamount));
                     contract.setTotalclaimsamount(String.valueOf(claimsamount));
-                    contract.setTotalclaimspercentage(String.valueOf(Math.round(percentageB)));
+                    contract.setTotalclaimspercentage(String.valueOf(percentageB));
                     result.setMessage("OK");
                     result.setSuccess(true);
                     result.setResult(utility.ObjectMapper().writeValueAsString(contract));
@@ -661,10 +661,13 @@ public class ContractMethod {
                     //-------------------------------------------------
                     contract.setTotalclaims(String.valueOf(numberofclaims));
                     contract.setTraches(String.valueOf(tranches));
-                    contract.setPercentage(String.valueOf(Math.round(percentageA)));
+                    contract.setPercentage(String.valueOf(percentageA));
                     contract.setTotaltrancheamount(String.valueOf(trancheamount));
                     contract.setTotalclaimsamount(String.valueOf(claimsamount));
-                    contract.setTotalclaimspercentage(String.valueOf(Math.round(percentageB)));
+                    contract.setTotalclaimspercentage(String.valueOf(percentageB));
+                    
+                    
+                    
                     result.setMessage("OK");
                     result.setSuccess(true);
                     result.setResult(utility.ObjectMapper().writeValueAsString(contract));
@@ -725,6 +728,7 @@ public class ContractMethod {
                         contract.setComputedClaimsVol(MapContract.get(w).getComputedClaimsVol());
                         contract.setSb(MapContract.get(w).getSb());
                         contract.setAddamount(MapContract.get(w).getAddamount());
+                        contract.setQuarter(MapContract.get(w).getQuarter());
                         //=============================================
                         //ContractDate condate = utility.ObjectMapper().readValue(MapContract.getContractdate(), ContractDate.class);
                         // GET HCPN UNDER PRO USER
@@ -787,13 +791,13 @@ public class ContractMethod {
                     } else {
                         contractA.setHcfid(GetHCPN.getResult());
                     }
-                    contractA.setAmount(String.valueOf(Math.round(recievedamount)));
+                    contractA.setAmount(String.valueOf(recievedamount));
                     contractA.setTotalclaims(String.valueOf(numberofclaims));
                     contractA.setTraches(String.valueOf(tranches));
-                    contractA.setPercentage(String.valueOf(Math.round(percentageA)));
+                    contractA.setPercentage(String.valueOf(percentageA));
                     contractA.setTotaltrancheamount(String.valueOf(tracnheamountreleased));
                     contractA.setTotalclaimsamount(String.valueOf(totalclaimsamount));
-                    contractA.setTotalclaimspercentage(String.valueOf(Math.round(percentageB)));
+                    contractA.setTotalclaimspercentage(String.valueOf(percentageB));
                     contractList.add(contractA);
                     //---------------------------------------------------------
                     if (contractList.size() > 0) {

@@ -14,18 +14,14 @@ import acrgb.method.LedgerMethod;
 import acrgb.method.Methods;
 import acrgb.method.UpdateMethods;
 import acrgb.structure.ACRGBWSResult;
-import acrgb.structure.Book;
-import acrgb.structure.ForgetPassword;
 import acrgb.utility.Utility;
 import java.sql.SQLException;
 import java.text.ParseException;
 import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
 import javax.sql.DataSource;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
@@ -279,6 +275,7 @@ public class ACRGBFETCH {
         return result;
     }
 //SUMMARY  / CONTRACT
+
     @GET
     @Path("GetSummary/{tags}/{userid}/{datefrom}/{dateto}/{type}/{hcilist}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -761,22 +758,7 @@ public class ACRGBFETCH {
         return result;
     }
 
-    //GET TRIGGER AUTOEND CONTRACT DATE
-    // 1.) CONTRACT ID
-    // 2.) DATE PERIOD 
-    // 3.) SELECT FACILITY AND FACILITY
-    @POST
-    @Path("BookData")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult BookData(final Book book) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult BookingResult = bm.GETACTIVECONTRACT(dataSource, book);
-        result.setMessage(BookingResult.getMessage());
-        result.setResult(BookingResult.getResult());
-        result.setSuccess(BookingResult.isSuccess());
-        return result;
-    }
+   
 
     @GET
     @Path("GetClaims/{hcpncode}/{contractid}/{tags}")
@@ -805,22 +787,7 @@ public class ACRGBFETCH {
         result.setSuccess(BookingResult.isSuccess());
         return result;
     }
-
-    //INSERT EMAIL CREDEDNTIALS
-    @POST
-    @Path("PostEmailCredentials")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult PostEmailCredentials(final ForgetPassword fp) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        Forgetpassword forgetpass = new Forgetpassword();
-        ACRGBWSResult BookingResult = forgetpass.InserEmailCred(dataSource, fp);
-        result.setMessage(BookingResult.getMessage());
-        result.setResult(BookingResult.getResult());
-        result.setSuccess(BookingResult.isSuccess());
-        return result;
-    }
-
+     
     @GET
     @Path("GETOLDPASSCODE/{puserid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -830,6 +797,21 @@ public class ACRGBFETCH {
         result.setMessage(BookingResult.getMessage());
         result.setResult(BookingResult.getResult());
         result.setSuccess(BookingResult.isSuccess());
+        return result;
+    }
+
+    @GET
+    @Path("CONTRACTWITHQUARTER/{tags}/{uprocode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult CONTRACTWITHQUARTER(@PathParam("tags") String tags, @PathParam("uprocode") String uprocode) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult getResult = fetchmethods.CONTRACTWITHQUARTER(dataSource, tags.toUpperCase().trim(), uprocode.trim());
+        result.setMessage(getResult.getMessage());
+        result.setResult(getResult.getResult());
+        result.setSuccess(getResult.isSuccess());
         return result;
     }
 
