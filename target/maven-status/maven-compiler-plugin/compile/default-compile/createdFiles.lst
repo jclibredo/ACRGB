@@ -12,6 +12,7 @@ acrgb\structure\MBRequestSummary.class
 acrgb\method\LedgerMethod.class
 acrgb\structure\LogStatus.class
 acrgb\structure\ReportsHCPNSummary.class
+acrgb\structure\ACRGBPayload.class
 acrgb\utility\Utility.class
 acrgb\structure\ACRGBWSResult.class
 acrgb\structure\Contract.class

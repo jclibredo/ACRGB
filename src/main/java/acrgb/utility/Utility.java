@@ -8,8 +8,12 @@ package acrgb.utility;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Contract;
 import acrgb.structure.DateSettings;
+import acrgb.structure.ACRGBPayload;
 import acrgb.structure.UserActivity;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import java.io.IOException;
+import java.security.Key;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -21,12 +25,30 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.crypto.spec.SecretKeySpec;
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.xml.bind.DatatypeConverter;
 import org.codehaus.jackson.map.ObjectMapper;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Base64;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 /**
  *
@@ -36,11 +58,13 @@ import org.codehaus.jackson.map.ObjectMapper;
 @Singleton
 public class Utility {
 
+    private static SecretKeySpec secretkey;
+    private byte[] key;
     String regex = "^(?=.*[0-9])"
             + "(?=.*[a-z])(?=.*[A-Z])"
             + "(?=.*[@#$%^&+=])"
             + "(?=\\S+$).{8,20}$";
-
+    private static String cipherkey = "A263B7980A15ADE7";
     private final String email_pattern = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
 //represents starting character of the string.
@@ -51,13 +75,12 @@ public class Utility {
 //white spaces don’t allowed in the entire string.
 //.{8, 20} represents at least 8 characters and at most 20 characters.
 //$ represents the end of the string.  
-    
-    
-    
-    
-    
     public ACRGBWSResult ACRGBWSResult() {
         return new ACRGBWSResult();
+    }
+
+    public ACRGBPayload ACRGBPayload() {
+        return new ACRGBPayload();
     }
 
     public UserActivity UserActivity() {
@@ -83,15 +106,15 @@ public class Utility {
     }
 
     public String GetString(String name) {
-        String result = "";
-        try {
-            Context context = new InitialContext();
-            Context environment = (Context) context.lookup("java:comp/env");
-            result = (String) environment.lookup(name);
-        } catch (NamingException ex) {
-            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
-            result = ex.getMessage();
-        }
+        String result = cipherkey;
+//        try {
+//            Context context = new InitialContext();
+//            Context environment = (Context) context.lookup("java:comp/env");
+//            result = (String) environment.lookup(name);
+//        } catch (NamingException ex) {
+//            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
+//            result = ex.getMessage();
+//        }
         return result;
     }
 
@@ -217,86 +240,175 @@ public class Utility {
         boolean isValid = email.matches(email_pattern);
         return isValid;
     }
-    
+
     //HTML TEMPLATE TO SENT EMAIL CONTENT
-    public String EmailTemplate(String useremail, String passcode){
+    public String EmailTemplate(String useremail, String passcode) {
         String EmailSentTemplate = "<body style='background-color:grey'>\n"
-                                + "    <table align='center' border='0' cellpadding='0' cellspacing='0'\n"
-                                + "           width='550' bgcolor='white' style='border:2px solid black'>\n"
-                                + "        <tbody>\n"
-                                + "            <tr>\n"
-                                + "                <td align='center'>\n"
-                                + "                    <table align='center' border='0' cellpadding='0' \n"
-                                + "                           cellspacing='0' class='col-550' width='550'>\n"
-                                + "                        <tbody>\n"
-                                + "                            <tr>\n"
-                                + "                                <td align='center' style='background-color: #4cb96b;\n"
-                                + "                                           height: 50px;'>\n"
-                                + "                                    <a href='#' style='text-decoration: none;'>\n"
-                                + "                                        <p style='color:white;'"
-                                + "                                                  font-weight:bold;'>\n"
-                                + "                                            ACR-GB SYSTEM\n"
-                                + "                                        </p>\n"
-                                + "                                    </a>\n"
-                                + "                                </td>\n"
-                                + "                            </tr>\n"
-                                + "                        </tbody>\n"
-                                + "                    </table>\n"
-                                + "                </td>\n"
-                                + "            </tr>\n"
-                                + "            <tr style='height: 300px;'>\n"
-                                + "                <td align='center' style='border: none;\n"
-                                + "                           border-bottom: 2px solid #4cb96b; \n"
-                                + "                           padding-right: 20px;padding-left:20px'>\n"
-                                + "\n"
-                                + "                    <p style='font-weight: bolder;font-size: 42px;\n"
-                                + "                              letter-spacing: 0.025em;\n"
-                                + "                              color:black;'>\n"
-                                + "                        Hello!\n"
-                                + "                        <br> Check your user credentials for ACR-GB Login account \n"
-                                + "                    </p>\n"
-                                + "                </td>\n"
-                                + "            </tr>\n"
-                                + "\n"
-                                + "            <tr style='display: inline-block;'>\n"
-                                + "                <td style='height: 150px;\n"
-                                + "                           padding: 20px;\n"
-                                + "                           border: none; \n"
-                                + "                           border-bottom: 2px solid #361B0E;\n"
-                                + "                           background-color: white;'>\n"
-                                + "                  \n"
-                                + "                    <h2 style='text-align: left;\n"
-                                + "                               align-items: center;'>\n"
-                                + "                        Username : " + useremail + "\n"
-                                + "                      Passcode : " + passcode + "\n"
-                                + "                   </h2>\n"
-                                + "                    <p class='data' \n"
-                                + "                       style='text-align: justify-all;\n"
-                                + "                              align-items: center; \n"
-                                + "                              font-size: 15px;\n"
-                                + "                              padding-bottom: 12px;'>\n"
-                                + "                       !Note: Don't share your account credentials</p>\n"
-                                + "                    <p> <a href='#'\n"
-                                + "                           style='text-decoration: none; \n"
-                                + "                                  color:black; \n"
-                                + "                                  border: 2px solid #4cb96b; \n"
-                                + "                                  padding: 10px 30px;\n"
-                                + "                                  font-weight: bold;'> \n"
-                                + "                           Read More \n"
-                                + "                      </a>\n"
-                                + "                    </p>\n"
-                                + "                </td>\n"
-                                + "            </tr>\n"
-                                + "        </tbody>\n"
-                                + "    </table>\n"
-                                + "</body>";//, "text/html");
-    
-    return EmailSentTemplate;
+                + "    <table align='center' border='0' cellpadding='0' cellspacing='0'\n"
+                + "           width='550' bgcolor='white' style='border:2px solid black'>\n"
+                + "        <tbody>\n"
+                + "            <tr>\n"
+                + "                <td align='center'>\n"
+                + "                    <table align='center' border='0' cellpadding='0' \n"
+                + "                           cellspacing='0' class='col-550' width='550'>\n"
+                + "                        <tbody>\n"
+                + "                            <tr>\n"
+                + "                                <td align='center' style='background-color: #4cb96b;\n"
+                + "                                           height: 50px;'>\n"
+                + "                                    <a href='#' style='text-decoration: none;'>\n"
+                + "                                        <p style='color:white;'"
+                + "                                                  font-weight:bold;'>\n"
+                + "                                            ACR-GB SYSTEM\n"
+                + "                                        </p>\n"
+                + "                                    </a>\n"
+                + "                                </td>\n"
+                + "                            </tr>\n"
+                + "                        </tbody>\n"
+                + "                    </table>\n"
+                + "                </td>\n"
+                + "            </tr>\n"
+                + "            <tr style='height: 300px;'>\n"
+                + "                <td align='center' style='border: none;\n"
+                + "                           border-bottom: 2px solid #4cb96b; \n"
+                + "                           padding-right: 20px;padding-left:20px'>\n"
+                + "\n"
+                + "                    <p style='font-weight: bolder;font-size: 42px;\n"
+                + "                              letter-spacing: 0.025em;\n"
+                + "                              color:black;'>\n"
+                + "                        Hello!\n"
+                + "                        <br> Check your user credentials for ACR-GB Login account \n"
+                + "                    </p>\n"
+                + "                </td>\n"
+                + "            </tr>\n"
+                + "\n"
+                + "            <tr style='display: inline-block;'>\n"
+                + "                <td style='height: 150px;\n"
+                + "                           padding: 20px;\n"
+                + "                           border: none; \n"
+                + "                           border-bottom: 2px solid #361B0E;\n"
+                + "                           background-color: white;'>\n"
+                + "                  \n"
+                + "                    <h2 style='text-align: left;\n"
+                + "                               align-items: center;'>\n"
+                + "                        Username : " + useremail + "\n"
+                + "                      Passcode : " + passcode + "\n"
+                + "                   </h2>\n"
+                + "                    <p class='data' \n"
+                + "                       style='text-align: justify-all;\n"
+                + "                              align-items: center; \n"
+                + "                              font-size: 15px;\n"
+                + "                              padding-bottom: 12px;'>\n"
+                + "                       !Note: Don't share your account credentials</p>\n"
+                + "                    <p> <a href='#'\n"
+                + "                           style='text-decoration: none; \n"
+                + "                                  color:black; \n"
+                + "                                  border: 2px solid #4cb96b; \n"
+                + "                                  padding: 10px 30px;\n"
+                + "                                  font-weight: bold;'> \n"
+                + "                           Read More \n"
+                + "                      </a>\n"
+                + "                    </p>\n"
+                + "                </td>\n"
+                + "            </tr>\n"
+                + "        </tbody>\n"
+                + "    </table>\n"
+                + "</body>";//, "text/html");
+
+        return EmailSentTemplate;
     }
-    
-    
-    
-    
 
     //GENERATE TOKEN METHODS
+    public String GenerateToken(String username, String password) {
+        SignatureAlgorithm algorithm = SignatureAlgorithm.HS256;
+        byte[] userkeybytes = DatatypeConverter.parseBase64Binary(cipherkey);
+        Key signingkey = new SecretKeySpec(userkeybytes, algorithm.getJcaName());
+        JwtBuilder builder = Jwts.builder()
+                .claim("Code1", EncryptString(username))
+                .claim("Code2", EncryptString(password))
+                .signWith(algorithm, signingkey);
+//.setExpiration(new Date(System.currentTimeMillis() + 30 * 1000))
+        return builder.compact();
+
+    }
+
+    public String EncryptString(String string) {
+        String result = null;
+        try {
+            SetKey();
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, secretkey);
+            result = Base64.getEncoder().encodeToString(cipher.doFinal(string.getBytes("UTF-8"))).replaceAll("=", "");
+        } catch (UnsupportedEncodingException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException ex) {
+            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    private void SetKey() {
+        MessageDigest sha = null;
+        try {
+            String userkey = cipherkey;
+            key = userkey.getBytes("UTF-8");
+            sha = MessageDigest.getInstance("SHA-1");
+            key = sha.digest(key);
+            key = Arrays.copyOf(key, 16);
+            secretkey = new SecretKeySpec(key, "AES");
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException ex) {
+            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public boolean ValidateToken(final String token) {
+        boolean result = false;
+        try {
+            Claims claims = Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(cipherkey))
+                    .parseClaimsJws(token).getBody();
+            result = true;
+        } catch (ExpiredJwtException | MalformedJwtException | SignatureException | UnsupportedJwtException | IllegalArgumentException ex) {
+        }
+        return result;
+    }
+
+    public String DecryptString(String string) {
+        String result = null;
+        try {
+            SetKey();
+            Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, secretkey);
+            result = new String(cipher.doFinal(Base64.getDecoder().decode(string)));
+        } catch (InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException ex) {
+            result = ex.toString();
+            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    public ACRGBWSResult GetPayload(String token) {
+        ACRGBWSResult result = this.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try {
+            if (token.equals("")) {
+                result.setMessage("Token is required");
+            } else {
+                if (this.ValidateToken(token) == true) {
+                    Claims claims = Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(cipherkey)).parseClaimsJws(token).getBody();
+                    ACRGBPayload payload = this.ACRGBPayload();
+                    payload.setCode1(this.DecryptString((String) claims.get("Code1")));
+                    payload.setCode2(this.DecryptString((String) claims.get("Code2")));
+                    result.setSuccess(true);
+                    result.setResult(this.ObjectMapper().writeValueAsString(payload));
+                } else {
+                    result.setMessage("Invalid Token");
+                }
+            }
+        } catch (IOException ex) {
+            result.setMessage("Invalid Token : " + ex.getLocalizedMessage());
+            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
+
+        }
+        return result;
+    }
+
 }
