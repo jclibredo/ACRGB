@@ -489,7 +489,7 @@ public class ContractMethod {
         result.setSuccess(false);
         Methods methods = new Methods();
         try {
-            ACRGBWSResult GetRole = methods.GETROLE(dataSource, userid, tags);
+            ACRGBWSResult GetRole = methods.GETROLE(dataSource, userid, "ACTIVE");
             if (GetRole.isSuccess()) {
                 //GETCONTRACT
                 ACRGBWSResult GetFacilityContract = this.GETCONTRACT(dataSource, tags, GetRole.getResult().trim());
@@ -586,7 +586,7 @@ public class ContractMethod {
         result.setSuccess(false);
         Methods methods = new Methods();
         try {
-            ACRGBWSResult GetRole = methods.GETROLE(dataSource, userid, tags);
+            ACRGBWSResult GetRole = methods.GETROLE(dataSource, userid, "ACTIVE");
             if (GetRole.isSuccess()) {
                 //GETCONTRACT
                 ACRGBWSResult GetFacilityContract = this.GETCONTRACT(dataSource, tags, GetRole.getResult().trim());

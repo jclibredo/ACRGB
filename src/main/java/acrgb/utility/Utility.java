@@ -28,9 +28,6 @@ import java.util.regex.Pattern;
 import javax.crypto.spec.SecretKeySpec;
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.xml.bind.DatatypeConverter;
 import org.codehaus.jackson.map.ObjectMapper;
 import io.jsonwebtoken.JwtBuilder;
@@ -325,8 +322,8 @@ public class Utility {
         JwtBuilder builder = Jwts.builder()
                 .claim("Code1", EncryptString(username))
                 .claim("Code2", EncryptString(password))
+                .setExpiration(new Date(System.currentTimeMillis() + 30 * 480000))//ADD EXPIRE TIME 8HOURS
                 .signWith(algorithm, signingkey);
-//.setExpiration(new Date(System.currentTimeMillis() + 30 * 1000))
         return builder.compact();
 
     }
@@ -394,21 +391,31 @@ public class Utility {
             } else {
                 if (this.ValidateToken(token) == true) {
                     Claims claims = Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(cipherkey)).parseClaimsJws(token).getBody();
-                    ACRGBPayload payload = this.ACRGBPayload();
-                    payload.setCode1(this.DecryptString((String) claims.get("Code1")));
-                    payload.setCode2(this.DecryptString((String) claims.get("Code2")));
-                    result.setSuccess(true);
-                    result.setResult(this.ObjectMapper().writeValueAsString(payload));
+//                    ACRGBPayload payload = this.ACRGBPayload();
+//                    payload.setCode1(this.DecryptString((String) claims.get("Code1")));
+//                    payload.setCode2(this.DecryptString((String) claims.get("Code2")));
+
+                    if (!this.isJWTExpired(claims)) {
+                        result.setSuccess(true);
+//                        result.setResult(this.ObjectMapper().writeValueAsString(payload));
+                    } else {
+                        result.setMessage("Token is expired");
+                    }
                 } else {
                     result.setMessage("Invalid Token");
                 }
             }
-        } catch (IOException ex) {
+        } catch (ExpiredJwtException | MalformedJwtException | SignatureException | UnsupportedJwtException | IllegalArgumentException ex) {
             result.setMessage("Invalid Token : " + ex.getLocalizedMessage());
             Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
 
         }
         return result;
+    }
+
+    public boolean isJWTExpired(Claims claims) {
+        Date expiresAt = claims.getExpiration();
+        return expiresAt.before(new Date());
     }
 
 }

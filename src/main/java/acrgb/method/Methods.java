@@ -45,10 +45,10 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class Methods {
-    
+
     public Methods() {
     }
-    
+
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
     private final Cryptor cryptor = new Cryptor();
@@ -109,13 +109,13 @@ public class Methods {
 
     //-------------------------- NEW OBJECT -----------------
     public class UserPassword {
-        
+
         private String dbpass;
-        
+
         public String getDbpass() {
             return dbpass;
         }
-        
+
         public void setDbpass(String dbpass) {
             this.dbpass = dbpass;
         }
@@ -200,7 +200,7 @@ public class Methods {
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-            
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -269,7 +269,7 @@ public class Methods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult RESETPASSWORD(final DataSource dataSource, final String userid, final String p_password) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -563,7 +563,7 @@ public class Methods {
                                         //totalcomputeA.setTotalamount(String.valueOf(total));
                                         totalcomputeA.setThirty(String.valueOf(add30));
                                         totalcomputeA.setSb(String.valueOf(add10));
-                                        
+
                                         break;
                                     }
                                     default: {
@@ -576,14 +576,14 @@ public class Methods {
                                         break;
                                     }
                                 }
-                                
+
                                 totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount());
                                 //-------------------------------------------------
                                 totalcomputeA.setHospital(getFacilityA.getResult());
                             } else {
                                 totalcomputeA.setHospital(getFacilityA.getMessage());
                             }
-                            
+
                             dateclaimcount += Integer.parseInt(fcaA.get(datese).getTotalclaims());
                             totalcomputeA.setYearfrom(fcaA.get(datese).getYearfrom());
                             totalcomputeA.setYearto(fcaA.get(datese).getYearto());
@@ -592,7 +592,7 @@ public class Methods {
                             totalcomputeA.setTotalamount(fcaA.get(datese).getTotalamount());
                             totalcomputeList.add(totalcomputeA);
                         }
-                        
+
                         FacilityComputedAmount totalcompute = new FacilityComputedAmount();
                         //GET FACILITY
                         ACRGBWSResult getFacility = fm.GETFACILITYID(dataSource, userid);
@@ -722,7 +722,7 @@ public class Methods {
                         double claims30percent = 0.00;
                         double claimsSb = 0.00;
                         double TotalBaseAmount = 0.00;
-                        
+
                         for (int y = 0; y < hcflist.size(); y++) {
                             ACRGBWSResult restC = this.GetAmountPerFacility(dataSource, hcflist.get(y).trim(), datefrom.trim(), dateto.trim());
                             if (restC.isSuccess()) {
@@ -776,7 +776,7 @@ public class Methods {
                                 }
                             }
                         }
-                        
+
                         FacilityComputedAmount totalcomputeHCPNA = new FacilityComputedAmount();
                         totalcomputeHCPNA.setSb(String.valueOf(claimsSb));
                         totalcomputeHCPNA.setThirty(String.valueOf(claims30percent));
@@ -803,7 +803,7 @@ public class Methods {
                     }
                     break;
             }
-            
+
         } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1015,7 +1015,7 @@ public class Methods {
 //                            totalcomputeA.setTotalamount(fcaA.get(datese).getTotalamount());
 //                            totalcomputeList.add(totalcomputeA);
                         }
-                        
+
                         FacilityComputedAmount totalcompute = new FacilityComputedAmount();
                         //GET FACILITY
                         ACRGBWSResult getFacility = fm.GETFACILITYID(dataSource, userid);
@@ -1122,7 +1122,7 @@ public class Methods {
                     }
                     break;
             }
-            
+
         } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1182,7 +1182,7 @@ public class Methods {
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1297,7 +1297,7 @@ public class Methods {
                                 errorList.add(getinsertresult.getString("Message"));
                             }
                         }
-                        
+
                         if (errCounter == 0) {
                             result.setMessage("OK");
                             result.setSuccess(true);
@@ -1307,9 +1307,9 @@ public class Methods {
                     } else {
                         result.setMessage(getinsertresult.getString("Message"));
                     }
-                    
+
                 }
-                
+
             }
         } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
@@ -1496,7 +1496,7 @@ public class Methods {
                 mbrequest.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
                 mbrequestlist.add(mbrequest);
             }
-            
+
             if (!mbrequestlist.isEmpty()) {
                 result.setResult(utility.ObjectMapper().writeValueAsString(mbrequestlist));
                 result.setMessage("OK");
@@ -1504,7 +1504,7 @@ public class Methods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1781,7 +1781,7 @@ public class Methods {
                     result.setMessage("NO DATA FOUND");
                 }
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1856,7 +1856,7 @@ public class Methods {
                     result.setMessage("NO DATA FOUND");
                 }
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1932,7 +1932,7 @@ public class Methods {
                     result.setMessage("NO DATA FOUND");
                 }
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1990,7 +1990,7 @@ public class Methods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GetProWithPROID(final DataSource dataSource, final String pproid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -2020,7 +2020,7 @@ public class Methods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GETROLE(final DataSource dataSource, final String puserid,
             final String utags) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -2047,7 +2047,7 @@ public class Methods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GETROLEMULITPLE(final DataSource dataSource,
             final String puserid, final String utags) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -2065,7 +2065,7 @@ public class Methods {
             while (resultset.next()) {
                 listresult.add(resultset.getString("ACCESSID"));
             }
-            
+
             if (listresult.size() > 0) {
                 result.setMessage("OK");
                 result.setSuccess(true);
@@ -2079,7 +2079,7 @@ public class Methods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GETROLEREVERESE(final DataSource dataSource, final String puserid, final String utags) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -2105,7 +2105,7 @@ public class Methods {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GETROLEREVERESEMULTIPLE(final DataSource dataSource,
             final String puserid, final String utags) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -2224,7 +2224,7 @@ public class Methods {
             } else {
                 result.setMessage(resultreports.getMessage());
             }
-            
+
             if (rmblist.size() > 0) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(rmblist));
@@ -2255,7 +2255,7 @@ public class Methods {
                         ManagingBoard mb = utility.ObjectMapper().readValue(conlist.get(x).getHcfid(), ManagingBoard.class);
                         ReportsHCPNSummary rmb = new ReportsHCPNSummary();
                         rmb.setHcpnname(mb.getMbname());
-                        
+
                         if (!conlist.get(x).getContractdate().isEmpty()) {
                             ContractDate condate = utility.ObjectMapper().readValue(conlist.get(x).getContractdate(), ContractDate.class);
                             rmb.setContractadateto(condate.getDateto());
@@ -2293,7 +2293,7 @@ public class Methods {
             } else {
                 result.setMessage(resultreports.getMessage());
             }
-            
+
             if (rmblist.size() > 0) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(rmblist));
@@ -2351,7 +2351,7 @@ public class Methods {
             } else {
                 result.setMessage("N/A ");
             }
-            
+
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2386,7 +2386,7 @@ public class Methods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
             }
-            
+
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2421,14 +2421,14 @@ public class Methods {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
             }
-            
+
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
+
     public ACRGBWSResult GetAmount(final DataSource dataSource, final String pan, final String datestart, final String dateend) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -2458,7 +2458,7 @@ public class Methods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2509,7 +2509,7 @@ public class Methods {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (IOException | SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2538,7 +2538,7 @@ public class Methods {
             while (resultset.next()) {
                 listresult.add(resultset.getString("ACCESSID"));
             }
-            
+
             if (listresult.size() > 0) {
                 result.setMessage("OK");
                 result.setSuccess(true);
@@ -2552,5 +2552,5 @@ public class Methods {
         }
         return result;
     }
-    
+
 }

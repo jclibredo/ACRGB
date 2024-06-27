@@ -29,6 +29,7 @@ import javax.enterprise.context.RequestScoped;
 import javax.sql.DataSource;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
@@ -53,6 +54,7 @@ public class ACRGBUPDATE {
     /**
      * Retrieves representation of an instance of acrgb.ACRGB
      *
+     * @param token
      * @param assets
      * @return an instance of java.lang.String
      * @throws java.sql.SQLException
@@ -61,77 +63,18 @@ public class ACRGBUPDATE {
     @Path("UPDATEASSETS")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEASSETS(final Assets assets) throws SQLException {
+    public ACRGBWSResult UPDATEASSETS(@HeaderParam("token") String token,
+            final Assets assets) throws SQLException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = updatemethods.UPDATEASSETS(dataSource, assets);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
-
-    @PUT
-    @Path("UPDATECONTRACT")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATECONTRACT(final Contract contract) throws SQLException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = updatemethods.UPDATECONTRACT(dataSource, contract);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
-
-    @PUT
-    @Path("UPDATETRANCH")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATETRANCH(final Tranch tranch) throws SQLException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = updatemethods.UPDATETRANCH(dataSource, tranch);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
-
-    @PUT
-    @Path("UPDATEUSERLEVEL")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEUSERLEVEL(final UserLevel userlevel) throws SQLException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = updatemethods.UPDATEUSERLEVEL(dataSource, userlevel);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
-
-    @PUT
-    @Path("UPDATEUSERCREDENTIALS")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEUSERCREDENTIALS(final User user) throws SQLException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        if (user.getUsername().isEmpty()) {
-            ACRGBWSResult insertresult = methods.CHANGEPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
-        } else if (user.getUserpassword().isEmpty()) {
-            ACRGBWSResult insertresult = methods.CHANGEUSERNAME(dataSource, user.getUserid(), user.getUsername());
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = methods.UPDATEUSERCREDENTIALS(dataSource, user.getUserid(), user.getUsername(), user.getUserpassword());
+            ACRGBWSResult insertresult = updatemethods.UPDATEASSETS(dataSource, assets);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -140,60 +83,208 @@ public class ACRGBUPDATE {
     }
 
     @PUT
-    @Path("UPDATEUSERLEVELID")
+    @Path("UPDATECONTRACT")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEUSERLEVEL(final User user) throws SQLException {
+    public ACRGBWSResult UPDATECONTRACT(@HeaderParam("token") String token,
+            final Contract contract) throws SQLException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = methods.CHANGEUSELEVELID(dataSource, user.getUserid(), user.getLeveid());
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = updatemethods.UPDATECONTRACT(dataSource, contract);
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
         return result;
     }
 
+    @PUT
+    @Path("UPDATETRANCH")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult UPDATETRANCH(@HeaderParam("token") String token,
+            final Tranch tranch) throws SQLException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = updatemethods.UPDATETRANCH(dataSource, tranch);
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
+        return result;
+    }
+
+    
+    //UPDATE USER LEVEL
+    @PUT
+    @Path("UPDATEUSERLEVEL")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult UPDATEUSERLEVEL(@HeaderParam("token") String token,
+            final UserLevel userlevel) throws SQLException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = updatemethods.UPDATEUSERLEVEL(dataSource, userlevel);
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
+        return result;
+    }
+
+    
+    //UPDATE USER CREDENTIALS
+    @PUT
+    @Path("UPDATEUSERCREDENTIALS")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult UPDATEUSERCREDENTIALS(@HeaderParam("token") String token,
+            final User user) throws SQLException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            if (user.getUsername().isEmpty()) {
+                ACRGBWSResult insertresult = methods.CHANGEPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
+                result.setMessage(insertresult.getMessage());
+                result.setSuccess(insertresult.isSuccess());
+                result.setResult(insertresult.getResult());
+            } else if (user.getUserpassword().isEmpty()) {
+                ACRGBWSResult insertresult = methods.CHANGEUSERNAME(dataSource, user.getUserid(), user.getUsername());
+                result.setMessage(insertresult.getMessage());
+                result.setSuccess(insertresult.isSuccess());
+                result.setResult(insertresult.getResult());
+            } else {
+                ACRGBWSResult insertresult = methods.UPDATEUSERCREDENTIALS(dataSource, user.getUserid(), user.getUsername(), user.getUserpassword());
+                result.setMessage(insertresult.getMessage());
+                result.setSuccess(insertresult.isSuccess());
+                result.setResult(insertresult.getResult());
+            }
+        }
+        return result;
+    }
+
+    @PUT
+    @Path("UPDATEUSERLEVELID")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult UPDATEUSERLEVEL(@HeaderParam("token") String token,
+            final User user) throws SQLException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = methods.CHANGEUSELEVELID(dataSource, user.getUserid(), user.getLeveid());
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
+        return result;
+    }
+
+    //RESET PASSWORD
     @PUT
     @Path("RESETPASSWORD")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult RESETPASSWORD(final User user) throws SQLException {
+    public ACRGBWSResult RESETPASSWORD(@HeaderParam("token") String token,
+            final User user) throws SQLException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = methods.RESETPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = methods.RESETPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
         return result;
     }
 
+    
+    //SET INACTIVE DATA
     @PUT
     @Path("INACTIVE")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INACTIVE(final Archived arhived) throws SQLException, ParseException {
+    public ACRGBWSResult INACTIVE(@HeaderParam("token") String token,
+            final Archived arhived) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = insertmethods.INACTIVEDATA(dataSource,
-                arhived.getTags(), arhived.getDataid(), arhived.getCreatedby(), arhived.getDatecreated());
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = insertmethods.INACTIVEDATA(dataSource,
+                    arhived.getTags(), arhived.getDataid(), arhived.getCreatedby(), arhived.getDatecreated());
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
         return result;
     }
 
+    //SET DATA TO ACTIVE
     @PUT
     @Path("ACTIVE")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult ACTIVE(final Archived arhived) throws SQLException, ParseException {
+    public ACRGBWSResult ACTIVE(@HeaderParam("token") String token,
+            final Archived arhived) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = insertmethods.ACTIVEDATA(dataSource, arhived.getTags(),
-                arhived.getDataid(), arhived.getCreatedby(), arhived.getDatecreated());
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = insertmethods.ACTIVEDATA(dataSource, arhived.getTags(),
+                    arhived.getDataid(), arhived.getCreatedby(), arhived.getDatecreated());
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
         return result;
     }
 
@@ -202,13 +293,22 @@ public class ACRGBUPDATE {
     @Path("RemoveAccessRole")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult RemoveAccessRole(final UserRoleIndex userroleindex) throws SQLException, ParseException {
+    public ACRGBWSResult RemoveAccessRole(@HeaderParam("token") String token,
+            final UserRoleIndex userroleindex) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = methods.REMOVEDROLEINDEX(dataSource, userroleindex.getUserid(), userroleindex.getAccessid());
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = methods.REMOVEDROLEINDEX(dataSource, userroleindex.getUserid(), userroleindex.getAccessid());
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
         return result;
     }
 
@@ -217,13 +317,22 @@ public class ACRGBUPDATE {
     @Path("TAGGINGFACILITY")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult TAGGINGFACILITY(final HealthCareFacility hcf) throws SQLException {
+    public ACRGBWSResult TAGGINGFACILITY(@HeaderParam("token") String token,
+            final HealthCareFacility hcf) throws SQLException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult taggingresult = updatemethods.FACILITYTAGGING(dataSource, hcf);
-        result.setMessage(taggingresult.getMessage());
-        result.setSuccess(taggingresult.isSuccess());
-        result.setResult(taggingresult.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult taggingresult = updatemethods.FACILITYTAGGING(dataSource, hcf);
+            result.setMessage(taggingresult.getMessage());
+            result.setSuccess(taggingresult.isSuccess());
+            result.setResult(taggingresult.getResult());
+        }
         return result;
     }
 
@@ -232,11 +341,15 @@ public class ACRGBUPDATE {
     @Path("TAGGINGCONTRACT")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult TAGGINGCONTRACT(final Contract contract) {
+    public ACRGBWSResult TAGGINGCONTRACT(@HeaderParam("token") String token,
+            final Contract contract) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        if (contract.getStats().isEmpty()) {
-            result.setMessage("CONTRACT TAGS IS EMPTY");
-            result.setSuccess(false);
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
         } else {
             Contract con = new Contract();
             con.setConid(contract.getConid());
@@ -262,88 +375,123 @@ public class ACRGBUPDATE {
         return result;
     }
 
-    //DATE SETTINGS
-//    @PUT
-//    @Path("UPDATESETTINGS")
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public ACRGBWSResult UPDATESETTINGS(final DateSettings datesetting) throws SQLException {
-//        //TODO return proper representation object
-//        ACRGBWSResult result = utility.ACRGBWSResult();
-//        ACRGBWSResult taggingresult = updatemethods.UPDATESETTINGS(dataSource, datesetting);
-//        result.setMessage(taggingresult.getMessage());
-//        result.setSuccess(taggingresult.isSuccess());
-//        result.setResult(taggingresult.getResult());
-//        return result;
-//    }
-
+    //REMOVED AFFILIATE
     @PUT
     @Path("RemoveAppellate")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult RemoveAppellate(final UserRoleIndex userroleindex) throws SQLException, ParseException {
+    public ACRGBWSResult RemoveAppellate(@HeaderParam("token") String token,
+            final UserRoleIndex userroleindex) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = updatemethods.RemoveAppellate(dataSource, userroleindex.getUserid(), userroleindex.getAccessid());
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = updatemethods.RemoveAppellate(dataSource, userroleindex.getUserid(), userroleindex.getAccessid());
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
         return result;
     }
 
+    
+    //UPDATE USER DETAILS
     @PUT
     @Path("UPDATEUSERDETAILS")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEUSERDETAILS(final UserInfo userinfo) throws SQLException, ParseException {
+    public ACRGBWSResult UPDATEUSERDETAILS(@HeaderParam("token") String token,
+            final UserInfo userinfo) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = methods.UPDATEUSERDETAILS(dataSource, userinfo);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = methods.UPDATEUSERDETAILS(dataSource, userinfo);
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
         return result;
     }
 
+    //APPROVEDHCPN
     @PUT
     @Path("APPROVEDHCPN")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult APPROVEDHCPN(final ManagingBoard mb) throws SQLException, ParseException {
+    public ACRGBWSResult APPROVEDHCPN(@HeaderParam("token") String token,
+            final ManagingBoard mb) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = updatemethods.APPROVEDHCPN(dataSource, mb);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = updatemethods.APPROVEDHCPN(dataSource, mb);
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
         return result;
     }
-
+//UPDATE CONTRACT DATE
     @PUT
     @Path("UPDATECONTRACTDATE")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult APPROVEDHCPN(final ContractDate contractdate) throws SQLException, ParseException {
+    public ACRGBWSResult APPROVEDHCPN(@HeaderParam("token") String token,
+            final ContractDate contractdate) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = updatemethods.UPDATECONDATE(dataSource, contractdate);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = updatemethods.UPDATECONDATE(dataSource, contractdate);
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
         return result;
     }
 
+    //UPDATE HCPN
     @PUT
     @Path("UPDATEHCPN")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEHCPN(final ManagingBoard mb) throws SQLException, ParseException {
+    public ACRGBWSResult UPDATEHCPN(@HeaderParam("token") String token,
+            final ManagingBoard mb) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = updatemethods.UPDATEHCPN(dataSource, mb);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = updatemethods.UPDATEHCPN(dataSource, mb);
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
         return result;
     }
 
@@ -351,13 +499,22 @@ public class ACRGBUPDATE {
     @Path("UPDATEAPELLATE")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEAPELLATE(final Appellate appellate) throws SQLException, ParseException {
+    public ACRGBWSResult UPDATEAPELLATE(@HeaderParam("token") String token,
+            final Appellate appellate) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = updatemethods.UPDATEAPELLATE(dataSource, "UPDATE", appellate);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = updatemethods.UPDATEAPELLATE(dataSource, "UPDATE", appellate);
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
         return result;
     }
 

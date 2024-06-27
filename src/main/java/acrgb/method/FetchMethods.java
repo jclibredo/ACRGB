@@ -587,7 +587,7 @@ public class FetchMethods {
         Methods methods = new Methods();
         try {
             ArrayList<Contract> contractlist = new ArrayList<>();
-            ACRGBWSResult restA = methods.GETROLE(dataSource, userid, tags);//GET (PROID) USING (USERID)
+            ACRGBWSResult restA = methods.GETROLE(dataSource, userid, "ACTIVE");//GET (PROID) USING (USERID)
             if (restA.isSuccess()) {
                 ACRGBWSResult restB = methods.GETROLEMULITPLE(dataSource, restA.getResult(), tags);//GET (NCPN) USING (PROID)          
                 List<String> restist = Arrays.asList(restB.getResult().split(","));
@@ -627,7 +627,7 @@ public class FetchMethods {
         // Methods methods = new Methods();
         try {
             ArrayList<Contract> contractlist = new ArrayList<>();
-            ACRGBWSResult mblist = this.GetManagingBoard(dataSource, tags);
+            ACRGBWSResult mblist = this.GetManagingBoard(dataSource, "ACTIVE");
             if (mblist.isSuccess()) {
                 List<ManagingBoard> mblistresult = Arrays.asList(utility.ObjectMapper().readValue(mblist.getResult(), ManagingBoard[].class));
                 for (int x = 0; x < mblistresult.size(); x++) {
@@ -664,7 +664,7 @@ public class FetchMethods {
         ContractMethod contractmethod = new ContractMethod();
         try (Connection connection = dataSource.getConnection()) {
             ArrayList<Contract> contractlist = new ArrayList<>();
-            ACRGBWSResult reatA = methods.GETROLE(dataSource, userid, tags);
+            ACRGBWSResult reatA = methods.GETROLE(dataSource, userid, "ACTIVE");
             if (reatA.isSuccess()) {
                 //--------------------------------------------------------
                 CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
@@ -851,7 +851,7 @@ public class FetchMethods {
         ContractMethod contractmethod = new ContractMethod();
         try (Connection connection = dataSource.getConnection()) {
             ArrayList<Contract> contractlist = new ArrayList<>();
-            ACRGBWSResult restAA = methods.GETROLE(dataSource, userid, tags);
+            ACRGBWSResult restAA = methods.GETROLE(dataSource, userid, "ACTIVE");
             if (restAA.isSuccess()) {
                 //-------------- GET APEX FACILITY
                 ACRGBWSResult restA = methods.GETROLEMULITPLE(dataSource, restAA.getResult(), tags);
@@ -2653,36 +2653,36 @@ public class FetchMethods {
                 int tranches = 0;
 
                 //GET ALL FACILITY UNDER HCPN
-                ACRGBWSResult GetRoleA = methods.GETROLE(dataSource, uprocode, tags);
-                if (GetRoleA.isSuccess()) {
-                    ACRGBWSResult GetRoleB = methods.GETROLEMULITPLE(dataSource, GetRoleA.getResult().trim(), tags);
-                    if (GetRoleB.isSuccess()) {
-                        List<String> HCPNList = Arrays.asList(GetRoleB.getResult().split(","));
-                        for (int A = 0; A < HCPNList.size(); A++) {
-                            ACRGBWSResult GetRoleC = methods.GETROLEMULITPLE(dataSource, HCPNList.get(A).trim(), tags);
-                            if (GetRoleC.isSuccess()) {
-                                List<String> HCIList = Arrays.asList(GetRoleC.getResult().split(","));
-                                for (int B = 0; B < HCIList.size(); B++) {
-                                    ACRGBWSResult ResultB = methods.GETSUMMARY(dataSource, HCIList.get(B).trim());
-                                    if (ResultB.isSuccess()) {
-                                        Total getResult = utility.ObjectMapper().readValue(ResultB.getResult(), Total.class);
-                                        tranches += Integer.parseInt(getResult.getCcount());
-                                        trancheamount += Double.parseDouble(getResult.getCtotal());
-                                    }
-                                    //======================================
-                                    ACRGBWSResult sumresultB = this.GETNCLAIMS(dataSource, HCIList.get(B).trim(), "G", condate.getDatefrom(), condate.getDateto(), "CURRENTSTATUS");
-                                    if (sumresultB.isSuccess()) {
-                                        List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresultB.getResult(), NclaimsData[].class));
-                                        for (int i = 0; i < nclaimsdata.size(); i++) {
-                                            numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                            totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
-                                        }
+//                ACRGBWSResult GetRoleA = methods.GETROLE(dataSource, uprocode, tags);
+//                if (GetRoleA.isSuccess()) {
+                ACRGBWSResult GetRoleB = methods.GETROLEMULITPLE(dataSource, uprocode.trim(), tags);
+                if (GetRoleB.isSuccess()) {
+                    List<String> HCPNList = Arrays.asList(GetRoleB.getResult().split(","));
+                    for (int A = 0; A < HCPNList.size(); A++) {
+                        ACRGBWSResult GetRoleC = methods.GETROLEMULITPLE(dataSource, HCPNList.get(A).trim(), tags);
+                        if (GetRoleC.isSuccess()) {
+                            List<String> HCIList = Arrays.asList(GetRoleC.getResult().split(","));
+                            for (int B = 0; B < HCIList.size(); B++) {
+                                ACRGBWSResult ResultB = methods.GETSUMMARY(dataSource, HCIList.get(B).trim());
+                                if (ResultB.isSuccess()) {
+                                    Total getResult = utility.ObjectMapper().readValue(ResultB.getResult(), Total.class);
+                                    tranches += Integer.parseInt(getResult.getCcount());
+                                    trancheamount += Double.parseDouble(getResult.getCtotal());
+                                }
+                                //======================================
+                                ACRGBWSResult sumresultB = this.GETNCLAIMS(dataSource, HCIList.get(B).trim(), "G", condate.getDatefrom(), condate.getDateto(), "CURRENTSTATUS");
+                                if (sumresultB.isSuccess()) {
+                                    List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresultB.getResult(), NclaimsData[].class));
+                                    for (int i = 0; i < nclaimsdata.size(); i++) {
+                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                        totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
                                     }
                                 }
                             }
                         }
                     }
                 }
+//                }
                 double sumsA = trancheamount / Double.parseDouble(resultset.getString("AMOUNT")) * 100;
                 if (sumsA > 100) {
                     double negvalue = 100 - sumsA;

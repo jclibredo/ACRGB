@@ -5,6 +5,8 @@
  */
 package acrgb.structure;
 
+
+import java.util.Date;
 import lombok.Data;
 
 /**
@@ -16,5 +18,5 @@ public class ACRGBPayload {
 
     private String Code1;
     private String Code2;
-    private String exp;
+    private Date exp;
 }
