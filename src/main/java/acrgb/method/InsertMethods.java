@@ -104,10 +104,9 @@ public class InsertMethods {
                     ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
                     result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
                 }
-                Tranch tranch = utility.ObjectMapper().readValue(fm.ACR_TRANCHWITHID(datasource, assets.getTranchid()).getResult(), Tranch.class);
-                if (tranch.getTranchtype().trim().equals("1ST")) {
+                //if (Integer.parseInt(assets.getPreviousbalance()) > 0) {
                     updatemethods.UPDATECONBALANCESTATS(datasource, assets.getHcfid());
-                }
+                //}
                 result.setSuccess(true);
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
@@ -1000,6 +999,7 @@ public class InsertMethods {
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
+        System.out.println(nclaims);
         try (Connection connection = datasource.getConnection()) {
             //------------------------------------------------------------------------------------------------
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACRBOOKINGDATA(:Message,:Code,"
@@ -1016,9 +1016,9 @@ public class InsertMethods {
                 getinsertresult.setString("upmccno", hci.getHcfcode());
             }
             if (nclaims.getDateadmission() == null) {
-                getinsertresult.setString("udateadmission", nclaims.getDateadmission());
+                getinsertresult.setString("udateadmission", nclaims.getDateadmission().trim());
             } else {
-                getinsertresult.setDate("udateadmission", (Date) new Date(utility.StringToDate(nclaims.getDateadmission()).getTime()));
+                getinsertresult.setDate("udateadmission", (Date) new Date(utility.StringToDate(nclaims.getDateadmission().trim()).getTime()));
             }
             if (nclaims.getDatesubmitted() == null) {
                 getinsertresult.setString("udatesubmitted", nclaims.getDatesubmitted());

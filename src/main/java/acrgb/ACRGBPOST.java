@@ -515,7 +515,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult BookingResult = bm.GETACTIVECONTRACT(dataSource, book);
+            ACRGBWSResult BookingResult = bm.GETENDEDCONTRACT(dataSource, book);
             result.setMessage(BookingResult.getMessage());
             result.setResult(BookingResult.getResult());
             result.setSuccess(BookingResult.isSuccess());
@@ -546,14 +546,6 @@ public class ACRGBPOST {
         return result;
     }
 
-    //INSERT EMAIL CREDEDNTIALS
-    @POST
-    @Path("ValidateToken")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult PostEmailCredentials(@HeaderParam("token") String token) {
-        ACRGBWSResult result = utility.GetPayload(token);
-        return result;
-    }
+  
 
 }

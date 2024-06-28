@@ -13,6 +13,7 @@ import acrgb.structure.HealthCareFacility;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.NclaimsData;
 import acrgb.structure.Total;
+import acrgb.structure.UserInfo;
 import acrgb.utility.Utility;
 import java.io.IOException;
 import java.sql.CallableStatement;
@@ -665,9 +666,7 @@ public class ContractMethod {
                     contract.setTotaltrancheamount(String.valueOf(trancheamount));
                     contract.setTotalclaimsamount(String.valueOf(claimsamount));
                     contract.setTotalclaimspercentage(String.valueOf(percentageB));
-                    
-                    
-                    
+
                     result.setMessage("OK");
                     result.setSuccess(true);
                     result.setResult(utility.ObjectMapper().writeValueAsString(contract));
@@ -816,6 +815,73 @@ public class ContractMethod {
         } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET ACCREDITATION NUMBER BY ACCOUNTCODE
+    public ACRGBWSResult GETCONBYCODEOFPRO(final DataSource dataSource, final String ucode) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ContractMethod contractmethod = new ContractMethod();
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONBYCODE(:ucode); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("ucode", ucode.trim());
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            ArrayList<Contract> conlist = new ArrayList<>();
+            while (resultset.next()) {
+                Contract con = new Contract();
+                con.setConid(resultset.getString("CONID"));
+                con.setHcfid(resultset.getString("HCFID"));
+                con.setAmount(resultset.getString("AMOUNT"));
+                con.setStats(resultset.getString("STATS"));
+                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    con.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                } else {
+                    con.setCreatedby(creator.getMessage());
+                }
+                con.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+
+                ACRGBWSResult getcondateA = contractmethod.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+                if (getcondateA.isSuccess()) {
+                    con.setContractdate(getcondateA.getResult());
+                } else {
+                    con.setContractdate(getcondateA.getMessage());
+                }
+                con.setTranscode(resultset.getString("TRANSCODE"));
+                con.setBaseamount(resultset.getString("BASEAMOUNT"));
+                con.setRemarks(resultset.getString("REMARKS"));
+                con.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+                con.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
+                con.setAddamount(resultset.getString("ADDAMOUNT"));
+                con.setQuarter(resultset.getString("QUARTER"));
+                con.setSb(resultset.getString("SB"));
+
+                if (resultset.getDate("ENDDATE") == null) {
+                    con.setEnddate("N/A");
+                } else {
+                    con.setEnddate(dateformat.format(resultset.getDate("ENDDATE")));
+                }
+
+                conlist.add(con);
+            }
+
+            if (conlist.size() > 0) {
+                result.setResult(utility.ObjectMapper().writeValueAsString(conlist));
+                result.setMessage("OK");
+                result.setSuccess(true);
+            } else {
+                result.setMessage("N/A");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

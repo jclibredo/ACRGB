@@ -151,9 +151,9 @@ public class BookingMethod {
                 nclaims.setSeries(resultset.getString("SERIES"));
                 // nclaims.setDateadmission(resultset.getString("DATE_ADM"));
                 if (resultset.getString("DATE_ADM") == null) {
-                    nclaims.setDatecreated(resultset.getString("DATE_ADM"));
+                    nclaims.setDateadmission(resultset.getString("DATE_ADM"));
                 } else {
-                    nclaims.setDatecreated(dateformat.format(resultset.getDate("DATE_ADM")));
+                    nclaims.setDateadmission(dateformat.format(resultset.getDate("DATE_ADM")));
                 }
                 nclaims.setRvscode(resultset.getString("RVSCODE"));
                 nclaims.setIcdcode(resultset.getString("ICDCODE"));
@@ -179,7 +179,7 @@ public class BookingMethod {
     }
 
     //GET CONTRACT WHERE STATUS IS ACTIVE
-    public ACRGBWSResult GETACTIVECONTRACT(final DataSource dataSource, final Book book) {
+    public ACRGBWSResult GETENDEDCONTRACT(final DataSource dataSource, final Book book) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");

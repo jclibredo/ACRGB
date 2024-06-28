@@ -928,4 +928,35 @@ public class ACRGBFETCH {
         return result;
     }
 
+    @GET
+    @Path("GETACR_BOOKING")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GETACR_BOOKING(
+            @HeaderParam("token") String token) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult BookingResult = fetchmethods.GETACR_BOOKING(dataSource);
+            result.setMessage(BookingResult.getMessage());
+            result.setResult(BookingResult.getResult());
+            result.setSuccess(BookingResult.isSuccess());
+        }
+        return result;
+    }
+    
+    
+      //INSERT EMAIL CREDEDNTIALS
+    @GET
+    @Path("ValidateToken")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult PostEmailCredentials(@HeaderParam("token") String token) {
+        ACRGBWSResult result = utility.GetPayload(token);
+        return result;
+    }
+
 }

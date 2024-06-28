@@ -391,9 +391,9 @@ public class Utility {
             } else {
                 if (this.ValidateToken(token) == true) {
                     Claims claims = Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(cipherkey)).parseClaimsJws(token).getBody();
-//                    ACRGBPayload payload = this.ACRGBPayload();
-//                    payload.setCode1(this.DecryptString((String) claims.get("Code1")));
-//                    payload.setCode2(this.DecryptString((String) claims.get("Code2")));
+                    ACRGBPayload payload = this.ACRGBPayload();
+                    payload.setCode1(this.DecryptString((String) claims.get("Code1")));
+                    payload.setCode2(this.DecryptString((String) claims.get("Code2")));
 
                     if (!this.isJWTExpired(claims)) {
                         result.setSuccess(true);
@@ -414,8 +414,12 @@ public class Utility {
     }
 
     public boolean isJWTExpired(Claims claims) {
-        Date expiresAt = claims.getExpiration();
-        return expiresAt.before(new Date());
+        if (claims.getExpiration() == null) {
+            return true;
+        } else {
+            Date expiresAt = claims.getExpiration();
+            return expiresAt.before(new Date());
+        }
     }
 
 }

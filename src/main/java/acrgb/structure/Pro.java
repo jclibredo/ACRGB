@@ -29,5 +29,13 @@ public class Pro {
     private String percentage;
     private String transcode;
     private String proaddress;
+    private String totaltranhce;
+    private String numberofclaims;
+    private String claimsamount;
+    private String claimspercentage;
+    private String totaltranhceamount;
+    private String amounttranchper;
+    private String tranchclaimsamountper;
+    private String totalpercentage;
 
 }
