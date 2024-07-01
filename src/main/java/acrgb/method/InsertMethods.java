@@ -62,7 +62,7 @@ public class InsertMethods {
         UpdateMethods updatemethods = new UpdateMethods();
         Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTASSETS(:Message,:Code,:p_hcfid,:p_tranchid ,:p_receipt,:p_amount"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTASSETS(:Message,:Code,:p_hcfid,:p_tranchid ,:p_receipt,:p_amount"
                     + ",:p_createdby,:p_datereleased,:p_datecreated,:p_conid,:p_releasedamount,:p_previousbal)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -142,7 +142,7 @@ public class InsertMethods {
                     result.setSuccess(false);
                     result.setMessage("DATE FORMAT IS NOT VALID");
                 } else {
-                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONTRACT(:Message,:Code,:p_hcfid,:p_amount"
+                    CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTCONTRACT(:Message,:Code,:p_hcfid,:p_amount"
                             + ",:p_createdby,:p_datecreated,:p_contractdate,:p_transcode,"
                             + ":p_baseamount,:c_claimsvol,:t_claimsvol,:p_sb,:p_addamount,:p_quarter)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -239,7 +239,7 @@ public class InsertMethods {
                 result.setSuccess(false);
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTTRANCH(:Message,:Code,:p_tranchtype,:p_percentage,:p_createdby,:p_datecreated)");
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTTRANCH(:Message,:Code,:p_tranchtype,:p_percentage,:p_createdby,:p_datecreated)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("p_tranchtype", tranch.getTranchtype().toUpperCase());
@@ -283,7 +283,7 @@ public class InsertMethods {
                 } else {
                     ACRGBWSResult validateUsername = methods.ACRUSERNAME(datasource, userinfo.getEmail());
                     if (validateUsername.isSuccess()) {
-                        CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSERDETAILS(:Message,:Code,"
+                        CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTUSERDETAILS(:Message,:Code,"
                                 + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_createdby,:p_email,:p_contact)");
                         getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                         getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -335,7 +335,7 @@ public class InsertMethods {
                 result.setSuccess(false);
                 result.setMessage("DATE FORMAT IS NOT VALID");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSERLEVEL(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTUSERLEVEL(:Message,:Code,"
                         + ":p_levdetails,:p_levname,:p_createdby,:p_datecreated)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -408,7 +408,7 @@ public class InsertMethods {
                     ACRGBWSResult validateRole = methods.ACRUSERLEVEL(datasource, user.getLeveid());
                     if (validateRole.isSuccess()) {
                         String encryptpword = cryptor.encrypt(user.getUserpassword(), user.getUserpassword(), "ACRGB");
-                        CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSER(:Message,:Code,:p_levelid,:p_username,:p_userpassword,:p_datecreated,:p_createdby,:p_stats,:p_did)");
+                        CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTUSER(:Message,:Code,:p_levelid,:p_username,:p_userpassword,:p_datecreated,:p_createdby,:p_stats,:p_did)");
                         getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                         getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                         getinsertresult.setString("p_levelid", user.getLeveid());
@@ -475,7 +475,7 @@ public class InsertMethods {
                 int errCount = 0;
                 for (int x = 0; x < accesslist.size(); x++) {
                     //------------------------------------------------------------------------------------------------
-                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.USEROLEINDEX(:Message,:Code,"
+                    CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.USEROLEINDEX(:Message,:Code,"
                             + ":a_userid,:a_accessid,:a_createdby,:a_datecreated)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -523,7 +523,7 @@ public class InsertMethods {
             List<String> accesslist = Arrays.asList(userroleindex.getAccessid().split(","));
             int errCount = 0;
             for (int x = 0; x < accesslist.size(); x++) {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.REMOVEDACCESSLEVEL(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.REMOVEDACCESSLEVEL(:Message,:Code,"
                         + ":a_userid,:a_accessid)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -569,7 +569,7 @@ public class InsertMethods {
             if (!utility.IsValidNumber(dataid)) {
                 result.setMessage(" " + dataid + " NUMBER FORMAT IS NOT VALID");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INACTIVEDATA(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INACTIVEDATA(:Message,:Code,"
                         + ":tags,:dataid)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -611,7 +611,7 @@ public class InsertMethods {
             if (!utility.IsValidNumber(dataid)) {
                 result.setMessage(" " + dataid + " NUMBER FORMAT IS NOT VALID");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACTIVEDATA(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.ACTIVEDATA(:Message,:Code,"
                         + ":tags,:dataid)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -739,7 +739,7 @@ public class InsertMethods {
                         indexrole.setDatecreated(mb.getDatecreated());
                         ACRGBWSResult insertRole = this.INSEROLEINDEX(datasource, indexrole);
                         if (insertRole.isSuccess()) {
-                            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTHCPN(:Message,:Code,"
+                            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTHCPN(:Message,:Code,"
                                     + ":umbname,:udatecreated,:ucreatedby,:uaccreno,:uaddress,:ubankaccount,:ubankname)");
                             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -812,7 +812,7 @@ public class InsertMethods {
             if (!utility.IsValidDate(accre.getDatecreated())) {
                 result.setMessage("DATE FORMAT IS NOT VALID");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTACCREDITAION(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTACCREDITAION(:Message,:Code,"
                         + ":uaccreno,:udatefrom,:udateto,:udatecreated,:ucreatedby)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -846,7 +846,7 @@ public class InsertMethods {
             if (!utility.IsValidDate(logs.getDatechange())) {
                 result.setMessage("DATE FORMAT IS NOT VALID");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTSTATSLOG(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTSTATSLOG(:Message,:Code,"
                         + ":uaccount,:ustatus,:udatechange,:uactby)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -882,7 +882,7 @@ public class InsertMethods {
             int errCount = 0;
             for (int x = 0; x < accesslist.size(); x++) {
                 //------------------------------------------------------------------------------------------------
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTAPPELLATE(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTAPPELLATE(:Message,:Code,"
                         + ":uaccesscode,:ucontrolcode)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -960,7 +960,7 @@ public class InsertMethods {
         Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             //------------------------------------------------------------------------------------------------
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACRBOOKING(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.ACRBOOKING(:Message,:Code,"
                     + ":ubooknum,:uconid,:udatecreated,:ucreatedby)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -1002,7 +1002,7 @@ public class InsertMethods {
         System.out.println(nclaims);
         try (Connection connection = datasource.getConnection()) {
             //------------------------------------------------------------------------------------------------
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACRBOOKINGDATA(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.ACRBOOKINGDATA(:Message,:Code,"
                     + ":useries,:uaccreno,:upmccno,:udateadmission,:udatesubmitted,:uclaimamount,:ubooknum,"
                     + ":utags,:urvscode,:uicdcode,:utrn,:ubentype,:uclaimid,:uhcfname)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -1067,7 +1067,7 @@ public class InsertMethods {
         result.setSuccess(false);
         Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONDATE(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTCONDATE(:Message,:Code,"
                     + ":udatefrom,:udateto,:ucreatedby,:udatecreated)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -1104,7 +1104,7 @@ public class InsertMethods {
         result.setSuccess(false);
         Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSERDETAILS(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTUSERDETAILS(:Message,:Code,"
                     + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_createdby,:p_email,:p_contact)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
