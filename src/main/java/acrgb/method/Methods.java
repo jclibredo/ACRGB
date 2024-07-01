@@ -601,7 +601,7 @@ public class Methods {
                         } else {
                             totalcompute.setHospital(getFacility.getMessage());
                         }
-                        totalcompute.setTotalamount(String.valueOf(totalbaseamount));
+                        totalcompute.setTotalamount(String.valueOf(totalbaseamount/3));
                         totalcompute.setTotalclaims(String.valueOf(dateclaimcount));
                         totalcompute.setYearfrom(datefrom);
                         totalcompute.setYearto(dateto);
@@ -782,7 +782,7 @@ public class Methods {
                         totalcomputeHCPNA.setThirty(String.valueOf(claims30percent));
                         totalcomputeHCPNA.setYearfrom(datefrom);
                         totalcomputeHCPNA.setYearto(dateto);
-                        totalcomputeHCPNA.setTotalamount(String.valueOf(TotalBaseAmount));
+                        totalcomputeHCPNA.setTotalamount(String.valueOf(TotalBaseAmount/3));
                         totalcomputeHCPNA.setTotalclaims(String.valueOf(totalclaimcountdatesetting));
                         //GET HCPN
                         ACRGBWSResult getHCPN = this.GETMBWITHID(dataSource, userid);

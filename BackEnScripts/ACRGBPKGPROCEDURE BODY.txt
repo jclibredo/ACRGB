@@ -1,0 +1,563 @@
+create or replace PACKAGE BODY          "ACRGBPKGPROCEDURE" AS
+
+-------------------------------------------------------------------------------------------------------------
+--INSERT ASSETS
+PROCEDURE  INSERTASSETS(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_hcfid IN ACR_ASSETS_TBL.HCFID%TYPE,
+        p_tranchid IN ACR_ASSETS_TBL.TRANCHID%TYPE,
+        p_receipt IN ACR_ASSETS_TBL.RECEIPT%TYPE,
+        p_amount IN ACR_ASSETS_TBL.AMOUNT%TYPE,
+        p_createdby IN ACR_ASSETS_TBL.CREATEDBY%TYPE,
+        p_datereleased IN ACR_ASSETS_TBL.DATERELEASED%TYPE,
+        p_datecreated IN ACR_ASSETS_TBL.DATECREATED%TYPE,
+        p_conid IN ACR_ASSETS_TBL.CONID%TYPE,
+        p_releasedamount IN ACR_ASSETS_TBL.RELEASEDAMOUNT%TYPE,
+        p_previousbal IN ACR_ASSETS_TBL.PREVIOUSBAL%TYPE)
+AS
+BEGIN
+  INSERT INTO DRG_SHADOWBILLING.ACR_ASSETS_TBL(RELEASEDAMOUNT,PREVIOUSBAL,HCFID,TRANCHID,RECEIPT,AMOUNT,CREATEDBY,DATERELEASED,DATECREATED,CONID) 
+  VALUES (p_releasedamount,p_previousbal,p_hcfid,p_tranchid,p_receipt,p_amount,p_createdby,p_datereleased,p_datecreated,p_conid);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END INSERTASSETS;
+
+-------------------------------------------------------------------------------------------------------------
+
+--INSERT ASSETS
+PROCEDURE INSERTCONTRACT(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_hcfid IN ACR_CONTRACT_TBL.HCFID%TYPE,
+        p_amount IN ACR_CONTRACT_TBL.AMOUNT%TYPE,
+        p_createdby IN ACR_CONTRACT_TBL.CREATEDBY%TYPE,
+        p_datecreated IN ACR_CONTRACT_TBL.DATECREATED%TYPE,
+        p_contractdate IN ACR_CONTRACT_TBL.CONTRACTDATE%TYPE,
+        p_transcode IN ACR_CONTRACT_TBL.TRANSCODE%TYPE,
+        p_baseamount IN ACR_CONTRACT_TBL.BASEAMOUNT%TYPE,
+        c_claimsvol IN ACR_CONTRACT_TBL.C_CLAIMSVOL%TYPE,
+        t_claimsvol IN ACR_CONTRACT_TBL.T_CLAIMSVOL%TYPE,
+        p_sb IN ACR_CONTRACT_TBL.SB%TYPE,
+        p_addamount IN ACR_CONTRACT_TBL.ADDAMOUNT%TYPE,
+        p_quarter IN ACR_CONTRACT_TBL.QUARTER%TYPE)
+AS
+BEGIN
+  INSERT INTO DRG_SHADOWBILLING.ACR_CONTRACT_TBL(QUARTER,SB,ADDAMOUNT,C_CLAIMSVOL,T_CLAIMSVOL,HCFID,AMOUNT,CREATEDBY,DATECREATED,CONTRACTDATE,TRANSCODE,BASEAMOUNT) 
+  VALUES (p_quarter,p_sb,p_amount,c_claimsvol,t_claimsvol,p_hcfid,p_amount,p_createdby,p_datecreated,p_contractdate,p_transcode,p_baseamount);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END INSERTCONTRACT;
+-------------------------------------------------------------------------------------------------------------
+--INSERT ACCOUNT ROLE
+PROCEDURE INSERTTRANCH(  
+        Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_tranchtype IN ACR_TRANCH_TBL.TRANCHTYPE%TYPE,
+        p_percentage IN ACR_TRANCH_TBL.PERCENTAGE%TYPE,
+        p_createdby IN ACR_TRANCH_TBL.CREATEDBY%TYPE,
+        p_datecreated IN ACR_TRANCH_TBL.DATECREATED%TYPE)
+
+AS
+BEGIN
+  INSERT INTO DRG_SHADOWBILLING.ACR_TRANCH_TBL(TRANCHTYPE,PERCENTAGE,CREATEDBY,DATECREATED) 
+  VALUES (p_tranchtype,p_percentage,p_createdby,p_datecreated);
+    Message:='SUCC';
+    Code:='00';
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+
+dbms_output.put_line('ERROR WHILE INSERTING '||Message);
+Code :='01';
+  --COMMIT; create exception for out put message
+END INSERTTRANCH;
+
+-------------------------------------------------------------------------------------------------------------
+--INSERT ACCOUNT ROLE INDEX
+PROCEDURE INSERTUSERDETAILS(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_firstname IN ACR_USER_DETAILS_TBL.FIRSTNAME%TYPE,
+        p_lastname IN ACR_USER_DETAILS_TBL.LASTNAME%TYPE,
+        p_middlename IN ACR_USER_DETAILS_TBL.MIDDLENAME%TYPE,
+        p_datecreated IN ACR_USER_DETAILS_TBL.DATECREATED%TYPE,
+        p_createdby IN ACR_USER_DETAILS_TBL.CREATEDBY%TYPE,
+        p_email IN ACR_USER_DETAILS_TBL.EMAIL%TYPE,
+        p_contact IN ACR_USER_DETAILS_TBL.CONTACT%TYPE)
+AS
+BEGIN
+  INSERT INTO DRG_SHADOWBILLING.ACR_USER_DETAILS_TBL(FIRSTNAME,LASTNAME,MIDDLENAME,DATECREATED,CREATEDBY,EMAIL,CONTACT) 
+  VALUES (p_firstname,p_lastname,p_middlename,p_datecreated,p_createdby,p_email,p_contact);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END INSERTUSERDETAILS;
+
+-------------------------------------------------------------------------------------------------------------
+
+PROCEDURE INSERTUSERLEVEL(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_levdetails IN ACR_USER_LEVEL_TBL.LEVDETAILS%TYPE,
+        p_levname IN ACR_USER_LEVEL_TBL.LEVNAME%TYPE,
+        p_createdby IN ACR_USER_LEVEL_TBL.CREATEDBY%TYPE,
+        p_datecreated IN ACR_USER_LEVEL_TBL.DATECREATED%TYPE)
+
+AS
+BEGIN
+  INSERT INTO DRG_SHADOWBILLING.ACR_USER_LEVEL_TBL(LEVDETAILS,LEVNAME,CREATEDBY,DATECREATED) 
+  VALUES (p_levdetails,p_levname,p_createdby,p_datecreated);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END INSERTUSERLEVEL;
+
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE INSERTUSER(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_levelid IN ACR_USER_TBL.LEVELID%TYPE,
+        p_username IN ACR_USER_TBL.USERNAME%TYPE,
+        p_userpassword IN ACR_USER_TBL.USERPASSWORD%TYPE,
+        p_datecreated IN ACR_USER_TBL.DATECREATED%TYPE,
+        p_createdby IN ACR_USER_TBL.CREATEDBY%TYPE,
+        p_stats IN ACR_USER_TBL.STATS%TYPE,
+        p_did IN ACR_USER_TBL.DID%TYPE)
+
+AS
+BEGIN
+  INSERT INTO DRG_SHADOWBILLING.ACR_USER_TBL(LEVELID,USERNAME,USERPASSWORD,DATECREATED,CREATEDBY,STATS,DID) 
+  VALUES (p_levelid,p_username,p_userpassword,p_datecreated,p_createdby,p_stats,p_did);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END INSERTUSER;
+
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE UPDATEUSERDETAILS(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_firstname IN ACR_USER_DETAILS_TBL.FIRSTNAME%TYPE,
+        p_lastname IN ACR_USER_DETAILS_TBL.LASTNAME%TYPE,
+        p_middlename IN ACR_USER_DETAILS_TBL.MIDDLENAME%TYPE,
+        p_email IN ACR_USER_DETAILS_TBL.EMAIL%TYPE,
+        p_contact IN ACR_USER_DETAILS_TBL.CONTACT%TYPE,
+        p_did IN ACR_USER_DETAILS_TBL.DID%TYPE)
+AS
+BEGIN
+   UPDATE DRG_SHADOWBILLING.ACR_USER_DETAILS_TBL SET EMAIL=p_email,CONTACT=p_contact,LASTNAME=p_lastname,MIDDLENAME=p_middlename,FIRSTNAME=p_firstname
+   WHERE DID=p_did;
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END UPDATEUSERDETAILS;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE UPDATEUSERCREDENTIALS(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_userid IN ACR_USER_TBL.USERID%TYPE,
+        p_username IN ACR_USER_TBL.USERNAME%TYPE,
+        p_userpassword IN ACR_USER_TBL.USERPASSWORD%TYPE,
+        p_stats IN ACR_USER_TBL.STATS%TYPE)
+AS
+BEGIN
+   UPDATE DRG_SHADOWBILLING.ACR_USER_TBL SET USERPASSWORD=p_userpassword,  STATS=p_stats, USERNAME=p_username
+   WHERE USERID=p_userid;
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END UPDATEUSERCREDENTIALS;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE INACTIVEDATA(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_tags IN VARCHAR,
+        p_dataid IN NUMBER)
+AS
+BEGIN
+--CASE STATEMENT AREA
+CASE
+     WHEN p_tags = 'ASSETS' THEN
+    UPDATE DRG_SHADOWBILLING.ACR_ASSETS_TBL SET STATS='3' WHERE ASSETSID=p_dataid;
+     WHEN p_tags = 'CONTRACT' THEN
+    UPDATE DRG_SHADOWBILLING.ACR_CONTRACT_TBL SET STATS='3' WHERE CONID=p_dataid;
+     WHEN p_tags = 'TRANCH' THEN
+    UPDATE DRG_SHADOWBILLING.ACR_TRANCH_TBL SET STATS='3' WHERE TRANCHID=p_dataid;
+     WHEN p_tags = 'USERDETAILS' THEN
+    UPDATE DRG_SHADOWBILLING.ACR_USER_DETAILS_TBL SET STATS='3' WHERE DID=p_dataid;
+     WHEN p_tags = 'USERLEVEL' THEN
+    UPDATE DRG_SHADOWBILLING.ACR_USER_LEVEL_TBL SET STATS='3' WHERE LEVELID=p_dataid;
+     WHEN p_tags = 'USER' THEN
+    UPDATE DRG_SHADOWBILLING.ACR_USER_TBL SET STATS='3' WHERE USERID=p_dataid;
+END CASE;
+-- END OF STATEMENT AREA
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END INACTIVEDATA;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE ACTIVEDATA(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_tags IN VARCHAR,
+        p_dataid IN NUMBER)
+AS
+BEGIN
+--CASE STATEMENT AREA
+CASE
+   WHEN p_tags = 'ASSETS' THEN
+    UPDATE DRG_SHADOWBILLING.ACR_ASSETS_TBL SET STATS='2' WHERE ASSETSID=p_dataid;
+     WHEN p_tags = 'CONTRACT' THEN
+    UPDATE DRG_SHADOWBILLING.ACR_CONTRACT_TBL SET STATS='2' WHERE CONID=p_dataid;
+     WHEN p_tags = 'TRANCH' THEN
+    UPDATE DRG_SHADOWBILLING.ACR_TRANCH_TBL SET STATS='2' WHERE TRANCHID=p_dataid;
+     WHEN p_tags = 'USERDETAILS' THEN
+    UPDATE DRG_SHADOWBILLING.ACR_USER_DETAILS_TBL SET STATS='2' WHERE DID=p_dataid;
+     WHEN p_tags = 'USERLEVEL' THEN
+    UPDATE DRG_SHADOWBILLING.ACR_USER_LEVEL_TBL SET STATS='2' WHERE LEVELID=p_dataid;
+     WHEN p_tags = 'USER' THEN
+    UPDATE DRG_SHADOWBILLING.ACR_USER_TBL SET STATS='2' WHERE USERID=p_dataid;
+END CASE;
+-- END OF STATEMENT AREA
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END ACTIVEDATA;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE ACTIVITYLOGS(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        a_date IN ACR_USER_ACTIVITY.ACTDATE%TYPE,
+        a_details IN ACR_USER_ACTIVITY.ACTDETAILS%TYPE,
+        a_by IN ACR_USER_ACTIVITY.ACTBY%TYPE)
+AS
+BEGIN
+    INSERT INTO DRG_SHADOWBILLING.ACR_USER_ACTIVITY(ACTDATE,ACTDETAILS,ACTBY) 
+  VALUES (a_date,a_details,a_by);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END ACTIVITYLOGS;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE USEROLEINDEX(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        a_userid IN ACR_ROLE_INDEX_TBL.USERID%TYPE,
+         a_accessid IN ACR_ROLE_INDEX_TBL.ACCESSID%TYPE,
+          a_createdby IN ACR_ROLE_INDEX_TBL.CREATEDBY%TYPE,
+          a_datecreated IN ACR_ROLE_INDEX_TBL.DATECREATED%TYPE)
+AS
+BEGIN
+    INSERT INTO DRG_SHADOWBILLING.ACR_ROLE_INDEX_TBL(USERID,ACCESSID,CREATEDBY,DATECREATED) 
+  VALUES (a_userid,a_accessid,a_createdby,a_datecreated);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END USEROLEINDEX;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE REMOVEDACCESSLEVEL(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        a_userid IN ACR_ROLE_INDEX_TBL.USERID%TYPE,
+        a_accessid IN ACR_ROLE_INDEX_TBL.ACCESSID%TYPE)
+AS
+BEGIN
+    DELETE FROM DRG_SHADOWBILLING.ACR_ROLE_INDEX_TBL WHERE USERID=a_userid AND ACCESSID=a_accessid;
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END REMOVEDACCESSLEVEL;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE MBREQUEST(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        udaterequest IN ACR_MBREQUEST_TBL.DATEREQUEST%TYPE,
+        udatefrom IN ACR_MBREQUEST_TBL.DATEFROM%TYPE,
+        udateto IN ACR_MBREQUEST_TBL.DATETO%TYPE,
+        urequestor IN ACR_MBREQUEST_TBL.REQUESTOR%TYPE,
+        utranscode IN ACR_MBREQUEST_TBL.TRANSCODE%TYPE,
+        uremarks IN ACR_MBREQUEST_TBL.REMARKS%TYPE,
+        uamount IN ACR_MBREQUEST_TBL.AMOUNT%TYPE,
+        udatecreated IN ACR_MBREQUEST_TBL.DATECREATED%TYPE)
+AS
+BEGIN
+    INSERT INTO DRG_SHADOWBILLING.ACR_MBREQUEST_TBL(DATEREQUEST,DATEFROM,DATETO,REQUESTOR,TRANSCODE,REMARKS,AMOUNT,DATECREATED) 
+    VALUES (udaterequest,udatefrom,udateto,urequestor,utranscode,uremarks,uamount,udatecreated);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END MBREQUEST;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE MBREQUESTFCHUNDER(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        utranscode IN ACR_HCF_UNDER_REQUEST_TBL.TRANSCODE%TYPE,
+        udatecreated IN ACR_HCF_UNDER_REQUEST_TBL.DATECREATED%TYPE,
+        uamount IN ACR_HCF_UNDER_REQUEST_TBL.AMOUNT%TYPE,
+        ufacility IN ACR_HCF_UNDER_REQUEST_TBL.FACILITY%TYPE)
+AS
+BEGIN
+    INSERT INTO DRG_SHADOWBILLING.ACR_HCF_UNDER_REQUEST_TBL(TRANSCODE,DATECREATED,AMOUNT,FACILITY) 
+    VALUES (utranscode,udatecreated,uamount,ufacility);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END MBREQUESTFCHUNDER;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE INSERTAPPELLATE(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        uaccesscode IN ACR_APPELLATE.ACCESSCODE%TYPE,
+        ucontrolcode IN ACR_APPELLATE.CONTROLCODE%TYPE)
+AS
+BEGIN
+    INSERT INTO DRG_SHADOWBILLING.ACR_APPELLATE(ACCESSCODE,CONTROLCODE) 
+    VALUES (uaccesscode,ucontrolcode);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END INSERTAPPELLATE;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE INSERTHCPN(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        umbname IN ACR_MB_TBL.MBNAME%TYPE,
+        udatecreated IN ACR_MB_TBL.DATECREATED%TYPE,
+        ucreatedby IN ACR_MB_TBL.CREATEDBY%TYPE,
+        uaccreno IN ACR_MB_TBL.CONNUMBER%TYPE,
+        uaddress IN ACR_MB_TBL.ADDRESS%TYPE,
+        ubankaccount IN ACR_MB_TBL.BANKACCOUNT%TYPE,
+        ubankname IN ACR_MB_TBL.BANKNAME%TYPE)
+AS
+BEGIN
+    INSERT INTO DRG_SHADOWBILLING.ACR_MB_TBL(MBNAME,DATECREATED,CREATEDBY,CONNUMBER,ADDRESS,BANKACCOUNT,BANKNAME) 
+    VALUES (umbname,udatecreated,ucreatedby,uaccreno,uaddress,ubankaccount,ubankname);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END INSERTHCPN;
+
+PROCEDURE INSERTACCREDITAION(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        uaccreno IN ACR_ACCREDITATION.ACCRENO%TYPE,
+        udatefrom IN ACR_ACCREDITATION.DATEFROM%TYPE,
+        udateto IN ACR_ACCREDITATION.DATETO%TYPE,
+        udatecreated IN ACR_ACCREDITATION.DATECREATED%TYPE,
+        ucreatedby IN ACR_ACCREDITATION.CREATEDBY%TYPE)
+AS
+BEGIN
+    INSERT INTO DRG_SHADOWBILLING.ACR_ACCREDITATION(ACCRENO,DATEFROM,DATETO,DATECREATED,CREATEDBY) 
+    VALUES (uaccreno,udatefrom,udateto,udatecreated,ucreatedby);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END INSERTACCREDITAION;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE INSERTSTATSLOG(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        uaccount IN ACR_STATS_LOG.ACCOUNT%TYPE,
+        ustatus IN ACR_STATS_LOG.STATUS%TYPE,
+        udatechange IN ACR_STATS_LOG.DATECHANGE%TYPE,
+        uactby IN ACR_STATS_LOG.ACTBY%TYPE)
+AS
+BEGIN
+    INSERT INTO DRG_SHADOWBILLING.ACR_STATS_LOG(ACCOUNT,STATUS,DATECHANGE,ACTBY) 
+    VALUES (uaccount,ustatus,udatechange,uactby);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END INSERTSTATSLOG;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE ACRPAYMENTTYPE(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        uaccount IN ACR_PAYMENT_TYPE.ACCOUNT%TYPE,
+        udatecreted IN ACR_PAYMENT_TYPE.DATECREATED%TYPE,
+        uconid IN ACR_PAYMENT_TYPE.CONID%TYPE,
+        udatefrom IN ACR_PAYMENT_TYPE.DATEFROM%TYPE,
+        udateto IN ACR_PAYMENT_TYPE.DATETO%TYPE,
+        ucreatedby IN ACR_PAYMENT_TYPE.CREATEDBY%TYPE,
+        upaymenttype IN ACR_PAYMENT_TYPE.PAYMENTTYPE%TYPE,
+        ureference IN ACR_PAYMENT_TYPE.REFERENCE%TYPE)
+AS
+BEGIN
+    INSERT INTO DRG_SHADOWBILLING.ACR_PAYMENT_TYPE(ACCOUNT,DATECREATED,CONID,DATEFROM,DATETO,CREATEDBY,PAYMENTTYPE,REFERENCE) 
+    VALUES (uaccount,udatecreted,uconid,udatefrom,udateto,ucreatedby,upaymenttype,ureference);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END ACRPAYMENTTYPE;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE ACRBOOKING(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        ubooknum IN ACR_BOOKING.BOOKNUM%TYPE,
+        uconid IN ACR_BOOKING.CONID%TYPE,
+        udatecreated IN ACR_BOOKING.DATECREATED%TYPE,
+        ucreatedby IN ACR_BOOKING.CREATEDBY%TYPE)
+AS
+BEGIN
+    INSERT INTO DRG_SHADOWBILLING.ACR_BOOKING(BOOKNUM,CONID,DATECREATED,CREATEDBY) 
+    VALUES (ubooknum,uconid,udatecreated,ucreatedby);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END ACRBOOKING;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE ACRBOOKINGDATA(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        useries IN ACR_BOOK_DATA.SERIES%TYPE,
+        uaccreno IN ACR_BOOK_DATA.ACCRENO%TYPE,
+        upmccno IN ACR_BOOK_DATA.PMCC_NO%TYPE,
+        udateadmission IN ACR_BOOK_DATA.DATE_ADM%TYPE,
+        udatesubmitted IN ACR_BOOK_DATA.DATESUBMITTED%TYPE,
+        uclaimamount IN ACR_BOOK_DATA.CLAIMAMOUNT%TYPE,
+        ubooknum IN ACR_BOOK_DATA.BOOKNUMBER%TYPE,
+        utags IN ACR_BOOK_DATA.TAGS%TYPE,
+        urvscode IN ACR_BOOK_DATA.RVSCODE%TYPE,
+        uicdcode IN ACR_BOOK_DATA.ICDCODE%TYPE,
+        utrn IN ACR_BOOK_DATA.TRN%TYPE,
+        ubentype IN ACR_BOOK_DATA.BEN_TYPE%TYPE,
+        uclaimid IN ACR_BOOK_DATA.CLAIMID%TYPE,
+        uhcfname IN ACR_BOOK_DATA.HCFNAME%TYPE)
+AS
+BEGIN
+    INSERT INTO DRG_SHADOWBILLING.ACR_BOOK_DATA(SERIES,ACCRENO,PMCC_NO,DATE_ADM,DATESUBMITTED,CLAIMAMOUNT,BOOKNUMBER,TAGS,RVSCODE,ICDCODE,TRN,BEN_TYPE,CLAIMID,HCFNAME) 
+    VALUES (useries,uaccreno,upmccno,udateadmission,udatesubmitted,uclaimamount,ubooknum,utags,urvscode,uicdcode,utrn,ubentype,uclaimid,uhcfname);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END ACRBOOKINGDATA;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE INSERTCONDATE(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        udatefrom IN ACR_CONTRACT_DATE_TBL.DATEFROM%TYPE,
+        udateto IN ACR_CONTRACT_DATE_TBL.DATETO%TYPE,
+        ucreatedby IN ACR_CONTRACT_DATE_TBL.CREATEDBY%TYPE,
+        udatecreated IN ACR_CONTRACT_DATE_TBL.DATECREATED%TYPE)
+AS
+BEGIN
+    INSERT INTO DRG_SHADOWBILLING.ACR_CONTRACT_DATE_TBL(DATEFROM,DATETO,CREATEDBY,DATECREATED) 
+    VALUES (udatefrom,udateto,ucreatedby,udatecreated);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Claims'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END INSERTCONDATE;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE INSERTEMAILCRED(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        uappuser IN ACR_EMAIL_CRED_TBL.APPUSER%TYPE,
+        uapppass IN ACR_EMAIL_CRED_TBL.APPPASS%TYPE,
+        uappemail IN ACR_EMAIL_CRED_TBL.SENDER%TYPE)
+AS
+BEGIN
+    INSERT INTO DRG_SHADOWBILLING.ACR_EMAIL_CRED_TBL(APPUSER,APPPASS,SENDER) 
+    VALUES (uappuser,uapppass,uappemail);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Email Creddentials '||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END INSERTEMAILCRED;
+-------------------------------------------------------------------------------------------------------------
+PROCEDURE INSERTCONBALANCE(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        ubooknum IN ACR_CON_BALANCE.BOOKNUM%TYPE,
+        ucondateid IN ACR_CON_BALANCE.CONDATEID%TYPE,
+        uaccount IN ACR_CON_BALANCE.ACCOUNT%TYPE,
+        uconbalance IN ACR_CON_BALANCE.CONBALANCE%TYPE,
+        uconamount IN ACR_CON_BALANCE.CONAMOUNT%TYPE,
+        uconutilized IN ACR_CON_BALANCE.CONUTILIZED%TYPE,
+        udatecreated IN ACR_CON_BALANCE.DATECREATED%TYPE,
+        ucreatedby IN ACR_CON_BALANCE.CREATEDBY%TYPE,
+        uconid IN ACR_CON_BALANCE.CONID%TYPE)
+AS
+BEGIN
+    INSERT INTO DRG_SHADOWBILLING.ACR_CON_BALANCE(BOOKNUM,CONDATEID,ACCOUNT,CONBALANCE,CONAMOUNT,CONUTILIZED,DATECREATED,CREATEDBY,CONID) 
+    VALUES (ubooknum,ucondateid,uaccount,uconbalance,uconamount,uconutilized,udatecreated,ucreatedby,uconid);
+    Message:='SUCC';
+    Code:=00;
+Exception
+when others then
+Message :='An error was encounter while Inserting Con Balance'||sqlcode||'-error-'||sqlerrm;
+Code :=01;
+  --COMMIT; create exception for out put message
+END INSERTCONBALANCE;
+-------------------------------------------------------------------------------------------------------------
+
+END ACRGBPKGPROCEDURE;

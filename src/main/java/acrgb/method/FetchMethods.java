@@ -2201,6 +2201,7 @@ public class FetchMethods {
                     assets.setCreatedby("N/A");
                 }
                 assets.setStatus(resultset.getString("STATS"));
+                assets.setPreviousbalance(resultset.getString("PREVIOUSBAL"));
                 listassets.add(assets);
             }
             if (!listassets.isEmpty()) {
@@ -2799,6 +2800,55 @@ public class FetchMethods {
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(booklist));
+            } else {
+                result.setMessage("N/A");
+            }
+
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET BOOK DATA
+    public ACRGBWSResult GETALLCONTRACT(final DataSource dataSource, final String utags) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETALLCONTRACT(:utags); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("utags", utags);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            ArrayList<Contract> contractList = new ArrayList<>();
+            while (resultset.next()) {
+                Contract contract = new Contract();
+                contract.setConid(resultset.getString("CONID"));
+                contract.setHcfid(resultset.getString("HCFID"));
+                contract.setAmount(resultset.getString("AMOUNT"));
+                contract.setStats(resultset.getString("STATS"));
+                contract.setCreatedby(resultset.getString("CREATEDBY"));
+                contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                contract.setTranscode(resultset.getString("TRANSCODE"));
+                contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                contract.setRemarks(resultset.getString("REMARKS"));
+                contract.setEnddate(resultset.getString("ENDDATE"));
+                contract.setContractdate(resultset.getString("CONTRACTDATE"));
+                contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+                contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
+                contract.setSb(resultset.getString("SB"));
+                contract.setAddamount(resultset.getString("ADDAMOUNT"));
+                contract.setQuarter(resultset.getString("QUARTER"));
+                contractList.add(contract);
+            }
+
+            if (contractList.size() > 0) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(contractList));
             } else {
                 result.setMessage("N/A");
             }

@@ -1,0 +1,238 @@
+create or replace PACKAGE          "ACRGBPKGPROCEDURE" AS 
+       
+ -----------------------------------------------------------------------------           
+ --INSERT ASSETS TABLE
+PROCEDURE INSERTASSETS(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_hcfid IN ACR_ASSETS_TBL.HCFID%TYPE,
+        p_tranchid IN ACR_ASSETS_TBL.TRANCHID%TYPE,
+        p_receipt IN ACR_ASSETS_TBL.RECEIPT%TYPE,
+        p_amount IN ACR_ASSETS_TBL.AMOUNT%TYPE,
+        p_createdby IN ACR_ASSETS_TBL.CREATEDBY%TYPE,
+        p_datereleased IN ACR_ASSETS_TBL.DATERELEASED%TYPE,
+        p_datecreated IN ACR_ASSETS_TBL.DATECREATED%TYPE,
+        p_conid IN ACR_ASSETS_TBL.CONID%TYPE,
+        p_releasedamount IN ACR_ASSETS_TBL.RELEASEDAMOUNT%TYPE,
+        p_previousbal IN ACR_ASSETS_TBL.PREVIOUSBAL%TYPE);
+
+ -----------------------------------------------------------------------------           
+         --INSERT TYPE OF ASSETS TABLE
+PROCEDURE INSERTCONTRACT(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_hcfid IN ACR_CONTRACT_TBL.HCFID%TYPE,
+        p_amount IN ACR_CONTRACT_TBL.AMOUNT%TYPE,
+        p_createdby IN ACR_CONTRACT_TBL.CREATEDBY%TYPE,
+        p_datecreated IN ACR_CONTRACT_TBL.DATECREATED%TYPE,
+        p_contractdate IN ACR_CONTRACT_TBL.CONTRACTDATE%TYPE,
+        p_transcode IN ACR_CONTRACT_TBL.TRANSCODE%TYPE,
+        p_baseamount IN ACR_CONTRACT_TBL.BASEAMOUNT%TYPE,
+        c_claimsvol IN ACR_CONTRACT_TBL.C_CLAIMSVOL%TYPE,
+        t_claimsvol IN ACR_CONTRACT_TBL.T_CLAIMSVOL%TYPE,
+        p_sb IN ACR_CONTRACT_TBL.SB%TYPE,
+        p_addamount IN ACR_CONTRACT_TBL.ADDAMOUNT%TYPE,
+        p_quarter IN ACR_CONTRACT_TBL.QUARTER%TYPE);
+
+ -----------------------------------------------------------------------------               
+        --INSERT ACCOUNT ROLE
+PROCEDURE INSERTTRANCH(  
+        Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_tranchtype IN ACR_TRANCH_TBL.TRANCHTYPE%TYPE,
+        p_percentage IN ACR_TRANCH_TBL.PERCENTAGE%TYPE,
+        p_createdby IN ACR_TRANCH_TBL.CREATEDBY%TYPE,
+        p_datecreated IN ACR_TRANCH_TBL.DATECREATED%TYPE);
+
+-----------------------------------------------------------------------------          
+                --INSERT USER INDEX TBL
+PROCEDURE INSERTUSERDETAILS(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_firstname IN ACR_USER_DETAILS_TBL.FIRSTNAME%TYPE,
+        p_lastname IN ACR_USER_DETAILS_TBL.LASTNAME%TYPE,
+        p_middlename IN ACR_USER_DETAILS_TBL.MIDDLENAME%TYPE,
+        p_datecreated IN ACR_USER_DETAILS_TBL.DATECREATED%TYPE,
+        p_createdby IN ACR_USER_DETAILS_TBL.CREATEDBY%TYPE,
+        p_email IN ACR_USER_DETAILS_TBL.EMAIL%TYPE,
+        p_contact IN ACR_USER_DETAILS_TBL.CONTACT%TYPE);
+ -----------------------------------------------------------------------------   
+PROCEDURE INSERTUSERLEVEL(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_levdetails IN ACR_USER_LEVEL_TBL.LEVDETAILS%TYPE,
+        p_levname IN ACR_USER_LEVEL_TBL.LEVNAME%TYPE,
+        p_createdby IN ACR_USER_LEVEL_TBL.CREATEDBY%TYPE,
+        p_datecreated IN ACR_USER_LEVEL_TBL.DATECREATED%TYPE); 
+
+ -----------------------------------------------------------------------------   
+PROCEDURE INSERTUSER(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_levelid IN ACR_USER_TBL.LEVELID%TYPE,
+        p_username IN ACR_USER_TBL.USERNAME%TYPE,
+        p_userpassword IN ACR_USER_TBL.USERPASSWORD%TYPE,
+        p_datecreated IN ACR_USER_TBL.DATECREATED%TYPE,
+        p_createdby IN ACR_USER_TBL.CREATEDBY%TYPE,
+        p_stats IN ACR_USER_TBL.STATS%TYPE,
+        p_did IN ACR_USER_TBL.DID%TYPE);
+ -----------------------------------------------------------------------------           
+               --UPDATE USER INFO
+PROCEDURE UPDATEUSERDETAILS(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_firstname IN ACR_USER_DETAILS_TBL.FIRSTNAME%TYPE,
+        p_lastname IN ACR_USER_DETAILS_TBL.LASTNAME%TYPE,
+        p_middlename IN ACR_USER_DETAILS_TBL.MIDDLENAME%TYPE,
+        p_email IN ACR_USER_DETAILS_TBL.EMAIL%TYPE,
+        p_contact IN ACR_USER_DETAILS_TBL.CONTACT%TYPE,
+        p_did IN ACR_USER_DETAILS_TBL.DID%TYPE);
+
+
+ -----------------------------------------------------------------------------   
+  --UPDATE USER CREDENTIALS
+PROCEDURE UPDATEUSERCREDENTIALS(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_userid IN ACR_USER_TBL.USERID%TYPE,
+        p_username IN ACR_USER_TBL.USERNAME%TYPE,
+        p_userpassword IN ACR_USER_TBL.USERPASSWORD%TYPE,
+        p_stats IN ACR_USER_TBL.STATS%TYPE);
+
+
+ -----------------------------------------------------------------------------  
+  --INACTIVE PROCEDURE
+PROCEDURE INACTIVEDATA(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_tags IN VARCHAR,
+        p_dataid IN NUMBER);
+ -----------------------------------------------------------------------------   
+  --ACTIVE PROCEDURE
+PROCEDURE ACTIVEDATA(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_tags IN VARCHAR,
+        p_dataid IN NUMBER);
+ -----------------------------------------------------------------------------   
+ PROCEDURE ACTIVITYLOGS(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        a_date IN ACR_USER_ACTIVITY.ACTDATE%TYPE,
+         a_details IN ACR_USER_ACTIVITY.ACTDETAILS%TYPE,
+          a_by IN ACR_USER_ACTIVITY.ACTBY%TYPE);
+ ----------------------------------------------------------------------------- 
+ PROCEDURE USEROLEINDEX(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        a_userid IN ACR_ROLE_INDEX_TBL.USERID%TYPE,
+         a_accessid IN ACR_ROLE_INDEX_TBL.ACCESSID%TYPE,
+          a_createdby IN ACR_ROLE_INDEX_TBL.CREATEDBY%TYPE,
+          a_datecreated IN ACR_ROLE_INDEX_TBL.DATECREATED%TYPE);
+ ----------------------------------------------------------------------------- 
+ PROCEDURE REMOVEDACCESSLEVEL(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        a_userid IN ACR_ROLE_INDEX_TBL.USERID%TYPE,
+        a_accessid IN ACR_ROLE_INDEX_TBL.ACCESSID%TYPE);
+ ----------------------------------------------------------------------------- 
+ --INSERT MANAGING BOARD REQUEST
+  PROCEDURE MBREQUEST(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        udaterequest IN ACR_MBREQUEST_TBL.DATEREQUEST%TYPE,
+        udatefrom IN ACR_MBREQUEST_TBL.DATEFROM%TYPE,
+        udateto IN ACR_MBREQUEST_TBL.DATETO%TYPE,
+        urequestor IN ACR_MBREQUEST_TBL.REQUESTOR%TYPE,
+        utranscode IN ACR_MBREQUEST_TBL.TRANSCODE%TYPE,
+        uremarks IN ACR_MBREQUEST_TBL.REMARKS%TYPE,
+        uamount IN ACR_MBREQUEST_TBL.AMOUNT%TYPE,
+        udatecreated IN ACR_MBREQUEST_TBL.DATECREATED%TYPE);
+ ----------------------------------------------------------------------------- 
+ --INSERT MANAGING BOARD REQUEST
+  PROCEDURE MBREQUESTFCHUNDER(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        utranscode IN ACR_HCF_UNDER_REQUEST_TBL.TRANSCODE%TYPE,
+        udatecreated IN ACR_HCF_UNDER_REQUEST_TBL.DATECREATED%TYPE,
+        uamount IN ACR_HCF_UNDER_REQUEST_TBL.AMOUNT%TYPE,
+        ufacility IN ACR_HCF_UNDER_REQUEST_TBL.FACILITY%TYPE);
+ ----------------------------------------------------------------------------- 
+ PROCEDURE INSERTAPPELLATE(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        uaccesscode IN ACR_APPELLATE.ACCESSCODE%TYPE,
+        ucontrolcode IN ACR_APPELLATE.CONTROLCODE%TYPE);
+------------------------------------------------------------------------------
+PROCEDURE INSERTHCPN(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        umbname IN ACR_MB_TBL.MBNAME%TYPE,
+        udatecreated IN ACR_MB_TBL.DATECREATED%TYPE,
+        ucreatedby IN ACR_MB_TBL.CREATEDBY%TYPE,
+        uaccreno IN ACR_MB_TBL.CONNUMBER%TYPE,
+        uaddress IN ACR_MB_TBL.ADDRESS%TYPE,
+        ubankaccount IN ACR_MB_TBL.BANKACCOUNT%TYPE,
+        ubankname IN ACR_MB_TBL.BANKNAME%TYPE);
+
+PROCEDURE INSERTACCREDITAION(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        uaccreno IN ACR_ACCREDITATION.ACCRENO%TYPE,
+        udatefrom IN ACR_ACCREDITATION.DATEFROM%TYPE,
+        udateto IN ACR_ACCREDITATION.DATETO%TYPE,
+        udatecreated IN ACR_ACCREDITATION.DATECREATED%TYPE,
+        ucreatedby IN ACR_ACCREDITATION.CREATEDBY%TYPE);
+ ----------------------------------------------------------------------------- 
+  PROCEDURE INSERTSTATSLOG(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        uaccount IN ACR_STATS_LOG.ACCOUNT%TYPE,
+        ustatus IN ACR_STATS_LOG.STATUS%TYPE,
+        udatechange IN ACR_STATS_LOG.DATECHANGE%TYPE,
+        uactby IN ACR_STATS_LOG.ACTBY%TYPE);
+  /* TODO enter package declarations (types, exceptions, methods etc) here */ 
+ ----------------------------------------------------------------------------- 
+ PROCEDURE ACRPAYMENTTYPE(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        uaccount IN ACR_PAYMENT_TYPE.ACCOUNT%TYPE,
+        udatecreted IN ACR_PAYMENT_TYPE.DATECREATED%TYPE,
+        uconid IN ACR_PAYMENT_TYPE.CONID%TYPE,
+        udatefrom IN ACR_PAYMENT_TYPE.DATEFROM%TYPE,
+        udateto IN ACR_PAYMENT_TYPE.DATETO%TYPE,
+        ucreatedby IN ACR_PAYMENT_TYPE.CREATEDBY%TYPE,
+        upaymenttype IN ACR_PAYMENT_TYPE.PAYMENTTYPE%TYPE,
+        ureference IN ACR_PAYMENT_TYPE.REFERENCE%TYPE);
+ ----------------------------------------------------------------------------- 
+ PROCEDURE ACRBOOKING(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        ubooknum IN ACR_BOOKING.BOOKNUM%TYPE,
+        uconid IN ACR_BOOKING.CONID%TYPE,
+        udatecreated IN ACR_BOOKING.DATECREATED%TYPE,
+        ucreatedby IN ACR_BOOKING.CREATEDBY%TYPE);
+ ----------------------------------------------------------------------------- 
+ PROCEDURE ACRBOOKINGDATA(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        useries IN ACR_BOOK_DATA.SERIES%TYPE,
+        uaccreno IN ACR_BOOK_DATA.ACCRENO%TYPE,
+        upmccno IN ACR_BOOK_DATA.PMCC_NO%TYPE,
+        udateadmission IN ACR_BOOK_DATA.DATE_ADM%TYPE,
+        udatesubmitted IN ACR_BOOK_DATA.DATESUBMITTED%TYPE,
+        uclaimamount IN ACR_BOOK_DATA.CLAIMAMOUNT%TYPE,
+        ubooknum IN ACR_BOOK_DATA.BOOKNUMBER%TYPE,
+        utags IN ACR_BOOK_DATA.TAGS%TYPE,
+        urvscode IN ACR_BOOK_DATA.RVSCODE%TYPE,
+        uicdcode IN ACR_BOOK_DATA.ICDCODE%TYPE,
+        utrn IN ACR_BOOK_DATA.TRN%TYPE,
+        ubentype IN ACR_BOOK_DATA.BEN_TYPE%TYPE,
+        uclaimid IN ACR_BOOK_DATA.CLAIMID%TYPE,
+        uhcfname IN ACR_BOOK_DATA.HCFNAME%TYPE);
+ -----------------------------------------------------------------------------
+ PROCEDURE INSERTCONDATE(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        udatefrom IN ACR_CONTRACT_DATE_TBL.DATEFROM%TYPE,
+        udateto IN ACR_CONTRACT_DATE_TBL.DATETO%TYPE,
+        ucreatedby IN ACR_CONTRACT_DATE_TBL.CREATEDBY%TYPE,
+        udatecreated IN ACR_CONTRACT_DATE_TBL.DATECREATED%TYPE);
+ -----------------------------------------------------------------------------
+  PROCEDURE INSERTEMAILCRED(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        uappuser IN ACR_EMAIL_CRED_TBL.APPUSER%TYPE,
+        uapppass IN ACR_EMAIL_CRED_TBL.APPPASS%TYPE,
+        uappemail IN ACR_EMAIL_CRED_TBL.SENDER%TYPE);
+ -----------------------------------------------------------------------------
+ PROCEDURE INSERTCONBALANCE(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        ubooknum IN ACR_CON_BALANCE.BOOKNUM%TYPE,
+        ucondateid IN ACR_CON_BALANCE.CONDATEID%TYPE,
+        uaccount IN ACR_CON_BALANCE.ACCOUNT%TYPE,
+        uconbalance IN ACR_CON_BALANCE.CONBALANCE%TYPE,
+        uconamount IN ACR_CON_BALANCE.CONAMOUNT%TYPE,
+        uconutilized IN ACR_CON_BALANCE.CONUTILIZED%TYPE,
+        udatecreated IN ACR_CON_BALANCE.DATECREATED%TYPE,
+        ucreatedby IN ACR_CON_BALANCE.CREATEDBY%TYPE,
+        uconid IN ACR_CON_BALANCE.CONID%TYPE);
+ -----------------------------------------------------------------------------
+END ;

@@ -53,7 +53,8 @@ import javax.ws.rs.core.MediaType;
 @Path("ACRGBINSERT")
 @RequestScoped
 public class ACRGBPOST {
-
+    public ACRGBPOST() {
+    }
     /**
      * Creates a new instance of ACRGB
      */
@@ -545,7 +546,5 @@ public class ACRGBPOST {
         }
         return result;
     }
-
-  
 
 }

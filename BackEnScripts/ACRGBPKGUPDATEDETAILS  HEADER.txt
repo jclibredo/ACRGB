@@ -1,0 +1,142 @@
+create or replace PACKAGE          "ACRGBPKGUPDATEDETAILS" AS 
+
+ -----------------------------------------------------------------------------           
+ --INSERT ASSETS TABLE
+PROCEDURE UPDATEASSETS(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_assetsid IN ACR_ASSETS_TBL.ASSETSID%TYPE,
+        p_hcfid IN ACR_ASSETS_TBL.HCFID%TYPE,
+        p_tranchid IN ACR_ASSETS_TBL.TRANCHID%TYPE,
+        p_receipt IN ACR_ASSETS_TBL.RECEIPT%TYPE,
+        p_amount IN ACR_ASSETS_TBL.AMOUNT%TYPE,
+        p_datereleased IN ACR_ASSETS_TBL.DATERELEASED%TYPE);
+ -----------------------------------------------------------------------------           
+         --INSERT TYPE OF ASSETS TABLE
+PROCEDURE UPDATECONTRACT(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_conid IN ACR_CONTRACT_TBL.CONID%TYPE,
+        p_hcfid IN ACR_CONTRACT_TBL.HCFID%TYPE,
+        p_amount IN ACR_CONTRACT_TBL.AMOUNT%TYPE,
+        p_contractdate IN ACR_CONTRACT_TBL.CONTRACTDATE%TYPE,
+        p_transcode IN ACR_CONTRACT_TBL.TRANSCODE%TYPE,
+        c_claimsvol IN ACR_CONTRACT_TBL.C_CLAIMSVOL%TYPE,
+        p_quarter IN ACR_CONTRACT_TBL.QUARTER%TYPE);
+ -----------------------------------------------------------------------------           
+        --INSERT ACCOUNT ROLE
+PROCEDURE UPDATETRANCH(  
+        Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_tranchid IN ACR_TRANCH_TBL.TRANCHID%TYPE,
+        p_tranchtype IN ACR_TRANCH_TBL.TRANCHTYPE%TYPE,
+        p_percentage IN ACR_TRANCH_TBL.PERCENTAGE%TYPE);
+
+ -----------------------------------------------------------------------------   
+PROCEDURE UPDATEUSERLEVEL(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_levelid IN ACR_USER_LEVEL_TBL.LEVELID%TYPE,
+        p_levdetails IN ACR_USER_LEVEL_TBL.LEVDETAILS%TYPE,
+        p_levname IN ACR_USER_LEVEL_TBL.LEVNAME%TYPE);
+
+ -----------------------------------------------------------------------------   
+ PROCEDURE UPDATEPASSWORD(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_userid IN ACR_USER_TBL.USERID%TYPE,
+        p_password IN ACR_USER_TBL.USERPASSWORD%TYPE,
+        p_stats IN ACR_USER_TBL.STATS%TYPE);
+
+ -----------------------------------------------------------------------------   
+ PROCEDURE UPDATEUSERNAME(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_userid IN ACR_USER_TBL.USERID%TYPE,
+        p_username IN ACR_USER_TBL.USERNAME%TYPE,
+        p_stats IN ACR_USER_TBL.STATS%TYPE);
+
+ ----------------------------------------------------------------------------- 
+  PROCEDURE UPDATELEVEL(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_levelid IN ACR_USER_LEVEL_TBL.LEVELID%TYPE,
+        p_levdetails IN ACR_USER_LEVEL_TBL.LEVDETAILS%TYPE,
+        p_levname IN ACR_USER_LEVEL_TBL.LEVNAME%TYPE);
+
+ ----------------------------------------------------------------------------- 
+ PROCEDURE REMOVEDROLEINDEX(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        puserid IN ACR_ROLE_INDEX_TBL.USERID%TYPE,
+        paccessid IN ACR_ROLE_INDEX_TBL.ACCESSID%TYPE);
+
+----------------------------------------------------------------------------- 
+ PROCEDURE FACILITYTAGGING(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        p_hcfidcode IN ACR_HCF_TBL.HCFCODE%TYPE,
+        p_type IN ACR_HCF_TBL.HCFTYPE%TYPE);
+-----------------------------------------------------------------------------
+PROCEDURE CONTRACTTAGGING(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        pconid IN ACR_CONTRACT_TBL.CONID%TYPE,
+        pstats IN ACR_CONTRACT_TBL.STATS%TYPE,
+        penddate IN ACR_CONTRACT_TBL.ENDDATE%TYPE,
+        premarks IN ACR_CONTRACT_TBL.REMARKS%TYPE);        
+-----------------------------------------------------------------------------
+
+PROCEDURE REMOVEAPPELLATE(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        uaccesscode IN ACR_APPELLATE.ACCESSCODE%TYPE,
+        ucontrolcode IN ACR_APPELLATE.CONTROLCODE%TYPE);
+-----------------------------------------------------------------------------
+PROCEDURE CONSTATSUPDATE(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        uconid IN NUMBER,
+        ustats IN NUMBER,
+        uremarks IN VARCHAR2,
+        uenddate IN ACR_CONTRACT_TBL.ENDDATE%TYPE);
+-----------------------------------------------------------------------------
+
+PROCEDURE UPDATEHCPN(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        umbname IN ACR_MB_TBL.MBNAME%TYPE,
+        ucontrolnum IN ACR_MB_TBL.CONNUMBER%TYPE,
+        uaddress IN ACR_MB_TBL.ADDRESS%TYPE,
+        ubankaccount IN ACR_MB_TBL.BANKACCOUNT%TYPE,
+        ubankname IN ACR_MB_TBL.BANKNAME%TYPE);
+
+-----------------------------------------------------------------------------        
+PROCEDURE APPROVEDMB(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        uremarks IN ACR_MB_TBL.REMARKS%TYPE,
+        ustatus IN ACR_MB_TBL.STATUS%TYPE,
+        ucontrolnumber IN ACR_MB_TBL.CONNUMBER%TYPE);
+  /* TODO enter package declarations (types, exceptions, methods etc) here */
+-----------------------------------------------------------------------------
+PROCEDURE UPDATEASSETSTATUS(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        uconid IN ACR_ASSETS_TBL.CONID%TYPE);
+-----------------------------------------------------------------------------
+PROCEDURE UPDATEPASSCODES(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        pusername IN ACR_USER_TBL.USERNAME%TYPE,
+        ppasscode IN ACR_USER_TBL.USERPASSWORD%TYPE);
+-----------------------------------------------------------------------------
+PROCEDURE UPDATEROLEINDEX(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        utags IN VARCHAR2,
+        uuserid IN ACR_ROLE_INDEX_TBL.USERID%TYPE,
+        ucondate IN ACR_ROLE_INDEX_TBL.CONDATE%TYPE);
+-----------------------------------------------------------------------------       
+PROCEDURE TAGCONTRACTPERIOD(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        pcondateid IN ACR_CONTRACT_DATE_TBL.CONDATEID%TYPE);
+----------------------------------------------------------------------------- 
+PROCEDURE UPDATECONBALANCESTATS(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        pconid IN ACR_CON_BALANCE.ACCOUNT%TYPE);
+------------------------------------------------------------
+PROCEDURE UPDATEAPELLATE(Message OUT VARCHAR2,
+        Code OUT NUMBER,
+        utags IN VARCHAR2,
+        utats IN ACR_APPELLATE.STATUS%TYPE,
+        uaccesscode IN ACR_APPELLATE.ACCESSCODE%TYPE,
+        ucondateid IN ACR_APPELLATE.CONDATEID%TYPE);
+------------------------------------------------------------
+
+
+END ACRGBPKGUPDATEDETAILS;

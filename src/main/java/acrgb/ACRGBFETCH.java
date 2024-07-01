@@ -948,14 +948,36 @@ public class ACRGBFETCH {
         }
         return result;
     }
-    
-    
-      //INSERT EMAIL CREDEDNTIALS
+
+    //INSERT EMAIL CREDEDNTIALS
     @GET
     @Path("ValidateToken")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult PostEmailCredentials(@HeaderParam("token") String token) {
         ACRGBWSResult result = utility.GetPayload(token);
+        return result;
+    }
+
+    //GET ALL CONTRACT
+    //INSERT EMAIL CREDEDNTIALS
+    @GET
+    @Path("GetllContract/{tags}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetllContract(
+            @HeaderParam("token") String token, @PathParam("tags") String tags) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult GetAllContract = fetchmethods.GETALLCONTRACT(dataSource, tags);
+            result.setMessage(GetAllContract.getMessage());
+            result.setResult(GetAllContract.getResult());
+            result.setSuccess(GetAllContract.isSuccess());
+        }
         return result;
     }
 

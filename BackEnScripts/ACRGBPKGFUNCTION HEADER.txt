@@ -1,0 +1,153 @@
+create or replace PACKAGE          "ACRGBPKGFUNCTION" IS
+--------------------------------------------------
+--ASSETS TABLE
+FUNCTION ACR_ASSETS(tags IN VARCHAR,
+phcfid IN ACR_ASSETS_TBL.HCFID%TYPE) RETURN SYS_REFCURSOR;
+--CONTRACT TABLE
+FUNCTION ACR_CONTRACT(tags IN VARCHAR,pfchid IN ACR_CONTRACT_TBL.HCFID%TYPE) RETURN SYS_REFCURSOR;
+--HEALTH CARE FACILITY TABLE
+
+--TRANCH TABLE
+FUNCTION ACR_TRANCH(tags IN VARCHAR) RETURN SYS_REFCURSOR;
+--USER DETAILS TABLE
+FUNCTION ACR_TRANCHWITHID(ptranchid IN ACR_TRANCH_TBL.TRANCHID%TYPE) RETURN SYS_REFCURSOR;
+--USER DETAILS TABLE
+FUNCTION ACR_USER_DETAILS(tags IN VARCHAR) RETURN SYS_REFCURSOR;
+--USER LEVEL TABLE
+FUNCTION ACR_USER_LEVEL(tags IN VARCHAR) RETURN SYS_REFCURSOR;
+--USER TABLE
+FUNCTION ACR_USER(tags IN VARCHAR) RETURN SYS_REFCURSOR;
+
+--------------------------------------------------------
+--ACR ACCOUNT USERNAME AVAILABILITY
+FUNCTION ACRUSERNAME(
+p_username IN ACR_USER_TBL.USERNAME%TYPE) RETURN sys_refcursor;
+--END ACR ACCOUNT USER LEVEL
+--------------------------------------------------------
+--ACR ACCOUNT USER LOGIN
+FUNCTION ACRUSERLOGIN(
+p_username IN ACR_USER_TBL.USERNAME%TYPE,
+p_password IN ACR_USER_TBL.USERPASSWORD%TYPE) RETURN sys_refcursor;
+--END ACR ACCOUNT USER LOGIN
+---------------------------------------------------------
+--ACR ACCOUNT USER LOGIN
+FUNCTION ACRUSERLEVEL(
+p_levelid IN ACR_USER_LEVEL_TBL.LEVELID%TYPE) RETURN sys_refcursor;
+--END ACR ACCOUNT USER LOGIN
+---------------------------------------------------------
+--ACR TRANCH PERCENTAGE
+FUNCTION GETTRANCHAMOUNT(
+p_tranchid IN ACR_TRANCH_TBL.TRANCHID%TYPE) RETURN sys_refcursor;
+--END TRANCH PERCENTAGE
+---------------------------------------------------------
+--ACR TRANCH PERCENTAGE
+FUNCTION GETCONTRACTAMOUNT(
+p_hcfid IN ACR_CONTRACT_TBL.HCFID%TYPE) RETURN sys_refcursor;
+--END TRANCH PERCENTAGE
+---------------------------------------------------------
+--ACR LEVEL NAME
+FUNCTION GETLEVEL(lev_id IN ACR_USER_LEVEL_TBL.LEVELID%TYPE) RETURN sys_refcursor;
+--END ACR LEVEL NAME
+---------------------------------------------------------
+--ACR FULL USER DETAILS
+FUNCTION GETFULLDETAILS(p_userid IN ACR_USER_TBL.USERID%TYPE) RETURN sys_refcursor;
+--END FULL USER DETAILS
+---------------------------------------------------------
+--ACR FULL USER DETAILS
+FUNCTION GETASSETSBYHCFID(phcfid IN ACR_ASSETS_TBL.HCFID%TYPE,pconid IN ACR_ASSETS_TBL.CONID%TYPE) RETURN sys_refcursor;
+--END FULL USER DETAILS
+---------------------------------------------------------
+--AUDITRAIL TABLE
+FUNCTION ACRACTIVTYLOGS RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+--AREA TABLE
+FUNCTION GETLOGSWITHID(p_userid IN ACR_USER_ACTIVITY.ACTBY%TYPE) RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+--AREA TABLE
+FUNCTION GETSUMMARY(phcfid IN ACR_ASSETS_TBL.HCFID%TYPE) RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+--AREA TABLE
+FUNCTION GETUSERROLEINDEX (puserid IN ACR_ROLE_INDEX_TBL.USERID%TYPE)RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+--AUDITRAIL TABLE
+FUNCTION GETMBREQUEST(prequestor IN ACR_MBREQUEST_TBL.REQUESTOR%TYPE) RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+--GET ROLE INDEX USING USERID
+FUNCTION GETROLEWITHID(utags IN VARCHAR2,pid IN  ACR_ROLE_INDEX_TBL.USERID%TYPE) RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+--GET ROLE INDEX USING USERID
+FUNCTION GETROLEWITHIDREVERSE(utags IN VARCHAR2,pid IN  ACR_ROLE_INDEX_TBL.ACCESSID%TYPE) RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+FUNCTION GETROLETWOPARAM(utags IN VARCHAR2,puserid IN DRG_SHADOWBILLING.ACR_ROLE_INDEX_TBL.USERID%TYPE,
+paccessid IN ACR_ROLE_INDEX_TBL.ACCESSID%TYPE) RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+FUNCTION GETCONTRACTCONID(pconid IN ACR_CONTRACT_TBL.CONID%TYPE, utags IN VARCHAR2) RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+FUNCTION GETTOTALRELEASEUNDERMB(tags IN VARCHAR,pconid IN ACR_ASSETS_TBL.CONID%TYPE) RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+FUNCTION GETTERMINATECON(pan IN DRG_SHADOWBILLING.ACR_CONTRACT_TBL.HCFID%TYPE) RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+---------------------------------------------------------
+FUNCTION GETACCREDITATION(uaccreno IN ACR_ACCREDITATION.ACCRENO%TYPE) RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+FUNCTION GETCONBYCODE(ucode IN DRG_SHADOWBILLING.ACR_CONTRACT_TBL.HCFID%TYPE) RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+FUNCTION GETAPPELLATE(tags IN VARCHAR2,ucontrolcode IN DRG_SHADOWBILLING.ACR_APPELLATE.CONTROLCODE%TYPE) RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+FUNCTION GETASSETSBYCONID(pconid IN ACR_ASSETS_TBL.CONID%TYPE) RETURN SYS_REFCURSOR;
+---------------------------------------------------------
+FUNCTION GETASSETSBYHCF(phcfid IN ACR_ASSETS_TBL.HCFID%TYPE,
+                         pdatefrom IN DATE,
+                         pdateto IN DATE) RETURN sys_refcursor;
+---------------------------------------------------------                      
+FUNCTION GETASSETBYIDANDCONID(phcfid IN ACR_ASSETS_TBL.HCFID%TYPE,
+                              uconid IN ACR_ASSETS_TBL.CONID%TYPE,
+                              utags IN VARCHAR2) RETURN sys_refcursor;
+--------------------------------------------------------- 
+FUNCTION GETASSETSHCFID(phcfid IN ACR_ASSETS_TBL.HCFID%TYPE) RETURN SYS_REFCURSOR;
+--------------------------------------------------------- 
+FUNCTION GETMB(tags IN VARCHAR2) RETURN SYS_REFCURSOR;
+--------------------------------------------------------- 
+FUNCTION GETMBWITHID(pid IN DRG_SHADOWBILLING.ACR_MB_TBL.CONNUMBER%TYPE) RETURN SYS_REFCURSOR;
+--------------------------------------------------------- 
+FUNCTION GETCONDATE(tags IN VARCHAR2) RETURN SYS_REFCURSOR;
+------------------------------------------------------------
+FUNCTION GETCONDATEBYID(ucondateid IN ACR_CONTRACT_DATE_TBL.CONDATEID%TYPE) RETURN SYS_REFCURSOR;
+------------------------------------------------------------
+FUNCTION GETUSERBYID(uUserid IN ACR_USER_TBL.USERID%TYPE) RETURN SYS_REFCURSOR;
+------------------------------------------------------------
+FUNCTION GETCONTRACTBYCONDATEID(ucondateid IN ACR_CONTRACT_TBL.CONTRACTDATE%TYPE) RETURN SYS_REFCURSOR;
+------------------------------------------------------------
+FUNCTION GETPREVIOUSBALANCE(paccount IN ACR_CON_BALANCE.ACCOUNT%TYPE
+,pconid IN ACR_CON_BALANCE.CONID%TYPE) RETURN SYS_REFCURSOR;
+------------------------------------------------------------
+FUNCTION GETEMAILCRED RETURN SYS_REFCURSOR;
+------------------------------------------------------------
+FUNCTION GETSUMAMOUNTCLAIMSBOOKDATA(
+  ulevel IN VARCHAR,
+  uaccreno IN ACR_BOOK_DATA.PMCC_NO%TYPE,
+  utags IN ACR_BOOK_DATA.TAGS%TYPE,
+  udatefrom IN OUT ACR_BOOK_DATA.DATESUBMITTED%TYPE,
+  udateto IN OUT ACR_BOOK_DATA.DATESUBMITTED%TYPE)RETURN SYS_REFCURSOR;
+-----------------------------------------------------------------
+FUNCTION GETROLEWITHIDFORENDROLE(utags IN VARCHAR2,
+pid IN  ACR_ROLE_INDEX_TBL.USERID%TYPE,
+pcondateid IN ACR_ROLE_INDEX_TBL.CONDATE%TYPE) RETURN SYS_REFCURSOR;
+-----------------------------------------------------------------
+FUNCTION GETUSERINFOUSINGEMAIL(uemailadd IN ACR_USER_DETAILS_TBL.EMAIL%TYPE) RETURN SYS_REFCURSOR;
+------------------------------------------------------------
+FUNCTION GETACCOUNTUSINGEMAIL(uusername IN ACR_USER_TBL.USERNAME%TYPE)RETURN SYS_REFCURSOR ;
+------------------------------------------------------------
+FUNCTION FORUSERLEVEL(ulevelid IN ACR_USER_LEVEL_TBL.LEVELID%TYPE)RETURN SYS_REFCURSOR ;
+------------------------------------------------------------
+FUNCTION GETPASSUSINGUSERID(puserid IN ACR_USER_TBL.USERID%TYPE)RETURN SYS_REFCURSOR ;
+---------------------------------------------------------------------
+FUNCTION GETACR_BOOKING RETURN SYS_REFCURSOR;
+---------------------------------------------------------------------
+FUNCTION GETALLCONTRACT(utags IN VARCHAR2) RETURN SYS_REFCURSOR;
+
+
+
+
+
+END ACRGBPKGFUNCTION;
