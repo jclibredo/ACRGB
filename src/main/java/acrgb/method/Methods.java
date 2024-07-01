@@ -549,30 +549,50 @@ public class Methods {
                             ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(datese).getHospital());
                             if (getFacilityA.isSuccess()) {
                                 //------------------------------------------------
+                                java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
+                                java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
+                                java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(datese).getDatefiled());
+                                SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
+                                //------------------------------------------------
                                 HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
                                 switch (hci.getHcilevel()) {
                                     case "T1":
                                     case "T2":
                                     case "SH": {
-                                        double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
-                                        double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30;
-                                        double add10 = Baseadd30 * 0.10;
-                                        double total = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30 + add10;
-                                        claims30percent += add30;
-                                        claimsSb += add10;
-                                        //totalcomputeA.setTotalamount(String.valueOf(total));
-                                        totalcomputeA.setThirty(String.valueOf(add30));
-                                        totalcomputeA.setSb(String.valueOf(add10));
-
+                                        if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) <= 2024) {
+                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
+                                                double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30;
+                                                double add10 = Baseadd30 * 0.10;
+                                                claims30percent += add30;
+                                                claimsSb += add10;
+                                                totalcomputeA.setThirty(String.valueOf(add30));
+                                                totalcomputeA.setSb(String.valueOf(add10));
+                                            } else {
+                                                double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount());
+                                                claimsSb += Baseadd30 * 0.10;
+                                                totalcomputeA.setThirty(String.valueOf(0.00));
+                                                totalcomputeA.setSb(String.valueOf(claimsSb));
+                                            }
+                                        } else {
+                                            double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
+                                            double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30;
+                                            double add10 = Baseadd30 * 0.10;
+                                            claims30percent += add30;
+                                            claimsSb += add10;
+                                            totalcomputeA.setThirty(String.valueOf(add30));
+                                            totalcomputeA.setSb(String.valueOf(add10));
+                                        }
                                         break;
                                     }
                                     default: {
-                                        double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
-                                        double origamount = Double.parseDouble(fcaA.get(datese).getTotalamount());
-                                        double total = origamount + add30;
-                                        claims30percent += add30;
-                                        //totalcomputeA.setTotalamount(String.valueOf(total));
-                                        totalcomputeA.setThirty(String.valueOf(add30));
+                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                        } else {
+                                            double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
+                                            claims30percent += add30;
+                                            //totalcomputeA.setTotalamount(String.valueOf(total));
+                                            totalcomputeA.setThirty(String.valueOf(add30));
+                                        }
                                         break;
                                     }
                                 }
@@ -601,7 +621,7 @@ public class Methods {
                         } else {
                             totalcompute.setHospital(getFacility.getMessage());
                         }
-                        totalcompute.setTotalamount(String.valueOf(totalbaseamount/3));
+                        totalcompute.setTotalamount(String.valueOf(totalbaseamount / 3));
                         totalcompute.setTotalclaims(String.valueOf(dateclaimcount));
                         totalcompute.setYearfrom(datefrom);
                         totalcompute.setYearto(dateto);
@@ -644,23 +664,61 @@ public class Methods {
                                         //GET FACILITY
                                         ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(gets).getHospital());
                                         if (getHCI.isSuccess()) {
+                                            //------------------------------------------------
+                                            java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
+                                            java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
+                                            java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(gets).getDatefiled());
+                                            SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
+                                            //------------------------------------------------
                                             HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class);
                                             switch (hci.getHcilevel().toUpperCase().trim()) {
                                                 case "T1":
                                                 case "T2":
                                                 case "SH": {
-                                                    double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
-                                                    double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30;
-                                                    double add10 = Baseadd30 * 0.10;
-                                                    double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30 + add10;
-                                                    claims30percent += add30;
-                                                    claimsSb += add10;
-                                                    totalDateSettingYearClaimAmount += total;
-                                                    TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
-                                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
-                                                    totalcomputeHCPN.setTotalamount(fcaA.get(gets).getTotalamount());
-                                                    totalcomputeHCPN.setThirty(String.valueOf(add30));
-                                                    totalcomputeHCPN.setSb(String.valueOf(add10));
+                                                    if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) <= 2024) {
+                                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                            double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
+                                                            double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30;
+                                                            double add10 = Baseadd30 * 0.10;
+                                                            double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30 + add10;
+                                                            claims30percent += add30;
+                                                            claimsSb += add10;
+                                                            totalDateSettingYearClaimAmount += total;
+                                                            TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                            totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                            totalcomputeHCPN.setTotalamount(fcaA.get(gets).getTotalamount());
+                                                            totalcomputeHCPN.setThirty(String.valueOf(add30));
+                                                            totalcomputeHCPN.setSb(String.valueOf(add10));
+                                                        } else {
+                                                            //  double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
+                                                            double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                            double add10 = Baseadd30 * 0.10;
+                                                            double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add10;
+                                                            // claims30percent += add30;
+                                                            claimsSb += add10;
+                                                            totalDateSettingYearClaimAmount += total;
+                                                            TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                            totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                            totalcomputeHCPN.setTotalamount(fcaA.get(gets).getTotalamount());
+                                                            totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                            totalcomputeHCPN.setSb(String.valueOf(add10));
+                                                        }
+
+                                                    } else {
+                                                        double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
+                                                        double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30;
+                                                        double add10 = Baseadd30 * 0.10;
+                                                        double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30 + add10;
+                                                        claims30percent += add30;
+                                                        claimsSb += add10;
+                                                        totalDateSettingYearClaimAmount += total;
+                                                        TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                        totalcomputeHCPN.setTotalamount(fcaA.get(gets).getTotalamount());
+                                                        totalcomputeHCPN.setThirty(String.valueOf(add30));
+                                                        totalcomputeHCPN.setSb(String.valueOf(add10));
+                                                    }
+
                                                     break;
                                                 }
                                                 default: {
@@ -782,7 +840,7 @@ public class Methods {
                         totalcomputeHCPNA.setThirty(String.valueOf(claims30percent));
                         totalcomputeHCPNA.setYearfrom(datefrom);
                         totalcomputeHCPNA.setYearto(dateto);
-                        totalcomputeHCPNA.setTotalamount(String.valueOf(TotalBaseAmount/3));
+                        totalcomputeHCPNA.setTotalamount(String.valueOf(TotalBaseAmount / 3));
                         totalcomputeHCPNA.setTotalclaims(String.valueOf(totalclaimcountdatesetting));
                         //GET HCPN
                         ACRGBWSResult getHCPN = this.GETMBWITHID(dataSource, userid);
@@ -971,22 +1029,45 @@ public class Methods {
                             ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(datese).getHospital());
                             if (getFacilityA.isSuccess()) {
                                 //------------------------------------------------
+                                java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
+                                java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
+                                java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(datese).getDatefiled());
+                                SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
+                                //------------------------------------------------
                                 HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
                                 switch (hci.getHcilevel()) {
                                     case "T1":
                                     case "T2":
                                     case "SH": {
-                                        double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
-                                        double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30;
-                                        double add10 = Baseadd30 * 0.10;
-                                        double total = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30 + add10;
-                                        claims30percent += add30;
-                                        claimsSb += add10;
-                                        datesettingsclaimsValue += total;
-                                        //totalcomputeA.setTotalamount(String.valueOf(total));
-//                                        totalcomputeA.setThirty(String.valueOf(add30));
-//                                        totalcomputeA.setSb(String.valueOf(add10));
-                                        totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount());
+                                        if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) <= 2024) {
+                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
+                                                double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30;
+                                                double add10 = Baseadd30 * 0.10;
+                                                double total = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30 + add10;
+                                                claims30percent += add30;
+                                                claimsSb += add10;
+                                                datesettingsclaimsValue += total;
+                                                totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount());
+                                            } else {
+                                                double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount());
+                                                double add10 = Baseadd30 * 0.10;
+                                                double total = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add10;
+                                                claimsSb += add10;
+                                                datesettingsclaimsValue += total;
+                                                totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount());
+                                            }
+                                        } else {
+                                            double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
+                                            double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30;
+                                            double add10 = Baseadd30 * 0.10;
+                                            double total = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30 + add10;
+                                            claims30percent += add30;
+                                            claimsSb += add10;
+                                            datesettingsclaimsValue += total;
+                                            totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount());
+
+                                        }
                                         break;
                                     }
                                     default: {
@@ -995,8 +1076,6 @@ public class Methods {
                                         double total = origamount + add30;
                                         claims30percent += add30;
                                         datesettingsclaimsValue += total;
-                                        //totalcomputeA.setTotalamount(String.valueOf(total));
-//                                        totalcomputeA.setThirty(String.valueOf(add30));
                                         totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount());
                                         break;
                                     }
@@ -1063,21 +1142,51 @@ public class Methods {
                                     //GET FACILITY
                                     ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(gets).getHospital());
                                     if (getHCI.isSuccess()) {
+                                        java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
+                                        java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
+                                        java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(gets).getDatefiled());
+                                        SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
                                         HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class);
                                         switch (hci.getHcilevel().toUpperCase().trim()) {
                                             case "T1":
                                             case "T2":
                                             case "SH": {
-                                                double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
-                                                double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30;
-                                                double add10 = Baseadd30 * 0.10;
-                                                double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30 + add10;
-                                                claims30percent += add30;
-                                                claimsSb += add10;
-                                                totalDateSettingYearClaimAmount += total;
-                                                TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
-                                                totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
-                                                break;
+                                                if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) <= 2024) {
+                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                        double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
+                                                        double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30;
+                                                        double add10 = Baseadd30 * 0.10;
+                                                        double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30 + add10;
+                                                        claims30percent += add30;
+                                                        claimsSb += add10;
+                                                        totalDateSettingYearClaimAmount += total;
+                                                        TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                        break;
+                                                    } else {
+                                                        double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                        double add10 = Baseadd30 * 0.10;
+                                                        double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add10;
+                                                        claimsSb += add10;
+                                                        totalDateSettingYearClaimAmount += total;
+                                                        TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                        break;
+
+                                                    }
+                                                } else {
+                                                    double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
+                                                    double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30;
+                                                    double add10 = Baseadd30 * 0.10;
+                                                    double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30 + add10;
+                                                    claims30percent += add30;
+                                                    claimsSb += add10;
+                                                    totalDateSettingYearClaimAmount += total;
+                                                    TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                    break;
+                                                }
+
                                             }
                                             default: {
                                                 double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;

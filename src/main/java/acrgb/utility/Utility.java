@@ -180,9 +180,10 @@ public class Utility {
             LinkedList<String> dateCollection = new LinkedList<>();
             //-------------- OBJECT DATE SETTING ORM  ----------------------------
             ArrayList<DateSettings> dateList = new ArrayList<>();
-            for (int y = 1; y < 6; y++) {
+            for (int y = 1; y < 7; y++) {
                 dateCollection.add(String.valueOf(Integer.parseInt(GetFromYear.format(ConvertDateFrom)) - y));
             }
+            dateCollection.remove(0);
             //REMOVED PADEMIC YEAR  CLEANING
             dateCollection.remove("2020");
             dateCollection.remove("2021");
