@@ -6,6 +6,7 @@
 package acrgb;
 
 import acrgb.method.BookingMethod;
+import acrgb.method.ContractHistory;
 import acrgb.method.ContractMethod;
 import acrgb.method.FetchMethods;
 import acrgb.method.Forgetpassword;
@@ -154,7 +155,6 @@ public class ACRGBFETCH {
                     result.setSuccess(false);
                     break;
                 }
-
                 // GET PRO CONTRACT USING ACCOUNT USERID
                 case "PROCONOWN": {
                     ACRGBWSResult GetResult = con.GETCONTRACTOFPRO(dataSource, tags, puserid);
@@ -973,11 +973,101 @@ public class ACRGBFETCH {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult GetAllContract = fetchmethods.GETALLCONTRACT(dataSource, tags);
+            ACRGBWSResult GetAllContract = fetchmethods.GETALLCONTRACT(dataSource, tags, "0");
             result.setMessage(GetAllContract.getMessage());
             result.setResult(GetAllContract.getResult());
             result.setSuccess(GetAllContract.isSuccess());
         }
+        return result;
+    }
+
+    @GET
+    @Path("GetContractHistory/{puserid}/{accountlevel}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetContractHistory(
+            @HeaderParam("token") String token,
+            @PathParam("puserid") String puserid,
+            @PathParam("accountlevel") String accountlevel) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ContractHistory ch = new ContractHistory();
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            if (puserid.equals("0")) {
+                switch (accountlevel.toUpperCase().trim()) {
+                    case "ALLHCPN"://GET ALL ENDED CONTRACT OF HCPN  USING HCPN CODE
+                    {
+                        ACRGBWSResult getContractResult = ch.GetAllHCPNContract(dataSource);
+                        result.setMessage(getContractResult.getMessage());
+                        result.setResult(getContractResult.getResult());
+                        result.setSuccess(getContractResult.isSuccess());
+                        break;
+                    }
+                    case "ALLAPEX"://GET ALL ENDED CONTRACT OF APEX  USERID IS 0
+                    {
+                        ACRGBWSResult getContractResult = ch.GetAllAPEXContract(dataSource);
+                        result.setMessage(getContractResult.getMessage());
+                        result.setResult(getContractResult.getResult());
+                        result.setSuccess(getContractResult.isSuccess());
+                        break;
+                    }
+                    case "ALLAPRO"://GET ALL ENDED CONTRACT OF PRO
+                    {
+                        ACRGBWSResult getContractResult = ch.GetAllPROContract(dataSource);
+                        result.setMessage(getContractResult.getMessage());
+                        result.setResult(getContractResult.getResult());
+                        result.setSuccess(getContractResult.isSuccess());
+                        break;
+                    }
+
+                    default:
+                        result.setMessage("TAGS NOT FOUND");
+                        break;
+                }
+            } else {
+                ACRGBWSResult GetRole = methods.GETROLE(dataSource, puserid, "ACTIVE");
+                if (GetRole.isSuccess()) {
+                    switch (accountlevel.toUpperCase().trim()) {
+                        case "HCPN": //GET ENDED CONTRACT OF HCPN USING HCPN CODE
+                        {
+                            ACRGBWSResult GetContract = ch.GetHCPNContract(dataSource, GetRole.getResult().trim());
+                            result.setMessage(GetContract.getMessage());
+                            result.setResult(GetContract.getResult());
+                            result.setSuccess(GetContract.isSuccess());
+                            break;
+                        }
+                        case "FACILITY"://GET ENDED CONTRACT OF FACILITY USING PMCC NO
+                        {
+                            ACRGBWSResult GetContract = ch.GetHCIContract(dataSource, GetRole.getResult().trim());
+                            result.setMessage(GetContract.getMessage());
+                            result.setResult(GetContract.getResult());
+                            result.setSuccess(GetContract.isSuccess());
+                            break;
+                        }
+                        case "PRO"://GET ENDED CONTRACT OF PRO  USING PROCODE
+                        {
+                            ACRGBWSResult GetContract = ch.GetPROContract(dataSource, GetRole.getResult().trim());
+                            result.setMessage(GetContract.getMessage());
+                            result.setResult(GetContract.getResult());
+                            result.setSuccess(GetContract.isSuccess());
+                            break;
+                        }
+                        default:
+                            result.setMessage("TAGS NOT FOUND");
+                            break;
+                    }
+
+                } else {
+                    result.setMessage(GetRole.getMessage());
+                }
+
+            }
+        }
+
         return result;
     }
 

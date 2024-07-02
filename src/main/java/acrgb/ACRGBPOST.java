@@ -53,6 +53,7 @@ import javax.ws.rs.core.MediaType;
 @Path("ACRGBINSERT")
 @RequestScoped
 public class ACRGBPOST {
+
     public ACRGBPOST() {
     }
     /**
@@ -217,6 +218,8 @@ public class ACRGBPOST {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult INSERTUSER(@HeaderParam("token") String token, final User user) throws SQLException, ParseException {
+        // public ACRGBWSResult INSERTUSER(final User user) throws SQLException, ParseException {
+
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");

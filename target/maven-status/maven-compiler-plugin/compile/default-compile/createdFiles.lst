@@ -19,13 +19,13 @@ acrgb\structure\Contract.class
 acrgb\structure\Ledger.class
 acrgb\structure\ReportsParam.class
 acrgb\structure\Accreditation.class
+acrgb\method\ContractHistory.class
 acrgb\method\GenerateRandomPassword.class
 acrgb\method\InsertMethods.class
 acrgb\structure\Tranch.class
 acrgb\structure\ConBalance.class
 acrgb\structure\Pro.class
 acrgb\structure\HealthCareFacility.class
-acrgb\method\Reports.class
 acrgb\structure\MBFacilityUnderRequest.class
 acrgb\structure\ReportsFacilityUnderHCPNSummary.class
 acrgb\method\FetchMethods.class

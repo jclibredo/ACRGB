@@ -6,7 +6,6 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ForgetPassword.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\User.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\Methods.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserRoleIndex.java
-D:\Java Swing\ACRGB\src\main\java\acrgb\method\Reports.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\ContractMethod.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\HealthCareFacility.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\ACRGBPOST.java
@@ -47,6 +46,7 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserInfo.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserActivity.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserLevel.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ProcessAmountBadget.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\method\ContractHistory.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ConBalance.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\ACRGBFETCH.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\PaymentType.java

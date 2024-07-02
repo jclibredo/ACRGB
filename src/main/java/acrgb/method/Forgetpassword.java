@@ -134,7 +134,7 @@ public class Forgetpassword {
         result.setSuccess(false);
         result.setResult("");
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETEMAILCRED(); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETEMAILCRED(); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
@@ -164,7 +164,7 @@ public class Forgetpassword {
         result.setResult("");
         Methods methods = new Methods();
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTEMAILCRED(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTEMAILCRED(:Message,:Code,"
                     + ":uappuser,:uapppass,:uappemail)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);

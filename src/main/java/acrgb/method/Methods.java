@@ -130,7 +130,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :p_user := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.ACRUSERNAME(:p_username); end;");
+            CallableStatement statement = connection.prepareCall("begin :p_user := ACR_GB.ACRGBPKGFUNCTION.ACRUSERNAME(:p_username); end;");
             statement.registerOutParameter("p_user", OracleTypes.CURSOR);
             statement.setString("p_username", p_username);
             statement.execute();
@@ -157,7 +157,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_level := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.ACRUSERLEVEL(:p_levelid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_level := ACR_GB.ACRGBPKGFUNCTION.ACRUSERLEVEL(:p_levelid); end;");
             statement.registerOutParameter("v_level", OracleTypes.CURSOR);
             statement.setString("p_levelid", p_levelid);
             statement.execute();
@@ -183,7 +183,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.UPDATEUSERDETAILS(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERDETAILS(:Message,:Code,"
                     + ":p_firstname,:p_lastname,:p_middlename,:p_did,:p_email,:p_contact)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -220,7 +220,7 @@ public class Methods {
                 result.setSuccess(false);
                 result.setMessage("PASSWORD IS NOT VALID");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,"
                         + ":userid,:p_username,:p_password,:p_stats)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -250,7 +250,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEUSERNAME(:Message,:Code,:p_userid,:p_username,:p_stats)");
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERNAME(:Message,:Code,:p_userid,:p_username,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("p_userid", userid);
@@ -280,7 +280,7 @@ public class Methods {
                 result.setSuccess(false);
                 result.setMessage("PASSWORD IS NOT VALID");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("p_userid", userid);
@@ -312,7 +312,7 @@ public class Methods {
                 result.setSuccess(false);
                 result.setMessage("PASSWORD IS NOT VALID");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("p_userid", userid);
@@ -340,7 +340,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATELEVEL(:Message,:Code,:p_userid,:p_levelid,:p_stats)");
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATELEVEL(:Message,:Code,:p_userid,:p_levelid,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("p_userid", userid);
@@ -367,7 +367,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETSUMMARY(:phcfid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETSUMMARY(:phcfid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("phcfid", phcfid);
             statement.execute();
@@ -409,40 +409,36 @@ public class Methods {
                     if (getPRO.isSuccess()) {
                         ACRGBWSResult getHCPNUnderUsingProCode = this.GETROLEMULITPLE(dataSource, getPRO.getResult(), stats);
                         if (getHCPNUnderUsingProCode.isSuccess()) {
-                            ArrayList<String> HCIList = new ArrayList<>();
                             List<String> ListOFHCPN = Arrays.asList(getHCPNUnderUsingProCode.getResult().split(","));
+                            double totalDateSettingYearClaimAmount = 0.00;
+                            int totalclaimcountdatesetting = 0;
+                            ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
                             for (int hcpn = 0; hcpn < ListOFHCPN.size(); hcpn++) {
                                 ACRGBWSResult getHCIUisngHCPNCode = this.GETROLEMULITPLE(dataSource, ListOFHCPN.get(hcpn), stats);
                                 if (getHCIUisngHCPNCode.isSuccess()) {
                                     List<String> ListOHCI = Arrays.asList(getHCIUisngHCPNCode.getResult().split(","));
                                     for (int hci = 0; hci < ListOHCI.size(); hci++) {
-                                        HCIList.add(ListOHCI.get(hci));
-                                    }
-                                }
-                            }
-                            Double totalDateSettingYearClaimAmount = 0.00;
-                            int totalclaimcountdatesetting = 0;
-                            ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
-                            for (int x = 0; x < HCIList.size(); x++) {
-                                ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, HCIList.get(x), datefrom.trim(), dateto.trim());
-                                if (restA.isSuccess()) {
-                                    List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
-                                    //DATE SETTINGS
-                                    for (int f = 0; f < fcaA.size(); f++) {
-                                        FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                                        totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.get(f).getTotalamount());
-                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                        totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                        totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                        totalcomputeA.setTotalamount(fcaA.get(f).getTotalamount());
-                                        totalcomputeA.setTotalclaims(fcaA.get(f).getTotalclaims());
-                                        ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
-                                        if (getFacilityA.isSuccess()) {
-                                            totalcomputeA.setHospital(getFacilityA.getResult());
-                                        } else {
-                                            totalcomputeA.setHospital(getFacilityA.getMessage());
+                                        ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, ListOHCI.get(hci).trim(), datefrom.trim(), dateto.trim());
+                                        if (restA.isSuccess()) {
+                                            List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
+                                            //DATE SETTINGS
+                                            for (int f = 0; f < fcaA.size(); f++) {
+                                                FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                                totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.get(f).getTotalamount());
+                                                totalclaimcountdatesetting += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                totalcomputeA.setTotalamount(fcaA.get(f).getTotalamount());
+                                                totalcomputeA.setTotalclaims(fcaA.get(f).getTotalclaims());
+                                                ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
+                                                if (getFacilityA.isSuccess()) {
+                                                    totalcomputeA.setHospital(getFacilityA.getResult());
+                                                } else {
+                                                    totalcomputeA.setHospital(getFacilityA.getMessage());
+                                                }
+                                                totalcomputeList.add(totalcomputeA);
+                                            }
                                         }
-                                        totalcomputeList.add(totalcomputeA);
                                     }
                                 }
                             }
@@ -474,43 +470,40 @@ public class Methods {
                 case "PRO"://USERID IS PROCODE
                     ACRGBWSResult getHCPNUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
                     if (getHCPNUnder.isSuccess()) {
-                        ArrayList<String> finalListofHCPN = new ArrayList<>();
                         List<String> HCPNList = Arrays.asList(getHCPNUnder.getResult().split(","));
+                        double totalDateSettingYearClaimAmount = 0.00;
+                        int totalclaimcountdatesetting = 0;
+                        ArrayList<FacilityComputedAmount> computationList = new ArrayList<>();
                         for (int pro = 0; pro < HCPNList.size(); pro++) {
                             ACRGBWSResult getHCFUnder = this.GETROLEMULITPLE(dataSource, HCPNList.get(pro), stats);
                             if (getHCFUnder.isSuccess()) {
                                 List<String> HCFList = Arrays.asList(getHCFUnder.getResult().split(","));
                                 for (int hcf = 0; hcf < HCFList.size(); hcf++) {
-                                    finalListofHCPN.add(HCFList.get(hcf));
-                                }
-                            }
-                        }
-                        Double totalDateSettingYearClaimAmount = 0.00;
-                        int totalclaimcountdatesetting = 0;
-                        ArrayList<FacilityComputedAmount> computationList = new ArrayList<>();
-                        for (int listhci = 0; listhci < finalListofHCPN.size(); listhci++) {
-                            ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, finalListofHCPN.get(listhci), datefrom.trim(), dateto.trim());
-                            if (restA.isSuccess()) {
-                                List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
-                                for (int f = 0; f < fcaA.size(); f++) {
-                                    FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                                    totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.get(f).getTotalamount());
-                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                    totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
-                                    totalcomputeA.setTotalamount(fcaA.get(f).getTotalamount());
-                                    totalcomputeA.setTotalclaims(fcaA.get(f).getTotalclaims());
-                                    totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                    totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                    ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
-                                    if (getFacilityA.isSuccess()) {
-                                        totalcomputeA.setHospital(getFacilityA.getResult());
-                                    } else {
-                                        totalcomputeA.setHospital(getFacilityA.getMessage());
+                                    ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, HCFList.get(hcf).trim(), datefrom.trim(), dateto.trim());
+                                    if (restA.isSuccess()) {
+                                        List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
+                                        for (int f = 0; f < fcaA.size(); f++) {
+                                            FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                            totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.get(f).getTotalamount());
+                                            totalclaimcountdatesetting += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                            totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                            totalcomputeA.setTotalamount(fcaA.get(f).getTotalamount());
+                                            totalcomputeA.setTotalclaims(fcaA.get(f).getTotalclaims());
+                                            totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                            totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                            ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
+                                            if (getFacilityA.isSuccess()) {
+                                                totalcomputeA.setHospital(getFacilityA.getResult());
+                                            } else {
+                                                totalcomputeA.setHospital(getFacilityA.getMessage());
+                                            }
+                                            computationList.add(totalcomputeA);
+                                        }
                                     }
-                                    computationList.add(totalcomputeA);
                                 }
                             }
                         }
+
                         FacilityComputedAmount totalcompute = new FacilityComputedAmount();
                         totalcompute.setTotalamount(String.valueOf(totalDateSettingYearClaimAmount));
                         totalcompute.setTotalclaims(String.valueOf(totalclaimcountdatesetting));
@@ -542,6 +535,8 @@ public class Methods {
                         double claims30percent = 0.00;
                         double claimsSb = 0.00;
                         double totalbaseamount = 0.00;
+                        int totalclaimcountdatesetting = 0;
+                        double totalDateSettingYearClaimAmount = 0.00;
                         List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
                         //DATE SETTINGS AREA
                         for (int datese = 0; datese < fcaA.size(); datese++) {
@@ -554,50 +549,81 @@ public class Methods {
                                 java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(datese).getDatefiled());
                                 SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
                                 //------------------------------------------------
+                                double totalAmount = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3;
+                                double Percent30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 * 0.30;
+                                double Percent10w30 = totalAmount + Percent30 * 0.10;
+                                double Percent10n30 = totalAmount * 0.10;
+                                double Grantotalw10 = Percent30 + totalAmount + Percent10w30;
+                                double Grantotaln10 = Percent30 + totalAmount;
+                                //------------------------------------------------          
                                 HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
-                                switch (hci.getHcilevel()) {
+                                switch (hci.getHcilevel().toUpperCase().trim()) {
                                     case "T1":
                                     case "T2":
                                     case "SH": {
-                                        if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) <= 2024) {
+                                        if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) == 2024) {
                                             if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
-                                                double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30;
-                                                double add10 = Baseadd30 * 0.10;
-                                                claims30percent += add30;
-                                                claimsSb += add10;
-                                                totalcomputeA.setThirty(String.valueOf(add30));
-                                                totalcomputeA.setSb(String.valueOf(add10));
+                                                claims30percent += Percent30;
+                                                claimsSb += Percent10w30;
+                                                totalDateSettingYearClaimAmount += Grantotalw10;
+                                                totalclaimcountdatesetting += Integer.parseInt(fcaA.get(datese).getTotalclaims());
+                                                totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                totalcomputeA.setSb(String.valueOf(Percent10w30));
                                             } else {
-                                                double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount());
-                                                claimsSb += Baseadd30 * 0.10;
-                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                totalcomputeA.setSb(String.valueOf(claimsSb));
+                                                claimsSb += Percent10n30;
+                                                totalDateSettingYearClaimAmount += totalAmount + Percent10n30;
+                                                totalclaimcountdatesetting += Integer.parseInt(fcaA.get(datese).getTotalclaims());
+                                                totalcomputeA.setThirty(String.valueOf(claimsSb));
+                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
                                             }
+                                        } else if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) < 2024) {
+                                            claimsSb += Percent10w30;
+                                            claims30percent += Percent30;
+                                            totalDateSettingYearClaimAmount += Grantotalw10;
+                                            totalclaimcountdatesetting += Integer.parseInt(fcaA.get(datese).getTotalclaims());
+                                            totalcomputeA.setThirty(String.valueOf(Percent30));
+                                            totalcomputeA.setSb(String.valueOf(Percent10w30));
                                         } else {
-                                            double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
-                                            double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30;
-                                            double add10 = Baseadd30 * 0.10;
-                                            claims30percent += add30;
-                                            claimsSb += add10;
-                                            totalcomputeA.setThirty(String.valueOf(add30));
-                                            totalcomputeA.setSb(String.valueOf(add10));
+                                            claimsSb += Percent10n30;
+                                            totalDateSettingYearClaimAmount += totalAmount + Percent10n30;
+                                            totalclaimcountdatesetting += Integer.parseInt(fcaA.get(datese).getTotalclaims());
+                                            totalcomputeA.setThirty(String.valueOf(0.00));
+                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
                                         }
                                         break;
                                     }
                                     default: {
-                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                        if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) == 2024) {
+                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                claims30percent += Percent30;
+                                                totalDateSettingYearClaimAmount += totalAmount + claims30percent;
+                                                totalclaimcountdatesetting += Integer.parseInt(fcaA.get(datese).getTotalclaims());
+                                                totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                totalcomputeA.setSb(String.valueOf(0.00));
+                                            } else {
+                                                totalDateSettingYearClaimAmount += totalAmount;
+                                                totalclaimcountdatesetting += Integer.parseInt(fcaA.get(datese).getTotalclaims());
+                                                totalcomputeA.setThirty(String.valueOf(0.00));
+                                                totalcomputeA.setSb(String.valueOf(0.00));
+                                            }
+                                        } else if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) < 2024) {
+                                            claims30percent += Percent30;
+                                            totalDateSettingYearClaimAmount += Grantotaln10;
+                                            totalclaimcountdatesetting += Integer.parseInt(fcaA.get(datese).getTotalclaims());
+                                            totalcomputeA.setThirty(String.valueOf(Percent30));
+                                            totalcomputeA.setSb(String.valueOf(0.00));
                                         } else {
-                                            double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
-                                            claims30percent += add30;
-                                            //totalcomputeA.setTotalamount(String.valueOf(total));
-                                            totalcomputeA.setThirty(String.valueOf(add30));
+                                            totalDateSettingYearClaimAmount += totalAmount;
+                                            totalclaimcountdatesetting += Integer.parseInt(fcaA.get(datese).getTotalclaims());
+                                            totalcomputeA.setThirty(String.valueOf(0.00));
+                                            totalcomputeA.setSb(String.valueOf(0.00));
                                         }
                                         break;
                                     }
                                 }
-
-                                totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount());
+                                totalcomputeA.setTotalamount(String.valueOf(totalAmount));
+                                totalbaseamount += totalAmount;
+                                totalcomputeA.setHospital(getFacilityA.getResult());
                                 //-------------------------------------------------
                                 totalcomputeA.setHospital(getFacilityA.getResult());
                             } else {
@@ -621,7 +647,7 @@ public class Methods {
                         } else {
                             totalcompute.setHospital(getFacility.getMessage());
                         }
-                        totalcompute.setTotalamount(String.valueOf(totalbaseamount / 3));
+                        totalcompute.setTotalamount(String.valueOf(totalbaseamount));
                         totalcompute.setTotalclaims(String.valueOf(dateclaimcount));
                         totalcompute.setYearfrom(datefrom);
                         totalcompute.setYearto(dateto);
@@ -671,69 +697,79 @@ public class Methods {
                                             SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
                                             //------------------------------------------------
                                             HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class);
+                                            double totalAmount = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3;
+                                            double Percent30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 * 0.30;
+                                            double Percent10w30 = totalAmount + Percent30 * 0.10;
+                                            double Percent10n30 = totalAmount * 0.10;
+                                            double Grantotalw10 = Percent30 + totalAmount + Percent10w30;
+                                            double Grantotaln10 = Percent30 + totalAmount;
                                             switch (hci.getHcilevel().toUpperCase().trim()) {
                                                 case "T1":
                                                 case "T2":
                                                 case "SH": {
                                                     if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) <= 2024) {
                                                         if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                            double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
-                                                            double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30;
-                                                            double add10 = Baseadd30 * 0.10;
-                                                            double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30 + add10;
-                                                            claims30percent += add30;
-                                                            claimsSb += add10;
-                                                            totalDateSettingYearClaimAmount += total;
-                                                            TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                            claims30percent += Percent30;
+                                                            claimsSb += Percent10w30;
+                                                            totalDateSettingYearClaimAmount += Grantotalw10;
                                                             totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
-                                                            totalcomputeHCPN.setTotalamount(fcaA.get(gets).getTotalamount());
-                                                            totalcomputeHCPN.setThirty(String.valueOf(add30));
-                                                            totalcomputeHCPN.setSb(String.valueOf(add10));
+                                                            totalcomputeHCPN.setThirty(String.valueOf(Percent30));
+                                                            totalcomputeHCPN.setSb(String.valueOf(Percent10w30));
                                                         } else {
-                                                            //  double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
-                                                            double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount());
-                                                            double add10 = Baseadd30 * 0.10;
-                                                            double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add10;
-                                                            // claims30percent += add30;
-                                                            claimsSb += add10;
-                                                            totalDateSettingYearClaimAmount += total;
-                                                            TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                            claimsSb += Percent10n30;
+                                                            totalDateSettingYearClaimAmount += totalAmount + Percent10n30;
                                                             totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
-                                                            totalcomputeHCPN.setTotalamount(fcaA.get(gets).getTotalamount());
                                                             totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                            totalcomputeHCPN.setSb(String.valueOf(add10));
+                                                            totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
                                                         }
 
-                                                    } else {
-                                                        double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
-                                                        double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30;
-                                                        double add10 = Baseadd30 * 0.10;
-                                                        double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30 + add10;
-                                                        claims30percent += add30;
-                                                        claimsSb += add10;
-                                                        totalDateSettingYearClaimAmount += total;
-                                                        TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                    } else if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) < 2024) {
+                                                        claims30percent += Percent30;
+                                                        claimsSb += Percent10w30;
+                                                        totalDateSettingYearClaimAmount += Grantotalw10;
                                                         totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
-                                                        totalcomputeHCPN.setTotalamount(fcaA.get(gets).getTotalamount());
-                                                        totalcomputeHCPN.setThirty(String.valueOf(add30));
-                                                        totalcomputeHCPN.setSb(String.valueOf(add10));
+                                                        totalcomputeHCPN.setThirty(String.valueOf(Percent30));
+                                                        totalcomputeHCPN.setSb(String.valueOf(claimsSb));
+                                                    } else {
+                                                        claimsSb += Percent10n30;
+                                                        totalDateSettingYearClaimAmount += totalAmount + Percent10n30;
+                                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                        totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                        totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
                                                     }
-
                                                     break;
                                                 }
                                                 default: {
-                                                    double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
-                                                    double origamount = Double.parseDouble(fcaA.get(gets).getTotalamount());
-                                                    double total = origamount + add30;
-                                                    claims30percent += add30;
-                                                    totalDateSettingYearClaimAmount += total;
-                                                    TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
-                                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
-                                                    totalcomputeHCPN.setThirty(String.valueOf(add30));
-                                                    totalcomputeHCPN.setTotalamount(fcaA.get(gets).getTotalamount());
+                                                    if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) <= 2024) {
+                                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                            claims30percent += Percent30;
+                                                            totalDateSettingYearClaimAmount += Grantotaln10;
+                                                            totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                            totalcomputeHCPN.setThirty(String.valueOf(Percent30));
+                                                            totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                        } else {
+                                                            totalDateSettingYearClaimAmount += totalAmount;
+                                                            totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                            totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                            totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                        }
+                                                    } else if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) < 2024) {
+                                                        claims30percent += Percent30;
+                                                        totalDateSettingYearClaimAmount += Grantotaln10;
+                                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                        totalcomputeHCPN.setThirty(String.valueOf(Percent30));
+                                                        totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                    } else {
+                                                        totalDateSettingYearClaimAmount += totalAmount;
+                                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                        totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                        totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                    }
                                                     break;
                                                 }
                                             }
+                                            totalcomputeHCPN.setTotalamount(String.valueOf(totalAmount));
+                                            TotalBaseAmount += totalAmount;
                                             totalcomputeHCPN.setHospital(getHCI.getResult());
                                         }
                                         totalcomputeHCPN.setDatefiled(fcaA.get(gets).getDatefiled());
@@ -793,38 +829,86 @@ public class Methods {
                                     //GET FACILITY
                                     ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(gets).getHospital());
                                     if (getHCI.isSuccess()) {
+                                        //------------------------------------------------
+                                        java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
+                                        java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
+                                        java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(gets).getDatefiled());
+                                        SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
+                                        //------------------------------------------------
                                         HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class);
+                                        double totalAmount = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3;
+                                        double Percent30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 * 0.30;
+                                        double Percent10w30 = totalAmount + Percent30 * 0.10;
+                                        double Percent10n30 = totalAmount * 0.10;
+                                        double Grantotalw10 = Percent30 + totalAmount + Percent10w30;
+                                        double Grantotaln10 = Percent30 + totalAmount;
                                         switch (hci.getHcilevel().toUpperCase().trim()) {
                                             case "T1":
                                             case "T2":
                                             case "SH": {
-                                                double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
-                                                double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30;
-                                                double add10 = Baseadd30 * 0.10;
-                                                double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30 + add10;
-                                                claims30percent += add30;
-                                                claimsSb += add10;
-                                                totalDateSettingYearClaimAmount += total;
-                                                TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
-                                                totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
-                                                totalcomputeHCPN.setTotalamount(fcaA.get(gets).getTotalamount());
-                                                totalcomputeHCPN.setThirty(String.valueOf(add30));
-                                                totalcomputeHCPN.setSb(String.valueOf(add10));
+                                                if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) <= 2024) {
+                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                        claims30percent += Percent30;
+                                                        claimsSb += Percent10w30;
+                                                        totalDateSettingYearClaimAmount += Grantotalw10;
+                                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                        totalcomputeHCPN.setThirty(String.valueOf(Percent30));
+                                                        totalcomputeHCPN.setSb(String.valueOf(Percent10w30));
+                                                    } else {
+                                                        claimsSb += Percent10n30;
+                                                        totalDateSettingYearClaimAmount += totalAmount + Percent10n30;
+                                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                        totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                        totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
+                                                    }
+
+                                                } else if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) < 2024) {
+                                                    claims30percent += Percent30;
+                                                    claimsSb += Percent10w30;
+                                                    totalDateSettingYearClaimAmount += Grantotalw10;
+                                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                    totalcomputeHCPN.setThirty(String.valueOf(Percent30));
+                                                    totalcomputeHCPN.setSb(String.valueOf(claimsSb));
+                                                } else {
+                                                    claimsSb += Percent10n30;
+                                                    totalDateSettingYearClaimAmount += totalAmount + Percent10n30;
+                                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                    totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                    totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
+                                                }
                                                 break;
                                             }
                                             default: {
-                                                double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
-                                                double origamount = Double.parseDouble(fcaA.get(gets).getTotalamount());
-                                                double total = origamount + add30;
-                                                claims30percent += add30;
-                                                totalDateSettingYearClaimAmount += total;
-                                                TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
-                                                totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
-                                                totalcomputeHCPN.setThirty(String.valueOf(add30));
-                                                totalcomputeHCPN.setTotalamount(fcaA.get(gets).getTotalamount());
+                                                if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) <= 2024) {
+                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                        claims30percent += Percent30;
+                                                        totalDateSettingYearClaimAmount += Grantotaln10;
+                                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                        totalcomputeHCPN.setThirty(String.valueOf(Percent30));
+                                                        totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                    } else {
+                                                        totalDateSettingYearClaimAmount += totalAmount;
+                                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                        totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                        totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                    }
+                                                } else if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) < 2024) {
+                                                    claims30percent += Percent30;
+                                                    totalDateSettingYearClaimAmount += Grantotaln10;
+                                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                    totalcomputeHCPN.setThirty(String.valueOf(Percent30));
+                                                    totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                } else {
+                                                    totalDateSettingYearClaimAmount += totalAmount;
+                                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                    totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                    totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                }
                                                 break;
                                             }
                                         }
+                                        totalcomputeHCPN.setTotalamount(String.valueOf(totalAmount));
+                                        TotalBaseAmount += totalAmount;
                                         totalcomputeHCPN.setHospital(getHCI.getResult());
                                     }
                                     totalcomputeHCPN.setDatefiled(fcaA.get(gets).getDatefiled());
@@ -840,7 +924,7 @@ public class Methods {
                         totalcomputeHCPNA.setThirty(String.valueOf(claims30percent));
                         totalcomputeHCPNA.setYearfrom(datefrom);
                         totalcomputeHCPNA.setYearto(dateto);
-                        totalcomputeHCPNA.setTotalamount(String.valueOf(TotalBaseAmount / 3));
+                        totalcomputeHCPNA.setTotalamount(String.valueOf(TotalBaseAmount));
                         totalcomputeHCPNA.setTotalclaims(String.valueOf(totalclaimcountdatesetting));
                         //GET HCPN
                         ACRGBWSResult getHCPN = this.GETMBWITHID(dataSource, userid);
@@ -888,43 +972,41 @@ public class Methods {
                     if (getPRO.isSuccess()) {
                         ACRGBWSResult getHCPNUnderUsingProCode = this.GETROLEMULITPLE(dataSource, getPRO.getResult(), stats);
                         if (getHCPNUnderUsingProCode.isSuccess()) {
-                            ArrayList<String> HCIList = new ArrayList<>();
                             List<String> ListOFHCPN = Arrays.asList(getHCPNUnderUsingProCode.getResult().split(","));
+                            Double totalDateSettingYearClaimAmount = 0.00;
+                            int totalclaimcountdatesetting = 0;
+                            ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
+
                             for (int hcpn = 0; hcpn < ListOFHCPN.size(); hcpn++) {
                                 ACRGBWSResult getHCIUisngHCPNCode = this.GETROLEMULITPLE(dataSource, ListOFHCPN.get(hcpn), stats);
                                 if (getHCIUisngHCPNCode.isSuccess()) {
                                     List<String> ListOHCI = Arrays.asList(getHCIUisngHCPNCode.getResult().split(","));
                                     for (int hci = 0; hci < ListOHCI.size(); hci++) {
-                                        HCIList.add(ListOHCI.get(hci));
-                                    }
-                                }
-                            }
-                            Double totalDateSettingYearClaimAmount = 0.00;
-                            int totalclaimcountdatesetting = 0;
-                            ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
-                            for (int x = 0; x < HCIList.size(); x++) {
-                                ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, HCIList.get(x), datefrom.trim(), dateto.trim());
-                                if (restA.isSuccess()) {
-                                    List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
-                                    //DATE SETTINGS
-                                    for (int f = 0; f < fcaA.size(); f++) {
-                                        FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                                        totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.get(f).getTotalamount());
-                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                        totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                        totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                        totalcomputeA.setTotalamount(fcaA.get(f).getTotalamount());
-                                        totalcomputeA.setTotalclaims(fcaA.get(f).getTotalclaims());
-                                        ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
-                                        if (getFacilityA.isSuccess()) {
-                                            totalcomputeA.setHospital(getFacilityA.getResult());
-                                        } else {
-                                            totalcomputeA.setHospital(getFacilityA.getMessage());
+                                        ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, ListOHCI.get(hci).trim(), datefrom.trim(), dateto.trim());
+                                        if (restA.isSuccess()) {
+                                            List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
+                                            //DATE SETTINGS
+                                            for (int f = 0; f < fcaA.size(); f++) {
+                                                FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                                totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.get(f).getTotalamount());
+                                                totalclaimcountdatesetting += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                totalcomputeA.setTotalamount(fcaA.get(f).getTotalamount());
+                                                totalcomputeA.setTotalclaims(fcaA.get(f).getTotalclaims());
+                                                ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
+                                                if (getFacilityA.isSuccess()) {
+                                                    totalcomputeA.setHospital(getFacilityA.getResult());
+                                                } else {
+                                                    totalcomputeA.setHospital(getFacilityA.getMessage());
+                                                }
+                                                totalcomputeList.add(totalcomputeA);
+                                            }
                                         }
-                                        totalcomputeList.add(totalcomputeA);
                                     }
                                 }
                             }
+
                             FacilityComputedAmount totalcompute = new FacilityComputedAmount();
                             totalcompute.setTotalamount(String.valueOf(totalDateSettingYearClaimAmount));
                             totalcompute.setTotalclaims(String.valueOf(totalclaimcountdatesetting));
@@ -953,40 +1035,36 @@ public class Methods {
                 case "PRO"://USERID IS PROCODE
                     ACRGBWSResult getHCPNUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
                     if (getHCPNUnder.isSuccess()) {
-                        ArrayList<String> finalListofHCPN = new ArrayList<>();
                         List<String> HCPNList = Arrays.asList(getHCPNUnder.getResult().split(","));
+                        Double totalDateSettingYearClaimAmount = 0.00;
+                        int totalclaimcountdatesetting = 0;
+                        ArrayList<FacilityComputedAmount> computationList = new ArrayList<>();
                         for (int pro = 0; pro < HCPNList.size(); pro++) {
                             ACRGBWSResult getHCFUnder = this.GETROLEMULITPLE(dataSource, HCPNList.get(pro), stats);
                             if (getHCFUnder.isSuccess()) {
                                 List<String> HCFList = Arrays.asList(getHCFUnder.getResult().split(","));
                                 for (int hcf = 0; hcf < HCFList.size(); hcf++) {
-                                    finalListofHCPN.add(HCFList.get(hcf));
-                                }
-                            }
-                        }
-                        Double totalDateSettingYearClaimAmount = 0.00;
-                        int totalclaimcountdatesetting = 0;
-                        ArrayList<FacilityComputedAmount> computationList = new ArrayList<>();
-                        for (int listhci = 0; listhci < finalListofHCPN.size(); listhci++) {
-                            ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, finalListofHCPN.get(listhci), datefrom.trim(), dateto.trim());
-                            if (restA.isSuccess()) {
-                                List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
-                                for (int f = 0; f < fcaA.size(); f++) {
-                                    FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                                    totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.get(f).getTotalamount());
-                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                    totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
-                                    totalcomputeA.setTotalamount(fcaA.get(f).getTotalamount());
-                                    totalcomputeA.setTotalclaims(fcaA.get(f).getTotalclaims());
-                                    totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                    totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                    ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
-                                    if (getFacilityA.isSuccess()) {
-                                        totalcomputeA.setHospital(getFacilityA.getResult());
-                                    } else {
-                                        totalcomputeA.setHospital(getFacilityA.getMessage());
+                                    ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, HCFList.get(hcf).trim(), datefrom.trim(), dateto.trim());
+                                    if (restA.isSuccess()) {
+                                        List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
+                                        for (int f = 0; f < fcaA.size(); f++) {
+                                            FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                            totalDateSettingYearClaimAmount += Double.parseDouble(fcaA.get(f).getTotalamount());
+                                            totalclaimcountdatesetting += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                            totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                            totalcomputeA.setTotalamount(fcaA.get(f).getTotalamount());
+                                            totalcomputeA.setTotalclaims(fcaA.get(f).getTotalclaims());
+                                            totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                            totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                            ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
+                                            if (getFacilityA.isSuccess()) {
+                                                totalcomputeA.setHospital(getFacilityA.getResult());
+                                            } else {
+                                                totalcomputeA.setHospital(getFacilityA.getMessage());
+                                            }
+                                            computationList.add(totalcomputeA);
+                                        }
                                     }
-                                    computationList.add(totalcomputeA);
                                 }
                             }
                         }
@@ -1039,25 +1117,26 @@ public class Methods {
                                     case "T1":
                                     case "T2":
                                     case "SH": {
-                                        if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) <= 2024) {
+                                        if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) == 2024) {
                                             if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
-                                                double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30;
+                                                double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 * 0.30;
+                                                double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 + add30;
                                                 double add10 = Baseadd30 * 0.10;
-                                                double total = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30 + add10;
+                                                double total = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 + add30 + add10;
                                                 claims30percent += add30;
                                                 claimsSb += add10;
                                                 datesettingsclaimsValue += total;
-                                                totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount());
+                                                totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3;
                                             } else {
-                                                double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount());
+                                                double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3;
                                                 double add10 = Baseadd30 * 0.10;
-                                                double total = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add10;
+                                                double total = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 + add10;
                                                 claimsSb += add10;
                                                 datesettingsclaimsValue += total;
-                                                totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount());
+                                                totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3;
                                             }
-                                        } else {
+
+                                        } else if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) < 2024) {
                                             double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
                                             double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30;
                                             double add10 = Baseadd30 * 0.10;
@@ -1067,16 +1146,45 @@ public class Methods {
                                             datesettingsclaimsValue += total;
                                             totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount());
 
+                                        } else {
+                                            double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3;
+                                            double add10 = add30 * 0.10;
+                                            double total = add30 + add10;
+                                            claimsSb += add10;
+                                            datesettingsclaimsValue += total;
+                                            totalbaseamount += add30;
+
                                         }
                                         break;
                                     }
                                     default: {
-                                        double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
-                                        double origamount = Double.parseDouble(fcaA.get(datese).getTotalamount());
-                                        double total = origamount + add30;
-                                        claims30percent += add30;
-                                        datesettingsclaimsValue += total;
-                                        totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount());
+                                        if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) == 2024) {
+                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 * 0.30;
+                                                double total = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 + add30;
+                                                claims30percent += add30;
+                                                datesettingsclaimsValue += total;
+                                                totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3;
+                                            } else {
+                                                double total = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3;
+                                                datesettingsclaimsValue += total;
+                                                totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3;
+                                            }
+
+                                        } else if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) < 2024) {
+                                            double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 * 0.30;
+                                            double total = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 + add30;
+                                            claims30percent += add30;
+                                            datesettingsclaimsValue += total;
+                                            totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3;
+
+                                        } else {
+                                            double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3;
+                                            double total = add30;
+                                            datesettingsclaimsValue += total;
+                                            totalbaseamount += add30;
+
+                                        }
                                         break;
                                     }
                                 }
@@ -1085,7 +1193,7 @@ public class Methods {
                             } else {
 //                                totalcomputeA.setHospital(getFacilityA.getMessage());
                             }
-                            datesettingsclaimsValue += Double.parseDouble(fcaA.get(datese).getTotalamount());
+                            datesettingsclaimsValue += Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3;
                             dateclaimcount += Integer.parseInt(fcaA.get(datese).getTotalclaims());
 //                            totalcomputeA.setYearfrom(fcaA.get(datese).getYearfrom());
 //                            totalcomputeA.setYearto(fcaA.get(datese).getYearto());
@@ -1151,10 +1259,10 @@ public class Methods {
                                             case "T1":
                                             case "T2":
                                             case "SH": {
-                                                if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) <= 2024) {
+                                                if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) == 2024) {
                                                     if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                        double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
-                                                        double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30;
+                                                        double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 * 0.30;
+                                                        double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 + add30;
                                                         double add10 = Baseadd30 * 0.10;
                                                         double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30 + add10;
                                                         claims30percent += add30;
@@ -1164,39 +1272,70 @@ public class Methods {
                                                         totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
                                                         break;
                                                     } else {
-                                                        double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                        double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3;
                                                         double add10 = Baseadd30 * 0.10;
-                                                        double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add10;
+                                                        double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 + add10;
                                                         claimsSb += add10;
                                                         totalDateSettingYearClaimAmount += total;
-                                                        TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                        TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3;
                                                         totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
                                                         break;
-
                                                     }
-                                                } else {
-                                                    double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
-                                                    double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30;
+                                                } else if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) < 2024) {
+                                                    double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 * 0.30;
+                                                    double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 + add30;
                                                     double add10 = Baseadd30 * 0.10;
-                                                    double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) + add30 + add10;
+                                                    double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 + add30 + add10;
                                                     claims30percent += add30;
                                                     claimsSb += add10;
                                                     totalDateSettingYearClaimAmount += total;
-                                                    TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
+                                                    TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3;
+                                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+
+                                                } else {
+                                                    double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3;
+                                                    double add10 = add30 * 0.10;
+                                                    double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 + add10;
+                                                    claimsSb += add10;
+                                                    totalDateSettingYearClaimAmount += total;
+                                                    TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3;
                                                     totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
                                                     break;
                                                 }
 
                                             }
                                             default: {
-                                                double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
-                                                double origamount = Double.parseDouble(fcaA.get(gets).getTotalamount());
-                                                double total = origamount + add30;
-                                                claims30percent += add30;
-                                                totalDateSettingYearClaimAmount += total;
-                                                TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount());
-                                                totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
-                                                break;
+                                                if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) == 2024) {
+                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                        double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 * 0.30;
+                                                        double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 + add30;
+                                                        claims30percent += add30;
+                                                        totalDateSettingYearClaimAmount += total;
+                                                        TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3;
+                                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                        break;
+                                                    } else {
+                                                        double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3;
+                                                        totalDateSettingYearClaimAmount += total;
+                                                        TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3;
+                                                        totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                        break;
+                                                    }
+                                                } else if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) < 2024) {
+                                                    double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 * 0.30;
+                                                    double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 + add30;
+                                                    claims30percent += add30;
+                                                    totalDateSettingYearClaimAmount += total;
+                                                    TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3;
+                                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+
+                                                } else {
+                                                    double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3;
+                                                    totalDateSettingYearClaimAmount += total;
+                                                    TotalBaseAmount += Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3;
+                                                    totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
@@ -1247,7 +1386,7 @@ public class Methods {
         result.setSuccess(false);
         java.util.Date d1 = new java.util.Date();
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.ACTIVITYLOGS(:Message,:Code,:a_date,:a_details,:a_by)");
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACTIVITYLOGS(:Message,:Code,:a_date,:a_details,:a_by)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setTimestamp("a_date", new java.sql.Timestamp(d1.getTime()));
@@ -1274,7 +1413,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETLOGSWITHID(:userid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETLOGSWITHID(:userid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("userid", userid);
             statement.execute();
@@ -1316,7 +1455,7 @@ public class Methods {
             if (getdatesettings.isSuccess()) {
                 List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class));
                 for (int u = 0; u < GetDateSettings.size(); u++) {
-                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETSUMAMOUNTCLAIMS(:ulevel,:uaccreno,:utags,:udatefrom,:udateto); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:ulevel,:uaccreno,:utags,:udatefrom,:udateto); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("ulevel", "TWO");
                     statement.setString("uaccreno", uaccreno.trim());
@@ -1375,7 +1514,7 @@ public class Methods {
             } else {
                 ACRGBWSResult restA = this.GETROLE(dataSource, mbrequestsummry.getRequestor(), "ACTIVE");
                 if (restA.isSuccess()) {
-                    CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.MBREQUEST(:Message,:Code,:udaterequest,:udatefrom,"
+                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUEST(:Message,:Code,:udaterequest,:udatefrom,"
                             + ":udateto,:urequestor,:utranscode,:uremarks,:uamount,:udatecreated)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -1393,7 +1532,7 @@ public class Methods {
                         List<String> facilitylist = Arrays.asList(mbrequestsummry.getFacility().split(","));
                         int errCounter = 0;
                         for (int x = 0; x < facilitylist.size(); x = x + 2) {
-                            CallableStatement statement = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.MBREQUESTFCHUNDER(:Message,:Code,:utranscode,:udatecreated,:uamount,:ufacility)");
+                            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUESTFCHUNDER(:Message,:Code,:utranscode,:udatecreated,:uamount,:ufacility)");
                             statement.registerOutParameter("Message", OracleTypes.VARCHAR);
                             statement.registerOutParameter("Code", OracleTypes.INTEGER);
                             statement.setString("utranscode", mbrequestsummry.getTranscode());
@@ -1585,7 +1724,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBREQUEST(:userid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBREQUEST(:userid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("userid", userid);
             statement.execute();
@@ -1741,7 +1880,7 @@ public class Methods {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
                 //---------------------------------------------------- 
-                CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                 statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                 statement.setString("pid", pid);
                 statement.execute();
@@ -1796,7 +1935,7 @@ public class Methods {
                 int errCount = 0;
                 for (int x = 0; x < accesslist.size(); x++) {
                     //------------------------------------------------------------------------------------------------
-                    CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.REMOVEDROLEINDEX(:Message,:Code,"
+                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.REMOVEDROLEINDEX(:Message,:Code,"
                             + ":puserid,:paccessid)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -1840,7 +1979,7 @@ public class Methods {
                     List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                     for (int x = 0; x < fchlist.size(); x++) {
                         //---------------------------------------------------- 
-                        CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                         statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                         statement.setString("pid", fchlist.get(x));
                         statement.execute();
@@ -1915,7 +2054,7 @@ public class Methods {
                     List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                     for (int x = 0; x < fchlist.size(); x++) {
                         //---------------------------------------------------- 
-                        CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                         statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                         statement.setString("pid", fchlist.get(x));
                         statement.execute();
@@ -1988,7 +2127,7 @@ public class Methods {
                 List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                 for (int x = 0; x < fchlist.size(); x++) {
                     //---------------------------------------------------- 
-                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("pid", fchlist.get(x));
                     statement.execute();
@@ -2066,7 +2205,7 @@ public class Methods {
                 ArrayList<HealthCareFacility> fchlist = new ArrayList<>();
                 for (int x = 0; x < resultlist.size(); x++) {
                     //---------------------------------------------------- 
-                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETFACILITY(:pid); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:pid); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("pid", resultlist.get(x));
                     statement.execute();
@@ -2107,7 +2246,7 @@ public class Methods {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             String procode = pproid.substring(pproid.length() - 2);
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETPROWITHID(:pproid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETPROWITHID(:pproid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("pproid", procode);
             statement.execute();
@@ -2137,7 +2276,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags);
             statement.setString("pid", puserid);
@@ -2164,7 +2303,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags);
             statement.setString("pid", puserid);
@@ -2195,7 +2334,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags);
             statement.setString("pid", puserid);
@@ -2222,7 +2361,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags);
             statement.setString("pid", puserid);
@@ -2253,7 +2392,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETAPEXFACILITY(); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETAPEXFACILITY(); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.execute();
             ArrayList<HealthCareFacility> hcflist = new ArrayList<>();
@@ -2307,7 +2446,7 @@ public class Methods {
                         }
                         rmb.setConctractamount(conlist.get(x).getAmount());
                         rmb.setContractnumber(conlist.get(x).getTranscode());
-                        CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
+                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
                         statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                         statement.setString("tags", tags);
                         statement.setString("pconid", conlist.get(x).getConid());
@@ -2375,7 +2514,7 @@ public class Methods {
                         }
                         rmb.setConctractamount(conlist.get(x).getAmount());
                         rmb.setContractnumber(conlist.get(x).getTranscode());
-                        CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
+                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
                         statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                         statement.setString("tags", tags);
                         statement.setString("pconid", conlist.get(x).getConid());
@@ -2545,7 +2684,7 @@ public class Methods {
         result.setSuccess(false);
         String utags = "G";
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETSUMAMOUNTCLAIMS(:ulevel,:uaccreno,:utags,:udatefrom,:udateto); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:ulevel,:uaccreno,:utags,:udatefrom,:udateto); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("ulevel", "TWO");
             statement.setString("uaccreno", pan);
@@ -2636,7 +2775,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDFORENDROLE(:utags,:pid,:pcondateid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDFORENDROLE(:utags,:pid,:pcondateid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags);
             statement.setString("pid", puserid);
