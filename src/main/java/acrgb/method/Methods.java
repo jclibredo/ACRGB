@@ -215,6 +215,7 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UpdateMethods um = new UpdateMethods();
         try (Connection connection = dataSource.getConnection()) {
             if (!utility.validatePassword(p_password)) {
                 result.setSuccess(false);
@@ -231,12 +232,17 @@ public class Methods {
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     result.setSuccess(true);
-                    result.setMessage(getinsertresult.getString("Message"));
+                    ACRGBWSResult GetDID = fm.GETUSERBYID(dataSource, userid);
+                    if (GetDID.isSuccess()) {
+                        User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
+                        ACRGBWSResult updateInfo = um.UPDATEUSERINFOBYDID(dataSource, p_username.trim(), getUser.getDid().trim());
+                        result.setMessage(getinsertresult.getString("Message") + " , " + updateInfo.getMessage());
+                    }
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
             }
-        } catch (SQLException ex) {
+        } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -249,6 +255,7 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UpdateMethods um = new UpdateMethods();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERNAME(:Message,:Code,:p_userid,:p_username,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -259,11 +266,17 @@ public class Methods {
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setSuccess(true);
-                result.setMessage(getinsertresult.getString("Message"));
+                ACRGBWSResult GetDID = fm.GETUSERBYID(dataSource, userid);
+                if (GetDID.isSuccess()) {
+                    User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
+                    ACRGBWSResult updateInfo = um.UPDATEUSERINFOBYDID(dataSource, p_username.trim(), getUser.getDid().trim());
+                    result.setMessage(getinsertresult.getString("Message") + " , " + updateInfo.getMessage());
+                }
+
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-        } catch (SQLException ex) {
+        } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -307,25 +320,27 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+
         try (Connection connection = dataSource.getConnection()) {
-            if (!utility.validatePassword(p_password)) {
-                result.setSuccess(false);
-                result.setMessage("PASSWORD IS NOT VALID");
+//            if (!utility.validatePassword(p_password)) {
+//                result.setSuccess(false);
+//                result.setMessage("PASSWORD IS NOT VALID");
+//            } else {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("p_userid", userid);
+            getinsertresult.setString("p_password", cryptor.encrypt(p_password, p_password, "ACRGB"));
+            getinsertresult.setString("p_stats", "2");
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setSuccess(true);
+                result.setMessage(getinsertresult.getString("Message"));
+                //GET USER DETAILS AND UPDATE EMAIL ADDRESS
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("p_userid", userid);
-                getinsertresult.setString("p_password", cryptor.encrypt(p_password, p_password, "ACRGB"));
-                getinsertresult.setString("p_stats", "2");
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setSuccess(true);
-                    result.setMessage(getinsertresult.getString("Message"));
-                } else {
-                    result.setMessage(getinsertresult.getString("Message"));
-                }
+                result.setMessage(getinsertresult.getString("Message"));
             }
+//            }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);

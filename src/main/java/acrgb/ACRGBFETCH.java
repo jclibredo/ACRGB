@@ -83,7 +83,9 @@ public class ACRGBFETCH {
     @GET
     @Path("GetContract/{tags}/{puserid}/{level}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetContract(@HeaderParam("token") String token, @PathParam("tags") String tags,
+    public ACRGBWSResult GetContract(
+            @HeaderParam("token") String token, 
+            @PathParam("tags") String tags,
             @PathParam("puserid") String puserid,
             @PathParam("level") String level) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -144,7 +146,7 @@ public class ACRGBFETCH {
                     ACRGBWSResult GetResult = con.GETCONTRACTOFFACILITY(dataSource, tags, puserid);
                     result.setMessage(GetResult.getMessage());
                     result.setResult(GetResult.getResult());
-                    result.setSuccess(false);
+                    result.setSuccess(GetResult.isSuccess());
                     break;
                 }
                 // GET HCPN CONTRACT USING ACCOUNT USERID
@@ -152,7 +154,7 @@ public class ACRGBFETCH {
                     ACRGBWSResult GetResult = con.GETCONTRACTOFHCPN(dataSource, tags, puserid);
                     result.setMessage(GetResult.getMessage());
                     result.setResult(GetResult.getResult());
-                    result.setSuccess(false);
+                    result.setSuccess(GetResult.isSuccess());
                     break;
                 }
                 // GET PRO CONTRACT USING ACCOUNT USERID
@@ -160,7 +162,7 @@ public class ACRGBFETCH {
                     ACRGBWSResult GetResult = con.GETCONTRACTOFPRO(dataSource, tags, puserid);
                     result.setMessage(GetResult.getMessage());
                     result.setResult(GetResult.getResult());
-                    result.setSuccess(false);
+                    result.setSuccess(GetResult.isSuccess());
                     break;
                 }
                 default: {

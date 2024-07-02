@@ -467,7 +467,7 @@ public class UpdateMethods {
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEHCPN(:Message,:Code,"
-                    + ":umbname,:ucontrolnum,:uaddress,:ubankaccount,:ubankname)");
+                    + ":umbname,:ucontrolnum,:uaddress,:ubankaccount,:ubankname,:umbid)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("umbname", mb.getMbname().toUpperCase());
@@ -475,6 +475,7 @@ public class UpdateMethods {
             getinsertresult.setString("uaddress", mb.getAddress());
             getinsertresult.setString("ubankaccount", mb.getBankaccount());
             getinsertresult.setString("ubankname", mb.getBankname());
+            getinsertresult.setString("umbid", mb.getMbid());
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setMessage(getinsertresult.getString("Message"));
@@ -482,7 +483,6 @@ public class UpdateMethods {
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -816,6 +816,33 @@ public class UpdateMethods {
                 result.setSuccess(true);
             } else {
                 result.setMessage(statement.getString("Message"));
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    // UPDATE USER INFO USING DID
+    public ACRGBWSResult UPDATEUSERINFOBYDID(final DataSource datasource, final String uemail, final String udid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERINFOBYDID(:Message,:Code,"
+                    + ":udid,:uemail)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("udid", udid.trim());
+            getinsertresult.setString("uemail", uemail.trim());
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setMessage(getinsertresult.getString("Message"));
+                result.setSuccess(true);
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());

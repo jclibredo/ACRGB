@@ -170,12 +170,12 @@ public class ACRGBUPDATE {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            if (user.getUsername().isEmpty()) {
+            if (user.getUsername()==null && user.getUserpassword()!=null) {
                 ACRGBWSResult insertresult = methods.CHANGEPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
-            } else if (user.getUserpassword().isEmpty()) {
+            } else if (user.getUserpassword()==null && user.getUsername()!=null) {
                 ACRGBWSResult insertresult = methods.CHANGEUSERNAME(dataSource, user.getUserid(), user.getUsername());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
