@@ -741,20 +741,22 @@ public class ContractMethod {
                         for (int y = 0; y < HCPNList.size(); y++) {
                             //GET ALL FACILITY UNDER HCPN
                             ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, HCPNList.get(y).trim());
-                           // System.out.println("HCF Code : " + HCPNList.get(y).trim());
+                            // System.out.println("HCF Code : " + HCPNList.get(y).trim());
                             if (totalResult.isSuccess()) {
-                               // System.out.println("Contract List : " + totalResult.getResult());
+                                // System.out.println("Contract List : " + totalResult.getResult());
                                 Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
                                 tranches += Integer.parseInt(getResult.getCcount());
                                 tracnheamountreleased += Double.parseDouble(getResult.getCtotal());
                             }
 //                            //GET CONTRACT PER HCPN
-//                            ACRGBWSResult GetHCPNContract = this.GETCONTRACT(dataSource, tags, HCPNList.get(y).trim());
-//                            if (GetHCPNContract.isSuccess()) {
-//                                Contract MapHCPNContract = utility.ObjectMapper().readValue(GetHCPNContract.getResult(), Contract.class);
-//                                ContractDate condate = utility.ObjectMapper().readValue(MapHCPNContract.getContractdate(), ContractDate.class);
-//                                ACRGBWSResult GetHCIList = methods.GETROLEMULITPLE(dataSource, HCPNList.get(y).trim(), tags.trim());
-//                                if (GetHCIList.isSuccess()) {
+                            ACRGBWSResult GetHCPNContract = this.GETCONTRACT(dataSource, tags, HCPNList.get(y).trim());
+                            if (GetHCPNContract.isSuccess()) {
+                                Contract MapHCPNContract = utility.ObjectMapper().readValue(GetHCPNContract.getResult(), Contract.class);
+                                ContractDate condate = utility.ObjectMapper().readValue(MapHCPNContract.getContractdate(), ContractDate.class);
+//                                  System.out.println(MapHCPNContract);
+//                                    System.out.println(condate);
+                                ACRGBWSResult GetHCIList = methods.GETROLEMULITPLE(dataSource, HCPNList.get(y).trim(), tags.trim());
+                                if (GetHCIList.isSuccess()) {
 //                                    List<String> HCIList = Arrays.asList(GetHCIList.getResult().split(","));
 //                                    for (int x = 0; x < HCIList.size(); x++) {
 //                                        ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, HCIList.get(x).trim(), "G", condate.getDatefrom(), condate.getDateto(), "CURRENTSTATUS");
@@ -767,8 +769,8 @@ public class ContractMethod {
 //                                            }
 //                                        }
 //                                    }
-//                                }
-//                            }
+                                }
+                            }
                         }
                     }
 
