@@ -735,20 +735,17 @@ public class ContractMethod {
                         contractList.add(contract);
                         System.out.println("Contract List : " + utility.ObjectMapper().writeValueAsString(contract));
                     }
-//                    ACRGBWSResult GetHCPNList = methods.GETROLEMULITPLE(dataSource, GetRole.getResult().trim(), tags.trim());
-//                    if (GetHCPNList.isSuccess()) {
-//                        List<String> HCPNList = Arrays.asList(GetHCPNList.getResult().split(","));
-//                        for (int y = 0; y < HCPNList.size(); y++) {
-//                            //GET ALL FACILITY UNDER HCPN
+                    ACRGBWSResult GetHCPNList = methods.GETROLEMULITPLE(dataSource, GetRole.getResult().trim(), tags.trim());
+                    if (GetHCPNList.isSuccess()) {
+                        List<String> HCPNList = Arrays.asList(GetHCPNList.getResult().split(","));
+                        for (int y = 0; y < HCPNList.size(); y++) {
+                            //GET ALL FACILITY UNDER HCPN
 //                            ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, HCPNList.get(y).trim());
-//
-////                            if (totalResult.isSuccess()) {
-////
-////                                Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
-////                                System.out.println("Summary Result : " + getResult);
-////                                tranches += Integer.parseInt(getResult.getCcount());
-////                                tracnheamountreleased += Double.parseDouble(getResult.getCtotal());
-////                            }
+//                            if (totalResult.isSuccess()) {
+//                                Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
+//                                tranches += Integer.parseInt(getResult.getCcount());
+//                                tracnheamountreleased += Double.parseDouble(getResult.getCtotal());
+//                            }
 //                            //GET CONTRACT PER HCPN
 //                            ACRGBWSResult GetHCPNContract = this.GETCONTRACT(dataSource, tags, HCPNList.get(y).trim());
 //                            if (GetHCPNContract.isSuccess()) {
@@ -770,8 +767,8 @@ public class ContractMethod {
 //                                    }
 //                                }
 //                            }
-//                        }
-//                    }
+                        }
+                    }
 
                     Contract contractA = new Contract();
                     double sumA = tracnheamountreleased / recievedamount * 100;
