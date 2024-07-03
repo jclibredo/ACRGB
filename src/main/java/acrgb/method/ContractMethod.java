@@ -758,7 +758,6 @@ public class ContractMethod {
                                         ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, HCIList.get(x).trim(), "G", condate.getDatefrom(), condate.getDateto(), "CURRENTSTATUS");
                                         if (sumresult.isSuccess()) {
                                             List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
-                                            System.out.println("Naclaims Data List: " + utility.ObjectMapper().writeValueAsString(nclaimsdata));
                                             for (int i = 0; i < nclaimsdata.size(); i++) {
                                                 numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
                                                 totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
