@@ -92,11 +92,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token.trim());
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            switch (level.toUpperCase()) {
+            switch (level.toUpperCase().trim()) {
                 case "PRO": {//puserid = prouseraccount ID
                     ACRGBWSResult getResultA = fetchmethods.ACR_CONTRACTPROID(dataSource, tags.trim().toUpperCase(), puserid);//GET CONTRACT USING USERID OF PRO USER ACCOUNT
                     result.setMessage(getResultA.getMessage());
