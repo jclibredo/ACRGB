@@ -56,90 +56,24 @@ public class UpdateMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            //GET TRANCH PERCENTAGE
-            if (assets.getAmount().isEmpty()
-                    || assets.getDatereleased().isEmpty()
-                    || assets.getHcfid().isEmpty()
-                    || assets.getReceipt().isEmpty()
-                    || assets.getTranchid().isEmpty()) {
-                result.setMessage("SOME REQUIRED FIELDS IS EMPTY");
-                result.setSuccess(false);
-            } else if (utility.IsValidNumber(assets.getHcfid()) && utility.IsValidNumber(assets.getTranchid())) {
-                ACRGBWSResult tranchresult = fm.GETTRANCHAMOUNT(datasource, assets.getTranchid());
-                if (!tranchresult.isSuccess()) {
-                    result.setMessage(tranchresult.getMessage());
-                    result.setSuccess(false);
-                } else if (!utility.IsValidDate(assets.getDatereleased())) {
-                    result.setSuccess(false);
-                    result.setMessage("DATE FORMAT IS NOT VALID");
-                } else {
-                    ACRGBWSResult conresult = fm.GETCONTRACTAMOUNT(datasource, assets.getHcfid());
-                    if (conresult.isSuccess()) {
-                        ACRGBWSResult transresult = fm.ACR_ASSETS(datasource, "ACTIVE", "0");
-                        if (transresult.isSuccess()) {
-                            ACRGBWSResult trans = fm.ACR_TRANCH(datasource, "ACTIVE");
-                            if (trans.isSuccess()) {
-                                int transcount = 0;
-                                List<Tranch> tranchlist = Arrays.asList(utility.ObjectMapper().readValue(trans.getResult(), Tranch[].class));
-                                for (int x = 0; x < tranchlist.size(); x++) {
-                                    if (tranchlist.get(x).getTranchid().equals(assets.getTranchid())) {
-                                        transcount++;
-                                    }
-                                }
-                                //---------------------------------------------------------------
-                                int count = 0;
-                                List<Assets> assetslist = Arrays.asList(utility.ObjectMapper().readValue(transresult.getResult(), Assets[].class));
-                                for (int x = 0; x < assetslist.size(); x++) {
-                                    if (assets.getHcfid().trim().equals(assetslist.get(x).getHcfid().trim())
-                                            && assets.getTranchid().trim().equals(assetslist.get(x).getTranchid().trim())) {
-                                        count++;
-                                    }
-                                }
-                                if (transcount == 0) {
-                                    result.setSuccess(false);
-                                    result.setMessage("TRANCH VALUE NOT FOUND");
-                                } else {
-                                    if (count < 1) {
-                                        Double percentage = Double.parseDouble(tranchresult.getResult());//60 percent
-                                        Double totalpercent = percentage / 100;
-                                        Double amount = Double.parseDouble(conresult.getResult());//contract amount
-                                        Double p_amount = amount * totalpercent;
-                                        CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEASSETS(:Message,:Code,:p_assetsid,:p_hcfid,:p_tranchid ,:p_receipt,:p_amount"
-                                                + ",:p_datereleased)");
-                                        getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                                        getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                                        getinsertresult.setString("p_assetsid", assets.getAssetid());
-                                        getinsertresult.setString("p_hcfid", assets.getHcfid());
-                                        getinsertresult.setString("p_tranchid", assets.getTranchid());
-                                        getinsertresult.setString("p_receipt", assets.getReceipt());
-                                        getinsertresult.setString("p_amount", String.valueOf(p_amount));
-                                        getinsertresult.setDate("p_datereleased", (Date) new Date(utility.StringToDate(assets.getDatecreated()).getTime())); //assets.getDatereleased());
-                                        getinsertresult.execute();
-                                        if (getinsertresult.getString("Message").equals("SUCC")) {
-                                            result.setSuccess(true);
-                                            result.setMessage("OK");
-                                        } else {
-                                            result.setMessage(getinsertresult.getString("Message"));
-                                        }
-                                        result.setResult(utility.ObjectMapper().writeValueAsString(assets));
-                                    } else {
-                                        result.setMessage("TRANCH VALUE IS ALREADY ASSIGN");
-                                    }
-                                }
-                            } else {
-                                result.setMessage(trans.getMessage());
-                            }
-                        } else {
-                            result.setMessage(transresult.getMessage());
-                        }
-                    } else {
-                        result.setMessage(conresult.getMessage());
-                    }
-                }
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEASSETS(:Message,:Code,"
+                    + ":p_assetsid,:p_hcfid,:p_receipt,:p_amount"
+                    + ",:p_datereleased)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("p_assetsid", assets.getAssetid());
+            getinsertresult.setString("p_hcfid", assets.getHcfid());
+            getinsertresult.setString("p_receipt", assets.getReceipt());
+            getinsertresult.setString("p_amount", assets.getAmount());
+            getinsertresult.setDate("p_datereleased", (Date) new Date(utility.StringToDate(assets.getDatereleased()).getTime())); //assets.getDatereleased());
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setSuccess(true);
+                result.setMessage("OK");
             } else {
-                result.setMessage("NUMBER FORMAT IS NOT VALID");
-            }
-        } catch (SQLException | IOException | ParseException ex) {
+                result.setMessage(getinsertresult.getString("Message"));
+            }              
+        } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
