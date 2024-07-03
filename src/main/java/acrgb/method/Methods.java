@@ -394,6 +394,7 @@ public class Methods {
                 tot.setCcount(resultset.getString("cCOUNT"));
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(tot));
+                result.setMessage("OK");
             } else {
                 result.setMessage("N/A");
             }

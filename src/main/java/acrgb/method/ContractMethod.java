@@ -695,11 +695,11 @@ public class ContractMethod {
             if (GetRole.isSuccess()) {
                 int numberofclaims = 0;
                 int tranches = 0;
-                double tracnheamountreleased = 0.00;
-                double totalclaimsamount = 0.00;
-                double percentageA = 0.00;
-                double recievedamount = 0.00;
-                double percentageB = 0.00;
+                Double tracnheamountreleased = 0.00;
+                Double totalclaimsamount = 0.00;
+                Double percentageA = 0.00;
+                Double recievedamount = 0.00;
+                Double percentageB = 0.00;
                 ArrayList<Contract> contractList = new ArrayList<>();
                 //GETCONTRACT
                 ACRGBWSResult GetFacilityContract = this.GETCONTRACTList(dataSource, tags, GetRole.getResult().trim());
@@ -733,19 +733,21 @@ public class ContractMethod {
                         // GET HCPN UNDER PRO USER
                         recievedamount += Double.parseDouble(MapContract.get(w).getAmount());
                         contractList.add(contract);
-                        System.out.println("Contract List : " + utility.ObjectMapper().writeValueAsString(contract));
+
                     }
                     ACRGBWSResult GetHCPNList = methods.GETROLEMULITPLE(dataSource, GetRole.getResult().trim(), tags.trim());
                     if (GetHCPNList.isSuccess()) {
                         List<String> HCPNList = Arrays.asList(GetHCPNList.getResult().split(","));
                         for (int y = 0; y < HCPNList.size(); y++) {
                             //GET ALL FACILITY UNDER HCPN
-//                            ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, HCPNList.get(y).trim());
-//                            if (totalResult.isSuccess()) {
-//                                Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
-//                                tranches += Integer.parseInt(getResult.getCcount());
-//                                tracnheamountreleased += Double.parseDouble(getResult.getCtotal());
-//                            }
+                            ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, HCPNList.get(y).trim());
+                           // System.out.println("HCF Code : " + HCPNList.get(y).trim());
+                            if (totalResult.isSuccess()) {
+                               // System.out.println("Contract List : " + totalResult.getResult());
+                                Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
+                                tranches += Integer.parseInt(getResult.getCcount());
+                                tracnheamountreleased += Double.parseDouble(getResult.getCtotal());
+                            }
 //                            //GET CONTRACT PER HCPN
 //                            ACRGBWSResult GetHCPNContract = this.GETCONTRACT(dataSource, tags, HCPNList.get(y).trim());
 //                            if (GetHCPNContract.isSuccess()) {
