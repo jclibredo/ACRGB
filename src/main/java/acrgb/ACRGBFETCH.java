@@ -15,9 +15,13 @@ import acrgb.method.LedgerMethod;
 import acrgb.method.Methods;
 import acrgb.method.UpdateMethods;
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.User;
 import acrgb.utility.Utility;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
 import javax.sql.DataSource;
@@ -84,7 +88,7 @@ public class ACRGBFETCH {
     @Path("GetContract/{tags}/{puserid}/{level}")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetContract(
-            @HeaderParam("token") String token, 
+            @HeaderParam("token") String token,
             @PathParam("tags") String tags,
             @PathParam("puserid") String puserid,
             @PathParam("level") String level) {
@@ -198,9 +202,11 @@ public class ACRGBFETCH {
 
     //GET  ACR USER TABLE
     @GET
-    @Path("GetUserInfo/{tags}")
+    @Path("GetUserInfo/{tags}/{pdid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetUserInfo(@HeaderParam("token") String token, @PathParam("tags") String tags) {
+    public ACRGBWSResult GetUserInfo(@HeaderParam("token") String token,
+            @PathParam("tags") String tags,
+            @PathParam("pdid") String pdid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -209,7 +215,7 @@ public class ACRGBFETCH {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_USER_DETAILS(dataSource, tags);
+            ACRGBWSResult getResult = fetchmethods.ACR_USER_DETAILS(dataSource, tags, pdid);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -240,9 +246,11 @@ public class ACRGBFETCH {
 
     //GET  HCI FACILITY
     @GET
-    @Path("GetUser/{tags}")
+    @Path("GetUser/{tags}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetUser(@HeaderParam("token") String token, @PathParam("tags") String tags) {
+    public ACRGBWSResult GetUser(@HeaderParam("token") String token,
+            @PathParam("tags") String tags,
+            @PathParam("id") String id) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -251,7 +259,7 @@ public class ACRGBFETCH {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_USER(dataSource, tags);
+            ACRGBWSResult getResult = fetchmethods.ACR_USER(dataSource, tags, id);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -961,9 +969,8 @@ public class ACRGBFETCH {
     }
 
     //GET ALL CONTRACT
-    //INSERT EMAIL CREDEDNTIALS
     @GET
-    @Path("GetllContract/{tags}")
+    @Path("GetAllContract/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetllContract(
             @HeaderParam("token") String token, @PathParam("tags") String tags) {
@@ -1070,6 +1077,64 @@ public class ACRGBFETCH {
             }
         }
 
+        return result;
+    }
+
+    @GET
+    @Path("Validate2FA")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult Validate2FA(
+            @HeaderParam("userid") String userid,
+            @HeaderParam("code") String code) throws IOException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        //--------------------------------------
+        ACRGBWSResult GetResult = fetchmethods.GETUSERBYUSERID(dataSource, userid);
+        if (GetResult.isSuccess()) {
+            User user = utility.ObjectMapper().readValue(GetResult.getResult(), User.class);
+            if (user.getFa2code() == null) {
+                result.setMessage("NO EXISTING 2FA CODE FOR SELECTED USER");
+            } else if (code.isEmpty()) {
+                result.setMessage("2FA CODE IS REQUIRED");
+            } else if (user.getFa2code().trim().equals(code.trim())) {
+                java.util.Date d1 = new java.util.Date();
+                SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm a");
+                Date date1 = new Date(user.getFa2expiration())
+                System.out.println("Date from SQL : " + user.getFa2expiration());
+                System.out.println("Converted Date From SQL : " + dateformat.format(date1));
+                System.out.println("Date Now : " + dateformat.format(d1));
+                result.setMessage(GetResult.getMessage());
+                result.setResult(GetResult.getResult());
+                result.setSuccess(GetResult.isSuccess());
+            } else {
+                result.setMessage(code + " Code is invalid");
+            }
+
+        } else {
+            result.setMessage(GetResult.getMessage());
+        }
+        //--------------------------------------
+        return result;
+    }
+
+    @GET
+    @Path("Create2FA")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult Create2FA(
+            @HeaderParam("userid") String userid,
+            @HeaderParam("email") String email) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        //--------------------------------------
+        ACRGBWSResult GetResult = um.UPDATEUSERFOR2FA(dataSource, email, userid);
+        result.setMessage(GetResult.getMessage());
+        result.setResult(GetResult.getResult());
+        result.setSuccess(GetResult.isSuccess());
+        //--------------------------------------
         return result;
     }
 

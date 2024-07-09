@@ -746,7 +746,7 @@ public class ContractMethod {
                                 tranches += Integer.parseInt(getResult.getCcount());
                                 tracnheamountreleased += Double.parseDouble(getResult.getCtotal());
                             }
-//                            //GET CONTRACT PER HCPN
+                            //GET CONTRACT PER HCPN
                             ACRGBWSResult GetHCPNContract = this.GETCONTRACT(dataSource, tags, HCPNList.get(y).trim());
                             if (GetHCPNContract.isSuccess()) {
                                 Contract MapHCPNContract = utility.ObjectMapper().readValue(GetHCPNContract.getResult(), Contract.class);
@@ -765,6 +765,9 @@ public class ContractMethod {
                                         }
                                     }
                                 }
+                                
+                                
+                                
                                 
                             }
                         }

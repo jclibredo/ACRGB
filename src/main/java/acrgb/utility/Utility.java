@@ -314,6 +314,46 @@ public class Utility {
 
         return EmailSentTemplate;
     }
+    
+    public String FA2Template(String useremail, String code) {
+        String EmailSentTemplate = "<body style='background-color:grey'>\n"
+                + "    <table align='center' border='0' cellpadding='0' cellspacing='0'\n"
+                + "           width='550' bgcolor='white' style='border:2px solid black'>\n"
+                + "        <tbody>\n"
+                + "            <tr style='display: inline-block;'>\n"
+                + "                <td style='height: 50px;\n"
+                + "                           padding: 20px;\n"
+                + "                           border: none; \n"
+                + "                           border-bottom: 2px solid #361B0E;\n"
+                + "                           background-color: white;'>\n"
+                + "                  \n"
+                + "                    <h2 style='text-align: left;\n"
+                + "                               align-items: center;'>\n"
+                + "                      ACTIVATION CODE : " + code + "\n"
+                + "                   </h2>\n"
+                + "                    <p class='data' \n"
+                + "                       style='text-align: justify-all;\n"
+                + "                              align-items: center; \n"
+                + "                              font-size: 15px;\n"
+                + "                              padding-bottom: 12px;'>\n"
+                + "                       !Note: This code will expire in 60 Minutes</p>\n"
+                + "                    <p> <a href='#'\n"
+                + "                           style='text-decoration: none; \n"
+                + "                                  color:black; \n"
+                + "                                  border: 2px solid #4cb96b; \n"
+                + "                                  padding: 10px 30px;\n"
+                + "                                  font-weight: bold;'> \n"
+                + "                           Read More \n"
+                + "                      </a>\n"
+                + "                    </p>\n"
+                + "                </td>\n"
+                + "            </tr>\n"
+                + "        </tbody>\n"
+                + "    </table>\n"
+                + "</body>";//, "text/html");
+
+        return EmailSentTemplate;
+    }
 
     //GENERATE TOKEN METHODS
     public String GenerateToken(String username, String password) {
@@ -421,6 +461,14 @@ public class Utility {
             Date expiresAt = claims.getExpiration();
             return expiresAt.before(new Date());
         }
+    }
+//CREATE 2FA CODE
+    public String Create2FACode() {
+        int randnums = 0;
+        for (int i = 0; i < 1; i++) {
+            randnums += (int) ((Math.random() * 88881) + 22220);
+        }
+        return String.valueOf(randnums);
     }
 
 }

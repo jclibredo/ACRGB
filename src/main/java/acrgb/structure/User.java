@@ -22,6 +22,9 @@ public class User {
     private String status;
     private String createdby;
     private String did;
+    private String fa2;
+    private String fa2code;
+    private String fa2expiration;
     //1 FOR REQUIRED
     //2 ACTIVE
     //3 INACTIVE

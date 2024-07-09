@@ -72,7 +72,7 @@ public class UpdateMethods {
                 result.setMessage("OK");
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
-            }              
+            }
         } catch (SQLException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -775,6 +775,41 @@ public class UpdateMethods {
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setMessage(getinsertresult.getString("Message"));
                 result.setSuccess(true);
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    // UPDATE USER FOR 2FA CREDENTIALS
+    public ACRGBWSResult UPDATEUSERFOR2FA(final DataSource datasource, final String email, final String userid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        Forgetpassword mets = new Forgetpassword();
+        java.util.Date d1 = new java.util.Date();
+        try (Connection connection = datasource.getConnection()) {
+            String code2fa = utility.Create2FACode().trim();
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERFOR2FA(:Message,:Code,"
+                    + ":puserid,:p2facode,:p2faexpirydate)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("puserid", userid.trim());
+            getinsertresult.setString("p2facode", code2fa);
+            getinsertresult.setTimestamp("p2faexpirydate", new java.sql.Timestamp(d1.getTime()));
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                ACRGBWSResult facodeSender = mets.FA2CodeSender(datasource, email, code2fa);
+                if (facodeSender.isSuccess()) {
+                    result.setSuccess(true);
+                } else {
+                    result.setMessage(getinsertresult.getString("Message"));
+                }
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }

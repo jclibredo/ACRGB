@@ -195,4 +195,66 @@ public class Forgetpassword {
         return result;
     }
 
+    public ACRGBWSResult FA2CodeSender(final DataSource dataSource, final String emailto, final String code) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setSuccess(false);
+        result.setResult("");
+        try {
+            ACRGBWSResult GetEmailCred = this.GetEmailSender(dataSource);
+            if (GetEmailCred.isSuccess()) {
+                ForgetPassword forget = utility.ObjectMapper().readValue(GetEmailCred.getResult(), ForgetPassword.class);
+                final String appUser = forget.getAppuser();
+                final String appPass = forget.getApppass();
+                // Recipient's email ID needs to be mentioned.
+                String to = emailto;
+                // Sender's email ID needs to be mentioned
+                String from = forget.getEmailto();
+                // Assuming you are sending email from through gmails smtp
+                String host = "smtp.gmail.com";
+                // Get system properties
+                Properties properties = System.getProperties();
+                // Setup mail server
+                properties.put("mail.smtp.host", host);
+                properties.put("mail.smtp.port", "465");
+                properties.put("mail.smtp.ssl.enable", "true");
+                properties.put("mail.smtp.auth", "true");
+
+                // Get the Session object.// and pass username and password
+                Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
+                    @Override
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(appUser, appPass);
+                    }
+                });
+                // Used to debug SMTP issues
+                session.setDebug(true);
+                // Create a default MimeMessage object.
+                MimeMessage message = new MimeMessage(session);
+                // Set From: header field of the header.
+                message.setFrom(new InternetAddress(from));
+                // Set To: header field of the header.
+                message.addRecipient(Message.RecipientType.TO, new InternetAddress(to.trim()));
+                // Set Subject: header field
+                message.setSubject("ACR-GB SYSTEM 2FA CODE");
+                // Now set the actual message
+                //message.setText("This is actual message");
+                message.setContent(utility.FA2Template(emailto, code), "text/html");
+                Transport.send(message);
+                result.setSuccess(true);
+
+            } else {
+                result.setMessage(GetEmailCred.getMessage());
+            }
+
+        } catch (MessagingException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Forgetpassword.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Forgetpassword.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
 }

@@ -105,7 +105,7 @@ public class InsertMethods {
                     result.setMessage(getinsertresult.getString("Message") + " , " + insertActivitylogs.getMessage());
                 }
                 //if (Integer.parseInt(assets.getPreviousbalance()) > 0) {
-                    updatemethods.UPDATECONBALANCESTATS(datasource, assets.getHcfid());
+                updatemethods.UPDATECONBALANCESTATS(datasource, assets.getHcfid());
                 //}
                 result.setSuccess(true);
             } else {
@@ -381,7 +381,7 @@ public class InsertMethods {
                     countresult++;
                 }
             }
-            ACRGBWSResult infolistresult = fm.ACR_USER_DETAILS(datasource, "ACTIVE");
+            ACRGBWSResult infolistresult = fm.ACR_USER_DETAILS(datasource, "ACTIVE", "0");
             int countinfo = 0;
             if (levelresult.isSuccess()) {
                 if (!infolistresult.getResult().isEmpty()) {
@@ -999,7 +999,6 @@ public class InsertMethods {
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
-        System.out.println(nclaims);
         try (Connection connection = datasource.getConnection()) {
             //------------------------------------------------------------------------------------------------
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACRBOOKINGDATA(:Message,:Code,"

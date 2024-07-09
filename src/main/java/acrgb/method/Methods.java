@@ -63,7 +63,7 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         try {
-            ACRGBWSResult resultfm = fm.ACR_USER(datasource, "ACTIVE");
+            ACRGBWSResult resultfm = fm.ACR_USER(datasource, "ACTIVE", "0");
             if (resultfm.isSuccess()) {
                 List<User> userlist = Arrays.asList(utility.ObjectMapper().readValue(resultfm.getResult(), User[].class));
                 int resultcounter = 0;

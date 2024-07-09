@@ -45,7 +45,6 @@ public class LedgerMethod {
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
     private final Methods m = new Methods();
-    private final ContractMethod contractmethod = new ContractMethod();
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
     //private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm:ss a");
 
@@ -496,25 +495,38 @@ public class LedgerMethod {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ContractMethod cm = new ContractMethod();
+      //  ContractMethod cm = new ContractMethod();
         ArrayList<Ledger> ledgerlist = new ArrayList<>();
         try {
             Double remaining = 0.00;
             Double begin = 0.00;
-            ACRGBWSResult beginning = cm.GETPREVIOUSBALANCE(dataSource, upmmc_no, contractid);
-            if (beginning.isSuccess()) {
-                ConBalance conbal = utility.ObjectMapper().readValue(beginning.getResult(), ConBalance.class);
-                Ledger ledgersss = new Ledger();
-                ledgersss.setDatetime(conbal.getCondateid());
-                ledgersss.setParticular("Beginning Balance");
-                ledgersss.setCredit(conbal.getConbalance());
-                begin = Double.parseDouble(conbal.getConbalance());
-                ledgersss.setBalance(String.valueOf(begin));
-                ledgerlist.add(ledgersss);
-            }
+//            ACRGBWSResult beginning = cm.GETPREVIOUSBALANCE(dataSource, upmmc_no, contractid);
+//            if (beginning.isSuccess()) {
+//                ConBalance conbal = utility.ObjectMapper().readValue(beginning.getResult(), ConBalance.class);
+//                Ledger ledgersss = new Ledger();
+//                ledgersss.setDatetime(conbal.getCondateid());
+//                ledgersss.setParticular("Beginning Balance");
+//                ledgersss.setCredit(conbal.getConbalance());
+//                begin = Double.parseDouble(conbal.getConbalance());
+//                ledgersss.setBalance(String.valueOf(begin));
+//                ledgerlist.add(ledgersss);
+//            }
             ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, upmmc_no, contractid, "ACTIVE");
             if (restA.isSuccess()) {
                 List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
+                //GETTING PREVIOUS BALANCE
+                for (int y = 0; y < assetlist.size(); y++) {
+                    if (assetlist.get(y).getPreviousbalance() != null) {
+                        begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
+                    }
+                }
+                Ledger ledgersss = new Ledger();
+                ledgersss.setDatetime(assetlist.get(0).getDatecreated());
+                ledgersss.setParticular("Beginning Balance");
+                ledgersss.setCredit(String.valueOf(begin));
+                ledgersss.setBalance(String.valueOf(begin));
+                ledgerlist.add(ledgersss);
+                //GETTING PREVIOUS BALANCE
                 for (int x = 0; x < assetlist.size(); x++) {
                     Ledger ledger = new Ledger();
                     ledger.setDatetime(assetlist.get(x).getDatereleased());
@@ -600,20 +612,34 @@ public class LedgerMethod {
         try {
             Double remaining = 0.00;
             Double begin = 0.00;
-            ACRGBWSResult beginning = cm.GETPREVIOUSBALANCE(dataSource, upmmc_no, contractid);
-            if (beginning.isSuccess()) {
-                ConBalance conbal = utility.ObjectMapper().readValue(beginning.getResult(), ConBalance.class);
-                Ledger ledgersss = new Ledger();
-                ledgersss.setDatetime(conbal.getCondateid());
-                ledgersss.setParticular("Beginning Balance");
-                ledgersss.setCredit(conbal.getConbalance());
-                begin = Double.parseDouble(conbal.getConbalance());
-                ledgersss.setBalance(String.valueOf(begin));
-                ledgerlist.add(ledgersss);
-            }
+//            ACRGBWSResult beginning = cm.GETPREVIOUSBALANCE(dataSource, upmmc_no, contractid);
+//            if (beginning.isSuccess()) {
+//                ConBalance conbal = utility.ObjectMapper().readValue(beginning.getResult(), ConBalance.class);
+//                Ledger ledgersss = new Ledger();
+//                ledgersss.setDatetime(conbal.getCondateid());
+//                ledgersss.setParticular("Beginning Balance");
+//                ledgersss.setCredit(conbal.getConbalance());
+//                begin = Double.parseDouble(conbal.getConbalance());
+//                ledgersss.setBalance(String.valueOf(begin));
+//                ledgerlist.add(ledgersss);
+//            }
             ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, upmmc_no, contractid, "INACTIVE");
             if (restA.isSuccess()) {
                 List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
+
+                //GETTING PREVIOUS BALANCE
+                for (int y = 0; y < assetlist.size(); y++) {
+                    if (assetlist.get(y).getPreviousbalance() != null) {
+                        begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
+                    }
+                }
+                Ledger ledgersss = new Ledger();
+                ledgersss.setDatetime(assetlist.get(0).getDatecreated());
+                ledgersss.setParticular("Beginning Balance");
+                ledgersss.setCredit(String.valueOf(begin));
+                ledgersss.setBalance(String.valueOf(begin));
+                ledgerlist.add(ledgersss);
+                //GETTING PREVIOUS BALANCE
                 for (int x = 0; x < assetlist.size(); x++) {
                     Ledger ledger = new Ledger();
                     ledger.setDatetime(assetlist.get(x).getDatereleased());

@@ -219,7 +219,6 @@ public class ACRGBPOST {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult INSERTUSER(@HeaderParam("token") String token, final User user) throws SQLException, ParseException {
         // public ACRGBWSResult INSERTUSER(final User user) throws SQLException, ParseException {
-
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");

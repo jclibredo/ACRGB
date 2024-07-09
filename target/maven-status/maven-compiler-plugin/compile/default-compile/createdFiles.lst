@@ -26,6 +26,7 @@ acrgb\structure\Tranch.class
 acrgb\structure\ConBalance.class
 acrgb\structure\Pro.class
 acrgb\structure\HealthCareFacility.class
+acrgb\method\Forgetpassword$2.class
 acrgb\structure\MBFacilityUnderRequest.class
 acrgb\structure\ReportsFacilityUnderHCPNSummary.class
 acrgb\method\FetchMethods.class
