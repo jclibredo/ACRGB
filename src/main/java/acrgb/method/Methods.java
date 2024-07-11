@@ -11,6 +11,7 @@ import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.DateSettings;
 import acrgb.structure.FacilityComputedAmount;
+import acrgb.structure.ForgetPassword;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.MBRequestSummary;
 import acrgb.structure.ManagingBoard;
@@ -217,31 +218,31 @@ public class Methods {
         result.setSuccess(false);
         UpdateMethods um = new UpdateMethods();
         try (Connection connection = dataSource.getConnection()) {
-            if (!utility.validatePassword(p_password)) {
-                result.setSuccess(false);
-                result.setMessage("PASSWORD IS NOT VALID");
-            } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,"
-                        + ":userid,:p_username,:p_password,:p_stats)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("userid", userid);
-                getinsertresult.setString("p_username", p_username);
-                getinsertresult.setString("p_password", cryptor.encrypt(p_password, p_password, "ACRGB"));
-                getinsertresult.setString("p_stats", "2");
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setSuccess(true);
-                    ACRGBWSResult GetDID = fm.GETUSERBYID(dataSource, userid);
-                    if (GetDID.isSuccess()) {
-                        User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
-                        ACRGBWSResult updateInfo = um.UPDATEUSERINFOBYDID(dataSource, p_username.trim(), getUser.getDid().trim());
-                        result.setMessage(getinsertresult.getString("Message") + " , " + updateInfo.getMessage());
-                    }
-                } else {
-                    result.setMessage(getinsertresult.getString("Message"));
+//            if (!utility.validatePassword(p_password)) {
+//                result.setSuccess(false);
+//                result.setMessage("PASSWORD IS NOT VALID");
+//            } else {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,"
+                    + ":userid,:p_username,:p_password,:p_stats)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("userid", userid);
+            getinsertresult.setString("p_username", p_username);
+            getinsertresult.setString("p_password", cryptor.encrypt(p_password, p_password, "ACRGB"));
+            getinsertresult.setString("p_stats", "2");
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setSuccess(true);
+                ACRGBWSResult GetDID = fm.GETUSERBYID(dataSource, userid);
+                if (GetDID.isSuccess()) {
+                    User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
+                    ACRGBWSResult updateInfo = um.UPDATEUSERINFOBYDID(dataSource, p_username.trim(), getUser.getDid().trim());
+                    result.setMessage(getinsertresult.getString("Message") + " , " + updateInfo.getMessage());
                 }
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
             }
+//            }
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -289,24 +290,24 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            if (!utility.validatePassword(p_password)) {
-                result.setSuccess(false);
-                result.setMessage("PASSWORD IS NOT VALID");
+//            if (!utility.validatePassword(p_password)) {
+//                result.setSuccess(false);
+//                result.setMessage("PASSWORD IS NOT VALID");
+//            } else {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("p_userid", userid);
+            getinsertresult.setString("p_password", p_password);
+            getinsertresult.setString("p_stats", "1");
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setSuccess(true);
+                result.setMessage(getinsertresult.getString("Message"));
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("p_userid", userid);
-                getinsertresult.setString("p_password", p_password);
-                getinsertresult.setString("p_stats", "1");
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setSuccess(true);
-                    result.setMessage(getinsertresult.getString("Message"));
-                } else {
-                    result.setMessage(getinsertresult.getString("Message"));
-                }
+                result.setMessage(getinsertresult.getString("Message"));
             }
+//            }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -320,12 +321,8 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-
+        Forgetpassword fp = new Forgetpassword();
         try (Connection connection = dataSource.getConnection()) {
-//            if (!utility.validatePassword(p_password)) {
-//                result.setSuccess(false);
-//                result.setMessage("PASSWORD IS NOT VALID");
-//            } else {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -334,15 +331,22 @@ public class Methods {
             getinsertresult.setString("p_stats", "2");
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
-                result.setSuccess(true);
-                result.setMessage(getinsertresult.getString("Message"));
-                //GET USER DETAILS AND UPDATE EMAIL ADDRESS
+                ACRGBWSResult GetEmail = fm.GETUSERBYUSERID(dataSource, userid);
+                if (GetEmail.isSuccess()) {
+                    User user = utility.ObjectMapper().readValue(GetEmail.getResult(), User.class);
+                    ACRGBWSResult GetResult = fp.Forgetpassword(dataSource, user.getUsername(), p_password);
+                    result.setSuccess(true);
+                    result.setMessage(getinsertresult.getString("Message") + " " + GetResult.getMessage());
+                } else {
+                    result.setMessage(GetEmail.getMessage());
+                }
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-//            }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -434,7 +438,7 @@ public class Methods {
                                 if (getHCIUisngHCPNCode.isSuccess()) {
                                     List<String> ListOHCI = Arrays.asList(getHCIUisngHCPNCode.getResult().split(","));
                                     for (int hci = 0; hci < ListOHCI.size(); hci++) {
-                                        ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, ListOHCI.get(hci).trim(), datefrom.trim(), dateto.trim());
+                                        ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, ListOHCI.get(hci).trim(), datefrom.trim(), dateto.trim());
                                         if (restA.isSuccess()) {
                                             List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
                                             //DATE SETTINGS
@@ -495,7 +499,7 @@ public class Methods {
                             if (getHCFUnder.isSuccess()) {
                                 List<String> HCFList = Arrays.asList(getHCFUnder.getResult().split(","));
                                 for (int hcf = 0; hcf < HCFList.size(); hcf++) {
-                                    ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, HCFList.get(hcf).trim(), datefrom.trim(), dateto.trim());
+                                    ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, HCFList.get(hcf).trim(), datefrom.trim(), dateto.trim());
                                     if (restA.isSuccess()) {
                                         List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
                                         for (int f = 0; f < fcaA.size(); f++) {
@@ -544,7 +548,7 @@ public class Methods {
                     }
                     break;
                 case "FACILITY"://USERID IS HCFCODE/ACCRENO
-                    ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, userid, datefrom.trim(), dateto.trim());
+                    ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, userid, datefrom.trim(), dateto.trim());
                     if (restA.isSuccess()) {
                         ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
                         int dateclaimcount = 0;
@@ -695,7 +699,7 @@ public class Methods {
                             double claimsSb = 0.00;
                             double TotalBaseAmount = 0.00;
                             for (int y = 0; y < hcflist.size(); y++) {
-                                ACRGBWSResult restC = this.GetAmountPerFacility(dataSource, hcflist.get(y), datefrom.trim(), dateto.trim());
+                                ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, hcflist.get(y).trim(), datefrom.trim(), dateto.trim());
                                 if (restC.isSuccess()) {
                                     //DATE SETTINGS
                                     List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
@@ -834,7 +838,7 @@ public class Methods {
                         double TotalBaseAmount = 0.00;
 
                         for (int y = 0; y < hcflist.size(); y++) {
-                            ACRGBWSResult restC = this.GetAmountPerFacility(dataSource, hcflist.get(y).trim(), datefrom.trim(), dateto.trim());
+                            ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, hcflist.get(y).trim(), datefrom.trim(), dateto.trim());
                             if (restC.isSuccess()) {
                                 //DATE SETTINGS
                                 List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
@@ -998,7 +1002,7 @@ public class Methods {
                                 if (getHCIUisngHCPNCode.isSuccess()) {
                                     List<String> ListOHCI = Arrays.asList(getHCIUisngHCPNCode.getResult().split(","));
                                     for (int hci = 0; hci < ListOHCI.size(); hci++) {
-                                        ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, ListOHCI.get(hci).trim(), datefrom.trim(), dateto.trim());
+                                        ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, ListOHCI.get(hci).trim(), datefrom.trim(), dateto.trim());
                                         if (restA.isSuccess()) {
                                             List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
                                             //DATE SETTINGS
@@ -1060,7 +1064,7 @@ public class Methods {
                             if (getHCFUnder.isSuccess()) {
                                 List<String> HCFList = Arrays.asList(getHCFUnder.getResult().split(","));
                                 for (int hcf = 0; hcf < HCFList.size(); hcf++) {
-                                    ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, HCFList.get(hcf).trim(), datefrom.trim(), dateto.trim());
+                                    ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, HCFList.get(hcf).trim(), datefrom.trim(), dateto.trim());
                                     if (restA.isSuccess()) {
                                         List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
                                         for (int f = 0; f < fcaA.size(); f++) {
@@ -1108,7 +1112,7 @@ public class Methods {
                     }
                     break;
                 case "FACILITY"://USERID IS HCFCODE/ACCRENO
-                    ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, userid, datefrom.trim(), dateto.trim());
+                    ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, userid, datefrom.trim(), dateto.trim());
                     if (restA.isSuccess()) {
                         ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
                         int dateclaimcount = 0;
@@ -1258,7 +1262,7 @@ public class Methods {
                         double claimsSb = 0.00;
                         double TotalBaseAmount = 0.00;
                         for (int y = 0; y < hcflist.size(); y++) {
-                            ACRGBWSResult restC = this.GetAmountPerFacility(dataSource, hcflist.get(y), datefrom.trim(), dateto.trim());
+                            ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, hcflist.get(y), datefrom.trim(), dateto.trim());
                             if (restC.isSuccess()) {
                                 //DATE SETTINGS
                                 List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
@@ -1891,7 +1895,6 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            //  System.out.println(resultset.getString("MBNAME"));
             if (!utility.IsValidNumber(pid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
@@ -2212,7 +2215,6 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            //  System.out.println(resultset.getString("MBNAME"));
             if (!utility.IsValidNumber(proid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
@@ -2811,6 +2813,65 @@ public class Methods {
                 result.setMessage("N/A");
             }
         } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET AVERAGE AMOUNT AND VOLUME OF CLAIMS
+    public ACRGBWSResult GETAVERAGECLAIMS(final DataSource dataSource,
+            final String uaccreno,
+            final String datefrom,
+            final String dateto) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            // ACRGBWSResult getdatesettings = fm.GETDATESETTINGS(dataSource);
+            ACRGBWSResult getdatesettings = utility.ProcessDateAmountComputation(datefrom, dateto);
+            //------------------------------------------------------------------
+            ArrayList<FacilityComputedAmount> listOfcomputedamount = new ArrayList<>();
+            if (getdatesettings.isSuccess()) {
+                List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class));
+                for (int u = 0; u < GetDateSettings.size(); u++) {
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETAVERAGECLAIMS(:ulevel,:uaccreno,:utags,:udatefrom,:udateto); end;");
+                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                    statement.setString("ulevel", "TWO");
+                    statement.setString("uaccreno", uaccreno.trim());
+                    statement.setString("utags", "G");
+                    statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(GetDateSettings.get(u).getDatefrom()).getTime()));
+                    statement.setDate("udateto", (Date) new Date(utility.StringToDate(GetDateSettings.get(u).getDateto()).getTime()));
+                    statement.execute();
+                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                    while (resultset.next()) {
+                        FacilityComputedAmount fca = new FacilityComputedAmount();
+                        fca.setHospital(resultset.getString("PMCC_NO"));
+                        fca.setTotalamount(resultset.getString("CTOTAL"));
+                        fca.setYearfrom(GetDateSettings.get(u).getDatefrom());
+                        fca.setYearto(GetDateSettings.get(u).getDateto());
+                        fca.setTotalclaims(resultset.getString("COUNTVAL"));
+                        if (resultset.getString("DATESUB") != null) {
+                            fca.setDatefiled(dateformat.format(resultset.getDate("DATESUB")));
+                        } else {
+                            fca.setDatefiled("");
+                        }
+                        listOfcomputedamount.add(fca);
+                    }
+                }
+                if (listOfcomputedamount.size() > 0) {
+                    result.setMessage(getdatesettings.getResult());
+                    result.setResult(utility.ObjectMapper().writeValueAsString(listOfcomputedamount));
+                    result.setSuccess(true);
+                } else {
+                    result.setMessage("N/A");
+                }
+            } else {
+                result.setMessage("N/A");
+            }
+            //-------------------------------------------------------------------------------
+        } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }

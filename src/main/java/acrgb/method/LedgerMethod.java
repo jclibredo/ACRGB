@@ -7,7 +7,6 @@ package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Assets;
-import acrgb.structure.ConBalance;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.FacilityComputedAmount;
@@ -55,7 +54,7 @@ public class LedgerMethod {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :assets_type := ACR_GB.ACRGBPKGFUNCTION.GETASSETSBYCONID(:pconid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETASSETSBYCONID(:pconid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("pconid", conid);
             statement.execute();

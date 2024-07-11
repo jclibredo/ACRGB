@@ -104,7 +104,9 @@ public class ACRGBPOST {
     @Path("INSERTHCPN")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTHCPN(@HeaderParam("token") String token, final ManagingBoard mb) throws SQLException, ParseException {
+    public ACRGBWSResult INSERTHCPN(
+            @HeaderParam("token") String token, 
+            final ManagingBoard mb) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");

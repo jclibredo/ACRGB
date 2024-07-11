@@ -322,7 +322,6 @@ public class FetchMethods {
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(userinfo));
-                System.out.println(utility.ObjectMapper().writeValueAsString(userinfo));
             } else {
                 result.setMessage("N/A");
             }
@@ -2979,6 +2978,59 @@ public class FetchMethods {
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(userinfo));
+            } else {
+                result.setMessage("N/A");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //VALIDATE CONTROL NUMBER
+    //GET USER INFO
+    public ACRGBWSResult GETMBCONTROL(final DataSource dataSource, final String pcontrolnum) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBCONTROL(:pcontrolnum); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("pcontrolnum", pcontrolnum);
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                ManagingBoard mb = new ManagingBoard();
+                mb.setMbid(resultset.getString("MBID"));
+                mb.setMbname(resultset.getString("MBNAME"));
+                mb.setAddress(resultset.getString("ADDRESS"));
+                mb.setBankaccount(resultset.getString("BANKACCOUNT"));
+                mb.setBankname(resultset.getString("BANKNAME"));
+                mb.setRemarks(resultset.getString("REMARKS"));
+                mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                } else {
+                    mb.setCreatedby(creator.getMessage());
+                }
+                mb.setControlnumber(resultset.getString("CONNUMBER"));
+                mb.setStatus(resultset.getString("STATUS"));
+                ACRGBWSResult accreResult = this.GETACCREDITATION(dataSource, resultset.getString("CONNUMBER"));
+                if (accreResult.isSuccess()) {
+                    Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class);
+                    mb.setLicensedatefrom(accree.getDatefrom());
+                    mb.setLicensedateto(accree.getDateto());
+                } else {
+                    mb.setLicensedatefrom(accreResult.getMessage());
+                    mb.setLicensedateto(accreResult.getMessage());
+                }
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(mb));
             } else {
                 result.setMessage("N/A");
             }

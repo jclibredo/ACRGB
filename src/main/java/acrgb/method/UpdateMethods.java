@@ -108,12 +108,12 @@ public class UpdateMethods {
                 getinsertresult.setString("p_quarter", contract.getQuarter());
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
+                    result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                     result.setSuccess(true);
                     result.setMessage("OK");
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
-                result.setResult(utility.ObjectMapper().writeValueAsString(contract));
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());

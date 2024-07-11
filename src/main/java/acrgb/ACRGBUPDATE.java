@@ -22,6 +22,7 @@ import acrgb.structure.UserInfo;
 import acrgb.structure.UserLevel;
 import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import javax.annotation.Resource;
@@ -128,7 +129,6 @@ public class ACRGBUPDATE {
         return result;
     }
 
-    
     //UPDATE USER LEVEL
     @PUT
     @Path("UPDATEUSERLEVEL")
@@ -153,14 +153,13 @@ public class ACRGBUPDATE {
         return result;
     }
 
-    
     //UPDATE USER CREDENTIALS
     @PUT
     @Path("UPDATEUSERCREDENTIALS")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATEUSERCREDENTIALS(@HeaderParam("token") String token,
-            final User user) throws SQLException {
+            final User user) throws SQLException, IOException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -170,12 +169,12 @@ public class ACRGBUPDATE {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            if (user.getUsername()==null && user.getUserpassword()!=null) {
+            if (user.getUsername().isEmpty() && !user.getUserpassword().isEmpty()) {
                 ACRGBWSResult insertresult = methods.CHANGEPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
-            } else if (user.getUserpassword()==null && user.getUsername()!=null) {
+            } else if (user.getUserpassword().isEmpty() && !user.getUsername().isEmpty()) {
                 ACRGBWSResult insertresult = methods.CHANGEUSERNAME(dataSource, user.getUserid(), user.getUsername());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
@@ -237,7 +236,6 @@ public class ACRGBUPDATE {
         return result;
     }
 
-    
     //SET INACTIVE DATA
     @PUT
     @Path("INACTIVE")
@@ -399,7 +397,6 @@ public class ACRGBUPDATE {
         return result;
     }
 
-    
     //UPDATE USER DETAILS
     @PUT
     @Path("UPDATEUSERDETAILS")
@@ -448,6 +445,7 @@ public class ACRGBUPDATE {
         return result;
     }
 //UPDATE CONTRACT DATE
+
     @PUT
     @Path("UPDATECONTRACTDATE")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -517,6 +515,5 @@ public class ACRGBUPDATE {
         }
         return result;
     }
-    
 
 }

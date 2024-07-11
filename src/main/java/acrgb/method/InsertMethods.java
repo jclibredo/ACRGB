@@ -238,6 +238,9 @@ public class InsertMethods {
             } else if (!utility.IsValidNumber(tranch.getCreatedby())) {
                 result.setSuccess(false);
                 result.setMessage("INVALID NUMBER FORMAT");
+            } else if (!utility.IsValidNumber(tranch.getCreatedby())) {
+                result.setSuccess(false);
+                result.setMessage("INVALID NUMBER FORMAT");
             } else {
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTTRANCH(:Message,:Code,:p_tranchtype,:p_percentage,:p_createdby,:p_datecreated)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -721,11 +724,15 @@ public class InsertMethods {
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
-        try (Connection connection = datasource.getConnection()) {
+        try (Connection connection = datasource.getConnection()) {          
+             ACRGBWSResult validateControlNumber = fm.GETMBCONTROL(datasource, mb.getControlnumber());                        
             if (!utility.IsValidDate(mb.getDatecreated())) {
                 result.setMessage("DATE FORMAT IS NOT VALID");
+            }else if(validateControlNumber.isSuccess()){
+                 result.setMessage("DUPLICATEREGISTRATIONNUMBER");
             } else {
                 ACRGBWSResult restA = methods.GETROLE(datasource, mb.getCreatedby(), "ACTIVE");
+
                 if (restA.isSuccess()) {
                     ACRGBWSResult getProCode = methods.GetProWithPROID(datasource, restA.getResult());
                     if (!getProCode.isSuccess()) {
@@ -733,7 +740,7 @@ public class InsertMethods {
                     } else {
                         Pro pro = utility.ObjectMapper().readValue(getProCode.getResult(), Pro.class);
                         UserRoleIndex indexrole = new UserRoleIndex();
-                        indexrole.setUserid("2024" + pro.getProcode());
+                        indexrole.setUserid(pro.getProcode());
                         indexrole.setAccessid(mb.getControlnumber());
                         indexrole.setCreatedby(mb.getCreatedby());
                         indexrole.setDatecreated(mb.getDatecreated());
@@ -788,10 +795,12 @@ public class InsertMethods {
                             ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
 
                         } else {
+
                             result.setMessage(insertRole.getMessage());
                         }
                     }
                 } else {
+
                     result.setMessage(restA.getMessage());
                 }
             }

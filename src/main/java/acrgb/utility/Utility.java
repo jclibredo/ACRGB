@@ -46,6 +46,9 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  *
@@ -102,18 +105,18 @@ public class Utility {
         return m.matches();
     }
 
-    public String GetString(String name) {
-        String result = cipherkey;
-//        try {
-//            Context context = new InitialContext();
-//            Context environment = (Context) context.lookup("java:comp/env");
-//            result = (String) environment.lookup(name);
-//        } catch (NamingException ex) {
-//            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
-//            result = ex.getMessage();
-//        }
-        return result;
-    }
+//    public String GetStrings(String name) {
+//        String result = cipherkey;
+////        try {
+////            Context context = new InitialContext();
+////            Context environment = (Context) context.lookup("java:comp/env");
+////            result = (String) environment.lookup(name);
+////        } catch (NamingException ex) {
+////            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
+////            result = ex.getMessage();
+////        }
+//        return result;
+//    }
 
     public boolean IsValidNumber(String string) {
         try {
@@ -314,7 +317,7 @@ public class Utility {
 
         return EmailSentTemplate;
     }
-    
+
     public String FA2Template(String useremail, String code) {
         String EmailSentTemplate = "<body style='background-color:grey'>\n"
                 + "    <table align='center' border='0' cellpadding='0' cellspacing='0'\n"
@@ -435,7 +438,6 @@ public class Utility {
                     ACRGBPayload payload = this.ACRGBPayload();
                     payload.setCode1(this.DecryptString((String) claims.get("Code1")));
                     payload.setCode2(this.DecryptString((String) claims.get("Code2")));
-
                     if (!this.isJWTExpired(claims)) {
                         result.setSuccess(true);
 //                        result.setResult(this.ObjectMapper().writeValueAsString(payload));
@@ -469,6 +471,20 @@ public class Utility {
             randnums += (int) ((Math.random() * 88881) + 22220);
         }
         return String.valueOf(randnums);
+    }
+
+    //GET STRING NAME
+    public String GetString(String name) {
+        String result = "";
+        try {
+            Context context = new InitialContext();
+            Context environment = (Context) context.lookup("java:comp/env");
+            result = (String) environment.lookup(name);
+        } catch (NamingException ex) {
+            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
+            result = ex.getMessage();
+        }
+        return result;
     }
 
 }

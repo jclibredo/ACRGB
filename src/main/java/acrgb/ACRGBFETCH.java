@@ -21,7 +21,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
 import javax.sql.DataSource;
@@ -1085,36 +1086,39 @@ public class ACRGBFETCH {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult Validate2FA(
             @HeaderParam("userid") String userid,
-            @HeaderParam("code") String code) throws IOException {
+            @HeaderParam("code") String code) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         //--------------------------------------
-        ACRGBWSResult GetResult = fetchmethods.GETUSERBYUSERID(dataSource, userid);
-        if (GetResult.isSuccess()) {
-            User user = utility.ObjectMapper().readValue(GetResult.getResult(), User.class);
-            if (user.getFa2code() == null) {
-                result.setMessage("NO EXISTING 2FA CODE FOR SELECTED USER");
-            } else if (code.isEmpty()) {
-                result.setMessage("2FA CODE IS REQUIRED");
-            } else if (user.getFa2code().trim().equals(code.trim())) {
-                java.util.Date d1 = new java.util.Date();
-                SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm a");
-                Date date1 = new Date(user.getFa2expiration())
-                System.out.println("Date from SQL : " + user.getFa2expiration());
-                System.out.println("Converted Date From SQL : " + dateformat.format(date1));
-                System.out.println("Date Now : " + dateformat.format(d1));
-                result.setMessage(GetResult.getMessage());
-                result.setResult(GetResult.getResult());
-                result.setSuccess(GetResult.isSuccess());
+        try {
+            ACRGBWSResult GetResult = fetchmethods.GETUSERBYUSERID(dataSource, userid);
+            if (GetResult.isSuccess()) {
+                User user = utility.ObjectMapper().readValue(GetResult.getResult(), User.class);
+                if (user.getFa2code() == null) {
+                    result.setMessage("NO EXISTING 2FA CODE FOR SELECTED USER");
+                } else if (code.isEmpty()) {
+                    result.setMessage("2FA CODE IS REQUIRED");
+                } else if (user.getFa2code().trim().equals(code.trim())) {
+                    java.util.Date d1 = new java.util.Date();
+                    SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm a");
+                    result.setMessage(GetResult.getMessage());
+                    result.setResult(GetResult.getResult());
+                    result.setSuccess(GetResult.isSuccess());
+                } else {
+                    result.setMessage(code + " Code is invalid");
+                }
+
             } else {
-                result.setMessage(code + " Code is invalid");
+                result.setMessage(GetResult.getMessage());
             }
 
-        } else {
-            result.setMessage(GetResult.getMessage());
+        } catch (IOException ex) {
+            result.setMessage(ex.getLocalizedMessage());
+            Logger.getLogger(ACRGBFETCH.class.getName()).log(Level.SEVERE, null, ex);
         }
+
         //--------------------------------------
         return result;
     }
