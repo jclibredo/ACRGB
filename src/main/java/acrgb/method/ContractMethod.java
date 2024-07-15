@@ -340,7 +340,7 @@ public class ContractMethod {
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONDATEBYID(:ucondateid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("ucondateid", ucondateid);
+            statement.setString("ucondateid", ucondateid.trim());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             if (resultset.next()) {

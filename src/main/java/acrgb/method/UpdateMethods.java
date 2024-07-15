@@ -11,6 +11,7 @@ import acrgb.structure.Appellate;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
+import acrgb.structure.ForgetPassword;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.LogStatus;
 import acrgb.structure.ManagingBoard;
@@ -540,7 +541,10 @@ public class UpdateMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult UPDATEROLEINDEX(final DataSource datasource, final String uuserid, final String ucondate, final String tagsss) throws ParseException {
+    public ACRGBWSResult UPDATEROLEINDEX(final DataSource datasource,
+            final String uuserid,
+            final String ucondate,
+            final String tagsss) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -564,34 +568,34 @@ public class UpdateMethods {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
             } else {
+                System.out.println("YOUR HERE ");
                 //PROCESS AUTO END CONTRACT
                 getinsertresult.setString("utags", "NONUPDATE");
                 getinsertresult.setString("uuserid", uuserid);
                 getinsertresult.setString("ucondate", ucondate);
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
-                    ACRGBWSResult getConDateByid = cm.GETCONDATEBYID(datasource, ucondate);
+                    ACRGBWSResult getConDateByid = cm.GETCONDATEBYID(datasource, ucondate.trim());
                     if (getConDateByid.isSuccess()) {
                         ContractDate contractdate = utility.ObjectMapper().readValue(getConDateByid.getResult(), ContractDate.class);
-                        ACRGBWSResult getResult = cm.GETCONTRACTBYCONDATEID(datasource, ucondate);
+                        ACRGBWSResult getResult = cm.GETCONTRACTBYCONDATEID(datasource, ucondate.trim());
                         if (getResult.isSuccess()) {
                             ArrayList<String> message = new ArrayList<>();
                             List<String> RestA = Arrays.asList(getResult.getResult().split(","));
                             for (int x = 0; x < RestA.size(); x++) {
                                 Contract con = new Contract();
-                                con.setConid(RestA.get(x));
+                                con.setConid(RestA.get(x).trim());
                                 con.setEnddate(contractdate.getDateto());
                                 con.setRemarks("CONTRACT ENDED");
                                 con.setStats("3");
                                 //UPDATE CONTRACT UNDER CONTRACTDATE PERIOD
                                 ACRGBWSResult tagContract = this.TAGGINGCONTRACT(datasource, con);
                                 //UPDATE ASSETS UNDER CONTRACT
-                                ACRGBWSResult upDateAssets = this.UPDATEASSETSTATUS(datasource, RestA.get(x));
+                                ACRGBWSResult upDateAssets = this.UPDATEASSETSTATUS(datasource, RestA.get(x).trim());
                                 //UPDATE CONTRACT DATE PERIOD
                                 message.add("Contract Tagging:[" + tagContract.getMessage() + "]");
                                 message.add("Assets Tagging:[" + upDateAssets.getMessage() + "]");
                             }
-
                             // UPDATEAPELLATE
                             //UPDATE APPELLATE UNDER CONTRACT
                             Appellate appellate = new Appellate();
@@ -601,19 +605,38 @@ public class UpdateMethods {
                             ACRGBWSResult UpdateAppellate = this.UPDATEAPELLATE(datasource, "NONUPDATE", appellate);
                             message.add("Appellate Tagging:[" + UpdateAppellate.getMessage() + "]");
                             //UPDATE CONTRACT DATE PERIOD
-                            ACRGBWSResult upDateConDatePeriod = this.TAGCONTRACTPERIOD(datasource, ucondate);
+                            ACRGBWSResult upDateConDatePeriod = this.TAGCONTRACTPERIOD(datasource, ucondate.trim());
                             message.add("Con Date Period Tagging:[" + upDateConDatePeriod.getMessage() + "]");
-
                             result.setMessage(message.toString());
                             result.setSuccess(true);
                         } else {
-                            result.setMessage(getResult.getMessage());
+                            result.setSuccess(true);
+                            //UPDATE CONTRACT DATE PERIOD
+                            ACRGBWSResult upDateConDatePeriod = this.TAGCONTRACTPERIOD(datasource, ucondate.trim());
+                            Appellate appellate = new Appellate();
+                            appellate.setAccesscode(uuserid);
+                            appellate.setConid(ucondate);
+                            appellate.setStatus("3");
+                            ACRGBWSResult UpdateAppellate = this.UPDATEAPELLATE(datasource, "NONUPDATE", appellate);
+                            result.setMessage(getResult.getMessage() + " Update Contract Period Status "
+                                    + upDateConDatePeriod.getMessage() + " , " + UpdateAppellate.getMessage());
+
                         }
                     } else {
                         result.setMessage(getConDateByid.getMessage());
                     }
                 } else {
-                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setSuccess(true);
+                    //UPDATE CONTRACT DATE PERIOD
+                    ACRGBWSResult upDateConDatePeriod = this.TAGCONTRACTPERIOD(datasource, ucondate);
+                    Appellate appellate = new Appellate();
+                    appellate.setAccesscode(uuserid);
+                    appellate.setConid(ucondate);
+                    appellate.setStatus("3");
+                    ACRGBWSResult UpdateAppellate = this.UPDATEAPELLATE(datasource, "NONUPDATE", appellate);
+                    result.setMessage(getinsertresult.getString("Message")
+                            + " Update Contract Period Status " + upDateConDatePeriod.getMessage() + " , "
+                            + UpdateAppellate.getMessage());
                 }
             }
         } catch (SQLException | IOException ex) {
@@ -687,7 +710,7 @@ public class UpdateMethods {
             CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.TAGCONTRACTPERIOD(:Message,:Code,:pcondateid)");
             statement.registerOutParameter("Message", OracleTypes.VARCHAR);
             statement.registerOutParameter("Code", OracleTypes.INTEGER);
-            statement.setString("pcondateid", pcondateid);
+            statement.setString("pcondateid", pcondateid.trim());
             statement.execute();
             if (statement.getString("Message").equals("SUCC")) {
                 result.setMessage(statement.getString("Message"));
@@ -786,7 +809,10 @@ public class UpdateMethods {
     }
 
     // UPDATE USER FOR 2FA CREDENTIALS
-    public ACRGBWSResult UPDATEUSERFOR2FA(final DataSource datasource, final String email, final String userid) throws ParseException {
+    public ACRGBWSResult UPDATEUSERFOR2FA(final DataSource datasource,
+            final ForgetPassword forgetPassword,
+            final String email,
+            final String userid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -804,12 +830,53 @@ public class UpdateMethods {
             getinsertresult.setTimestamp("p2faexpirydate", new java.sql.Timestamp(d1.getTime()));
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
-                ACRGBWSResult facodeSender = mets.FA2CodeSender(datasource, email, code2fa);
+                ACRGBWSResult facodeSender = mets.FA2CodeSender(datasource, email, code2fa, forgetPassword);
                 if (facodeSender.isSuccess()) {
                     result.setSuccess(true);
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    // UPDATE USER FOR 2FA CREDENTIALS
+    public ACRGBWSResult UPDATEUSERLEVEL(final DataSource datasource,
+            final String createdby,
+            final String datecreated,
+            final String plevelid,
+            final String puserid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        Forgetpassword mets = new Forgetpassword();
+        java.util.Date d1 = new java.util.Date();
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERLEVEL(:Message,:Code,"
+                    + ":puserid,:plevelid)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("puserid", puserid.trim());
+            getinsertresult.setString("plevelid", plevelid.trim());
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+
+//                ACRGBWSResult facodeSender = mets.FA2CodeSender(datasource, email, code2fa, forgetPassword);
+//                if (facodeSender.isSuccess()) {
+                result.setSuccess(true);
+                result.setMessage("OK");
+//                } else {
+//                    result.setMessage(getinsertresult.getString("Message"));
+//                }
+//                
+
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }

@@ -12,6 +12,7 @@ import acrgb.structure.Assets;
 import acrgb.structure.Book;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
+import acrgb.structure.ForgetPassword;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.LogStatus;
 import acrgb.structure.ManagingBoard;
@@ -369,7 +370,7 @@ public class InsertMethods {
     }
 
 //---------------------------------------------------------------------------------------------------
-    public ACRGBWSResult INSERTUSER(final DataSource datasource, User user) throws ParseException {
+    public ACRGBWSResult INSERTUSER(final DataSource datasource, final User user, final ForgetPassword forgetpass) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -425,7 +426,7 @@ public class InsertMethods {
                         if (getinsertresult.getString("Message").equals("SUCC")) {
                             result.setSuccess(true);
                             //SEND PASSCODE TO EMAIL IF SUCCESS
-                            ACRGBWSResult emailResult = emailsender.Forgetpassword(datasource, user.getUsername().trim(), user.getUserpassword().trim());
+                            ACRGBWSResult emailResult = emailsender.Forgetpassword(datasource, forgetpass, user.getUsername().trim(), user.getUserpassword().trim());
                             UserActivity userlogs = utility.UserActivity();
                             String level = "";
                             ACRGBWSResult levelname = fm.GETUSERLEVEL(datasource, user.getLeveid());
@@ -724,12 +725,12 @@ public class InsertMethods {
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
-        try (Connection connection = datasource.getConnection()) {          
-             ACRGBWSResult validateControlNumber = fm.GETMBCONTROL(datasource, mb.getControlnumber());                        
+        try (Connection connection = datasource.getConnection()) {
+            ACRGBWSResult validateControlNumber = fm.GETMBCONTROL(datasource, mb.getControlnumber());
             if (!utility.IsValidDate(mb.getDatecreated())) {
                 result.setMessage("DATE FORMAT IS NOT VALID");
-            }else if(validateControlNumber.isSuccess()){
-                 result.setMessage("DUPLICATEREGISTRATIONNUMBER");
+            } else if (validateControlNumber.isSuccess()) {
+                result.setMessage("DUPLICATEREGISTRATIONNUMBER");
             } else {
                 ACRGBWSResult restA = methods.GETROLE(datasource, mb.getCreatedby(), "ACTIVE");
 
@@ -1105,7 +1106,7 @@ public class InsertMethods {
     }
 
     //INSERT USER ACCOUNT BATCH UPLOAD
-    public ACRGBWSResult INSERTUSERACCOUNTBATCHUPLOAD(final DataSource datasource, final UserInfo userinfo) throws ParseException {
+    public ACRGBWSResult INSERTUSERACCOUNTBATCHUPLOAD(final DataSource datasource, final UserInfo userinfo, final ForgetPassword forgetpass) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -1147,7 +1148,7 @@ public class InsertMethods {
                     //END GENERATE PASS
                     user.setDatecreated(userinfo.getDatecreated());
                     user.setLeveid(userinfo.getRole());
-                    ACRGBWSResult insertNewAccount = this.INSERTUSER(datasource, user);
+                    ACRGBWSResult insertNewAccount = this.INSERTUSER(datasource, user, forgetpass);
                     if (insertNewAccount.isSuccess()) {
                         //INSERT USER ROLE
                         ACRGBWSResult getUserUsingEmail = fm.GETACCOUNTUSINGEMAIL(datasource, userinfo.getEmail());

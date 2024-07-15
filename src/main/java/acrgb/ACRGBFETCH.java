@@ -9,12 +9,12 @@ import acrgb.method.BookingMethod;
 import acrgb.method.ContractHistory;
 import acrgb.method.ContractMethod;
 import acrgb.method.FetchMethods;
-import acrgb.method.Forgetpassword;
 import acrgb.method.GenerateRandomPassword;
 import acrgb.method.LedgerMethod;
 import acrgb.method.Methods;
 import acrgb.method.UpdateMethods;
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.ForgetPassword;
 import acrgb.structure.User;
 import acrgb.utility.Utility;
 import java.io.IOException;
@@ -249,22 +249,23 @@ public class ACRGBFETCH {
     @GET
     @Path("GetUser/{tags}/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetUser(@HeaderParam("token") String token,
+    public ACRGBWSResult GetUser(
+            @HeaderParam("token") String token,
             @PathParam("tags") String tags,
             @PathParam("id") String id) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_USER(dataSource, tags, id);
-            result.setMessage(getResult.getMessage());
-            result.setResult(getResult.getResult());
-            result.setSuccess(getResult.isSuccess());
-        }
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+//        if (!GetPayLoad.isSuccess()) {
+//            result.setMessage(GetPayLoad.getMessage());
+//        } else {
+        ACRGBWSResult getResult = fetchmethods.ACR_USER(dataSource, tags, id);
+        result.setMessage(getResult.getMessage());
+        result.setResult(getResult.getResult());
+        result.setSuccess(getResult.isSuccess());
+//        }
         return result;
     }
 
@@ -307,8 +308,8 @@ public class ACRGBFETCH {
         }
         return result;
     }
-//SUMMARY  / CONTRACT
 
+//SUMMARY  / CONTRACT
     @GET
     @Path("GetSummary/{tags}/{userid}/{datefrom}/{dateto}/{type}/{hcilist}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -354,7 +355,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-    //GET LEVELNAME
 
     @GET
     @Path("GetLevel/{levid}")
@@ -398,9 +398,9 @@ public class ACRGBFETCH {
         }
         return result;
     }
+
 //------------------------------------------------------------
     //GET ASSETS WITH PARAMETER
-
     @GET
     @Path("GETASSETSWITHPARAM/{phcfid}/{conid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -421,7 +421,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-    //
 
     @GET
     @Path("GetActivityLogs")
@@ -443,7 +442,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-    //GET ASSETS WITH PARAMETER
 
     @GET
     @Path("GetLogWithParam/{userid}")
@@ -566,7 +564,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-    //GET ASSETS WITH PARAMETER
 
     @GET
     @Path("GetManagingBoardWithProID/{proid}/{levelname}")
@@ -628,6 +625,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
+//------------------------------------------------------------
 
     @GET
     @Path("GetBalanceTerminatedContract/{userid}/{levelname}/{tags}")
@@ -872,28 +870,27 @@ public class ACRGBFETCH {
         return result;
     }
 
-    //GET EMAIL CREDEDNTIALS
-    @GET
-    @Path("GetEmailCredentials")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetEmailCredentials(@HeaderParam("token") String token) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            Forgetpassword forgetpass = new Forgetpassword();
-            ACRGBWSResult BookingResult = forgetpass.GetEmailSender(dataSource);
-            result.setMessage(BookingResult.getMessage());
-            result.setResult(BookingResult.getResult());
-            result.setSuccess(BookingResult.isSuccess());
-        }
-        return result;
-    }
-
+//    //GET EMAIL CREDEDNTIALS
+//    @GET
+//    @Path("GetEmailCredentials")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult GetEmailCredentials(@HeaderParam("token") String token) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+//        if (!GetPayLoad.isSuccess()) {
+//            result.setMessage(GetPayLoad.getMessage());
+//        } else {
+//            Forgetpassword forgetpass = new Forgetpassword();
+//            ACRGBWSResult BookingResult = forgetpass.GetEmailSender(dataSource);
+//            result.setMessage(BookingResult.getMessage());
+//            result.setResult(BookingResult.getResult());
+//            result.setSuccess(BookingResult.isSuccess());
+//        }
+//        return result;
+//    }
     @GET
     @Path("GETOLDPASSCODE/{puserid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1128,13 +1125,47 @@ public class ACRGBFETCH {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult Create2FA(
             @HeaderParam("userid") String userid,
-            @HeaderParam("email") String email) throws ParseException {
+            @HeaderParam("email") String email,
+            @HeaderParam("mailuser") String mailuser,
+            @HeaderParam("mailapikey") String mailapikey,
+            @HeaderParam("mailhost") String mailhost,
+            @HeaderParam("mailport") String mailport,
+            @HeaderParam("mailfrom") String mailfrom) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ForgetPassword forgetPassword = new ForgetPassword();
+        forgetPassword.setAppuser(mailuser.trim());
+        forgetPassword.setApppass(mailapikey);
+        forgetPassword.setMailfrom(mailfrom.trim());
+        forgetPassword.setMailhost(mailhost.trim());
+        forgetPassword.setMailport(mailport.trim());
+        //--------------------------------------
+        ACRGBWSResult GetResult = um.UPDATEUSERFOR2FA(dataSource, forgetPassword, email, userid);
+        result.setMessage(GetResult.getMessage());
+        result.setResult(GetResult.getResult());
+        result.setSuccess(GetResult.isSuccess());
+        //--------------------------------------
+        return result;
+    }
+
+//    @GET
+//    @Path("JobExecutor")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public String JobExecutor() {
+//        return JobExecutor().toString();
+//    }
+    @GET
+    @Path("PROCESSENDPERIODDATE/{tags}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult PROCESSENDPERIODDATE(@PathParam("tags") String tags) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         //--------------------------------------
-        ACRGBWSResult GetResult = um.UPDATEUSERFOR2FA(dataSource, email, userid);
+        ACRGBWSResult GetResult = methods.PROCESSENDPERIODDATE(dataSource, tags);
         result.setMessage(GetResult.getMessage());
         result.setResult(GetResult.getResult());
         result.setSuccess(GetResult.isSuccess());

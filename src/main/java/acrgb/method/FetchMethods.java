@@ -1172,9 +1172,12 @@ public class FetchMethods {
                 }
                 //=========================================================
                 ACRGBWSResult restA = methods.GETROLEMULITPLE(dataSource, "2024" + resultset.getString("PROCODE").trim(), tags);
+                // System.out.println("PRO CODE : " + "2024" + resultset.getString("PROCODE").trim());
                 List<String> hcpncodeList = Arrays.asList(restA.getResult().split(","));
+                //  System.out.println("HCON LIST UNDER PRO : " + hcpncodeList);
                 for (int x = 0; x < hcpncodeList.size(); x++) {
-                    ACRGBWSResult getProbudget = this.GETCONBYCODE(dataSource, hcpncodeList.get(x));
+                    ACRGBWSResult getProbudget = this.GETCONBYCODE(dataSource, hcpncodeList.get(x).trim());
+                    // System.out.println(getProbudget);
                     if (getProbudget.isSuccess()) {
                         Contract con = utility.ObjectMapper().readValue(getProbudget.getResult(), Contract.class);
                         //GET TRANCH PER NETWORK
@@ -1192,24 +1195,23 @@ public class FetchMethods {
                     if (GetFacility.isSuccess()) {
                         List<String> hcflist = Arrays.asList(GetFacility.getResult().split(","));
                         for (int y = 0; y < hcflist.size(); y++) {
-                            Contract con = utility.ObjectMapper().readValue(getProbudget.getResult(), Contract.class);
-                            ContractDate condate = utility.ObjectMapper().readValue(con.getContractdate(), ContractDate.class);
-                            //GET TRANCHE SUMMARY
-                            //GET CLAIMS AMOUNT OF FACILITY UNDER SELECTED NETWORK
-                            ACRGBWSResult sumresult = this.GETNCLAIMS(dataSource, hcflist.get(y), "G",
-                                    condate.getDatefrom(), condate.getDateto(), "CURRENTSTATUS");
-                            if (sumresult.isSuccess()) {
-                                List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
-                                for (int i = 0; i < nclaimsdata.size(); i++) {
-                                    totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                    totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                            if (getProbudget.isSuccess()) {
+                                Contract con = utility.ObjectMapper().readValue(getProbudget.getResult(), Contract.class);
+                                // if (con.getContractdate() != null) {
+                                ContractDate condate = utility.ObjectMapper().readValue(con.getContractdate(), ContractDate.class);
+                                ACRGBWSResult sumresult = this.GETNCLAIMS(dataSource, hcflist.get(y), "G",
+                                        condate.getDatefrom(), condate.getDateto(), "CURRENTSTATUS");
+                                if (sumresult.isSuccess()) {
+                                    List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
+                                    for (int i = 0; i < nclaimsdata.size(); i++) {
+                                        totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                        totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                    }
                                 }
                             }
                         }
-
                     }
-                }
-//                    
+                }                   
                 //===============================================
                 double amountottranch = tranchamount / contractamount * 100;
                 double tranchclaimamount = totalclaimsamount / tranchamount * 100;
@@ -1259,11 +1261,7 @@ public class FetchMethods {
                 user.setUserid(resultset.getString("USERID"));
                 ACRGBWSResult levelresult = this.GETUSERLEVEL(dataSource, resultset.getString("LEVELID").trim());
                 if (levelresult.isSuccess()) {
-                    if (!levelresult.getResult().isEmpty()) {
-                        user.setLeveid(levelresult.getResult());
-                    } else {
-                        user.setLeveid(levelresult.getMessage());
-                    }
+                    user.setLeveid(levelresult.getResult());
                 } else {
                     user.setLeveid(levelresult.getMessage());
                 }
@@ -1273,12 +1271,10 @@ public class FetchMethods {
                 } else {
                     user.setUserpassword(resultset.getString("USERPASSWORD"));
                 }
-
                 user.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
                 user.setStatus(resultset.getString("STATS"));
                 user.setDid(resultset.getString("DID"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-
                 if (creator.isSuccess()) {
                     UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
                     user.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
@@ -1294,7 +1290,6 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2902,6 +2897,7 @@ public class FetchMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
+            System.out.println("USERID " + puserid);
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETUSERBYUSERID(:puserid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("puserid", puserid.trim());

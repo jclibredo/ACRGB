@@ -31,6 +31,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -216,34 +218,31 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        UpdateMethods um = new UpdateMethods();
+        // UpdateMethods um = new UpdateMethods();
         try (Connection connection = dataSource.getConnection()) {
-//            if (!utility.validatePassword(p_password)) {
-//                result.setSuccess(false);
-//                result.setMessage("PASSWORD IS NOT VALID");
-//            } else {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,"
                     + ":userid,:p_username,:p_password,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("userid", userid);
+            getinsertresult.setString("userid", userid.trim());
             getinsertresult.setString("p_username", p_username);
             getinsertresult.setString("p_password", cryptor.encrypt(p_password, p_password, "ACRGB"));
             getinsertresult.setString("p_stats", "2");
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
-                result.setSuccess(true);
-                ACRGBWSResult GetDID = fm.GETUSERBYID(dataSource, userid);
+                ACRGBWSResult GetDID = fm.GETUSERBYUSERID(dataSource, userid.trim());
                 if (GetDID.isSuccess()) {
+                    result.setSuccess(true);
                     User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
-                    ACRGBWSResult updateInfo = um.UPDATEUSERINFOBYDID(dataSource, p_username.trim(), getUser.getDid().trim());
-                    result.setMessage(getinsertresult.getString("Message") + " , " + updateInfo.getMessage());
+//                    ACRGBWSResult updateInfo = um.UPDATEUSERINFOBYDID(dataSource, p_username.trim(), getUser.getDid().trim());
+                    result.setMessage(getinsertresult.getString("Message"));
+                } else {
+                    result.setMessage(GetDID.getMessage());
                 }
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-//            }
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -256,28 +255,27 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        UpdateMethods um = new UpdateMethods();
+        // UpdateMethods um = new UpdateMethods();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERNAME(:Message,:Code,:p_userid,:p_username,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("p_userid", userid);
+            getinsertresult.setString("p_userid", userid.trim());
             getinsertresult.setString("p_username", p_username);
             getinsertresult.setString("p_stats", "2");
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
-                result.setSuccess(true);
-                ACRGBWSResult GetDID = fm.GETUSERBYID(dataSource, userid);
+                ACRGBWSResult GetDID = fm.GETUSERBYUSERID(dataSource, userid.trim());
                 if (GetDID.isSuccess()) {
+                    result.setSuccess(true);
                     User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
-                    ACRGBWSResult updateInfo = um.UPDATEUSERINFOBYDID(dataSource, p_username.trim(), getUser.getDid().trim());
-                    result.setMessage(getinsertresult.getString("Message") + " , " + updateInfo.getMessage());
+                    //  ACRGBWSResult updateInfo = um.UPDATEUSERINFOBYDID(dataSource, p_username.trim(), getUser.getDid().trim());
+                    result.setMessage(getinsertresult.getString("Message"));
                 }
-
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -316,7 +314,7 @@ public class Methods {
     }
 
     //CHANGE PASSWORD
-    public ACRGBWSResult CHANGEPASSWORD(final DataSource dataSource, final String userid, final String p_password) {
+    public ACRGBWSResult CHANGEPASSWORD(final DataSource dataSource, final ForgetPassword forgetPassword, final String userid, final String p_password) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -326,15 +324,15 @@ public class Methods {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("p_userid", userid);
+            getinsertresult.setString("p_userid", userid.trim());
             getinsertresult.setString("p_password", cryptor.encrypt(p_password, p_password, "ACRGB"));
             getinsertresult.setString("p_stats", "2");
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
-                ACRGBWSResult GetEmail = fm.GETUSERBYUSERID(dataSource, userid);
+                ACRGBWSResult GetEmail = fm.GETUSERBYUSERID(dataSource, userid.trim());
                 if (GetEmail.isSuccess()) {
                     User user = utility.ObjectMapper().readValue(GetEmail.getResult(), User.class);
-                    ACRGBWSResult GetResult = fp.Forgetpassword(dataSource, user.getUsername(), p_password);
+                    ACRGBWSResult GetResult = fp.Forgetpassword(dataSource, forgetPassword, user.getUsername(), p_password);
                     result.setSuccess(true);
                     result.setMessage(getinsertresult.getString("Message") + " " + GetResult.getMessage());
                 } else {
@@ -343,10 +341,8 @@ public class Methods {
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-        } catch (SQLException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -438,6 +434,7 @@ public class Methods {
                                 if (getHCIUisngHCPNCode.isSuccess()) {
                                     List<String> ListOHCI = Arrays.asList(getHCIUisngHCPNCode.getResult().split(","));
                                     for (int hci = 0; hci < ListOHCI.size(); hci++) {
+                                        //   ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, ListOHCI.get(hci).trim(), datefrom.trim(), dateto.trim());
                                         ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, ListOHCI.get(hci).trim(), datefrom.trim(), dateto.trim());
                                         if (restA.isSuccess()) {
                                             List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
@@ -1137,7 +1134,7 @@ public class Methods {
                                     case "T1":
                                     case "T2":
                                     case "SH": {
-                                        if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) == 2024) {
+                                        if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                             if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                 double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 * 0.30;
                                                 double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 + add30;
@@ -1156,7 +1153,7 @@ public class Methods {
                                                 totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3;
                                             }
 
-                                        } else if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) < 2024) {
+                                        } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                             double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
                                             double Baseadd30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) + add30;
                                             double add10 = Baseadd30 * 0.10;
@@ -1178,7 +1175,7 @@ public class Methods {
                                         break;
                                     }
                                     default: {
-                                        if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) == 2024) {
+                                        if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                             if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                 double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 * 0.30;
                                                 double total = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 + add30;
@@ -1191,7 +1188,7 @@ public class Methods {
                                                 totalbaseamount += Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3;
                                             }
 
-                                        } else if (Integer.parseInt(YearFormat.format(fcaA.get(datese).getDatefiled())) < 2024) {
+                                        } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                             double add30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 * 0.30;
                                             double total = Double.parseDouble(fcaA.get(datese).getTotalamount()) / 3 + add30;
                                             claims30percent += add30;
@@ -1263,6 +1260,7 @@ public class Methods {
                         double TotalBaseAmount = 0.00;
                         for (int y = 0; y < hcflist.size(); y++) {
                             ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, hcflist.get(y), datefrom.trim(), dateto.trim());
+
                             if (restC.isSuccess()) {
                                 //DATE SETTINGS
                                 List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
@@ -1279,7 +1277,7 @@ public class Methods {
                                             case "T1":
                                             case "T2":
                                             case "SH": {
-                                                if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) == 2024) {
+                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                     if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                         double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 * 0.30;
                                                         double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 + add30;
@@ -1301,7 +1299,7 @@ public class Methods {
                                                         totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
                                                         break;
                                                     }
-                                                } else if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) < 2024) {
+                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                     double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 * 0.30;
                                                     double Baseadd30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 + add30;
                                                     double add10 = Baseadd30 * 0.10;
@@ -1322,10 +1320,10 @@ public class Methods {
                                                     totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
                                                     break;
                                                 }
-
+//
                                             }
                                             default: {
-                                                if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) == 2024) {
+                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                     if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                         double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 * 0.30;
                                                         double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 + add30;
@@ -1341,7 +1339,7 @@ public class Methods {
                                                         totalclaimcountdatesetting += Integer.parseInt(fcaA.get(gets).getTotalclaims());
                                                         break;
                                                     }
-                                                } else if (Integer.parseInt(YearFormat.format(fcaA.get(gets).getDatefiled())) < 2024) {
+                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                     double add30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 * 0.30;
                                                     double total = Double.parseDouble(fcaA.get(gets).getTotalamount()) / 3 + add30;
                                                     claims30percent += add30;
@@ -1945,34 +1943,33 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        InsertMethods insertMethods = new InsertMethods();
         try (Connection connection = datasource.getConnection()) {
-            if (!utility.IsValidNumber(userid)) {
-                result.setMessage("NUMBER FORMAT IS NOT VALID");
+            ArrayList<String> errorList = new ArrayList<>();
+            List<String> accesslist = Arrays.asList(accessid.split(","));
+            int errCount = 0;
+            for (int x = 0; x < accesslist.size(); x++) {
+                //------------------------------------------------------------------------------------------------
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.REMOVEDROLEINDEX(:Message,:Code,"
+                        + ":puserid,:paccessid)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("puserid", userid.trim());
+                getinsertresult.setString("paccessid", accesslist.get(x).trim());
+                getinsertresult.execute();
+                //------------------------------------------------------------------------------------------------
+                if (!getinsertresult.getString("Message").equals("SUCC")) {
+                    errCount++;
+                    errorList.add(getinsertresult.getString("Message"));
+                }
+            }
+            if (errCount == 0) {
+                //  ACRGBWSResult  asdasd = insertMethods.
+
+                result.setSuccess(true);
+                result.setMessage("OK");
             } else {
-                ArrayList<String> errorList = new ArrayList<>();
-                List<String> accesslist = Arrays.asList(accessid.split(","));
-                int errCount = 0;
-                for (int x = 0; x < accesslist.size(); x++) {
-                    //------------------------------------------------------------------------------------------------
-                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.REMOVEDROLEINDEX(:Message,:Code,"
-                            + ":puserid,:paccessid)");
-                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                    getinsertresult.setString("puserid", userid);
-                    getinsertresult.setString("paccessid", accesslist.get(x));
-                    getinsertresult.execute();
-                    //------------------------------------------------------------------------------------------------
-                    if (!getinsertresult.getString("Message").equals("SUCC")) {
-                        errCount++;
-                        errorList.add(getinsertresult.getString("Message"));
-                    }
-                }
-                if (errCount == 0) {
-                    result.setSuccess(true);
-                    result.setMessage("OK");
-                } else {
-                    result.setMessage(errorList.toString());
-                }
+                result.setMessage(errorList.toString());
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
@@ -1991,7 +1988,7 @@ public class Methods {
             if (!utility.IsValidNumber(proid)) {
                 result.setMessage("INVALID NUMBER FORMAT");
             } else {
-                ACRGBWSResult restA = this.GETROLE(dataSource, proid, "ACTIVE");
+                ACRGBWSResult restA = this.GETROLE(dataSource, proid.trim(), "ACTIVE");
                 ArrayList<ManagingBoard> mblist = new ArrayList<>();
                 if (restA.isSuccess()) {
                     ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), "ACTIVE");
@@ -2740,7 +2737,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         ArrayList<Contract> contractlist = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection()) {
+        try {
             //GET FACILITY UNDER PRO LEVEL USING USERID ACCOUNT
             ACRGBWSResult restA = this.GETROLE(dataSource, userid, tags);//GET PRO ID USING USER ID
             if (restA.isSuccess()) {
@@ -2776,7 +2773,7 @@ public class Methods {
                 result.setMessage("N/A");
             }
 
-        } catch (IOException | SQLException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -2829,7 +2826,6 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            // ACRGBWSResult getdatesettings = fm.GETDATESETTINGS(dataSource);
             ACRGBWSResult getdatesettings = utility.ProcessDateAmountComputation(datefrom, dateto);
             //------------------------------------------------------------------
             ArrayList<FacilityComputedAmount> listOfcomputedamount = new ArrayList<>();
@@ -2878,4 +2874,62 @@ public class Methods {
         return result;
     }
 
+    //GET AVERAGE AMOUNT AND VOLUME OF CLAIMS
+    public ACRGBWSResult PROCESSENDPERIODDATE(final DataSource dataSource, final String tags) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        UpdateMethods um = new UpdateMethods();
+        //   Date dates = new Date();
+        ArrayList<String> errorList = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETENDEDCONTRACTDATEPERIOD(:tags); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("tags", tags.trim().toUpperCase());
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+                LocalDateTime nowS = LocalDateTime.now();
+                java.util.Date dateNow = new SimpleDateFormat("MM-dd-yyyy").parse(dtf.format(nowS));
+                java.util.Date convertTo = new SimpleDateFormat("MM-dd-yyyy").parse(dateformat.format(resultset.getDate("DATETO")));
+//                //-------------------  DATE LEVEL   CONVERTION -------------------
+                ContractDate contractDate = new ContractDate();
+                contractDate.setCondateid(resultset.getString("CONDATEID"));
+                contractDate.setStatus(resultset.getString("STATUS"));
+                contractDate.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));
+                contractDate.setDateto(dateformat.format(resultset.getDate("DATETO")));
+                contractDate.setCreatedby(resultset.getString("CREATEDBY"));
+                contractDate.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+
+                //System.out.println(utility.ObjectMapper().writeValueAsString(contractDate));
+                if (dateNow.compareTo(convertTo) > 0) {
+                    ACRGBWSResult endResult = um.UPDATEROLEINDEX(dataSource, "00", resultset.getString("CONDATEID").trim(), "NONUPDATE".toUpperCase().trim());
+                    if (!endResult.isSuccess()) {
+                        errorList.add(endResult.getMessage());
+                    }
+                }
+//                else {
+//                  //  System.out.println("NOT");
+//                }
+//                System.out.print(dateformat.format(resultset.getDate("DATETO")) + " - ");
+//                System.out.println(dateNow.compareTo(convertTo));
+//                System.out.println("DATE NOW : " + dateNow);
+//                System.out.println("DATE END " + convertTo);
+
+            }
+            if (errorList.size() > 0) {
+                result.setResult(utility.ObjectMapper().writeValueAsString(errorList));
+            } else {
+                result.setMessage("OK");
+                result.setSuccess(true);
+            }
+            //-------------------------------------------------------------------------------
+        } catch (SQLException | IOException | ParseException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
 }

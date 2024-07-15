@@ -19,4 +19,7 @@ public class ForgetPassword {
     private String apppass;
     private String createdby;
     private String datecreated;
+    private String mailhost;
+    private String mailport;
+    private String mailfrom;
 }

@@ -105,7 +105,7 @@ public class ACRGBPOST {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult INSERTHCPN(
-            @HeaderParam("token") String token, 
+            @HeaderParam("token") String token,
             final ManagingBoard mb) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -219,7 +219,14 @@ public class ACRGBPOST {
     @Path("INSERTUSER")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTUSER(@HeaderParam("token") String token, final User user) throws SQLException, ParseException {
+    public ACRGBWSResult INSERTUSER(
+            @HeaderParam("token") String token,
+            @HeaderParam("mailuser") String mailuser,
+            @HeaderParam("mailapikey") String mailapikey,
+            @HeaderParam("mailhost") String mailhost,
+            @HeaderParam("mailport") String mailport,
+            @HeaderParam("mailfrom") String mailfrom,
+            final User user) throws SQLException, ParseException {
         // public ACRGBWSResult INSERTUSER(final User user) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -230,7 +237,13 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.INSERTUSER(dataSource, user);
+            ForgetPassword fp = new ForgetPassword();
+            fp.setAppuser(mailuser);
+            fp.setApppass(mailapikey);
+            fp.setMailfrom(mailfrom);
+            fp.setMailhost(mailhost);
+            fp.setMailport(mailport);
+            ACRGBWSResult insertresult = insertmethods.INSERTUSER(dataSource, user, fp);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -245,7 +258,9 @@ public class ACRGBPOST {
     public ACRGBWSResult UserLogin(final User user) throws SQLException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = methods.ACRUSERLOGIN(dataSource, user.getUsername(), user.getUserpassword());
+        ACRGBWSResult insertresult = methods.ACRUSERLOGIN(dataSource,
+                user.getUsername(),
+                user.getUserpassword());
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());
@@ -370,11 +385,23 @@ public class ACRGBPOST {
     @Path("FORGETPASSWORD")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult FORGETPASSWORD(final ForgetPassword emailto) {
+    public ACRGBWSResult FORGETPASSWORD(
+            @HeaderParam("mailuser") String mailuser,
+            @HeaderParam("mailapikey") String mailapikey,
+            @HeaderParam("mailhost") String mailhost,
+            @HeaderParam("mailport") String mailport,
+            @HeaderParam("mailfrom") String mailfrom,
+            final ForgetPassword emailto) {
         //TODO return proper representation object
+        ForgetPassword fp = new ForgetPassword();
+        fp.setAppuser(mailuser);
+        fp.setApppass(mailapikey);
+        fp.setMailfrom(mailfrom);
+        fp.setMailhost(mailhost);
+        fp.setMailport(mailport);
         ACRGBWSResult result = utility.ACRGBWSResult();
         Forgetpassword pass = new Forgetpassword();
-        ACRGBWSResult insertresult = pass.Forgetpassword(dataSource, emailto.getEmailto(), "");
+        ACRGBWSResult insertresult = pass.Forgetpassword(dataSource, fp, emailto.getEmailto(), "");
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());
@@ -386,12 +413,25 @@ public class ACRGBPOST {
     @Path("USERACCOUNTBATCH")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult USERACCOUNTBATCH(@HeaderParam("token") String token, final List<UserInfo> userinfo) {
+    public ACRGBWSResult USERACCOUNTBATCH(
+            @HeaderParam("token") String token,
+            @HeaderParam("mailuser") String mailuser,
+            @HeaderParam("mailapikey") String mailapikey,
+            @HeaderParam("mailhost") String mailhost,
+            @HeaderParam("mailport") String mailport,
+            @HeaderParam("mailfrom") String mailfrom,
+            final List<UserInfo> userinfo) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        ForgetPassword forgetPassword = new ForgetPassword();
+        forgetPassword.setAppuser(mailuser.trim());
+        forgetPassword.setApppass(mailapikey);
+        forgetPassword.setMailfrom(mailfrom.trim());
+        forgetPassword.setMailhost(mailhost.trim());
+        forgetPassword.setMailport(mailport.trim());
         Collection errorList = new ArrayList<>();
         try {
             ACRGBWSResult GetPayLoad = utility.GetPayload(token);
@@ -476,7 +516,13 @@ public class ACRGBPOST {
                         userInfo.setEmail(userinfo.get(x).getEmail());
                         userInfo.setMiddlename(userinfo.get(x).getMiddlename());
                         userInfo.setLastname(userinfo.get(x).getLastname());
-                        userInfo.setRole(userinfo.get(x).getRole());
+                        if (userinfo.get(x).getRole().trim().toLowerCase().equals("HCI")) {
+                            userInfo.setRole("193");
+                        } else if (userinfo.get(x).getRole().trim().toLowerCase().equals("HCPN")) {
+                            userInfo.setRole("83");
+                        } else if (userinfo.get(x).getRole().trim().toLowerCase().equals("PRO")) {
+                            userInfo.setRole("82");
+                        }
                         if (fm.FORUSERLEVEL(dataSource, userinfo.get(x).getRole()).isSuccess()) {
                             UserLevel level = utility.ObjectMapper().readValue(fm.FORUSERLEVEL(dataSource, userinfo.get(x).getRole()).getResult(), UserLevel.class);
                             if (level.getLevname().toUpperCase().equals("PRO")) {
@@ -485,8 +531,8 @@ public class ACRGBPOST {
                                 userInfo.setDesignation(userinfo.get(x).getDesignation());
                             }
                         }
-                        ACRGBWSResult InsertCleanData = insertmethods.INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo);
-                        if (!insertmethods.INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo).isSuccess()) {
+                        ACRGBWSResult InsertCleanData = insertmethods.INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo, forgetPassword);
+                        if (!InsertCleanData.isSuccess()) {
                             error.add("| LINE NUMBER[" + userinfo.get(x).getId() + "]");
                             error.add(InsertCleanData.getMessage());
                         }
@@ -521,29 +567,6 @@ public class ACRGBPOST {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             ACRGBWSResult BookingResult = bm.GETENDEDCONTRACT(dataSource, book);
-            result.setMessage(BookingResult.getMessage());
-            result.setResult(BookingResult.getResult());
-            result.setSuccess(BookingResult.isSuccess());
-        }
-        return result;
-    }
-
-    //INSERT EMAIL CREDEDNTIALS
-    @POST
-    @Path("PostEmailCredentials")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult PostEmailCredentials(@HeaderParam("token") String token, final ForgetPassword fp) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            Forgetpassword forgetpass = new Forgetpassword();
-            ACRGBWSResult BookingResult = forgetpass.InserEmailCred(dataSource, fp);
             result.setMessage(BookingResult.getMessage());
             result.setResult(BookingResult.getResult());
             result.setSuccess(BookingResult.isSuccess());

@@ -14,6 +14,7 @@ import acrgb.structure.Archived;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
+import acrgb.structure.ForgetPassword;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;
@@ -134,7 +135,8 @@ public class ACRGBUPDATE {
     @Path("UPDATEUSERLEVEL")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEUSERLEVEL(@HeaderParam("token") String token,
+    public ACRGBWSResult UPDATEUSERLEVEL(
+            @HeaderParam("token") String token,
             final UserLevel userlevel) throws SQLException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -158,28 +160,44 @@ public class ACRGBUPDATE {
     @Path("UPDATEUSERCREDENTIALS")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEUSERCREDENTIALS(@HeaderParam("token") String token,
+    public ACRGBWSResult UPDATEUSERCREDENTIALS(
+            @HeaderParam("token") String token,
+            @HeaderParam("mailuser") String mailuser,
+            @HeaderParam("mailapikey") String mailapikey,
+            @HeaderParam("mailhost") String mailhost,
+            @HeaderParam("mailport") String mailport,
+            @HeaderParam("mailfrom") String mailfrom,
             final User user) throws SQLException, IOException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        ForgetPassword forgetPassword = new ForgetPassword();
+        forgetPassword.setAppuser(mailuser.trim());
+        forgetPassword.setApppass(mailapikey);
+        forgetPassword.setMailfrom(mailfrom.trim());
+        forgetPassword.setMailhost(mailhost.trim());
+        forgetPassword.setMailport(mailport.trim());
         ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        // System.out.println("PARAMETERS " + user);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             if (user.getUsername().isEmpty() && !user.getUserpassword().isEmpty()) {
-                ACRGBWSResult insertresult = methods.CHANGEPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
+                //  System.out.println("UPDATE PASSWORD");
+                ACRGBWSResult insertresult = methods.CHANGEPASSWORD(dataSource, forgetPassword, user.getUserid(), user.getUserpassword());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
             } else if (user.getUserpassword().isEmpty() && !user.getUsername().isEmpty()) {
+                // System.out.println("UPDATE USERNAME");
                 ACRGBWSResult insertresult = methods.CHANGEUSERNAME(dataSource, user.getUserid(), user.getUsername());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
             } else {
+                // System.out.println("UPDATE BOTH");
                 ACRGBWSResult insertresult = methods.UPDATEUSERCREDENTIALS(dataSource, user.getUserid(), user.getUsername(), user.getUserpassword());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
@@ -445,7 +463,6 @@ public class ACRGBUPDATE {
         return result;
     }
 //UPDATE CONTRACT DATE
-
     @PUT
     @Path("UPDATECONTRACTDATE")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -516,4 +533,33 @@ public class ACRGBUPDATE {
         return result;
     }
 
+    //
+    //UPDATE HCPN
+    @PUT
+    @Path("UPDATEUSERROLE")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult UPDATEUSERROLE(
+            @HeaderParam("token") String token,
+            final User user) throws SQLException, ParseException {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult insertresult = updatemethods.UPDATEUSERLEVEL(dataSource,
+                    user.getCreatedby(),
+                    user.getDatecreated(),
+                    user.getLeveid(),
+                    user.getUserid());
+            result.setMessage(insertresult.getMessage());
+            result.setSuccess(insertresult.isSuccess());
+            result.setResult(insertresult.getResult());
+        }
+        return result;
+    }
 }

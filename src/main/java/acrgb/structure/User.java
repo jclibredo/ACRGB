@@ -25,6 +25,7 @@ public class User {
     private String fa2;
     private String fa2code;
     private String fa2expiration;
+    private String leveldetails;
     //1 FOR REQUIRED
     //2 ACTIVE
     //3 INACTIVE

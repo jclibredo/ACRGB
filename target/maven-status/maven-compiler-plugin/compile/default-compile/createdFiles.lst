@@ -48,6 +48,7 @@ acrgb\structure\Book.class
 acrgb\structure\ForgetPassword.class
 acrgb\method\ContractMethod.class
 acrgb\structure\UserInfo.class
+acrgb\method\job\QuartzJob.class
 acrgb\utility\NamedParameterStatement.class
 acrgb\structure\Archived.class
 acrgb\structure\Total.class
