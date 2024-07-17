@@ -34,4 +34,9 @@ public class NclaimsData {
     private String icdcode;
     private String bentype;
     private String hcfname;
+    private String c1rvcode;
+    private String c2rvcode;
+    private String c1icdcode;
+    private String c2icdcode;
+
 }

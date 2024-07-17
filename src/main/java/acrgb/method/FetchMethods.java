@@ -1445,6 +1445,7 @@ public class FetchMethods {
                 useractivity.setActid(resultset.getString("ACTID"));
                 useractivity.setActdate(datetimeformat.format(resultset.getTimestamp("ACTDATE")));
                 useractivity.setActdetails(resultset.getString("ACTDETAILS"));
+                useractivity.setActstatus(resultset.getString("ACTSTATS"));
                 ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("ACTBY").trim());
                 if (creator.isSuccess()) {
                     UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);

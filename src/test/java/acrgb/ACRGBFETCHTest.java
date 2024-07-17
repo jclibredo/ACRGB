@@ -5,6 +5,7 @@
  */
 package acrgb;
 
+import acrgb.method.job.SchedulerMain;
 import acrgb.structure.ACRGBWSResult;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -22,6 +23,20 @@ public class ACRGBFETCHTest {
     public ACRGBFETCHTest() {
     }
 
+//    @Test
+//    public void testGetAssets() {
+////        System.out.println("GetAssets");
+////        String token = "";
+////        String tags = "";
+////        String phcfid = "";
+//        SchedulerMain instance = new SchedulerMain();
+//        ACRGBWSResult expResult = null;
+//        String result = instance.RunMethod();
+//        assertEquals(expResult, result);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
+//    }
+
 //    @BeforeClass
 //    public static void setUpClass() {
 //    }
@@ -37,7 +52,6 @@ public class ACRGBFETCHTest {
 //    @After
 //    public void tearDown() {
 //    }
-
     /**
      * Test of GetAssets method, of class ACRGBFETCH.
      */
@@ -597,5 +611,4 @@ public class ACRGBFETCHTest {
 //        // TODO review the generated test code and remove the default call to fail.
 //        fail("The test case is a prototype.");
 //    }
-
 }

@@ -161,6 +161,30 @@ public class BookingMethod {
                 nclaims.setTrn(resultset.getString("TRN"));
                 nclaims.setTags(resultset.getString("TAGS"));
                 nclaims.setHcfname(resultset.getString("HCFNAME"));
+                //C1 RVS CODE
+                if (resultset.getString("C1_RVS_CODE") == null) {
+                    nclaims.setC1rvcode(resultset.getString(""));
+                } else {
+                    nclaims.setC1rvcode(resultset.getString("C1_RVS_CODE"));
+                }
+                //C2 RVS CODE
+                if (resultset.getString("C2_RVS_CODE") == null) {
+                    nclaims.setC2rvcode(resultset.getString(""));
+                } else {
+                    nclaims.setC2rvcode(resultset.getString("C2_RVS_CODE"));
+                }
+                //C1 ICD CODE
+                if (resultset.getString("C1_ICD_CODE") == null) {
+                    nclaims.setC1icdcode(resultset.getString(""));
+                } else {
+                    nclaims.setC1icdcode(resultset.getString("C1_ICD_CODE"));
+                }
+                //C2 ICD CODE
+                if (resultset.getString("C2_ICD_CODE") == null) {
+                    nclaims.setC2icdcode(resultset.getString(""));
+                } else {
+                    nclaims.setC2icdcode(resultset.getString("C2_ICD_CODE"));
+                }
                 nclaimsList.add(nclaims);
             }
             if (nclaimsList.size() > 0) {
@@ -237,7 +261,7 @@ public class BookingMethod {
                                 if (!InsertPreviousba.isSuccess()) {
                                     errorList.add(InsertPreviousba.getMessage());
                                 }
-                            } 
+                            }
                         }
                         break;
                     }

@@ -257,15 +257,15 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-//        if (!GetPayLoad.isSuccess()) {
-//            result.setMessage(GetPayLoad.getMessage());
-//        } else {
-        ACRGBWSResult getResult = fetchmethods.ACR_USER(dataSource, tags, id);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
-//        }
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult getResult = fetchmethods.ACR_USER(dataSource, tags, id);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 

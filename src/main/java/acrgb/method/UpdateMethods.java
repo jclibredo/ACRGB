@@ -16,6 +16,8 @@ import acrgb.structure.HealthCareFacility;
 import acrgb.structure.LogStatus;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;
+import acrgb.structure.User;
+import acrgb.structure.UserActivity;
 import acrgb.structure.UserLevel;
 import acrgb.utility.Cryptor;
 import acrgb.utility.Utility;
@@ -568,7 +570,6 @@ public class UpdateMethods {
                     result.setMessage(getinsertresult.getString("Message"));
                 }
             } else {
-                System.out.println("YOUR HERE ");
                 //PROCESS AUTO END CONTRACT
                 getinsertresult.setString("utags", "NONUPDATE");
                 getinsertresult.setString("uuserid", uuserid);
@@ -752,7 +753,10 @@ public class UpdateMethods {
 
     //----------------------------------------------------------------
     //INSERT CONTRACT DATE ID TO APPELLATE TABLE
-    public ACRGBWSResult UPDATEAPELLATE(final DataSource datasource, final String tags, final Appellate appellate) throws ParseException {
+    public ACRGBWSResult UPDATEAPELLATE(
+            final DataSource datasource,
+            final String tags,
+            final Appellate appellate) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -764,7 +768,6 @@ public class UpdateMethods {
             statement.registerOutParameter("Code", OracleTypes.INTEGER);
             statement.setString("utags", tags.trim().toUpperCase());
             statement.setString("utats", appellate.getStatus().trim());
-            statement.setString("utats", appellate.getStatus().trim());
             statement.setString("uaccesscode", appellate.getAccesscode().trim());
             statement.setString("ucondateid", appellate.getConid().trim());
             statement.execute();
@@ -774,6 +777,17 @@ public class UpdateMethods {
             } else {
                 result.setMessage(statement.getString("Message"));
             }
+
+            UserActivity userLogs = utility.UserActivity();
+            userLogs.setActdetails("Update Appelliate TO " + appellate.getConid() + " TO " + appellate.getControlcode() + "" + statement.getString("Message"));
+            userLogs.setActby(appellate.getId());
+            if (statement.getString("Message").equals("SUCC")) {
+                userLogs.setActstatus("SUCCESS");
+            } else {
+                userLogs.setActstatus("FAILED");
+            }
+            methods.ActivityLogs(datasource, userLogs);
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -782,7 +796,10 @@ public class UpdateMethods {
     }
 
     // UPDATE USER INFO USING DID
-    public ACRGBWSResult UPDATEUSERINFOBYDID(final DataSource datasource, final String uemail, final String udid) throws ParseException {
+    public ACRGBWSResult UPDATEUSERINFOBYDID(final DataSource datasource,
+            final String uemail,
+            final String udid,
+            final String createdby) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -801,6 +818,16 @@ public class UpdateMethods {
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
+            UserActivity userLogs = utility.UserActivity();
+            userLogs.setActdetails(uemail + " updated email with did " + udid + " | " + getinsertresult.getString("Message"));
+            userLogs.setActby(createdby);
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                userLogs.setActstatus("SUCCESS");
+            } else {
+                userLogs.setActstatus("FAILED");
+            }
+            methods.ActivityLogs(datasource, userLogs);
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -839,6 +866,17 @@ public class UpdateMethods {
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
+
+            UserActivity userLogs = utility.UserActivity();
+            userLogs.setActdetails("Update 2FA Code from user with ID " + userid + " |" + getinsertresult.getString("Message"));
+            userLogs.setActby(forgetPassword.getCreatedby());
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                userLogs.setActstatus("SUCCESS");
+            } else {
+                userLogs.setActstatus("FAILED");
+            }
+            methods.ActivityLogs(datasource, userLogs);
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -875,13 +913,98 @@ public class UpdateMethods {
 //                } else {
 //                    result.setMessage(getinsertresult.getString("Message"));
 //                }
-//                
 
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
+
+            UserActivity userLogs = utility.UserActivity();
+            userLogs.setActdate(datecreated);
+            userLogs.setActdetails("Change Account role of user with ID " + puserid + " |" + getinsertresult.getString("Message"));
+            userLogs.setActby(createdby);
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                userLogs.setActstatus("SUCCESS");
+            } else {
+                userLogs.setActstatus("FAILED");
+            }
+            methods.ActivityLogs(datasource, userLogs);
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult DELETEDATA(final DataSource datasource,
+            final String tags,
+            final String dataid,
+            final String createdby) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        //Methods methods = new Methods();
+        try (Connection connection = datasource.getConnection()) {
+            if (!utility.IsValidNumber(dataid)) {
+                result.setMessage(" " + dataid + " NUMBER FORMAT IS NOT VALID");
+            } else {
+                CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.DELETEDATA(:Message,:Code,"
+                        + ":p_tags,:p_dataid)");
+                if (tags.toUpperCase().trim().equals("USER")) {
+                    if (fm.GETUSERBYUSERID(datasource, dataid).isSuccess()) {
+                        User user = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(datasource, dataid).getResult(), User.class);
+                        statement.registerOutParameter("Message", OracleTypes.VARCHAR);
+                        statement.registerOutParameter("Code", OracleTypes.INTEGER);
+                        statement.setString("p_tags", "USERDETAILS".trim().toUpperCase());
+                        statement.setInt("p_dataid", Integer.parseInt(user.getDid()));
+                        statement.execute();
+                        if (statement.getString("Message").equals("SUCC")) {
+                            result.setSuccess(true);
+                            result.setMessage(statement.getString("Message"));
+                        } else {
+                            result.setMessage(statement.getString("Message"));
+                        }
+                    }
+                }
+                statement.registerOutParameter("Message", OracleTypes.VARCHAR);
+                statement.registerOutParameter("Code", OracleTypes.INTEGER);
+                statement.setString("p_tags", tags);
+                statement.setInt("p_dataid", Integer.parseInt(dataid));
+                statement.execute();
+                if (statement.getString("Message").equals("SUCC")) {
+//                    UserActivity userlogs = utility.UserActivity();
+//                    String actdetails = "UPDATE STATUS TO ACTIVE" + tags + " TO 3 Data ID" + dataid;
+//                    userlogs.setActby(createdby);
+//                    userlogs.setActdate(datecreated);
+//                    userlogs.setActdetails(actdetails);
+//                    ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+                    result.setSuccess(true);
+                    result.setMessage(statement.getString("Message"));
+                } else {
+                    result.setMessage(statement.getString("Message"));
+                }
+
+                //==============ACTIVLITY LOGS AREA ===========================
+//                UserActivity userlogs = utility.UserActivity();
+//                String actdetails = "Add new  HCPN "
+//                        + "" + mb.getMbname().toUpperCase() + " Address"
+//                        + "" + mb.getAddress() + " Control Number " + mb.getControlnumber();
+//                userlogs.setActby(mb.getCreatedby());
+//                if (getinsertresult.getString("Message").equals("SUCC")) {
+//                    userlogs.setActstatus("SUCCESS");
+//                } else {
+//                    userlogs.setActstatus("FAILED");
+//                }
+//                userlogs.setActdetails(actdetails);
+//                methods.ActivityLogs(datasource, userlogs);
+                //==============ACTIVLITY LOGS AREA ===========================
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

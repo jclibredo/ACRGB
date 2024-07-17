@@ -24,5 +24,9 @@ public class FacilityComputedAmount {
     private String datefiled;
     private String sb;
     private String thirty;
+    private String c1rvcode;
+    private String c2rvcode;
+    private String c1icdcode;
+    private String c2icdcode;
 
 }

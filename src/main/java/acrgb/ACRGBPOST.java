@@ -267,27 +267,27 @@ public class ACRGBPOST {
         return result;
     }
 
-    @POST
-    @Path("logs")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult logs(@HeaderParam("token") String token, final UserActivity logs) throws SQLException, ParseException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            ACRGBWSResult insertresult = methods.ActivityLogs(dataSource, logs);
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
-        }
-        return result;
-    }
+//    @POST
+//    @Path("logs")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult logs(@HeaderParam("token") String token, final UserActivity logs) throws SQLException, ParseException {
+//        //TODO return proper representation object
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+//        if (!GetPayLoad.isSuccess()) {
+//            result.setMessage(GetPayLoad.getMessage());
+//        } else {
+//            ACRGBWSResult insertresult = methods.ActivityLogs(dataSource, logs);
+//            result.setMessage(insertresult.getMessage());
+//            result.setSuccess(insertresult.isSuccess());
+//            result.setResult(insertresult.getResult());
+//        }
+//        return result;
+//    }
 
     @POST
     @Path("INSERTMBREQUEST")
