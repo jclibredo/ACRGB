@@ -51,6 +51,7 @@ public class UpdateMethods {
     private final InsertMethods im = new InsertMethods();
     private final Methods methods = new Methods();
     private final ContractMethod cm = new ContractMethod();
+    private final UserActivityLogs logs = new UserActivityLogs();
 
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEASSETS(final DataSource datasource, Assets assets) {
@@ -403,6 +404,10 @@ public class UpdateMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
+            ManagingBoard mbOld = utility.ObjectMapper().readValue(methods.GETMBWITHID(datasource, mb.getMbid()).getResult(), ManagingBoard.class);
+            String oldData = mbOld.getAddress() + "|" + mbOld.getMbname() + "|" + mbOld.getBankaccount() + "|" + mbOld.getBankname() + "|" + mbOld.getControlnumber();
+            UserActivity userlogs = utility.UserActivity();
+            String logsTags = "EDIT-HCPN";
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEHCPN(:Message,:Code,"
                     + ":umbname,:ucontrolnum,:uaddress,:ubankaccount,:ubankname,:umbid)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -417,10 +422,15 @@ public class UpdateMethods {
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setMessage(getinsertresult.getString("Message"));
                 result.setSuccess(true);
+                userlogs.setActstatus("SUCCESS");
             } else {
+                userlogs.setActstatus("FAILED");
                 result.setMessage(getinsertresult.getString("Message"));
             }
-        } catch (SQLException ex) {
+            userlogs.setActdetails("NEW DATA BANK:" + mb.getBankname() + " ACCOUNT:" + mb.getBankaccount() + " NAME:" + mb.getMbname() + " ADDRESS:" + mb.getAddress() + " CONTROL NUMBER:" + mb.getControlnumber() + " - " + getinsertresult.getString("Message"));
+            userlogs.setActby(mb.getCreatedby());
+            logs.UserLogsMethod(datasource, logsTags, userlogs, mb.getMbid(), oldData);
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -502,7 +512,6 @@ public class UpdateMethods {
                         result.setMessage(logsResult.getMessage() + " , " + accreResult.getMessage());
                     }
                 }
-
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
@@ -761,7 +770,10 @@ public class UpdateMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UserActivity userLogs = utility.UserActivity();
+        String logsTags = "REMOVED-APPELIATE";
         try (Connection connection = datasource.getConnection()) {
+            userLogs.setActby(appellate.getCreatedby());
             CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEAPELLATE(:Message,:Code,"
                     + ":utags,:utats,:uaccesscode,:ucondateid)");
             statement.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -774,11 +786,11 @@ public class UpdateMethods {
             if (statement.getString("Message").equals("SUCC")) {
                 result.setMessage(statement.getString("Message"));
                 result.setSuccess(true);
+                userLogs.setActstatus("FAILED");
             } else {
                 result.setMessage(statement.getString("Message"));
             }
 
-            UserActivity userLogs = utility.UserActivity();
             userLogs.setActdetails("Update Appelliate TO " + appellate.getConid() + " TO " + appellate.getControlcode() + "" + statement.getString("Message"));
             userLogs.setActby(appellate.getId());
             if (statement.getString("Message").equals("SUCC")) {
@@ -792,6 +804,7 @@ public class UpdateMethods {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
+
         return result;
     }
 
@@ -799,11 +812,12 @@ public class UpdateMethods {
     public ACRGBWSResult UPDATEUSERINFOBYDID(final DataSource datasource,
             final String uemail,
             final String udid,
-            final String createdby) throws ParseException {
+            final String createdby) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UserActivity userLogs = utility.UserActivity();
         try (Connection connection = datasource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERINFOBYDID(:Message,:Code,"
                     + ":udid,:uemail)");
@@ -815,20 +829,17 @@ public class UpdateMethods {
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setMessage(getinsertresult.getString("Message"));
                 result.setSuccess(true);
-            } else {
-                result.setMessage(getinsertresult.getString("Message"));
-            }
-            UserActivity userLogs = utility.UserActivity();
-            userLogs.setActdetails(uemail + " updated email with did " + udid + " | " + getinsertresult.getString("Message"));
-            userLogs.setActby(createdby);
-            if (getinsertresult.getString("Message").equals("SUCC")) {
                 userLogs.setActstatus("SUCCESS");
             } else {
                 userLogs.setActstatus("FAILED");
+                result.setMessage(getinsertresult.getString("Message"));
             }
-            methods.ActivityLogs(datasource, userLogs);
-
-        } catch (SQLException ex) {
+            userLogs.setActdetails(getinsertresult.getString("Message"));
+            //USER LOGS
+            userLogs.setActby(createdby);
+            logs.UserLogsMethod(datasource, "EDIT-USERINFO", userLogs, udid, "0");
+            //USER LOGS
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }

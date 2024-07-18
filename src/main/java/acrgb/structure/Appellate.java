@@ -19,5 +19,6 @@ public class Appellate {
     private String controlcode;
     private String conid;
     private String status;
+    private String createdby;
 
 }
