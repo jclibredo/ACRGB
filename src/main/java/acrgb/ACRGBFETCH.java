@@ -15,12 +15,16 @@ import acrgb.method.Methods;
 import acrgb.method.UpdateMethods;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.ForgetPassword;
+import acrgb.structure.ManagingBoard;
 import acrgb.structure.User;
 import acrgb.utility.Utility;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
@@ -534,32 +538,60 @@ public class ACRGBFETCH {
     @GET
     @Path("GETALLFACILITY/{tags}/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GETALLFACILITY(@HeaderParam("token") String token, @PathParam("tags") String tags,
+    public ACRGBWSResult GETALLFACILITY(
+            @HeaderParam("token") String token,
+            @PathParam("tags") String tags,
             @PathParam("userid") String userid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            switch (tags.toUpperCase()) {
-                case "ALL":
-                    ACRGBWSResult resultAll = fetchmethods.GETALLFACILITY(dataSource, "ACTIVE");
-                    result.setMessage(resultAll.getMessage());
-                    result.setSuccess(resultAll.isSuccess());
-                    result.setResult(resultAll.getResult());
-                    break;
-                case "HCPN"://GET FACILITY USINNG HCPN ACCOUNT USERID
-                    ACRGBWSResult resultHCPN = fetchmethods.GETFACILITYUNDERMB(dataSource, userid, "ACTIVE");
-                    result.setMessage(resultHCPN.getMessage());
-                    result.setSuccess(resultHCPN.isSuccess());
-                    result.setResult(resultHCPN.getResult());
-                    break;
-                case "FACILITY"://GET FACILITY USINNG HCF CODE
-                    break;
+        try {
+            ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+            if (!GetPayLoad.isSuccess()) {
+                result.setMessage(GetPayLoad.getMessage());
+            } else {
+                switch (tags.toUpperCase()) {
+                    case "ALL": {
+                        ACRGBWSResult resultAll = fetchmethods.GETALLFACILITY(dataSource, "ACTIVE");
+                        result.setMessage(resultAll.getMessage());
+                        result.setSuccess(resultAll.isSuccess());
+                        result.setResult(resultAll.getResult());
+                        break;
+                    }
+                    case "HCPN": {//GET FACILITY USINNG HCPN ACCOUNT USERID
+                        ACRGBWSResult resultHCPN = fetchmethods.GETFACILITYUNDERMB(dataSource, userid, "ACTIVE");
+                        result.setMessage(resultHCPN.getMessage());
+                        result.setSuccess(resultHCPN.isSuccess());
+                        result.setResult(resultHCPN.getResult());
+                        break;
+                    }
+                    case "APEX": {// TAGS = APEX  USERID  = HOSPITAL CODE
+                        ACRGBWSResult restA = fetchmethods.GETAPPELLATE(dataSource, userid, "ACTIVE");
+                        List<String> hcpnlist = Arrays.asList(restA.getResult().split(","));
+                        ArrayList<ManagingBoard> mblist = new ArrayList<>();
+                        for (int h = 0; h < hcpnlist.size(); h++) {
+                            ACRGBWSResult mgresult = methods.GETMBWITHID(dataSource, hcpnlist.get(h).trim());
+                            if (mgresult.isSuccess()) {
+                                ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
+                                mblist.add(mb);
+                            }
+                              System.err.println("MANAGING BOARD RESULT "+mgresult);
+                        }
+                        if (mblist.size() > 0) {
+                            result.setMessage("OK");
+                            result.setSuccess(true);
+                            result.setResult(utility.ObjectMapper().writeValueAsString(mblist));
+                        } else {
+                            result.setMessage("N/A");
+                        }
+                        break;
+                    }
+                }
             }
+        } catch (IOException ex) {
+            result.setMessage(ex.getLocalizedMessage());
+            Logger.getLogger(ACRGBFETCH.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

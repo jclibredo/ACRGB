@@ -53,7 +53,6 @@ public class InsertMethods {
     private final Utility utility = new Utility();
     private final Cryptor cryptor = new Cryptor();
     private final FetchMethods fm = new FetchMethods();
-    private final UserActivityLogs logs = new UserActivityLogs();
 
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult INSERTASSETS(final DataSource datasource, Assets assets) {
@@ -63,6 +62,7 @@ public class InsertMethods {
         result.setSuccess(false);
         UpdateMethods updatemethods = new UpdateMethods();
         Methods methods = new Methods();
+        UserActivityLogs logs = new UserActivityLogs();
         String logsTags = "";
         try (Connection connection = datasource.getConnection()) {
             UserActivity userlogs = utility.UserActivity();
@@ -121,6 +121,7 @@ public class InsertMethods {
         result.setSuccess(false);
         Methods methods = new Methods();
         UpdateMethods um = new UpdateMethods();
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             String logsTags = "";
             UserActivity userlogs = utility.UserActivity();
@@ -172,16 +173,12 @@ public class InsertMethods {
                 }
                 result.setMessage(getinsertresult.getString("Message"));
                 result.setSuccess(true);
-            } else {
-                result.setMessage(getinsertresult.getString("Message"));
-            }
-            userlogs.setActby(contract.getCreatedby());
-            userlogs.setActby(contract.getCreatedby());
-            if (getinsertresult.getString("Message").equals("SUCC")) {
                 userlogs.setActstatus("SUCCESS");
             } else {
                 userlogs.setActstatus("FAILED");
+                result.setMessage(getinsertresult.getString("Message"));
             }
+            userlogs.setActby(contract.getCreatedby());
             userlogs.setActdetails("Amount :" + contract.getAmount() + "| SB :" + contract.getSb() + "| Comitted volume:" + contract.getComittedClaimsVol() + " " + contract.getQuarter());
             logs.UserLogsMethod(datasource, logsTags, userlogs, contract.getHcfid(), contract.getContractdate());
 
@@ -198,8 +195,8 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
-            String logsTags = "ADD-TRANCHE";
             UserActivity userlogs = utility.UserActivity();
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTTRANCH(:Message,:Code,:p_tranchtype,:p_percentage,:p_createdby,:p_datecreated)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -221,7 +218,7 @@ public class InsertMethods {
             userlogs.setActby(tranch.getCreatedby());
             userlogs.setActdetails(" Tranche type :"
                     + tranch.getTranchtype() + " " + getinsertresult.getString("Message"));
-            logs.UserLogsMethod(datasource, logsTags, userlogs, "0", "0");
+            logs.UserLogsMethod(datasource, "ADD-TRANCHE", userlogs, "0", "0");
         } catch (SQLException | ParseException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -236,8 +233,8 @@ public class InsertMethods {
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
-            String logsTags = "";
             UserActivity userlogs = utility.UserActivity();
             ACRGBWSResult validateUsername = methods.ACRUSERNAME(datasource, userinfo.getEmail());
             if (validateUsername.isSuccess()) {
@@ -271,9 +268,8 @@ public class InsertMethods {
             userlogs.setActdetails("contact :" + userinfo.getContact() + " Email :" + userinfo.getEmail()
                     + " LastName :" + userinfo.getLastname() + " FirstName:" + userinfo.getFirstname() + " " + result.getMessage());
             userlogs.setActby(userinfo.getCreatedby());
-            logsTags = "ADD-USERINFO";
 
-            logs.UserLogsMethod(datasource, logsTags, userlogs, "0", "0");
+            logs.UserLogsMethod(datasource, "ADD-USERINFO", userlogs, "0", "0");
             //USER LOGS
         } catch (SQLException | ParseException | IOException ex) {
             result.setMessage(ex.toString());
@@ -288,8 +284,8 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
-            String logsTags = "ADD-USER-LEVEL";
             UserActivity userlogs = utility.UserActivity();
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSERLEVEL(:Message,:Code,"
                     + ":p_levdetails,:p_levname,:p_createdby,:p_datecreated)");
@@ -311,7 +307,7 @@ public class InsertMethods {
             //USER LOGS
             userlogs.setActby(userlevel.getCreatedby());
             userlogs.setActdetails(" Level : " + userlevel.getLevname() + " " + getinsertresult.getString("Message"));
-            logs.UserLogsMethod(datasource, logsTags, userlogs, "0", "0");
+            logs.UserLogsMethod(datasource, "ADD-USER-LEVEL", userlogs, "0", "0");
             //END USER LOGS
         } catch (SQLException | ParseException | IOException ex) {
             result.setMessage(ex.toString());
@@ -328,8 +324,8 @@ public class InsertMethods {
         result.setSuccess(false);
         Forgetpassword emailsender = new Forgetpassword();
         Methods methods = new Methods();
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
-            String logsTags = "ADD-USERACCOUNT";
             UserActivity userlogs = utility.UserActivity();
             if (!fm.GETUSERDETAILSBYDID(datasource, user.getDid()).isSuccess()) {
                 result.setMessage("USER INFO ID NOT FOUND");
@@ -371,7 +367,7 @@ public class InsertMethods {
             //USER LOGS
             userlogs.setActby(user.getCreatedby());
             userlogs.setActdetails(result.getMessage());
-            logs.UserLogsMethod(datasource, logsTags, userlogs, user.getLeveid(), user.getDid());
+            logs.UserLogsMethod(datasource, "ADD-USERACCOUNT", userlogs, user.getLeveid(), user.getDid());
             //USER LOGS
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -386,12 +382,11 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
-            UserActivity userlogs = utility.UserActivity();
+            UserActivity userLogs = utility.UserActivity();
             ArrayList<String> errorList = new ArrayList<>();
-            ArrayList<String> errorCode = new ArrayList<>();
             List<String> accesslist = Arrays.asList(userroleindex.getAccessid().split(","));
-            int errCount = 0;
             for (int x = 0; x < accesslist.size(); x++) {
                 //------------------------------------------------------------------------------------------------
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.USEROLEINDEX(:Message,:Code,"
@@ -405,27 +400,22 @@ public class InsertMethods {
                 getinsertresult.execute();
                 //------------------------------------------------------------------------------------------------
                 if (!getinsertresult.getString("Message").equals("SUCC")) {
-                    errCount++;
+                    userLogs.setActstatus("FAILED");
                     errorList.add(getinsertresult.getString("Message"));
-                    errorCode.add(accesslist.get(x).trim());
                 } else {
-
+                    userLogs.setActstatus("SUCCESS");
                 }
+                userLogs.setActdetails(getinsertresult.getString("Message"));
+                userLogs.setActby(userroleindex.getCreatedby());
+                logs.UserLogsMethod(datasource, "REMOVED-ACCESS", userLogs, userroleindex.getUserid(), accesslist.get(x));
             }
-
-            if (errCount == 0) {
-                userlogs.setActstatus("SUCCESS");
+            if (errorList.size() > 0) {
                 result.setSuccess(true);
                 result.setMessage("OK");
             } else {
-                userlogs.setActstatus("FAILED");
                 result.setMessage(errorList.toString());
             }
-            userlogs.setActby(userroleindex.getCreatedby());
-            userlogs.setActdetails(tags);
-            // logs.UserLogsMethod(datasource, "INACTIVE-DATA", userlogs, dataid, "0");
-
-        } catch (SQLException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -438,11 +428,11 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
-            UserActivity userlogs = utility.UserActivity();
+            UserActivity userLogs = utility.UserActivity();
             ArrayList<String> errorList = new ArrayList<>();
             List<String> accesslist = Arrays.asList(userroleindex.getAccessid().split(","));
-            int errCount = 0;
             for (int x = 0; x < accesslist.size(); x++) {
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.REMOVEDACCESSLEVEL(:Message,:Code,"
                         + ":a_userid,:a_accessid)");
@@ -452,24 +442,22 @@ public class InsertMethods {
                 getinsertresult.setString("a_accessid", accesslist.get(x));
                 getinsertresult.execute();
                 if (!getinsertresult.getString("Message").equals("SUCC")) {
-                    errCount++;
                     errorList.add(getinsertresult.getString("Message"));
+                    userLogs.setActstatus("SUCCESS");
+                } else {
+                    userLogs.setActstatus("SUCCESS");
                 }
+                userLogs.setActdetails(getinsertresult.getString("Message"));
+                userLogs.setActby(userroleindex.getCreatedby());
+                logs.UserLogsMethod(datasource, "ADD-ACCESS", userLogs, userroleindex.getUserid(), accesslist.get(x));
             }
-
-            //
-            if (errCount == 0) {
-                userlogs.setActstatus("SUCCESS");
+            if (errorList.size() > 0) {
                 result.setSuccess(true);
                 result.setMessage("OK");
             } else {
-                userlogs.setActstatus("FAILED");
                 result.setMessage(errorList.toString());
             }
-            userlogs.setActby(userroleindex.getCreatedby());
-            userlogs.setActdetails(tags);
-            //logs.UserLogsMethod(datasource, "INACTIVE-DATA", userlogs, dataid, "0");
-        } catch (SQLException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -484,6 +472,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userLogs = utility.UserActivity();
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INACTIVEDATA(:Message,:Code,"
@@ -538,6 +527,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userLogs = utility.UserActivity();
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACTIVEDATA(:Message,:Code,"
@@ -589,9 +579,9 @@ public class InsertMethods {
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userlogs = utility.UserActivity();
-            String logsTags = "ADD-HCPN";
             if (fm.GETMBCONTROL(datasource, mb.getControlnumber()).isSuccess()) {
                 result.setMessage("DUPLICATEREGISTRATIONNUMBER");
             } else {
@@ -660,7 +650,7 @@ public class InsertMethods {
             //USER LOGS
             userlogs.setActby(mb.getCreatedby());
             userlogs.setActdetails("Name :" + mb.getMbname().toUpperCase() + " Address :" + mb.getAddress() + " Control Number :" + mb.getControlnumber() + " Bank :" + mb.getBankname() + " Account :" + mb.getBankaccount() + " " + result.getMessage());
-            logs.UserLogsMethod(datasource, logsTags, userlogs, "0", "0");
+            logs.UserLogsMethod(datasource, "ADD-HCPN", userlogs, "0", "0");
             //USER LOGS
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -675,9 +665,9 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userlogs = utility.UserActivity();
-            String logsTags = "ADD-ACCREDITATION-HCPN";
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTACCREDITAION(:Message,:Code,"
                     + ":uaccreno,:udatefrom,:udateto,:udatecreated,:ucreatedby)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -699,7 +689,7 @@ public class InsertMethods {
             //==============ACTIVLITY LOGS AREA ===========================
             userlogs.setActby(accre.getCreatedby());
             userlogs.setActdetails("Accreditation period" + accre.getDatefrom() + " - " + accre.getDateto() + " " + result.getMessage());
-            logs.UserLogsMethod(datasource, logsTags, userlogs, accre.getAccreno(), "0");
+            logs.UserLogsMethod(datasource, "ADD-ACCREDITATION-HCPN", userlogs, accre.getAccreno(), "0");
             //==============ACTIVLITY LOGS AREA ===========================
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -714,9 +704,9 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userlogs = utility.UserActivity();
-            String logsTags = "ADD-STATSLOG";
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTSTATSLOG(:Message,:Code,"
                     + ":uaccount,:ustatus,:udatechange,:uactby)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -737,7 +727,7 @@ public class InsertMethods {
             // USER LOGS
             userlogs.setActby(logsS.getActby());
             // userlogs.setActdetails("Accreditation period" + accre.getDatefrom() + " - " + accre.getDateto() + " " + result.getMessage());
-            logs.UserLogsMethod(datasource, logsTags, userlogs, "0", "0");
+            logs.UserLogsMethod(datasource, "ADD-STATSLOG", userlogs, "0", "0");
             //USER LOGS
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -746,12 +736,16 @@ public class InsertMethods {
         return result;
     }
 
-    public ACRGBWSResult INSERTAPPELLATE(final DataSource datasource, final String uaccesscode,
-            final String ucontrolcode, final String createdby, final String datecreated) throws ParseException {
+    public ACRGBWSResult INSERTAPPELLATE(final DataSource datasource,
+            final String uaccesscode, //SINGLE
+            final String ucontrolcode, //MULTIPLE
+            final String createdby,
+            final String datecreated) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userlogs = utility.UserActivity();
             ArrayList<String> errorCode = new ArrayList<>();
@@ -797,6 +791,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userlogs = utility.UserActivity();
             //------------------------------------------------------------------------------------------------
@@ -837,6 +832,7 @@ public class InsertMethods {
         result.setResult("");
         result.setSuccess(false);
         //Methods methods = new Methods();
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userlogs = utility.UserActivity();
             //String logsTags = "INSERT-CLAIMS-BOOK-DATA";
@@ -905,9 +901,9 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userLogs = utility.UserActivity();
-            String logsTags = "ADD-CONTRACT-DATE";
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONDATE(:Message,:Code,"
                     + ":udatefrom,:udateto,:ucreatedby,:udatecreated)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -928,7 +924,7 @@ public class InsertMethods {
             //==============ACTIVLITY LOGS AREA ===========================
             userLogs.setActby(contractdate.getCreatedby());
             userLogs.setActdetails(contractdate.getDatefrom() + " - " + contractdate.getDateto() + "|" + result.getMessage());
-            logs.UserLogsMethod(datasource, logsTags, userLogs, "0", "0");
+            logs.UserLogsMethod(datasource, "ADD-CONTRACT-DATE", userLogs, "0", "0");
             //==============ACTIVLITY LOGS AREA ===========================
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -943,7 +939,7 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        Methods methods = new Methods();
+        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSERDETAILS(:Message,:Code,"
                     + ":p_firstname,:p_lastname,:p_middlename,:p_datecreated,:p_createdby,:p_email,:p_contact)");

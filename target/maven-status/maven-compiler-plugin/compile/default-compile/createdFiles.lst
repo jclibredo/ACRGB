@@ -10,6 +10,7 @@ acrgb\structure\Assets.class
 acrgb\structure\ContractDate.class
 acrgb\structure\MBRequestSummary.class
 acrgb\method\LedgerMethod.class
+acrgb\method\UserActivityLogs.class
 acrgb\structure\LogStatus.class
 acrgb\structure\ReportsHCPNSummary.class
 acrgb\structure\ACRGBPayload.class

@@ -14,7 +14,6 @@ import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserActivity;
 import acrgb.structure.UserInfo;
-import acrgb.structure.UserLevel;
 import acrgb.utility.Utility;
 import java.io.IOException;
 import javax.enterprise.context.RequestScoped;
@@ -28,13 +27,11 @@ import javax.sql.DataSource;
 public class UserActivityLogs {
 
     private final FetchMethods fm = new FetchMethods();
-    private final Methods m = new Methods();
     private final Utility utility = new Utility();
 
     public void UserLogsMethod(final DataSource dataSource, final String tags, final UserActivity userActivity, final String objectid1, final String objectid2) throws IOException {
-
+        Methods m = new Methods();
         switch (tags.toUpperCase().trim()) {
-
             //ACTIVE AND INACTIVE
             case "ACTIVE-DATA": {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " set " + userActivity.getActdetails() + " data to active with id " + objectid1, userActivity.getActstatus());
@@ -67,13 +64,17 @@ public class UserActivityLogs {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "ADD " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " insert " + userActivity.getActdetails(), userActivity.getActstatus());
                 break;
             }
+            case "EDIT-TRANCHE": {
+                m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " tranche category edited " + userActivity.getActdetails(), userActivity.getActstatus());
+                break;
+            }
             //ADD USER LEVEL 
             case "ADD-USER-LEVEL": {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "ADD " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " insert " + userActivity.getActdetails(), userActivity.getActstatus());
                 break;
             }
             case "EDIT-USER-LEVEL": {
-
+                m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " update user level data  " + userActivity.getActdetails(), userActivity.getActstatus());
                 break;
             }
             case "DELETE-USER-LEVEL": {
@@ -107,17 +108,7 @@ public class UserActivityLogs {
                 break;
             }
             case "ADD-USERINFO-BATCH": {
-                String account = "";
-                if (GetSubjectData(dataSource, "PRO", objectid2).equals("false")) {
-                    if (GetSubjectData(dataSource, "HCPN", objectid2).equals("false")) {
-                        account = GetSubjectData(dataSource, "HCI", objectid2);
-                    } else {
-                        account = GetSubjectData(dataSource, "HCPN", objectid2);
-                    }
-                } else {
-                    account = GetSubjectData(dataSource, "PRO", objectid2);
-                }
-                m.ActivityLogs(dataSource, userActivity.getActby(), "CREATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " inserted new user info " + userActivity.getActdetails() + " for " + account, userActivity.getActstatus());
+                m.ActivityLogs(dataSource, userActivity.getActby(), "CREATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " inserted new user info " + userActivity.getActdetails() + " for " + GetAccount(dataSource, objectid2), userActivity.getActstatus());
                 break;
             }
             case "EDIT-USERINFO": {
@@ -154,7 +145,12 @@ public class UserActivityLogs {
 
                 break;
             }
-
+            //CONTRACT TAGGING
+            case "TAGGING-CONTRACT": {
+                m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " tagg contract of " + GetAccount(dataSource, objectid1.trim()) + "  acction perform :" + userActivity.getActdetails(), userActivity.getActstatus());
+                break;
+                // break;
+            }
             //CONTRACT ACTIVITY   CONTRACT-DATE  
             case "ADD-CONTRACT-PRO": {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "ADD " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " insert " + userActivity.getActdetails() + " date covered :" + GetSubjectData(dataSource, "CONTRACT-DATE", objectid2) + " quarter contract to " + GetSubjectData(dataSource, "PRO", objectid1) + " Quarter", userActivity.getActstatus());
@@ -202,8 +198,9 @@ public class UserActivityLogs {
                 break;
             }
             case "EDIT-TRANCHE-HCPN": {
-                m.ActivityLogs(dataSource, userActivity.getActby(), "ADD " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " edit " + GetSubjectData(dataSource, "TRANCHE", objectid2) + " tranche from " + GetSubjectData(dataSource, "HCPN", objectid1), userActivity.getActstatus());
-                break;
+//                m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " update " + GetSubjectData(dataSource, "TRANCHE", objectid2) + " tranche from " + GetSubjectData(dataSource, "HCPN", objectid1), userActivity.getActstatus());
+//                break;
+//                 break;
             }
             case "EDIT-TRANCHE-HCI": {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " edit " + GetSubjectData(dataSource, "TRANCHE", objectid2) + " tranche from " + GetSubjectData(dataSource, "HCI", objectid1), userActivity.getActstatus());
@@ -276,19 +273,47 @@ public class UserActivityLogs {
 
                 break;
             }
+            //CONTRACT TAGGING ACTIVITY
+            case "ADD-ACCESS": {
+                m.ActivityLogs(dataSource, userActivity.getActby(), "ADD " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " add access to " + GetAccount(dataSource, objectid2) + " for " + GetAccount(dataSource, objectid1) + " | " + userActivity.getActdetails(), userActivity.getActstatus());
+                break;
+            }
+            case "REMOVED-ACCESS": {
+                m.ActivityLogs(dataSource, userActivity.getActby(), "REMOVED " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " removed access from " + GetAccount(dataSource, objectid2) + " for " + GetAccount(dataSource, objectid1) + " | " + userActivity.getActdetails(), userActivity.getActstatus());
+                break;
+            }
 
         }
 
     }
 
+    public String GetAccount(final DataSource dataSource, final String accountid) {
+        String account = "";
+        try {
+            if (GetSubjectData(dataSource, "HCPN", accountid).equals("false")) {
+                if (GetSubjectData(dataSource, "HCI", accountid).equals("false")) {
+                    account = GetSubjectData(dataSource, "PRO", accountid);
+                } else {
+                    account = GetSubjectData(dataSource, "HCI", accountid);
+                }
+            } else {
+                account = GetSubjectData(dataSource, "HCPN", accountid);
+            }
+        } catch (IOException ex) {
+            return ex.getLocalizedMessage();
+        }
+        return account;
+    }
+
     public String GetSubjectData(final DataSource dataSource, final String tags, final String id) throws IOException {
+        Methods m = new Methods();
         String result = "";
         switch (tags.toUpperCase().trim()) {
             case "ACCOUNT": { //USERID
                 if (fm.GETUSERBYUSERID(dataSource, id).isSuccess()) {
                     User user = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(dataSource, id).getResult(), User.class);
-                    if (fm.GETUSERDETAILSBYDID(dataSource, user.getDid()).isSuccess()) {
-                        UserInfo userInfo = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(dataSource, user.getDid()).getResult(), UserInfo.class);
+                    if (!user.getDid().equals("N/A")) {
+                        UserInfo userInfo = utility.ObjectMapper().readValue(user.getDid(), UserInfo.class);
                         result = userInfo.getLastname() + " , " + userInfo.getFirstname();
                     } else {
                         result = "false";
@@ -299,8 +324,8 @@ public class UserActivityLogs {
                 break;
             }
             case "PRO": { //PRO CODE
-                if (m.GetProWithPROID(dataSource, id).isSuccess()) {
-                    Pro pro = utility.ObjectMapper().readValue(m.GetProWithPROID(dataSource, id).getResult(), Pro.class);
+                if (m.GetProWithPROID(dataSource, id.trim()).isSuccess()) {
+                    Pro pro = utility.ObjectMapper().readValue(m.GetProWithPROID(dataSource, id.trim()).getResult(), Pro.class);
                     result = pro.getProname();
                 } else {
                     result = "false";
@@ -308,6 +333,7 @@ public class UserActivityLogs {
                 break;
             }
             case "HCPN": { //HCPN CODE
+
                 if (m.GETMBWITHID(dataSource, id).isSuccess()) {
                     ManagingBoard mb = utility.ObjectMapper().readValue(m.GETMBWITHID(dataSource, id).getResult(), ManagingBoard.class);
                     result = mb.getMbname();
@@ -357,8 +383,7 @@ public class UserActivityLogs {
 
             case "USERLEVEL": { //LEVEL ID
                 if (fm.GETUSERLEVEL(dataSource, id).isSuccess()) {
-                    UserLevel userLevel = utility.ObjectMapper().readValue(fm.GETUSERLEVEL(dataSource, id).getResult(), UserLevel.class);
-                    result = userLevel.getLevname() + " | " + userLevel.getLevdetails();
+                    result = fm.GETUSERLEVEL(dataSource, id).getResult();
                 } else {
                     result = "false";
                 }

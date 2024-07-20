@@ -804,7 +804,7 @@ public class FetchMethods {
             //--------------------------------------------------------
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONTRACTCONID(:pconid,:utags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("pconid", pconid);
+            statement.setString("pconid", pconid.trim());
             statement.setString("utags", utags.trim().toUpperCase());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
@@ -1211,7 +1211,7 @@ public class FetchMethods {
                             }
                         }
                     }
-                }                   
+                }
                 //===============================================
                 double amountottranch = tranchamount / contractamount * 100;
                 double tranchclaimamount = totalclaimsamount / tranchamount * 100;
@@ -1815,7 +1815,6 @@ public class FetchMethods {
                 } else {
                     contract.setContractdate(getcondateA.getMessage());
                 }
-
                 contract.setEnddate(dateformat.format(resultset.getDate("ENDDATE")));
                 ACRGBWSResult facility = this.GETFACILITYID(dataSource, resultset.getString("HCFID"));
                 if (facility.isSuccess()) {
@@ -2116,14 +2115,12 @@ public class FetchMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-
-        //  ArrayList<UserRoleIndex> rolelist = new ArrayList<>();
         ArrayList<String> accesslist = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETAPPELLATE(:tags,:ucontrolcode); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", tags);
-            statement.setString("ucontrolcode", controlcode);
+            statement.setString("tags", tags.toUpperCase().trim());
+            statement.setString("ucontrolcode", controlcode.trim());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             while (resultset.next()) {
@@ -2898,7 +2895,6 @@ public class FetchMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            System.out.println("USERID " + puserid);
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETUSERBYUSERID(:puserid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("puserid", puserid.trim());
@@ -2962,7 +2958,7 @@ public class FetchMethods {
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETUSERDETAILSBYDID(:pdid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("pdid", pdid);
+            statement.setString("pdid", pdid.trim());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             if (resultset.next()) {

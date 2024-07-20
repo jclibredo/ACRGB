@@ -20,7 +20,6 @@ import acrgb.structure.MBRequestSummary;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
-import acrgb.structure.UserActivity;
 import acrgb.structure.UserInfo;
 import acrgb.structure.UserLevel;
 import acrgb.structure.UserRoleIndex;
@@ -348,7 +347,8 @@ public class ACRGBPOST {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             ACRGBWSResult insertresult = insertmethods.INSERTAPPELLATE(dataSource,
-                    userroleindex.getUserid(), userroleindex.getAccessid(),
+                    userroleindex.getUserid(), //SONGLE
+                    userroleindex.getAccessid(),//MULTIPLE
                     userroleindex.getCreatedby(),
                     userroleindex.getDatecreated());
             result.setMessage(insertresult.getMessage());

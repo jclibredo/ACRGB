@@ -35,6 +35,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -321,7 +322,7 @@ public class ACRGBUPDATE {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = methods.REMOVEDROLEINDEX(dataSource, userroleindex.getUserid(), userroleindex.getAccessid());
+            ACRGBWSResult insertresult = methods.REMOVEDROLEINDEX(dataSource, userroleindex.getUserid(), userroleindex.getAccessid(), userroleindex.getCreatedby());
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -358,7 +359,9 @@ public class ACRGBUPDATE {
     @Path("TAGGINGCONTRACT")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult TAGGINGCONTRACT(@HeaderParam("token") String token,
+    public ACRGBWSResult TAGGINGCONTRACT(
+            @HeaderParam("token") String token,
+            @HeaderParam("datatags") String datatags,
             final Contract contract) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -372,21 +375,33 @@ public class ACRGBUPDATE {
             con.setConid(contract.getConid());
             con.setRemarks(contract.getRemarks());
             con.setEnddate(contract.getEnddate());
+            con.setCreatedby(contract.getCreatedby());
             switch (contract.getStats()) {
-                case "NONRENEW":
+                case "NONRENEW": {
                     con.setStats("3");//END CONTRACT
                     break;
-                case "RENEW":
+                }
+                case "RENEW": {
                     con.setStats("4");//RENEW
                     break;
-                case "TERMINATE":
+                }
+                case "TERMINATE": {
                     con.setStats("5");
                     break;
+                }
             }
-            ACRGBWSResult taggingresult = updatemethods.TAGGINGCONTRACT(dataSource, con);
-            result.setMessage(taggingresult.getMessage());
-            result.setSuccess(taggingresult.isSuccess());
-            result.setResult(taggingresult.getResult());
+            if (datatags.toUpperCase().trim().equals("HCPN")) {
+                ACRGBWSResult taggingresult = updatemethods.TAGGINGCONTRACTHCPN(dataSource, con);
+                result.setMessage(taggingresult.getMessage());
+                result.setSuccess(taggingresult.isSuccess());
+                result.setResult(taggingresult.getResult());
+            } else {
+                ACRGBWSResult taggingresult = updatemethods.TAGGINGCONTRACTHCI(dataSource, con);
+                result.setMessage(taggingresult.getMessage());
+                result.setSuccess(taggingresult.isSuccess());
+                result.setResult(taggingresult.getResult());
+            }
+
         }
 
         return result;
@@ -445,7 +460,8 @@ public class ACRGBUPDATE {
     @Path("APPROVEDHCPN")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult APPROVEDHCPN(@HeaderParam("token") String token,
+    public ACRGBWSResult APPROVEDHCPN(
+            @HeaderParam("token") String token,
             final ManagingBoard mb) throws SQLException, ParseException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -512,28 +528,28 @@ public class ACRGBUPDATE {
         return result;
     }
 
-    @PUT
-    @Path("UPDATEAPELLATE")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UPDATEAPELLATE(@HeaderParam("token") String token,
-            final Appellate appellate) throws SQLException, ParseException {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            ACRGBWSResult insertresult = updatemethods.UPDATEAPELLATE(dataSource, "UPDATE", appellate);
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
-        }
-        return result;
-    }
+//    @PUT
+//    @Path("UPDATEAPELLATE")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult UPDATEAPELLATE(@HeaderParam("token") String token,
+//            final Appellate appellate) throws SQLException, ParseException {
+//        //TODO return proper representation object
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+//        if (!GetPayLoad.isSuccess()) {
+//            result.setMessage(GetPayLoad.getMessage());
+//        } else {
+//            ACRGBWSResult insertresult = updatemethods.UPDATEAPELLATE(dataSource, "UPDATE", appellate);
+//            result.setMessage(insertresult.getMessage());
+//            result.setSuccess(insertresult.isSuccess());
+//            result.setResult(insertresult.getResult());
+//        }
+//        return result;
+//    }
 
     //
     //UPDATE HCPN

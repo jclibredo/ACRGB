@@ -101,7 +101,6 @@ public class Methods {
                     result.setResult("INVALID USERNAME AND PASSWORD");
                 }
             } else {
-                //result.setSuccess(false);
                 result.setMessage("NO AVAILABLE DATA");
             }
         } catch (IOException ex) {
@@ -201,6 +200,7 @@ public class Methods {
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setSuccess(true);
                 result.setMessage(getinsertresult.getString("Message"));
+
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
@@ -2283,157 +2283,6 @@ public class Methods {
         return result;
     }
 
-    //GET FHCI WITH BADGET USING MANAGING BOARD USERID
-//    public ACRGBWSResult MethodGetHealthFacilityBadget(final DataSource dataSource,
-//            final String puserid,
-//            final String tags) {
-//        ACRGBWSResult result = utility.ACRGBWSResult();
-//        result.setMessage("");
-//        result.setResult("");
-//        result.setSuccess(false);
-//        try (Connection connection = dataSource.getConnection()) {
-//            ArrayList<String> accessidlist = new ArrayList<>();
-//            ACRGBWSResult restA = this.GETROLE(dataSource, puserid, tags);
-//            if (restA.isSuccess()) {
-//                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), tags);
-//                List<String> restist = Arrays.asList(restB.getResult().split(","));
-//                for (int y = 0; y < restist.size(); y++) {
-//                    accessidlist.add(restist.get(y));
-//                }
-//            }
-//            ArrayList<HealthCareFacility> listHCF = new ArrayList<>();
-//            for (int t = 0; t < accessidlist.size(); t++) {
-//                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:hcfrid); end;");
-//                statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-//                statement.setString("hcfrid", accessidlist.get(t));
-//                statement.execute();
-//                ResultSet resultset = (ResultSet) statement.getObject("v_result");
-//                while (resultset.next()) {
-//                    HealthCareFacility hcf = new HealthCareFacility();
-//                    // GET MANAGING BOARD USING FACILITY ID
-//                    ACRGBWSResult restB = this.GETROLEREVERESE(dataSource, resultset.getString("HCFCODE"), tags);
-//                    if (restB.isSuccess()) {
-//                        ACRGBWSResult mgresult = this.GETMBWITHID(dataSource, restB.getResult());
-//                        if (mgresult.isSuccess()) {
-//                            ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
-//                            hcf.setMb(mb.getMbname());
-//                            //GET PRO
-//                            ACRGBWSResult restC = this.GETROLEREVERESE(dataSource, mb.getControlnumber(), tags);
-//                            if (restC.isSuccess()) {
-//                                //GET PRO USING PROID
-//                                ACRGBWSResult getproid = this.GetProWithPROID(dataSource, restC.getResult());
-//                                if (getproid.isSuccess()) {
-//                                    Pro pro = utility.ObjectMapper().readValue(getproid.getResult(), Pro.class);
-//                                    hcf.setProid(pro.getProname());
-//                                } else {
-//                                    hcf.setProid(getproid.getMessage());
-//                                }
-//                            } else {
-//                                hcf.setProid(restC.getMessage());
-//                            }
-//                            //GET PRO
-//                        } else {
-//                            hcf.setMb(mgresult.getMessage());
-//                        }
-//                    }
-//                    // GET MANAGING BOARD USING FACILITY ID
-//                    hcf.setHcfname(resultset.getString("HCFNAME"));
-//                    hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
-//                    hcf.setHcfcode(resultset.getString("HCFCODE"));
-//                    //END OF GET DATE CREATOR
-//                    hcf.setType(resultset.getString("HCFTYPE"));
-//                    hcf.setHcilevel(resultset.getString("HCILEVEL"));
-//                    //FacilityComputedAmount
-//
-//                    listHCF.add(hcf);
-//                }
-//            }
-//            if (listHCF.size() < 1) {
-//                result.setMessage("N/A");
-//            } else {
-//                result.setMessage("OK");
-//                result.setResult(utility.ObjectMapper().writeValueAsString(listHCF));
-//                result.setSuccess(true);
-//            }
-//            
-//        } catch (SQLException | IOException | ParseException ex) {
-//            result.setMessage(ex.toString());
-//            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return result;
-//    }
-    //GET FHCI WITH BADGET USING MANAGING BOARD MBID
-//    public ACRGBWSResult MethodGetHealthFacilityBadgetUisngMBID(final DataSource dataSource,
-//            final String mbid,
-//            final String tags) {
-//        ACRGBWSResult result = utility.ACRGBWSResult();
-//        result.setMessage("");
-//        result.setResult("");
-//        result.setSuccess(false);
-//        try (Connection connection = dataSource.getConnection()) {
-//            ACRGBWSResult restA = this.GETROLEMULITPLE(dataSource, mbid, tags);
-//            List<String> accessidlist = Arrays.asList(restA.getResult().split(","));
-//            ArrayList<HealthCareFacility> listHCF = new ArrayList<>();
-//            for (int t = 0; t < accessidlist.size(); t++) {
-//                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:hcfrid); end;");
-//                statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-//                statement.setString("hcfrid", accessidlist.get(t));
-//                statement.execute();
-//                ResultSet resultset = (ResultSet) statement.getObject("v_result");
-//                while (resultset.next()) {
-//                    HealthCareFacility hcf = new HealthCareFacility();
-//                    //GET MANAGING BOARD USING FACILITY ID
-//                    ACRGBWSResult restB = this.GETROLEREVERESE(dataSource, resultset.getString("HCFCODE"), tags);
-//                    if (restB.isSuccess()) {
-//                        ACRGBWSResult mgresult = this.GETMBWITHID(dataSource, restB.getResult());
-//                        if (mgresult.isSuccess()) {
-//                            ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
-//                            hcf.setMb(mb.getMbname());
-//                            //GET PRO
-//                            ACRGBWSResult restC = this.GETROLEREVERESE(dataSource, mb.getMbid(), tags);
-//                            if (restC.isSuccess()) {
-//                                //GET PRO USING PROID
-//                                ACRGBWSResult getproid = this.GetProWithPROID(dataSource, restC.getResult());
-//                                if (getproid.isSuccess()) {
-//                                    Pro pro = utility.ObjectMapper().readValue(getproid.getResult(), Pro.class);
-//                                    hcf.setProid(pro.getProname());
-//                                } else {
-//                                    hcf.setProid(getproid.getMessage());
-//                                }
-//                            } else {
-//                                hcf.setProid(restC.getMessage());
-//                            }
-////                            //GET PRO
-//                        } else {
-//                            hcf.setMb(mgresult.getMessage());
-//                        }
-//                    }
-//                    //GET MANAGING BOARD USING FACILITY ID
-//                    hcf.setHcfname(resultset.getString("HCFNAME"));
-//                    hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
-//                    hcf.setHcfcode(resultset.getString("HCFCODE"));
-//                    hcf.setHcilevel(resultset.getString("HCILEVEL"));
-//                    //END OF GET DATE CREATOR
-//                    hcf.setType(resultset.getString("HCFTYPE"));
-//                    //FacilityComputedAmount
-//                    listHCF.add(hcf);
-//                }
-//            }
-//            
-//            if (listHCF.size() < 1) {
-//                result.setMessage("N/A");
-//            } else {
-//                result.setMessage("OK");
-//                result.setSuccess(true);
-//                result.setResult(utility.ObjectMapper().writeValueAsString(listHCF));
-//            }
-//            
-//        } catch (SQLException | IOException | ParseException ex) {
-//            result.setMessage(ex.toString());
-//            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return result;
-//    }
     // GET ALL REQUEST USING MB USERID ACCOUNT
     public ACRGBWSResult FetchMBRequest(final DataSource dataSource, final String userid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -2592,42 +2441,33 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            if (!utility.IsValidNumber(pid)) {
-                result.setMessage("INVALID NUMBER FORMAT");
-            } else {
-                //---------------------------------------------------- 
-                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
-                statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                statement.setString("pid", pid);
-                statement.execute();
-                ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                if (resultset.next()) {
-                    //--------------------------------------------------------
-                    ManagingBoard mb = new ManagingBoard();
-                    mb.setMbid(resultset.getString("MBID"));
-                    mb.setMbname(resultset.getString("MBNAME"));
-                    mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
-                    ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                    if (creator.isSuccess()) {
-                        if (!creator.getResult().isEmpty()) {
-                            UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
-                            mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                        } else {
-                            mb.setCreatedby(creator.getMessage());
-                        }
-                    } else {
-                        mb.setCreatedby("DATA NOT FOUND");
-                    }
-                    mb.setStatus(resultset.getString("STATUS"));
-                    mb.setControlnumber(resultset.getString("CONNUMBER"));
-                    result.setMessage("OK");
-                    result.setSuccess(true);
-                    result.setResult(utility.ObjectMapper().writeValueAsString(mb));
-                    //------------------------------------------------------
+            //---------------------------------------------------- 
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("pid", pid.trim());
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                //--------------------------------------------------------
+                ManagingBoard mb = new ManagingBoard();
+                mb.setMbid(resultset.getString("MBID"));
+                mb.setMbname(resultset.getString("MBNAME"));
+                mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                 } else {
-                    result.setMessage("NO DATA FOUND");
+                    mb.setCreatedby(creator.getMessage());
                 }
-                //----------------------------------------------------------
+                mb.setStatus(resultset.getString("STATUS"));
+                mb.setControlnumber(resultset.getString("CONNUMBER"));
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(mb));
+                //------------------------------------------------------
+            } else {
+                result.setMessage("NO DATA");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -2637,16 +2477,19 @@ public class Methods {
     }
 
     // REMOVED ACCESS LEVEL USING ROLE INDEX
-    public ACRGBWSResult REMOVEDROLEINDEX(final DataSource datasource, final String userid, final String accessid) throws ParseException {
+    public ACRGBWSResult REMOVEDROLEINDEX(final DataSource datasource,
+            final String userid,
+            final String accessid,
+            final String createdby) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        InsertMethods insertMethods = new InsertMethods();
+        UserActivityLogs logss = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
+            UserActivity userLogs = utility.UserActivity();
             ArrayList<String> errorList = new ArrayList<>();
             List<String> accesslist = Arrays.asList(accessid.split(","));
-            int errCount = 0;
             for (int x = 0; x < accesslist.size(); x++) {
                 //------------------------------------------------------------------------------------------------
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.REMOVEDROLEINDEX(:Message,:Code,"
@@ -2658,13 +2501,16 @@ public class Methods {
                 getinsertresult.execute();
                 //------------------------------------------------------------------------------------------------
                 if (!getinsertresult.getString("Message").equals("SUCC")) {
-                    errCount++;
                     errorList.add(getinsertresult.getString("Message"));
+                    userLogs.setActstatus("FAILED");
+                } else {
+                    userLogs.setActstatus("SUCCESS");
                 }
+                userLogs.setActdetails(getinsertresult.getString("Message"));
+                userLogs.setActby(createdby);
+                logss.UserLogsMethod(datasource, "REMOVED-ACCESS", userLogs, userid.trim(), accesslist.get(x).trim());
             }
-            if (errCount == 0) {
-                //  ACRGBWSResult  asdasd = insertMethods.
-
+            if (errorList.size() > 0) {
                 result.setSuccess(true);
                 result.setMessage("OK");
             } else {
@@ -2673,6 +2519,9 @@ public class Methods {
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2959,23 +2808,28 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            String procode = pproid.substring(pproid.length() - 2);
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETPROWITHID(:pproid); end;");
-            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("pproid", procode);
-            statement.execute();
-            ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            if (resultset.next()) {
-                Pro pro = new Pro();
-                pro.setProname(resultset.getString("PRONAME"));
-                pro.setProaddress(resultset.getString("PROADDRESS"));
-                pro.setProcode("2024" + resultset.getString("PROCODE"));
-                result.setResult(utility.ObjectMapper().writeValueAsString(pro));
-                result.setMessage("OK");
-                result.setSuccess(true);
+            if (pproid.length() > 3) {
+                String procode = pproid.substring(pproid.length() - 2);
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETPROWITHID(:pproid); end;");
+                statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                statement.setString("pproid", procode);
+                statement.execute();
+                ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                if (resultset.next()) {
+                    Pro pro = new Pro();
+                    pro.setProname(resultset.getString("PRONAME"));
+                    pro.setProaddress(resultset.getString("PROADDRESS"));
+                    pro.setProcode("2024" + resultset.getString("PROCODE"));
+                    result.setResult(utility.ObjectMapper().writeValueAsString(pro));
+                    result.setMessage("OK");
+                    result.setSuccess(true);
+                } else {
+                    result.setMessage("N/A");
+                }
             } else {
                 result.setMessage("N/A");
             }
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -3500,7 +3354,6 @@ public class Methods {
             while (resultset.next()) {
                 listresult.add(resultset.getString("ACCESSID"));
             }
-
             if (listresult.size() > 0) {
                 result.setMessage("OK");
                 result.setSuccess(true);
