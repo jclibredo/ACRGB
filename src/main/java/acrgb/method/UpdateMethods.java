@@ -12,7 +12,6 @@ import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.ForgetPassword;
-import acrgb.structure.HealthCareFacility;
 import acrgb.structure.LogStatus;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;
@@ -49,7 +48,6 @@ public class UpdateMethods {
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
     private final InsertMethods im = new InsertMethods();
-    private final ContractMethod cm = new ContractMethod();
 
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEASSETS(final DataSource datasource, Assets assets) {
@@ -255,33 +253,32 @@ public class UpdateMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult FACILITYTAGGING(final DataSource datasource, HealthCareFacility hcf) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKG.FACILITYTAGGING(:Message,:Code,:p_hcfidcode,"
-                    + ":p_type)");
-            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("p_hcfidcode", hcf.getHcfcode());//GET HOSPITAL CODE
-            getinsertresult.setString("p_type", hcf.getType()); //APEX OR HCPN CONTROL NUMBER
-            getinsertresult.execute();
-            if (getinsertresult.getString("Message").equals("SUCC")) {
-                result.setSuccess(true);
-                result.setMessage(getinsertresult.getString("Message"));
-            } else {
-                result.setMessage(getinsertresult.getString("Message"));
-            }
-        } catch (SQLException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
-    public ACRGBWSResult TAGGINGCONTRACTHCPN(final DataSource datasource, Contract contract) {
+//    public ACRGBWSResult FACILITYTAGGING(final DataSource datasource, HealthCareFacility hcf) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        try (Connection connection = datasource.getConnection()) {
+//            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKG.FACILITYTAGGING(:Message,:Code,:p_hcfidcode,"
+//                    + ":p_type)");
+//            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+//            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+//            getinsertresult.setString("p_hcfidcode", hcf.getHcfcode());//GET HOSPITAL CODE
+//            getinsertresult.setString("p_type", hcf.getType()); //APEX OR HCPN CONTROL NUMBER
+//            getinsertresult.execute();
+//            if (getinsertresult.getString("Message").equals("SUCC")) {
+//                result.setSuccess(true);
+//                result.setMessage(getinsertresult.getString("Message"));
+//            } else {
+//                result.setMessage(getinsertresult.getString("Message"));
+//            }
+//        } catch (SQLException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
+/*    public ACRGBWSResult TAGGINGCONTRACTHCPN(final DataSource datasource, Contract contract) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -342,16 +339,7 @@ public class UpdateMethods {
                             }
                             ContractDate conDate = utility.ObjectMapper().readValue(updatecontract.getContractdate(), ContractDate.class);
                             conDatePerio = conDate.getDatefrom() + " | " + conDate.getDateto();
-                            //------------------------------------ TAG CONTRACT IN ROLE INDEX
-                            //ENDCONDATE
-                            // if (um.UPDATEROLEINDEX(datasource, updatecontract.getHcfid(), conDate.getCondateid(), "CONTAGGING").isSuccess()) {
                             um.UPDATEROLEINDEX(datasource, updatecontract.getHcfid(), conDate.getCondateid(), "CONTAGGING");
-//                            System.out.println("ACCOUNT ID :" + updatecontract.getHcfid() + " CONDATEID" + conDate.getCondateid());
-//                            System.out.print(um.UPDATEROLEINDEX(datasource, updatecontract.getHcfid(), conDate.getCondateid(), "CONTAGGING"));
-//                            } else {
-//                                hcicontractaggingError.add(um.UPDATEROLEINDEX(datasource, updatecontract.getHcfid(), conDate.getCondateid(), "CONTAGGING").getMessage());
-//                            }
-                            //------------------------------------   
                         }
                         result.setSuccess(true);
                         result.setMessage(rest.getMessage());
@@ -391,126 +379,39 @@ public class UpdateMethods {
         }
         return result;
     }
-
-    public ACRGBWSResult TAGGINGCONTRACTHCI(final DataSource datasource, Contract contract) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        UpdateMethods um = new UpdateMethods();
-        UserActivityLogs logs = new UserActivityLogs();
-        try (Connection connection = datasource.getConnection()) {
-            //-------------------------------------------------------------------------
-            UserActivity userlogs = utility.UserActivity();
-            String conDatePerio = "";
-            String contractHolder = "";
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.CONTRACTTAGGING(:Message,:Code,"
-                    + ":pconid,:pstats,:pendate,:premarks)");
-            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("pconid", contract.getConid());//CONID
-            getinsertresult.setString("pstats", contract.getStats()); //STATS
-            getinsertresult.setDate("pendate", (Date) new Date(utility.StringToDate(contract.getEnddate()).getTime()));//END DATE
-            getinsertresult.setString("premarks", contract.getRemarks());//REMARKS
-            getinsertresult.execute();
-            ArrayList<String> hcicontractaggingError = new ArrayList<>();
-            if (getinsertresult.getString("Message").equals("SUCC")) {
-                //---------------------------------------------------------
-                ACRGBWSResult rest = this.CONSTATSUPDATE(datasource,
-                        Integer.parseInt(contract.getConid()),
-                        Integer.parseInt(contract.getStats()),
-                        contract.getRemarks(),
-                        contract.getEnddate());
-                if (rest.isSuccess()) {
-                    ACRGBWSResult getCon = fm.GETCONTRACTCONID(datasource, contract.getConid(), "INACTIVE");
-                    if (getCon.isSuccess()) {
-                        Contract updatecontract = utility.ObjectMapper().readValue(getCon.getResult(), Contract.class);
-                        contractHolder = updatecontract.getHcfid();
-                        if (updatecontract.getContractdate() != null) {
-                            ContractDate conDate = utility.ObjectMapper().readValue(updatecontract.getContractdate(), ContractDate.class);
-                            conDatePerio = conDate.getDatefrom() + " | " + conDate.getDateto();
-                            //------------------------------------ TAG CONTRACT IN ROLE INDEX
-                            //ENDCONDATE
-                            if (um.UPDATEROLEINDEX(datasource, updatecontract.getHcfid(), conDate.getCondateid(), "CONTAGHCI").isSuccess()) {
-                                um.UPDATEROLEINDEX(datasource, updatecontract.getHcfid(), conDate.getCondateid(), "CONTAGHCI");
-                            } else {
-                                hcicontractaggingError.add(um.UPDATEROLEINDEX(datasource, updatecontract.getHcfid(), conDate.getCondateid(), "CONTAGHCI").getMessage());
-                            }
-                            //------------------------------------   
-                        }
-                        result.setSuccess(true);
-                        result.setMessage(rest.getMessage());
-                        result.setResult("Error For HCI Contract tagging:" + hcicontractaggingError.toString());
-                    }
-                } else {
-                    result.setMessage(rest.getMessage());
-                }
-                userlogs.setActstatus("SUCCESS");
-            } else {
-                userlogs.setActstatus("FAILED");
-                result.setMessage(getinsertresult.getString("Message"));
-            }
-            switch (contract.getStats()) {
-                case "3": {
-                    //END CONTRACT
-                    userlogs.setActdetails("NONRENEW with date covered : " + conDatePerio + " |" + getinsertresult.getString("Message"));
-                    break;
-                }
-                case "4": {
-                    //RENEW
-                    userlogs.setActdetails("RENEW with date covered : " + conDatePerio + " |" + getinsertresult.getString("Message"));
-                    break;
-                }
-                case "5": {
-                    userlogs.setActdetails("TERMINATE with date covered : " + conDatePerio + " |" + getinsertresult.getString("Message"));
-                    break;
-                }
-            }
-
-            userlogs.setActby(contract.getCreatedby());
-            logs.UserLogsMethod(datasource, "TAGGING-CONTRACT", userlogs, contractHolder, "0");
-        } catch (SQLException | ParseException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+    
+    
+     */
     // REMOVED ACCESS LEVEL USING ROLE INDEX
-    public ACRGBWSResult RemoveAppellate(final DataSource datasource, final String accesscode, final String controlcode) throws ParseException {
+    public ACRGBWSResult RemoveAppellate(final DataSource datasource, final String userid, final String accessid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            if (!utility.IsValidNumber(accesscode)) {
-                result.setMessage("NUMBER FORMAT IS NOT VALID");
-            } else {
-                ArrayList<String> errorList = new ArrayList<>();
-                List<String> accesslist = Arrays.asList(controlcode.split(","));
-                int errCount = 0;
-                for (int x = 0; x < accesslist.size(); x++) {
-                    //------------------------------------------------------------------------------------------------
-                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.REMOVEAPPELLATE(:Message,:Code,"
-                            + ":uaccesscode,:ucontrolcode)");
-                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                    getinsertresult.setString("uaccesscode", accesscode);
-                    getinsertresult.setString("ucontrolcode", accesslist.get(x));
-                    getinsertresult.execute();
-                    //------------------------------------------------------------------------------------------------
-                    if (!getinsertresult.getString("Message").equals("SUCC")) {
-                        errCount++;
-                        errorList.add(getinsertresult.getString("Message"));
-                    }
-                }
-                if (errCount == 0) {
-                    result.setSuccess(true);
-                    result.setMessage("OK");
-                } else {
-                    result.setMessage(errorList.toString());
+            ArrayList<String> errorList = new ArrayList<>();
+            List<String> accesslist = Arrays.asList(accessid.split(","));
+            for (int x = 0; x < accesslist.size(); x++) {
+                //------------------------------------------------------------------------------------------------
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.REMOVEAPPELLATE(:Message,:Code,"
+                        + ":userid,:accessid)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("userid", userid.trim());
+                getinsertresult.setString("accessid", accesslist.get(x).trim());
+                getinsertresult.execute();
+                //------------------------------------------------------------------------------------------------
+                if (!getinsertresult.getString("Message").equals("SUCC")) {
+                    errorList.add(getinsertresult.getString("Message"));
                 }
             }
+            if (errorList.isEmpty()) {
+                result.setSuccess(true);
+                result.setMessage("OK");
+            } else {
+                result.setMessage(errorList.toString());
+            }
+
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -519,7 +420,7 @@ public class UpdateMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult CONSTATSUPDATE(final DataSource datasource, final int uconid, final int ustats, final String uremarks, final String uenddate) {
+    public ACRGBWSResult CONSTATSUPDATE(final DataSource datasource, final String uconid, final String ustats, final String uremarks, final String uenddate) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -529,8 +430,8 @@ public class UpdateMethods {
                     + ":uconid,:ustats,:uremarks,:uenddate)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setInt("uconid", uconid);//CONID
-            getinsertresult.setInt("ustats", ustats); //STATS
+            getinsertresult.setString("uconid", uconid.trim());//CONID
+            getinsertresult.setString("ustats", ustats.trim()); //STATS
             getinsertresult.setString("uremarks", uremarks); //REMAKRS
             getinsertresult.setDate("uenddate", (Date) new Date(utility.StringToDate(uenddate).getTime()));//END DATE
             getinsertresult.execute();
@@ -718,112 +619,21 @@ public class UpdateMethods {
                     + ":utags,:uuserid,:ucondate)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            //=====================================================================
-            if (tagsss.toUpperCase().equals("UPDATE")) {
-                getinsertresult.setString("utags", "UPDATE");
-                getinsertresult.setString("uuserid", uuserid.trim());
-                getinsertresult.setString("ucondate", ucondate);
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(true);
-                } else {
-                    result.setMessage(getinsertresult.getString("Message"));
-                }
-            } else if (tagsss.toUpperCase().equals("CONTAGGING")) {
-                getinsertresult.setString("utags", "CONTAGGING");
-                getinsertresult.setString("uuserid", uuserid.trim());
-                getinsertresult.setString("ucondate", ucondate);
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(true);
-                } else {
-                    result.setMessage(getinsertresult.getString("Message"));
-                }
-            } else if (tagsss.toUpperCase().equals("CONTAGHCI")) {
-                getinsertresult.setString("utags", "CONTAGHCI");
-                getinsertresult.setString("uuserid", uuserid.trim());
-                getinsertresult.setString("ucondate", ucondate);
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    result.setMessage(getinsertresult.getString("Message"));
-                    result.setSuccess(true);
-                } else {
-                    result.setMessage(getinsertresult.getString("Message"));
-                }
+            if (tagsss.trim().toUpperCase().equals("UPDATE")) {
+                getinsertresult.setString("utags", "UPDATE".trim());
             } else {
-                //PROCESS AUTO END CONTRACT
-                getinsertresult.setString("utags", "NONUPDATE");
-                getinsertresult.setString("uuserid", uuserid);
-                getinsertresult.setString("ucondate", ucondate);
-                getinsertresult.execute();
-                if (getinsertresult.getString("Message").equals("SUCC")) {
-                    ACRGBWSResult getConDateByid = cm.GETCONDATEBYID(datasource, ucondate.trim());
-                    if (getConDateByid.isSuccess()) {
-                        ContractDate contractdate = utility.ObjectMapper().readValue(getConDateByid.getResult(), ContractDate.class);
-                        ACRGBWSResult getResult = cm.GETCONTRACTBYCONDATEID(datasource, ucondate.trim());
-                        if (getResult.isSuccess()) {
-                            ArrayList<String> message = new ArrayList<>();
-                            List<String> RestA = Arrays.asList(getResult.getResult().split(","));
-                            for (int x = 0; x < RestA.size(); x++) {
-                                Contract con = new Contract();
-                                con.setConid(RestA.get(x).trim());
-                                con.setEnddate(contractdate.getDateto());
-                                con.setRemarks("CONTRACT ENDED");
-                                con.setStats("3");
-                                //UPDATE CONTRACT UNDER CONTRACTDATE PERIOD
-                                ACRGBWSResult tagContract = this.TAGGINGCONTRACTHCI(datasource, con);
-                                //UPDATE ASSETS UNDER CONTRACT
-                                ACRGBWSResult upDateAssets = this.UPDATEASSETSTATUS(datasource, RestA.get(x).trim());
-                                //UPDATE CONTRACT DATE PERIOD
-                                message.add("Contract Tagging:[" + tagContract.getMessage() + "]");
-                                message.add("Assets Tagging:[" + upDateAssets.getMessage() + "]");
-                            }
-                            // UPDATEAPELLATE
-                            //UPDATE AFILLATE UNDER CONTRACT
-                            Appellate appellate = new Appellate();
-                            appellate.setAccesscode(uuserid);
-                            appellate.setConid(ucondate);
-                            appellate.setStatus("3");
-                            ACRGBWSResult UpdateAppellate = this.UPDATEAPELLATE(datasource, "NONUPDATE", appellate);
-                            message.add("Afilliate Tagging:[" + UpdateAppellate.getMessage() + "]");
-                            //UPDATE CONTRACT DATE PERIOD
-                            ACRGBWSResult upDateConDatePeriod = this.TAGCONTRACTPERIOD(datasource, ucondate.trim());
-                            message.add("Con Date Period Tagging:[" + upDateConDatePeriod.getMessage() + "]");
-                            result.setMessage(message.toString());
-                            result.setSuccess(true);
-                        } else {
-                            result.setSuccess(true);
-                            //UPDATE CONTRACT DATE PERIOD
-                            ACRGBWSResult upDateConDatePeriod = this.TAGCONTRACTPERIOD(datasource, ucondate.trim());
-                            Appellate appellate = new Appellate();
-                            appellate.setAccesscode(uuserid);
-                            appellate.setConid(ucondate);
-                            appellate.setStatus("3");
-                            ACRGBWSResult UpdateAppellate = this.UPDATEAPELLATE(datasource, "NONUPDATE", appellate);
-                            result.setMessage(getResult.getMessage() + " Update Contract Period Status "
-                                    + upDateConDatePeriod.getMessage() + " , " + UpdateAppellate.getMessage());
-
-                        }
-                    } else {
-                        result.setMessage(getConDateByid.getMessage());
-                    }
-                } else {
-                    result.setSuccess(true);
-                    //UPDATE CONTRACT DATE PERIOD
-                    ACRGBWSResult upDateConDatePeriod = this.TAGCONTRACTPERIOD(datasource, ucondate);
-                    Appellate appellate = new Appellate();
-                    appellate.setAccesscode(uuserid);
-                    appellate.setConid(ucondate);
-                    appellate.setStatus("3");
-                    ACRGBWSResult UpdateAppellate = this.UPDATEAPELLATE(datasource, "NONUPDATE", appellate);
-                    result.setMessage(getinsertresult.getString("Message")
-                            + " Update Contract Period Status " + upDateConDatePeriod.getMessage() + " , "
-                            + UpdateAppellate.getMessage());
-                }
+                getinsertresult.setString("utags", "NONUPDATE".trim());
             }
-        } catch (SQLException | IOException ex) {
+            getinsertresult.setString("uuserid", uuserid.trim());
+            getinsertresult.setString("ucondate", ucondate.trim());
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setMessage(getinsertresult.getString("Message"));
+                result.setSuccess(true);
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -870,31 +680,6 @@ public class UpdateMethods {
             statement.registerOutParameter("Code", OracleTypes.INTEGER);
             statement.setString("pusername", pusername.trim());
             statement.setString("ppasscode", encryptpword.trim());
-            statement.execute();
-            if (statement.getString("Message").equals("SUCC")) {
-                result.setMessage(statement.getString("Message"));
-                result.setSuccess(true);
-            } else {
-                result.setMessage(statement.getString("Message"));
-            }
-        } catch (SQLException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
-    //----------------------------------------------------------------
-    public ACRGBWSResult TAGCONTRACTPERIOD(final DataSource datasource, final String pcondateid) throws ParseException {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.TAGCONTRACTPERIOD(:Message,:Code,:pcondateid)");
-            statement.registerOutParameter("Message", OracleTypes.VARCHAR);
-            statement.registerOutParameter("Code", OracleTypes.INTEGER);
-            statement.setString("pcondateid", pcondateid.trim());
             statement.execute();
             if (statement.getString("Message").equals("SUCC")) {
                 result.setMessage(statement.getString("Message"));
@@ -1239,6 +1024,34 @@ public class UpdateMethods {
             }
             /// methods.ActivityLogs(datasource, userLogs);
 
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult UPDATEMAPPEDROLEBASECONDATE(final DataSource datasource, final String accessid, final String pcondate, final String tags) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEMAPPEDROLEBASECONDATE(:Message,:Code,"
+                    + ":accessid,:pcondate,:tags)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("accessid", accessid.trim());
+            getinsertresult.setString("pcondate", pcondate.trim());
+            getinsertresult.setString("tags", tags.trim().toUpperCase());
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setMessage(getinsertresult.getString("Message"));
+                result.setSuccess(true);
+            } else {
+                result.setMessage(getinsertresult.getString("Message"));
+            }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);

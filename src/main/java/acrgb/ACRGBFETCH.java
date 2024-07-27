@@ -36,6 +36,8 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * REST Web Service
@@ -568,15 +570,16 @@ public class ACRGBFETCH {
                     }
                     case "APEX": {// TAGS = APEX  USERID  = HOSPITAL CODE
                         ACRGBWSResult restA = fetchmethods.GETAPPELLATE(dataSource, userid, "ACTIVE");
+                        System.out.println(restA);
                         List<String> hcpnlist = Arrays.asList(restA.getResult().split(","));
                         ArrayList<ManagingBoard> mblist = new ArrayList<>();
                         for (int h = 0; h < hcpnlist.size(); h++) {
+                            System.out.println(hcpnlist.get(h));
                             ACRGBWSResult mgresult = methods.GETMBWITHID(dataSource, hcpnlist.get(h).trim());
                             if (mgresult.isSuccess()) {
                                 ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
                                 mblist.add(mb);
                             }
-                              System.err.println("MANAGING BOARD RESULT "+mgresult);
                         }
                         if (mblist.size() > 0) {
                             result.setMessage("OK");
@@ -924,11 +927,12 @@ public class ACRGBFETCH {
 //        return result;
 //    }
     @GET
-    @Path("GETOLDPASSCODE/{puserid}")
+    @Path("GETOLDPASSCODE")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GETOLDPASSCODE(
             @HeaderParam("token") String token,
-            @PathParam("puserid") String puserid) {
+            @HeaderParam("userid") String userid,
+            @HeaderParam("passcode") String passcode) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -937,7 +941,7 @@ public class ACRGBFETCH {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult BookingResult = fetchmethods.GETOLDPASSCODE(dataSource, puserid);
+            ACRGBWSResult BookingResult = fetchmethods.GETOLDPASSCODE(dataSource, userid, passcode);
             result.setMessage(BookingResult.getMessage());
             result.setResult(BookingResult.getResult());
             result.setSuccess(BookingResult.isSuccess());
@@ -968,26 +972,27 @@ public class ACRGBFETCH {
         return result;
     }
 
-    @GET
-    @Path("GETACR_BOOKING")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GETACR_BOOKING(
-            @HeaderParam("token") String token) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            ACRGBWSResult BookingResult = fetchmethods.GETACR_BOOKING(dataSource);
-            result.setMessage(BookingResult.getMessage());
-            result.setResult(BookingResult.getResult());
-            result.setSuccess(BookingResult.isSuccess());
-        }
-        return result;
-    }
+//    @GET
+//    @Path("GETACR_BOOKING")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult GETACR_BOOKING(
+//            @HeaderParam("token") String token) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+//        if (!GetPayLoad.isSuccess()) {
+//            result.setMessage(GetPayLoad.getMessage());
+//        } else {
+////            ACRGBWSResult BookingResult = fetchmethods.GETACR_BOOKING(dataSource);
+////            result.setMessage(BookingResult.getMessage());
+////            result.setResult(BookingResult.getResult());
+////            result.setSuccess(BookingResult.isSuccess());
+//        }
+//
+//        return result;
+//    }
 
     //INSERT EMAIL CREDEDNTIALS
     @GET
@@ -1000,10 +1005,12 @@ public class ACRGBFETCH {
 
     //GET ALL CONTRACT
     @GET
-    @Path("GetAllContract/{tags}")
+    @Path("GetAllContract/{tags}/{target}")    //BOOK    //NOTBOOK
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetllContract(
-            @HeaderParam("token") String token, @PathParam("tags") String tags) {
+            @HeaderParam("token") String token,
+            @PathParam("tags") String tags,
+            @PathParam("target") String target) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -1012,10 +1019,20 @@ public class ACRGBFETCH {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult GetAllContract = fetchmethods.GETALLCONTRACT(dataSource, tags, "0");
-            result.setMessage(GetAllContract.getMessage());
-            result.setResult(GetAllContract.getResult());
-            result.setSuccess(GetAllContract.isSuccess());
+            if (target.toUpperCase().trim().equals("NOTBOOK")) {
+                ACRGBWSResult GetAllContract = fetchmethods.GETALLCONTRACT(dataSource, tags, "0");
+                result.setMessage(GetAllContract.getMessage());
+                result.setResult(GetAllContract.getResult());
+                result.setSuccess(GetAllContract.isSuccess());
+            } else if (target.toUpperCase().trim().equals("BOOK")) {
+                ACRGBWSResult GetAllContract = fetchmethods.GETBOOKCONTRACT(dataSource, tags, "0");
+                result.setMessage(GetAllContract.getMessage());
+                result.setResult(GetAllContract.getResult());
+                result.setSuccess(GetAllContract.isSuccess());
+            } else {
+                result.setMessage("NOT FOUND REQUEST TYPE");
+            }
+
         }
         return result;
     }
@@ -1063,9 +1080,10 @@ public class ACRGBFETCH {
                         break;
                     }
 
-                    default:
+                    default: {
                         result.setMessage("TAGS NOT FOUND");
                         break;
+                    }
                 }
             } else {
                 ACRGBWSResult GetRole = methods.GETROLE(dataSource, puserid, "ACTIVE");
@@ -1095,9 +1113,10 @@ public class ACRGBFETCH {
                             result.setSuccess(GetContract.isSuccess());
                             break;
                         }
-                        default:
+                        default: {
                             result.setMessage("TAGS NOT FOUND");
                             break;
+                        }
                     }
 
                 } else {
@@ -1202,6 +1221,46 @@ public class ACRGBFETCH {
         result.setResult(GetResult.getResult());
         result.setSuccess(GetResult.isSuccess());
         //--------------------------------------
+        return result;
+    }
+
+    @GET
+    @Path("Test")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult Login() {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setSuccess(false);
+        result.setMessage("");
+        result.setResult("");
+        //  RequestBody requestbody = RequestBody.create(utility.ObjectMapper().writeValueAsString(user), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+        Request request = new Request.Builder().url(utility.GetString("GetFacility") + "Test").get().build();
+        try (Response response = utility.OkHttpClient().newCall(request).execute()) {
+            if (response.code() == 200) {
+                ACRGBWSResult shareresult = utility.ObjectMapper().readValue(response.body().string(), ACRGBWSResult.class);
+                if (shareresult.isSuccess()) {
+
+                    result.setMessage("TEST ENV. READING");
+                    result.setResult(shareresult.getResult());
+                    result.setSuccess(true);
+//                        UserInformation userinformation = new UserInformation();
+//                        userinformation = utility.ObjectMapper().readValue(shareresult.getResult(), UserInformation.class);
+//                        String usertoken = token.Generate(userinformation.getOrganizationname(), "Share Web Application", userinformation.getUsername(), userinformation.getPassword());
+//                        LoginResult loginresult = new LoginResult();
+//                        loginresult.setUserinformation(userinformation);
+//                        loginresult.setToken(usertoken);
+//                        result.setSuccess(shareresult.isSuccess());
+//                        result.setResult(utility.ObjectMapper().writeValueAsString(loginresult));
+                } else {
+                    result.setResult(utility.ObjectMapper().writeValueAsString(shareresult));
+                }
+
+            } else {
+                result.setMessage(response.body().string());
+            }
+        } catch (IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(ACRGBFETCH.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return result;
     }
 

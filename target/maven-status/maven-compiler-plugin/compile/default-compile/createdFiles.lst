@@ -42,6 +42,7 @@ acrgb\method\Forgetpassword$1.class
 acrgb\structure\AccountPayable.class
 acrgb\structure\ProcessAmountBadget.class
 acrgb\method\Methods.class
+acrgb\method\ContractTagging.class
 acrgb\method\Forgetpassword.class
 acrgb\ACRGBFETCH.class
 acrgb\utility\Cryptor.class

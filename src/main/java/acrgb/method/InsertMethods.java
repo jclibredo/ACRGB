@@ -114,7 +114,7 @@ public class InsertMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult INSERTCONTRACT(final DataSource datasource, final Contract contract) {
+     public ACRGBWSResult INSERTCONTRACT(final DataSource datasource, final Contract contract) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -410,10 +410,10 @@ public class InsertMethods {
                 logs.UserLogsMethod(datasource, "REMOVED-ACCESS", userLogs, userroleindex.getUserid(), accesslist.get(x));
             }
             if (errorList.size() > 0) {
+                result.setMessage(errorList.toString());
+            } else {
                 result.setSuccess(true);
                 result.setMessage("OK");
-            } else {
-                result.setMessage(errorList.toString());
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -737,8 +737,8 @@ public class InsertMethods {
     }
 
     public ACRGBWSResult INSERTAPPELLATE(final DataSource datasource,
-            final String uaccesscode, //SINGLE
-            final String ucontrolcode, //MULTIPLE
+            final String userid, //SINGLE
+            final String accessid, //MULTIPLE
             final String createdby,
             final String datecreated) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -750,15 +750,15 @@ public class InsertMethods {
             UserActivity userlogs = utility.UserActivity();
             ArrayList<String> errorCode = new ArrayList<>();
             ArrayList<String> errorList = new ArrayList<>();
-            List<String> accesslist = Arrays.asList(ucontrolcode.split(","));
+            List<String> accesslist = Arrays.asList(accessid.split(","));
             for (int x = 0; x < accesslist.size(); x++) {
                 //------------------------------------------------------------------------------------------------
                 CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTAPPELLATE(:Message,:Code,"
-                        + ":uaccesscode,:ucontrolcode)");
+                        + ":userid,:accessid)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("uaccesscode", uaccesscode);
-                getinsertresult.setString("ucontrolcode", accesslist.get(x));
+                getinsertresult.setString("userid", userid);
+                getinsertresult.setString("accessid", accesslist.get(x));
                 getinsertresult.execute();
                 //------------------------------------------------------------------------------------------------
                 if (!getinsertresult.getString("Message").equals("SUCC")) {
@@ -770,13 +770,13 @@ public class InsertMethods {
                 }
                 userlogs.setActdetails(getinsertresult.getString("Message"));
                 userlogs.setActby(createdby); // 1,2,2,APEX,HCPN
-                logs.UserLogsMethod(datasource, "ADD-APPELIATE", userlogs, uaccesscode, accesslist.get(x).trim());
+                logs.UserLogsMethod(datasource, "ADD-APPELIATE", userlogs, userid, accesslist.get(x).trim());
             }
             if (errorCode.size() > 0) {
+                result.setMessage(errorList.toString());
+            } else {
                 result.setSuccess(true);
                 result.setMessage("OK");
-            } else {
-                result.setMessage(errorList.toString());
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());

@@ -49,6 +49,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import okhttp3.OkHttpClient;
 
 /**
  *
@@ -64,7 +65,7 @@ public class Utility {
             + "(?=.*[a-z])(?=.*[A-Z])"
             + "(?=.*[@#$%^&+=])"
             + "(?=\\S+$).{8,20}$";
-    private static String cipherkey = "A263B7980A15ADE7";
+    private static final String cipherkey = "A263B7980A15ADE7";
     private final String email_pattern = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
 //represents starting character of the string.
@@ -77,6 +78,11 @@ public class Utility {
 //$ represents the end of the string.  
     public ACRGBWSResult ACRGBWSResult() {
         return new ACRGBWSResult();
+    }
+
+    public OkHttpClient OkHttpClient() {
+
+        return new OkHttpClient();
     }
 
     public ACRGBPayload ACRGBPayload() {
@@ -105,18 +111,18 @@ public class Utility {
         return m.matches();
     }
 
-//    public String GetStrings(String name) {
-//        String result = cipherkey;
-////        try {
-////            Context context = new InitialContext();
-////            Context environment = (Context) context.lookup("java:comp/env");
-////            result = (String) environment.lookup(name);
-////        } catch (NamingException ex) {
-////            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
-////            result = ex.getMessage();
-////        }
-//        return result;
-//    }
+    public String GetStrings(String name) {
+        String result = "";
+        try {
+            Context context = new InitialContext();
+            Context environment = (Context) context.lookup("java:comp/env");
+            result = (String) environment.lookup(name);
+        } catch (NamingException ex) {
+            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
+            result = ex.getMessage();
+        }
+        return result;
+    }
 
     public boolean IsValidNumber(String string) {
         try {
@@ -465,6 +471,7 @@ public class Utility {
         }
     }
 //CREATE 2FA CODE
+
     public String Create2FACode() {
         int randnums = 0;
         for (int i = 0; i < 1; i++) {

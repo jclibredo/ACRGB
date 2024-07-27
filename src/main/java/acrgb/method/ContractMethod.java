@@ -386,6 +386,12 @@ public class ContractMethod {
                 contract.setAmount(resultset.getString("AMOUNT"));
                 contract.setBaseamount(resultset.getString("BASEAMOUNT"));
                 contract.setConid(resultset.getString("CONID"));
+                ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE").trim());
+                if (getcondateA.isSuccess()) {
+                    contract.setContractdate(getcondateA.getResult());
+                } else {
+                    contract.setContractdate("");
+                }
                 contract.setCreatedby(resultset.getString("CREATEDBY"));
                 contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
                 if (resultset.getString("ENDDATE") == null) {
@@ -765,10 +771,7 @@ public class ContractMethod {
                                         }
                                     }
                                 }
-                                
-                                
-                                
-                                
+
                             }
                         }
                     }

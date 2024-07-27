@@ -56,7 +56,7 @@ public class Cryptor {
             return new String(decryptedText, "UTF-8");
         } catch (UnsupportedEncodingException | InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | InvalidKeySpecException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e) {
 
-            return e.toString();
+            return e.getLocalizedMessage();
         }
     }
 
@@ -78,8 +78,7 @@ public class Cryptor {
             System.arraycopy(cipherText, 0, encryptedData, iv.length, cipherText.length);
             return Base64.getEncoder().encodeToString(encryptedData);
         } catch (UnsupportedEncodingException | InvalidAlgorithmParameterException | InvalidKeyException | NoSuchAlgorithmException | InvalidKeySpecException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e) {
-
-            return e.toString();
+            return e.getLocalizedMessage();
         }
     }
 
