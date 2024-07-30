@@ -185,19 +185,16 @@ public class ACRGBUPDATE {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             if (user.getUsername().isEmpty() && !user.getUserpassword().isEmpty()) {
-                //  System.out.println("UPDATE PASSWORD");
                 ACRGBWSResult insertresult = methods.CHANGEPASSWORD(dataSource, forgetPassword, user.getUserid(), user.getUserpassword());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
             } else if (user.getUserpassword().isEmpty() && !user.getUsername().isEmpty()) {
-                // System.out.println("UPDATE USERNAME");
                 ACRGBWSResult insertresult = methods.CHANGEUSERNAME(dataSource, user.getUserid(), user.getUsername());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
             } else {
-                // System.out.println("UPDATE BOTH");
                 ACRGBWSResult insertresult = methods.UPDATEUSERCREDENTIALS(dataSource, user.getUserid(), user.getUsername(), user.getUserpassword());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());

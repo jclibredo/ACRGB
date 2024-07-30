@@ -8,6 +8,7 @@ package acrgb;
 import acrgb.method.BookingMethod;
 import acrgb.method.ContractHistory;
 import acrgb.method.ContractMethod;
+import acrgb.method.ContractTagging;
 import acrgb.method.FetchMethods;
 import acrgb.method.GenerateRandomPassword;
 import acrgb.method.LedgerMethod;
@@ -64,6 +65,7 @@ public class ACRGBFETCH {
     private final ContractMethod con = new ContractMethod();
     private final UpdateMethods um = new UpdateMethods();
     private final BookingMethod bm = new BookingMethod();
+    private final ContractTagging ct = new ContractTagging();
 
     //GET ASSETS TYPE TBL
     @GET
@@ -828,7 +830,8 @@ public class ACRGBFETCH {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult updatecondate = um.UPDATEROLEINDEX(dataSource, "00", ucondateid, "NONUPDATE"); //ENDCONDATE
+            // ACRGBWSResult updatecondate = um.UPDATEROLEINDEX(dataSource, "00", ucondateid, "NONUPDATE"); //ENDCONDATE
+            ACRGBWSResult updatecondate = ct.EndContractUsingDateid(dataSource, ucondateid);
             result.setMessage(updatecondate.getMessage());
             result.setResult(updatecondate.getResult());
             result.setSuccess(updatecondate.isSuccess());
@@ -836,7 +839,7 @@ public class ACRGBFETCH {
         return result;
     }
 
-    //GET TRIGGER AUTOEND CONTRACT DATE
+    //GET RANDOM PASSWORD
     @GET
     @Path("GetRandomPasscode")
     @Produces(MediaType.APPLICATION_JSON)
@@ -857,7 +860,7 @@ public class ACRGBFETCH {
         return result;
     }
 
-    //GET TRIGGER AUTOEND CONTRACT DATE
+    //GET PREVIOS ENDED CONTRACT
     @GET
     @Path("GetPreviousContract/{paccount}/{contractid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -993,7 +996,6 @@ public class ACRGBFETCH {
 //
 //        return result;
 //    }
-
     //INSERT EMAIL CREDEDNTIALS
     @GET
     @Path("ValidateToken")
@@ -1019,18 +1021,24 @@ public class ACRGBFETCH {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            if (target.toUpperCase().trim().equals("NOTBOOK")) {
-                ACRGBWSResult GetAllContract = fetchmethods.GETALLCONTRACT(dataSource, tags, "0");
-                result.setMessage(GetAllContract.getMessage());
-                result.setResult(GetAllContract.getResult());
-                result.setSuccess(GetAllContract.isSuccess());
-            } else if (target.toUpperCase().trim().equals("BOOK")) {
-                ACRGBWSResult GetAllContract = fetchmethods.GETBOOKCONTRACT(dataSource, tags, "0");
-                result.setMessage(GetAllContract.getMessage());
-                result.setResult(GetAllContract.getResult());
-                result.setSuccess(GetAllContract.isSuccess());
-            } else {
-                result.setMessage("NOT FOUND REQUEST TYPE");
+            switch (target.toUpperCase().trim()) {
+                case "NOTBOOK": {
+                    ACRGBWSResult GetAllContract = fetchmethods.GETALLCONTRACT(dataSource, tags, "0");
+                    result.setMessage(GetAllContract.getMessage());
+                    result.setResult(GetAllContract.getResult());
+                    result.setSuccess(GetAllContract.isSuccess());
+                    break;
+                }
+                case "BOOK": {
+                    ACRGBWSResult GetAllContract = fetchmethods.GETBOOKCONTRACT(dataSource, tags, "0");
+                    result.setMessage(GetAllContract.getMessage());
+                    result.setResult(GetAllContract.getResult());
+                    result.setSuccess(GetAllContract.isSuccess());
+                    break;
+                }
+                default:
+                    result.setMessage("NOT FOUND REQUEST TYPE");
+                    break;
             }
 
         }
@@ -1149,8 +1157,8 @@ public class ACRGBFETCH {
                 } else if (code.isEmpty()) {
                     result.setMessage("2FA CODE IS REQUIRED");
                 } else if (user.getFa2code().trim().equals(code.trim())) {
-                    java.util.Date d1 = new java.util.Date();
-                    SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm a");
+//                    java.util.Date d1 = new java.util.Date();
+//                    SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm a");
                     result.setMessage(GetResult.getMessage());
                     result.setResult(GetResult.getResult());
                     result.setSuccess(GetResult.isSuccess());
@@ -1224,44 +1232,43 @@ public class ACRGBFETCH {
         return result;
     }
 
-    @GET
-    @Path("Test")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult Login() {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setSuccess(false);
-        result.setMessage("");
-        result.setResult("");
-        //  RequestBody requestbody = RequestBody.create(utility.ObjectMapper().writeValueAsString(user), okhttp3.MediaType.parse("application/json; charset=utf-8"));
-        Request request = new Request.Builder().url(utility.GetString("GetFacility") + "Test").get().build();
-        try (Response response = utility.OkHttpClient().newCall(request).execute()) {
-            if (response.code() == 200) {
-                ACRGBWSResult shareresult = utility.ObjectMapper().readValue(response.body().string(), ACRGBWSResult.class);
-                if (shareresult.isSuccess()) {
-
-                    result.setMessage("TEST ENV. READING");
-                    result.setResult(shareresult.getResult());
-                    result.setSuccess(true);
-//                        UserInformation userinformation = new UserInformation();
-//                        userinformation = utility.ObjectMapper().readValue(shareresult.getResult(), UserInformation.class);
-//                        String usertoken = token.Generate(userinformation.getOrganizationname(), "Share Web Application", userinformation.getUsername(), userinformation.getPassword());
-//                        LoginResult loginresult = new LoginResult();
-//                        loginresult.setUserinformation(userinformation);
-//                        loginresult.setToken(usertoken);
-//                        result.setSuccess(shareresult.isSuccess());
-//                        result.setResult(utility.ObjectMapper().writeValueAsString(loginresult));
-                } else {
-                    result.setResult(utility.ObjectMapper().writeValueAsString(shareresult));
-                }
-
-            } else {
-                result.setMessage(response.body().string());
-            }
-        } catch (IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(ACRGBFETCH.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+//    @GET
+//    @Path("Test")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult Login() {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setSuccess(false);
+//        result.setMessage("");
+//        result.setResult("");
+//        //  RequestBody requestbody = RequestBody.create(utility.ObjectMapper().writeValueAsString(user), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+//        Request request = new Request.Builder().url(utility.GetString("GetFacility") + "Test").get().build();
+//        try (Response response = utility.OkHttpClient().newCall(request).execute()) {
+//            if (response.code() == 200) {
+//                ACRGBWSResult shareresult = utility.ObjectMapper().readValue(response.body().string(), ACRGBWSResult.class);
+//                if (shareresult.isSuccess()) {
+//
+//                    result.setMessage("TEST ENV. READING");
+//                    result.setResult(shareresult.getResult());
+//                    result.setSuccess(true);
+////                        UserInformation userinformation = new UserInformation();
+////                        userinformation = utility.ObjectMapper().readValue(shareresult.getResult(), UserInformation.class);
+////                        String usertoken = token.Generate(userinformation.getOrganizationname(), "Share Web Application", userinformation.getUsername(), userinformation.getPassword());
+////                        LoginResult loginresult = new LoginResult();
+////                        loginresult.setUserinformation(userinformation);
+////                        loginresult.setToken(usertoken);
+////                        result.setSuccess(shareresult.isSuccess());
+////                        result.setResult(utility.ObjectMapper().writeValueAsString(loginresult));
+//                } else {
+//                    result.setResult(utility.ObjectMapper().writeValueAsString(shareresult));
+//                }
+//
+//            } else {
+//                result.setMessage(response.body().string());
+//            }
+//        } catch (IOException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(ACRGBFETCH.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
 }
