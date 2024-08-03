@@ -22,6 +22,7 @@ import acrgb.structure.Total;
 import acrgb.structure.User;
 import acrgb.structure.UserActivity;
 import acrgb.structure.UserInfo;
+import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Cryptor;
 import acrgb.utility.Utility;
 import java.io.IOException;
@@ -3411,6 +3412,7 @@ public class Methods {
                     if (!endResult.isSuccess()) {
                         errorList.add(endResult.getMessage());
                     }
+
                 }
             }
             if (errorList.size() > 0) {
@@ -3455,5 +3457,29 @@ public class Methods {
         }
         return result;
     }
+
+    public ACRGBWSResult VALIDATECONTRACTDATE(final DataSource dataSource, final String pdatefrom, final String pdateto) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.VALIDATECONTRACTDATE(:puserid,:pcondate); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(pdatefrom).getTime()));
+            statement.setDate("udateto", (Date) new Date(utility.StringToDate(pdateto).getTime()));
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                result.setSuccess(true);
+            }
+        } catch (SQLException | ParseException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+   
 
 }

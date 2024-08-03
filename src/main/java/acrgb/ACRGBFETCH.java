@@ -6,14 +6,16 @@
 package acrgb;
 
 import acrgb.method.BookingMethod;
-import acrgb.method.ContractHistory;
+import acrgb.method.ContractHistoryService;
 import acrgb.method.ContractMethod;
 import acrgb.method.ContractTagging;
 import acrgb.method.FetchMethods;
 import acrgb.method.GenerateRandomPassword;
 import acrgb.method.LedgerMethod;
+import acrgb.method.Mapped;
 import acrgb.method.Methods;
 import acrgb.method.UpdateMethods;
+import acrgb.method.resourcefile.ConfigReader;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.ForgetPassword;
 import acrgb.structure.ManagingBoard;
@@ -22,7 +24,6 @@ import acrgb.utility.Utility;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,8 +38,6 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
-import okhttp3.Request;
-import okhttp3.Response;
 
 /**
  * REST Web Service
@@ -58,6 +57,7 @@ public class ACRGBFETCH {
     @Resource(lookup = "jdbc/acrgb")
     private DataSource dataSource;
 
+    private final ConfigReader rs = new ConfigReader();
     private final Utility utility = new Utility();
     private final FetchMethods fetchmethods = new FetchMethods();
     private final Methods methods = new Methods();
@@ -1046,94 +1046,27 @@ public class ACRGBFETCH {
     }
 
     @GET
-    @Path("GetContractHistory/{puserid}/{accountlevel}")
+    @Path("GetContractHistory/{userId}/{requestCode}/{targetData}")//PRO LEVEL AND PHIC LEVEL
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetContractHistory(
             @HeaderParam("token") String token,
-            @PathParam("puserid") String puserid,
-            @PathParam("accountlevel") String accountlevel) throws ParseException {
+            @PathParam("userId") String userId,
+            @PathParam("requestCode") String requestCode,
+            @PathParam("targetData") String targetData) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ContractHistory ch = new ContractHistory();
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            if (puserid.equals("0")) {
-                switch (accountlevel.toUpperCase().trim()) {
-                    case "ALLHCPN"://GET ALL ENDED CONTRACT OF HCPN  USING HCPN CODE
-                    {
-                        ACRGBWSResult getContractResult = ch.GetAllHCPNContract(dataSource);
-                        result.setMessage(getContractResult.getMessage());
-                        result.setResult(getContractResult.getResult());
-                        result.setSuccess(getContractResult.isSuccess());
-                        break;
-                    }
-                    case "ALLAPEX"://GET ALL ENDED CONTRACT OF APEX  USERID IS 0
-                    {
-                        ACRGBWSResult getContractResult = ch.GetAllAPEXContract(dataSource);
-                        result.setMessage(getContractResult.getMessage());
-                        result.setResult(getContractResult.getResult());
-                        result.setSuccess(getContractResult.isSuccess());
-                        break;
-                    }
-                    case "ALLAPRO"://GET ALL ENDED CONTRACT OF PRO
-                    {
-                        ACRGBWSResult getContractResult = ch.GetAllPROContract(dataSource);
-                        result.setMessage(getContractResult.getMessage());
-                        result.setResult(getContractResult.getResult());
-                        result.setSuccess(getContractResult.isSuccess());
-                        break;
-                    }
-
-                    default: {
-                        result.setMessage("TAGS NOT FOUND");
-                        break;
-                    }
-                }
-            } else {
-                ACRGBWSResult GetRole = methods.GETROLE(dataSource, puserid, "ACTIVE");
-                if (GetRole.isSuccess()) {
-                    switch (accountlevel.toUpperCase().trim()) {
-                        case "HCPN": //GET ENDED CONTRACT OF HCPN USING HCPN CODE
-                        {
-                            ACRGBWSResult GetContract = ch.GetHCPNContract(dataSource, GetRole.getResult().trim());
-                            result.setMessage(GetContract.getMessage());
-                            result.setResult(GetContract.getResult());
-                            result.setSuccess(GetContract.isSuccess());
-                            break;
-                        }
-                        case "FACILITY"://GET ENDED CONTRACT OF FACILITY USING PMCC NO
-                        {
-                            ACRGBWSResult GetContract = ch.GetHCIContract(dataSource, GetRole.getResult().trim());
-                            result.setMessage(GetContract.getMessage());
-                            result.setResult(GetContract.getResult());
-                            result.setSuccess(GetContract.isSuccess());
-                            break;
-                        }
-                        case "PRO"://GET ENDED CONTRACT OF PRO  USING PROCODE
-                        {
-                            ACRGBWSResult GetContract = ch.GetPROContract(dataSource, GetRole.getResult().trim());
-                            result.setMessage(GetContract.getMessage());
-                            result.setResult(GetContract.getResult());
-                            result.setSuccess(GetContract.isSuccess());
-                            break;
-                        }
-                        default: {
-                            result.setMessage("TAGS NOT FOUND");
-                            break;
-                        }
-                    }
-
-                } else {
-                    result.setMessage(GetRole.getMessage());
-                }
-
-            }
-        }
-
+        ContractHistoryService ch = new ContractHistoryService();
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+//        if (!GetPayLoad.isSuccess()) {
+//            result.setMessage(GetPayLoad.getMessage());
+//        } else {
+        ACRGBWSResult getResult = ch.GetHistoryResult(dataSource, userId, "INACTIVE", requestCode, targetData);
+        result.setMessage(getResult.getMessage());
+        result.setResult(getResult.getResult());
+        result.setSuccess(getResult.isSuccess());
+//        }
         return result;
     }
 
@@ -1228,6 +1161,41 @@ public class ACRGBFETCH {
         result.setMessage(GetResult.getMessage());
         result.setResult(GetResult.getResult());
         result.setSuccess(GetResult.isSuccess());
+        //--------------------------------------
+        return result;
+    }
+
+    @GET
+    @Path("GETPREVIOUSMAPPED/{puserid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GETPREVIOUSMAPPED(
+            @PathParam("puserid") String puserid) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        Mapped map = new Mapped();
+        if (methods.GETROLE(dataSource, puserid, "ACTIVE").isSuccess()) {
+            ACRGBWSResult addss = map.GETPREVIOUSMAP(dataSource, methods.GETROLE(dataSource, puserid, "ACTIVE").getResult().trim());
+            result.setMessage(addss.getMessage());
+            result.setResult(addss.getResult());
+            result.setSuccess(addss.isSuccess());
+        }
+        return result;
+    }
+
+    @GET
+    @Path("TestFile")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult TestFile() throws ParseException, IOException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+//        //--------------------------------------
+//        //./src/main/resources/resourcefile/resource.properties.txt
+//        ArrayList<String> data = rs.readFile("./src/main/resources/resourcefile/resource.properties.txt");
+//        System.out.println(data.get(0));
         //--------------------------------------
         return result;
     }

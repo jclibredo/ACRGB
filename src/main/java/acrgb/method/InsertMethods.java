@@ -114,7 +114,7 @@ public class InsertMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-     public ACRGBWSResult INSERTCONTRACT(final DataSource datasource, final Contract contract) {
+    public ACRGBWSResult INSERTCONTRACT(final DataSource datasource, final Contract contract) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -145,20 +145,21 @@ public class InsertMethods {
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 //INSERT TO ACTIVITY LOGS
-                int countpro = 0;
+                int counthci = 0;
                 ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, contract.getHcfid());
                 if (getSubject.isSuccess()) {
                     logsTags = "ADD-CONTRACT-HCI";
+                    counthci++;
                 } else {
                     ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, contract.getHcfid());
                     if (getSubjectA.isSuccess()) {
                         logsTags = "ADD-CONTRACT-HCPN";
                     } else {
                         logsTags = "ADD-CONTRACT-PRO";
-                        countpro++;
+
                     }
                 }
-                if (countpro == 0) {
+                if (counthci == 0) {
                     //INSERT CONTRACT ID TO ROLE INDEX TABLE
                     um.UPDATEROLEINDEX(datasource,
                             contract.getHcfid(), contract.getContractdate(), "UPDATE");
@@ -170,6 +171,9 @@ public class InsertMethods {
                     appellate.setConid(contract.getContractdate());
                     um.UPDATEAPELLATE(datasource, "NONUPDATE", appellate);
                     //END INSERT CONTRACT ID TO APPELLATE TABLE
+                } else {
+                    um.UPDATEROLEINDEX(datasource,
+                            contract.getHcfid(), contract.getContractdate(), "HCIUPDATE");
                 }
                 result.setMessage(getinsertresult.getString("Message"));
                 result.setSuccess(true);
@@ -901,26 +905,33 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Methods methods = new Methods();
         UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userLogs = utility.UserActivity();
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONDATE(:Message,:Code,"
-                    + ":udatefrom,:udateto,:ucreatedby,:udatecreated)");
-            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(contractdate.getDatefrom()).getTime()));
-            getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(contractdate.getDateto()).getTime()));
-            getinsertresult.setString("ucreatedby", contractdate.getCreatedby());
-            getinsertresult.setDate("udatecreated", (Date) new Date(utility.StringToDate(contractdate.getDatecreated()).getTime()));
-            getinsertresult.execute();
-            if (getinsertresult.getString("Message").equals("SUCC")) {
-                result.setSuccess(true);
-                userLogs.setActstatus("SUCCESS");
-                result.setMessage(getinsertresult.getString("Message"));
+            if (!methods.VALIDATECONTRACTDATE(datasource, contractdate.getDatefrom(), contractdate.getDateto()).isSuccess()) {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONDATE(:Message,:Code,"
+                        + ":udatefrom,:udateto,:ucreatedby,:udatecreated)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(contractdate.getDatefrom()).getTime()));
+                getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(contractdate.getDateto()).getTime()));
+                getinsertresult.setString("ucreatedby", contractdate.getCreatedby());
+                getinsertresult.setDate("udatecreated", (Date) new Date(utility.StringToDate(contractdate.getDatecreated()).getTime()));
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    result.setSuccess(true);
+                    userLogs.setActstatus("SUCCESS");
+                    result.setMessage(getinsertresult.getString("Message"));
+                } else {
+                    userLogs.setActstatus("FAILED");
+                    result.setMessage(getinsertresult.getString("Message"));
+                }
             } else {
+                result.setMessage("DateFrom : " + contractdate.getDatefrom() + " DateTo" + contractdate.getDateto() + " is already exist :");
                 userLogs.setActstatus("FAILED");
-                result.setMessage(getinsertresult.getString("Message"));
             }
+
             //==============ACTIVLITY LOGS AREA ===========================
             userLogs.setActby(contractdate.getCreatedby());
             userLogs.setActdetails(contractdate.getDatefrom() + " - " + contractdate.getDateto() + "|" + result.getMessage());

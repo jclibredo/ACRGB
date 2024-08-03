@@ -1,3 +1,4 @@
+acrgb\method\Mapped.class
 acrgb\structure\UserActivity.class
 acrgb\ACRGBUPDATE.class
 acrgb\method\BookingMethod.class
@@ -13,6 +14,7 @@ acrgb\method\LedgerMethod.class
 acrgb\method\UserActivityLogs.class
 acrgb\structure\LogStatus.class
 acrgb\structure\ReportsHCPNSummary.class
+acrgb\method\resourcefile\ConfigReader.class
 acrgb\structure\ACRGBPayload.class
 acrgb\utility\Utility.class
 acrgb\structure\ExcludedCode.class
@@ -22,6 +24,7 @@ acrgb\structure\Ledger.class
 acrgb\structure\ReportsParam.class
 acrgb\structure\Accreditation.class
 acrgb\method\ContractHistory.class
+acrgb\method\ContractHistoryService.class
 acrgb\method\GenerateRandomPassword.class
 acrgb\method\InsertMethods.class
 acrgb\method\job\SchedulerMain.class

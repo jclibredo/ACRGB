@@ -619,10 +619,19 @@ public class UpdateMethods {
                     + ":utags,:uuserid,:ucondate)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            if (tagsss.trim().toUpperCase().equals("UPDATE")) {
-                getinsertresult.setString("utags", "UPDATE".trim());
-            } else {
-                getinsertresult.setString("utags", "NONUPDATE".trim());
+            switch (tagsss.trim().toUpperCase()) {
+                case "UPDATE": {
+                    getinsertresult.setString("utags", "UPDATE".trim());
+                    break;
+                }
+                case "HCIUPDATE": {
+                    getinsertresult.setString("utags", "HCIUPDATE".trim());
+                    break;
+                }
+                default: {
+                    getinsertresult.setString("utags", "NONUPDATE".trim());
+                    break;
+                }
             }
             getinsertresult.setString("uuserid", uuserid.trim());
             getinsertresult.setString("ucondate", ucondate.trim());
@@ -1032,19 +1041,20 @@ public class UpdateMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult UPDATEMAPPEDROLEBASECONDATE(final DataSource datasource, final String accessid, final String pcondate, final String tags) throws ParseException {
+    public ACRGBWSResult UPDATEMAPPEDROLEBASECONDATE(
+            final DataSource datasource,
+            final String accessid,
+            final String pcondate) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEMAPPEDROLEBASECONDATE(:Message,:Code,"
-                    + ":accessid,:pcondate,:tags)");
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEMAPPEDROLEBASECONDATE(:Message,:Code,:accessid,:pcondate)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("accessid", accessid.trim());
-            getinsertresult.setString("pcondate", pcondate.trim());
-            getinsertresult.setString("tags", tags.trim().toUpperCase());
+            getinsertresult.setString("accessid", accessid);
+            getinsertresult.setString("pcondate", pcondate);
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setMessage(getinsertresult.getString("Message"));

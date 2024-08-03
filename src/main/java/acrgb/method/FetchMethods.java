@@ -5,6 +5,7 @@
  */
 package acrgb.method;
 
+import acrgb.method.resourcefile.ConfigReader;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Accreditation;
 import acrgb.structure.Assets;

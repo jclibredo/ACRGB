@@ -1,6 +1,8 @@
+D:\Java Swing\ACRGB\src\main\java\acrgb\method\ContractHistoryService.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\FetchMethods.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ExcludedCode.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\MBFacilityUnderRequest.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\method\Mapped.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\InsertMethods.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\LedgerMethod.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ForgetPassword.java
@@ -27,6 +29,7 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Archived.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\utility\Cryptor.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Ledger.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Assets.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\method\resourcefile\ConfigReader.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\AssetsType.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Book.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ReportsHCPNSummary.java

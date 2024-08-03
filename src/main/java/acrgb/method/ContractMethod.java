@@ -14,6 +14,7 @@ import acrgb.structure.ManagingBoard;
 import acrgb.structure.NclaimsData;
 import acrgb.structure.Total;
 import acrgb.structure.UserInfo;
+import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
 import java.io.IOException;
 import java.sql.CallableStatement;
@@ -864,7 +865,45 @@ public class ContractMethod {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET ROLE INDEX BY CONDATE
+    public ACRGBWSResult GETROLEINDEXCONDATE(final DataSource dataSource, final String pcondate) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEINDEXCONDATE(:pcondate); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("pcondate", pcondate.trim());
+            statement.execute();
+            ArrayList<UserRoleIndex> roleindexList = new ArrayList<>();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                UserRoleIndex roleindex = new UserRoleIndex();
+                roleindex.setRoleid(resultset.getString("ROLEID"));
+                roleindex.setUserid(resultset.getString("USERID"));
+                roleindex.setAccessid(resultset.getString("ACCESSID"));
+                roleindex.setCreatedby(resultset.getString("CREATEDBY"));
+                roleindex.setStatus(resultset.getString("STATUS"));
+                roleindex.setContractdate(resultset.getString("CONDATE"));
+                roleindex.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                roleindexList.add(roleindex);
+            }
+            if (roleindexList.size() > 0) {
+                result.setResult(utility.ObjectMapper().writeValueAsString(roleindexList));
+                result.setSuccess(true);
+                result.setMessage("OK");
+            } else {
+                result.setMessage("NO DATE FOUND");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

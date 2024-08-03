@@ -18,6 +18,7 @@ import acrgb.structure.ContractDate;
 import acrgb.structure.ForgetPassword;
 import acrgb.structure.MBRequestSummary;
 import acrgb.structure.ManagingBoard;
+import acrgb.structure.NclaimsData;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserInfo;
@@ -25,6 +26,9 @@ import acrgb.structure.UserLevel;
 import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
 import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -41,6 +45,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
+import oracle.jdbc.OracleTypes;
 
 //--------------------------------------
 //---------------------------------------
@@ -287,7 +292,6 @@ public class ACRGBPOST {
 //        }
 //        return result;
 //    }
-
     @POST
     @Path("INSERTMBREQUEST")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -516,12 +520,22 @@ public class ACRGBPOST {
                         userInfo.setEmail(userinfo.get(x).getEmail());
                         userInfo.setMiddlename(userinfo.get(x).getMiddlename());
                         userInfo.setLastname(userinfo.get(x).getLastname());
-                        if (userinfo.get(x).getRole().trim().toLowerCase().equals("HCI")) {
-                            userInfo.setRole("193");
-                        } else if (userinfo.get(x).getRole().trim().toLowerCase().equals("HCPN")) {
-                            userInfo.setRole("83");
-                        } else if (userinfo.get(x).getRole().trim().toLowerCase().equals("PRO")) {
-                            userInfo.setRole("82");
+                        switch (userinfo.get(x).getRole().trim().toLowerCase()) {
+                            case "HCI": {
+                                userInfo.setRole("193");
+                                break;
+                            }
+                            case "HCPN": {
+                                userInfo.setRole("83");
+                                break;
+                            }
+                            case "PRO": {
+                                userInfo.setRole("82");
+                                break;
+                            }
+                            default: {
+                                break;
+                            }
                         }
                         if (fm.FORUSERLEVEL(dataSource, userinfo.get(x).getRole()).isSuccess()) {
                             UserLevel level = utility.ObjectMapper().readValue(fm.FORUSERLEVEL(dataSource, userinfo.get(x).getRole()).getResult(), UserLevel.class);
@@ -570,6 +584,84 @@ public class ACRGBPOST {
             result.setMessage(BookingResult.getMessage());
             result.setResult(BookingResult.getResult());
             result.setSuccess(BookingResult.isSuccess());
+        }
+        return result;
+    }
+
+    @POST
+    @Path("InsertNclaims")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult InsertNclaims(final NclaimsData nclaims) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ArrayList<String> errorList = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection()) {
+            for (int x = 0; x < Integer.parseInt(nclaims.getTotalclaims()); x++) {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.INSERTCLAIMS(:Message,:Code,"
+                        + ":useries,:uaccreno,:upmccno,:udateadmission,:udatesubmitted,:uclaimamount,"
+                        + ":utags,:urvscode,:uicdcode,:utrn,:ubentype,:uclaimid,:uhcfname,:c1rvcode,:c2rvcode,:c1icdcode,:c2icdcode,:uopdtst)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("useries", nclaims.getSeries());
+                getinsertresult.setString("uaccreno", nclaims.getAccreno());
+                getinsertresult.setString("upmccno", nclaims.getPmccno());
+                getinsertresult.setString("udateadmission", nclaims.getDateadmission().trim());
+                getinsertresult.setDate("udateadmission", (Date) new Date(utility.StringToDate(nclaims.getDateadmission().trim()).getTime()));
+                getinsertresult.setDate("udatesubmitted", (Date) new Date(utility.StringToDate(nclaims.getDatesubmitted()).getTime()));
+                getinsertresult.setString("uclaimamount", nclaims.getClaimamount());
+                getinsertresult.setString("utags", nclaims.getTags());
+                getinsertresult.setString("urvscode", nclaims.getRvscode());
+                getinsertresult.setString("uicdcode", nclaims.getIcdcode());
+                getinsertresult.setString("utrn", nclaims.getTrn());
+                getinsertresult.setString("ubentype", nclaims.getBentype());
+                getinsertresult.setString("uclaimid", nclaims.getClaimid());
+                getinsertresult.setString("uhcfname", nclaims.getHcfname());
+                getinsertresult.setString("c1rvcode", nclaims.getC1rvcode());
+                getinsertresult.setString("c2rvcode", nclaims.getC2rvcode());
+                getinsertresult.setString("c1icdcode", nclaims.getC1icdcode());
+                getinsertresult.setString("c2icdcode", nclaims.getC2icdcode());
+                getinsertresult.setString("uopdtst", nclaims.getUopdtst());
+                getinsertresult.execute();
+                if (!getinsertresult.getString("Message").equals("SUCC")) {
+                    errorList.add(getinsertresult.getString("Message"));
+                }
+            }
+            //------------------------------------------------------------------------------------------------
+            if (errorList.size() > 0) {
+                result.setMessage("THERE'S AN ERROR");
+            } else {
+                result.setMessage("NO ERROR");
+            }
+            result.setResult(utility.ObjectMapper().writeValueAsString(errorList));
+            result.setSuccess(true);
+
+        } catch (SQLException | IOException | ParseException ex) {
+            Logger.getLogger(ACRGBPOST.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    @POST
+    @Path("Remap")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult Remap(@HeaderParam("token") String token,
+            final UserRoleIndex roleIndex) throws ParseException {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult remapRsult = insertmethods.INSEROLEINDEX(dataSource, roleIndex);
+            result.setMessage(remapRsult.getMessage());
+            result.setResult(remapRsult.getResult());
+            result.setSuccess(remapRsult.isSuccess());
         }
         return result;
     }

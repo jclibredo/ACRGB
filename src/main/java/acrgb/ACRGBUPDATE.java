@@ -391,7 +391,6 @@ public class ACRGBUPDATE {
             result.setSuccess(taggingresult.isSuccess());
             result.setResult(taggingresult.getResult());
         }
-
         return result;
     }
 

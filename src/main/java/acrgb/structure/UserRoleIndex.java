@@ -23,4 +23,5 @@ public class UserRoleIndex {
     private String createdby;
     private String datecreated;
     private String status;
+    private String contractdate;
 }
