@@ -22,7 +22,6 @@ import acrgb.structure.Total;
 import acrgb.structure.User;
 import acrgb.structure.UserActivity;
 import acrgb.structure.UserInfo;
-import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Cryptor;
 import acrgb.utility.Utility;
 import java.io.IOException;
@@ -3408,11 +3407,10 @@ public class Methods {
                         errorList.add(endContract.getMessage());
                     }
                     //UPDATE ROLE INDEX
-                    ACRGBWSResult endResult = um.UPDATEROLEINDEX(dataSource, "00", resultset.getString("CONDATEID").trim(), "NONUPDATE".toUpperCase().trim());
+                    ACRGBWSResult endResult = um.UPDATEROLEINDEX(dataSource, "00", "00", resultset.getString("CONDATEID").trim(), "NONUPDATE".toUpperCase().trim());
                     if (!endResult.isSuccess()) {
                         errorList.add(endResult.getMessage());
                     }
-
                 }
             }
             if (errorList.size() > 0) {
@@ -3479,7 +3477,5 @@ public class Methods {
         }
         return result;
     }
-
-   
 
 }

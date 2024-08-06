@@ -607,6 +607,7 @@ public class UpdateMethods {
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEROLEINDEX(final DataSource datasource,
             final String uuserid,
+            final String uaccessid,
             final String ucondate,
             final String tagsss) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -616,7 +617,7 @@ public class UpdateMethods {
         try (Connection connection = datasource.getConnection()) {
             //====================================================================
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEROLEINDEX(:Message,:Code,"
-                    + ":utags,:uuserid,:ucondate)");
+                    + ":utags,:uuserid,:uaccessid,:ucondate)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             switch (tagsss.trim().toUpperCase()) {
@@ -634,6 +635,7 @@ public class UpdateMethods {
                 }
             }
             getinsertresult.setString("uuserid", uuserid.trim());
+            getinsertresult.setString("uaccessid", uaccessid.trim());
             getinsertresult.setString("ucondate", ucondate.trim());
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {

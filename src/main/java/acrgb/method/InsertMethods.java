@@ -145,24 +145,23 @@ public class InsertMethods {
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 //INSERT TO ACTIVITY LOGS
-                int counthci = 0;
+                int countpro = 0;
                 ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, contract.getHcfid());
                 if (getSubject.isSuccess()) {
                     logsTags = "ADD-CONTRACT-HCI";
-                    counthci++;
                 } else {
                     ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, contract.getHcfid());
                     if (getSubjectA.isSuccess()) {
                         logsTags = "ADD-CONTRACT-HCPN";
                     } else {
                         logsTags = "ADD-CONTRACT-PRO";
-
+                        countpro++;
                     }
                 }
-                if (counthci == 0) {
+                if (countpro == 0) {
+                    ACRGBWSResult uaccessid = methods.GETROLE(datasource, contract.getCreatedby(), "ACTIVE");
                     //INSERT CONTRACT ID TO ROLE INDEX TABLE
-                    um.UPDATEROLEINDEX(datasource,
-                            contract.getHcfid(), contract.getContractdate(), "UPDATE");
+                    um.UPDATEROLEINDEX(datasource, uaccessid.getResult().trim(), contract.getHcfid(), contract.getContractdate(), "HCIUPDATE");
                     //END INSERT CONTRACT ID TO ROLE INDEX TABLE
                     //INSERT CONTRACT ID TO APPELLATE TABLE
                     Appellate appellate = new Appellate();
@@ -171,10 +170,11 @@ public class InsertMethods {
                     appellate.setConid(contract.getContractdate());
                     um.UPDATEAPELLATE(datasource, "NONUPDATE", appellate);
                     //END INSERT CONTRACT ID TO APPELLATE TABLE
-                } else {
-                    um.UPDATEROLEINDEX(datasource,
-                            contract.getHcfid(), contract.getContractdate(), "HCIUPDATE");
                 }
+//                else {
+////                    um.UPDATEROLEINDEX(datasource,
+////                            contract.getHcfid(), contract.getContractdate(), "HCIUPDATE");
+//                }
                 result.setMessage(getinsertresult.getString("Message"));
                 result.setSuccess(true);
                 userlogs.setActstatus("SUCCESS");

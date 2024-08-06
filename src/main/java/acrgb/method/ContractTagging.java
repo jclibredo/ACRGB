@@ -34,7 +34,7 @@ public class ContractTagging {
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
 
-    public ACRGBWSResult TAGGINGCONTRACT(final DataSource datasource, final String tags, final Contract con) {
+    public ACRGBWSResult TAGGINGCONTRACT(final DataSource dataSource, final String tags, final Contract con) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -47,18 +47,18 @@ public class ContractTagging {
             switch (tags.trim().toUpperCase()) {
                 case "HCI": {
                     //END CONTRACT USING HCI CODE
-                    ACRGBWSResult contractList = fm.GETCONTRACTCONID(datasource, con.getConid().trim(), "ACTIVE".trim());
+                    ACRGBWSResult contractList = fm.GETCONTRACTCONID(dataSource, con.getConid().trim(), "ACTIVE".trim());
                     if (contractList.isSuccess()) {
                         Contract contract = utility.ObjectMapper().readValue(contractList.getResult(), Contract.class);
                         if (!contract.getContractdate().isEmpty()) {
                             ContractDate conDate = utility.ObjectMapper().readValue(contract.getContractdate(), ContractDate.class);
                             //UPDATE CONTRACT AND ASSETS UNDER 
-                            ACRGBWSResult updateConANDAssets = updateMethod.CONSTATSUPDATE(datasource, con.getConid(), con.getStats(), con.getRemarks(), con.getEnddate());
+                            ACRGBWSResult updateConANDAssets = updateMethod.CONSTATSUPDATE(dataSource, con.getConid(), con.getStats(), con.getRemarks(), con.getEnddate());
                             if (!updateConANDAssets.isSuccess()) {
                                 error.add(updateConANDAssets.getMessage());
                             }
                             //UPDATE ROLE INDEX 
-                            ACRGBWSResult updateAccessID = updateMethod.UPDATEMAPPEDROLEBASECONDATE(datasource, contract.getHcfid(), conDate.getCondateid());
+                            ACRGBWSResult updateAccessID = updateMethod.UPDATEMAPPEDROLEBASECONDATE(dataSource, contract.getHcfid(), conDate.getCondateid());
                             if (!updateAccessID.isSuccess()) {
                                 error.add(updateAccessID.getMessage());
                             }
@@ -70,22 +70,22 @@ public class ContractTagging {
                     break;
                 }
                 case "HCPN": {
-                    ACRGBWSResult contractList = fm.GETCONTRACTCONID(datasource, con.getConid().trim(), "ACTIVE".trim());
+                    ACRGBWSResult contractList = fm.GETCONTRACTCONID(dataSource, con.getConid().trim(), "ACTIVE".trim());
                     if (contractList.isSuccess()) {
                         Contract contract = utility.ObjectMapper().readValue(contractList.getResult(), Contract.class);
                         if (!contract.getContractdate().isEmpty()) {
                             ContractDate conDate = utility.ObjectMapper().readValue(contract.getContractdate(), ContractDate.class);
                             //UPDATE CONTRACT AND ASSETS UNDER 
-                            ACRGBWSResult updateConANDAssets = updateMethod.CONSTATSUPDATE(datasource, con.getConid().trim(), con.getStats(), con.getRemarks(), con.getEnddate());
-                            if (!updateConANDAssets.isSuccess()) {
-                                error.add(updateConANDAssets.getMessage());
-                            }
+//                            ACRGBWSResult updateConANDAssets = updateMethod.CONSTATSUPDATE(dataSource, con.getConid().trim(), con.getStats(), con.getRemarks(), con.getEnddate());
+//                            if (!updateConANDAssets.isSuccess()) {
+//                                error.add(updateConANDAssets.getMessage());
+//                            }
                             // GET FACILITY UNDER SELECTED HPCN
-                            ACRGBWSResult getRole = methods.GETROLEMULITPLE(datasource, contract.getHcfid().trim(), "ACTIVE");
+                            ACRGBWSResult getRole = methods.GETROLEMULITPLE(dataSource, contract.getHcfid().trim(), "ACTIVE");
                             if (getRole.isSuccess()) {
                                 List<String> listRole = Arrays.asList(getRole.getResult().split(","));
                                 for (int i = 0; i < listRole.size(); i++) {
-                                    ACRGBWSResult contractHCIList = fm.GETCONBYCODE(datasource, listRole.get(i).trim());
+                                    ACRGBWSResult contractHCIList = fm.GETCONBYCODE(dataSource, listRole.get(i).trim());
                                     if (contractHCIList.isSuccess()) {
                                         //MAPPED CONTRACT
                                         Contract hciContract = utility.ObjectMapper().readValue(contractHCIList.getResult(), Contract.class);
@@ -93,49 +93,55 @@ public class ContractTagging {
                                             //MAPPED CONTRACT DATE
                                             ContractDate conDates = utility.ObjectMapper().readValue(hciContract.getContractdate(), ContractDate.class);
                                             //UPDATE CONTRACT AND ASSETS UNDER 
-                                            ACRGBWSResult updateConANDAssetss = updateMethod.CONSTATSUPDATE(datasource, hciContract.getConid().trim(), con.getStats(), hciContract.getRemarks(), con.getEnddate());
-                                            if (!updateConANDAssetss.isSuccess()) {
-                                                error.add("Contract and Assets " + updateConANDAssetss.getMessage());
-                                            }
-                                            //UPDATE ROLE INDEX 
-                                            ACRGBWSResult updateAccessIDs = updateMethod.UPDATEMAPPEDROLEBASECONDATE(datasource, listRole.get(i).trim(), conDates.getCondateid());
-                                            if (!updateAccessIDs.isSuccess()) {
-                                                error.add(updateAccessIDs.getMessage());
-                                            }
+//                                            ACRGBWSResult updateConANDAssetss = updateMethod.CONSTATSUPDATE(dataSource, hciContract.getConid().trim(), con.getStats(), hciContract.getRemarks(), con.getEnddate());
+//                                            if (!updateConANDAssetss.isSuccess()) {
+//                                                error.add("Contract and Assets " + updateConANDAssetss.getMessage());
+//                                            }
+//                                            //UPDATE ROLE INDEX 
+//                                            ACRGBWSResult updateAccessIDs = updateMethod.UPDATEMAPPEDROLEBASECONDATE(dataSource, listRole.get(i).trim(), conDates.getCondateid());
+//                                            if (!updateAccessIDs.isSuccess()) {
+//                                                error.add(updateAccessIDs.getMessage());
+//                                            }
                                         }
                                     }
                                 }
                             }
-
                             //UPDATE ROLE INDEX 
-                            ACRGBWSResult updateAccessID = updateMethod.UPDATEMAPPEDROLEBASECONDATE(datasource, contract.getHcfid().trim(), conDate.getCondateid().trim());
+                            ACRGBWSResult updateAccessID = updateMethod.UPDATEMAPPEDROLEBASECONDATE(dataSource, contract.getHcfid().trim(), conDate.getCondateid().trim());
                             if (!updateAccessID.isSuccess()) {
                                 error.add(updateAccessID.getMessage());
                             }
-                            //PROCESS REMAP FACILITY TO HCPN THIS AREA
-                            UserRoleIndex userRole = new UserRoleIndex();
-                            userRole.setDatecreated(con.getEnddate());
-                            userRole.setCreatedby(con.getCreatedby());
-                            userRole.setUserid(contract.getHcfid().trim());
-                            userRole.setAccessid(getRole.getResult());
-                            ACRGBWSResult insertRoleIndex = im.INSEROLEINDEX(datasource, userRole);
-                            if (!insertRoleIndex.isSuccess()) {
-                                error.add(insertRoleIndex.getMessage());
+                            //GET MAPPED ACTIVE FACILITY WITH CONTRACT 
+                            System.out.println("" + contract.getHcfid() + "");
+                            ACRGBWSResult getRoleList = fm.GETROLEINDEXUSERID(dataSource, contract.getHcfid());
+                            if (getRoleList.isSuccess()) {
+                                List<UserRoleIndex> roleList = Arrays.asList(utility.ObjectMapper().readValue(getRoleList.getResult(), UserRoleIndex[].class));
+                                for (int h = 0; h < roleList.size(); h++) {
+                                    //PROCESS REMAP FACILITY TO HCPN THIS AREA WITH ACTIVE CONTRACT
+                                    UserRoleIndex userRole = new UserRoleIndex();
+                                    userRole.setDatecreated(con.getEnddate());
+                                    userRole.setCreatedby(con.getCreatedby());
+                                    userRole.setUserid(roleList.get(h).getUserid().trim());
+                                    userRole.setAccessid(roleList.get(h).getAccessid().trim());
+                                    ACRGBWSResult insertRoleIndex = im.INSEROLEINDEX(dataSource, userRole);
+                                    if (!insertRoleIndex.isSuccess()) {
+                                        error.add(insertRoleIndex.getMessage());
+                                    }
+                                }
                             }
-                            //END OF REMAPP HCI TO HCPN
                         } else {
                             error.add("No Facility Found Under HCPN " + contract.getHcfid().trim());
                         }
                         //REMAP SELECTED HCPN TO PRO
-                        UserRoleIndex userRole = new UserRoleIndex();
-                        userRole.setDatecreated(con.getEnddate());
-                        userRole.setCreatedby(con.getCreatedby());
-                        userRole.setUserid(methods.GETROLE(datasource, con.getCreatedby(), "ACTIVE").getResult().trim());
-                        userRole.setAccessid(contract.getHcfid().trim());
-                        ACRGBWSResult insertRoleIndex = im.INSEROLEINDEX(datasource, userRole);
-                        if (!insertRoleIndex.isSuccess()) {
-                            error.add(insertRoleIndex.getMessage());
-                        }
+//                        UserRoleIndex userRole = new UserRoleIndex();
+//                        userRole.setDatecreated(con.getEnddate());
+//                        userRole.setCreatedby(con.getCreatedby());
+//                        userRole.setUserid(methods.GETROLE(dataSource, con.getCreatedby(), "ACTIVE").getResult().trim());
+//                        userRole.setAccessid(contract.getHcfid().trim());
+//                        ACRGBWSResult insertRoleIndex = im.INSEROLEINDEX(dataSource, userRole);
+//                        if (!insertRoleIndex.isSuccess()) {
+//                            error.add(insertRoleIndex.getMessage());
+//                        }
                         //END REMAP SELECTED HCPN TO PRO
                     } else {
                         error.add("No Contract Found");
@@ -156,7 +162,7 @@ public class ContractTagging {
         return result;
     }
 
-    public ACRGBWSResult EndContractUsingDateid(final DataSource datasource, final String dateid) throws ParseException {
+    public ACRGBWSResult EndContractUsingDateid(final DataSource dataSource, final String dateid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -165,9 +171,9 @@ public class ContractTagging {
         ContractMethod methods = new ContractMethod();
         UpdateMethods updateMethod = new UpdateMethods();
         InsertMethods insertMethods = new InsertMethods();
-        try (Connection connection = datasource.getConnection()) {
+        try (Connection connection = dataSource.getConnection()) {
             //GET ACTIVE ROLE INDEX MAPPED ACCOUNT
-            ACRGBWSResult remapRoleIndex = methods.GETROLEINDEXCONDATE(datasource, dateid.trim());
+            ACRGBWSResult remapRoleIndex = methods.GETROLEINDEXCONDATE(dataSource, dateid.trim());
             if (remapRoleIndex.isSuccess()) {
                 //GET RESULT AND REMAP VALUE
                 List<UserRoleIndex> roleList = Arrays.asList(utility.ObjectMapper().readValue(remapRoleIndex.getResult(), UserRoleIndex[].class));
@@ -177,14 +183,14 @@ public class ContractTagging {
                     newRole.setUserid(roleList.get(x).getUserid());
                     newRole.setCreatedby(roleList.get(x).getCreatedby());
                     newRole.setDatecreated(roleList.get(x).getDatecreated());
-                    ACRGBWSResult insertRole = insertMethods.INSEROLEINDEX(datasource, newRole);
+                    ACRGBWSResult insertRole = insertMethods.INSEROLEINDEX(dataSource, newRole);
                     if (!insertRole.isSuccess()) {
                         error.add(insertRole.getMessage());
                     }
                 }
             }
             //GET LIST OF CONTRACT USING CONTRACT DATE ID
-            ACRGBWSResult getContractList = methods.GETCONTRACTBYCONDATEID(datasource, dateid.trim());
+            ACRGBWSResult getContractList = methods.GETCONTRACTBYCONDATEID(dataSource, dateid.trim());
             if (getContractList.isSuccess()) {
                 List<Contract> contractList = Arrays.asList(utility.ObjectMapper().readValue(getContractList.getResult(), Contract[].class));
                 for (int i = 0; i < contractList.size(); i++) {
@@ -192,7 +198,7 @@ public class ContractTagging {
                         //MAPPED CONTRACT DATE
                         ContractDate conDate = utility.ObjectMapper().readValue(contractList.get(i).getContractdate(), ContractDate.class);
                         //UPDATE CONTRACT AND ASSETS UNDER 
-                        ACRGBWSResult updateConANDAssets = updateMethod.CONSTATSUPDATE(datasource, contractList.get(i).getConid(), "3".trim(), "CONTRACT ENDED", conDate.getDateto().trim());
+                        ACRGBWSResult updateConANDAssets = updateMethod.CONSTATSUPDATE(dataSource, contractList.get(i).getConid(), "3".trim(), "CONTRACT ENDED", conDate.getDateto().trim());
                         if (!updateConANDAssets.isSuccess()) {
                             error.add(updateConANDAssets.getMessage());
                         }
@@ -200,7 +206,7 @@ public class ContractTagging {
                 }
             }
             //END MAPPED ROLE INDEX STATUS TO 3
-            ACRGBWSResult updatecondate = updateMethod.UPDATEROLEINDEX(datasource, "00", dateid.trim(), "NONUPDATE");
+            ACRGBWSResult updatecondate = updateMethod.UPDATEROLEINDEX(dataSource, "00", "00", dateid.trim(), "NONUPDATE");
             //------------------------------------------------------------------------------------------------------------------------
             //TAGGING OF CONTRACT PERIOD TO END CHANGE STATUS TO 3
             CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.TAGCONTRACTPERIOD(:Message,:Code,:pcondateid)");

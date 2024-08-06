@@ -15,7 +15,6 @@ import acrgb.method.LedgerMethod;
 import acrgb.method.Mapped;
 import acrgb.method.Methods;
 import acrgb.method.UpdateMethods;
-import acrgb.method.resourcefile.ConfigReader;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.ForgetPassword;
 import acrgb.structure.ManagingBoard;
@@ -57,7 +56,6 @@ public class ACRGBFETCH {
     @Resource(lookup = "jdbc/acrgb")
     private DataSource dataSource;
 
-    private final ConfigReader rs = new ConfigReader();
     private final Utility utility = new Utility();
     private final FetchMethods fetchmethods = new FetchMethods();
     private final Methods methods = new Methods();
@@ -572,11 +570,9 @@ public class ACRGBFETCH {
                     }
                     case "APEX": {// TAGS = APEX  USERID  = HOSPITAL CODE
                         ACRGBWSResult restA = fetchmethods.GETAPPELLATE(dataSource, userid, "ACTIVE");
-                        System.out.println(restA);
                         List<String> hcpnlist = Arrays.asList(restA.getResult().split(","));
                         ArrayList<ManagingBoard> mblist = new ArrayList<>();
                         for (int h = 0; h < hcpnlist.size(); h++) {
-                            System.out.println(hcpnlist.get(h));
                             ACRGBWSResult mgresult = methods.GETMBWITHID(dataSource, hcpnlist.get(h).trim());
                             if (mgresult.isSuccess()) {
                                 ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
@@ -1058,15 +1054,15 @@ public class ACRGBFETCH {
         result.setResult("");
         result.setSuccess(false);
         ContractHistoryService ch = new ContractHistoryService();
-//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-//        if (!GetPayLoad.isSuccess()) {
-//            result.setMessage(GetPayLoad.getMessage());
-//        } else {
-        ACRGBWSResult getResult = ch.GetHistoryResult(dataSource, userId, "INACTIVE", requestCode, targetData);
-        result.setMessage(getResult.getMessage());
-        result.setResult(getResult.getResult());
-        result.setSuccess(getResult.isSuccess());
-//        }
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult getResult = ch.GetHistoryResult(dataSource, userId, "INACTIVE", requestCode, targetData);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
         return result;
     }
 
@@ -1169,17 +1165,23 @@ public class ACRGBFETCH {
     @Path("GETPREVIOUSMAPPED/{puserid}")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GETPREVIOUSMAPPED(
+            @HeaderParam("token") String token,
             @PathParam("puserid") String puserid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        Mapped map = new Mapped();
-        if (methods.GETROLE(dataSource, puserid, "ACTIVE").isSuccess()) {
-            ACRGBWSResult addss = map.GETPREVIOUSMAP(dataSource, methods.GETROLE(dataSource, puserid, "ACTIVE").getResult().trim());
-            result.setMessage(addss.getMessage());
-            result.setResult(addss.getResult());
-            result.setSuccess(addss.isSuccess());
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            Mapped map = new Mapped();
+            if (methods.GETROLE(dataSource, puserid, "ACTIVE").isSuccess()) {
+                ACRGBWSResult addss = map.GETPREVIOUSMAP(dataSource, methods.GETROLE(dataSource, puserid, "ACTIVE").getResult().trim());
+                result.setMessage(addss.getMessage());
+                result.setResult(addss.getResult());
+                result.setSuccess(addss.isSuccess());
+            }
         }
         return result;
     }
@@ -1214,7 +1216,6 @@ public class ACRGBFETCH {
 //            if (response.code() == 200) {
 //                ACRGBWSResult shareresult = utility.ObjectMapper().readValue(response.body().string(), ACRGBWSResult.class);
 //                if (shareresult.isSuccess()) {
-//
 //                    result.setMessage("TEST ENV. READING");
 //                    result.setResult(shareresult.getResult());
 //                    result.setSuccess(true);
@@ -1229,7 +1230,6 @@ public class ACRGBFETCH {
 //                } else {
 //                    result.setResult(utility.ObjectMapper().writeValueAsString(shareresult));
 //                }
-//
 //            } else {
 //                result.setMessage(response.body().string());
 //            }
@@ -1239,4 +1239,11 @@ public class ACRGBFETCH {
 //        }
 //        return result;
 //    }
+    @GET
+    @Path("GETROLEINDEXUSERID/{puserid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GETROLEINDEXUSERID(@PathParam("puserid") String puserid) {
+        return fetchmethods.GETROLEINDEXUSERID(dataSource, puserid);
+    }
+
 }

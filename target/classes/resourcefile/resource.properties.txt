@@ -1,2 +1,0 @@
-JNDINAME=jdbc/acrgb
-SCHEMANAME=ACRGB
