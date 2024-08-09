@@ -571,7 +571,9 @@ public class ACRGBPOST {
     @Path("BookData")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult BookData(@HeaderParam("token") String token, final Book book) {
+    public ACRGBWSResult BookData(
+            @HeaderParam("token") String token, 
+            final Book book) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -588,6 +590,7 @@ public class ACRGBPOST {
         return result;
     }
 
+    //TEST INSERT CLAIMS DATA
     @POST
     @Path("InsertNclaims")
     @Produces(MediaType.APPLICATION_JSON)

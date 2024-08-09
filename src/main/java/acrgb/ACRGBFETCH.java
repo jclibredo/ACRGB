@@ -8,11 +8,11 @@ package acrgb;
 import acrgb.method.BookingMethod;
 import acrgb.method.ContractHistoryService;
 import acrgb.method.ContractMethod;
+
 import acrgb.method.ContractTagging;
 import acrgb.method.FetchMethods;
 import acrgb.method.GenerateRandomPassword;
 import acrgb.method.LedgerMethod;
-import acrgb.method.Mapped;
 import acrgb.method.Methods;
 import acrgb.method.UpdateMethods;
 import acrgb.structure.ACRGBWSResult;
@@ -86,7 +86,6 @@ public class ACRGBFETCH {
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
         }
-
         return result;
     }
 
@@ -182,7 +181,6 @@ public class ACRGBFETCH {
                 }
             }
         }
-
         return result;
     }
 
@@ -361,7 +359,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetLevel/{levid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -384,7 +381,6 @@ public class ACRGBFETCH {
     }
 //------------------------------------------------------------
     //GET USER DETAILS
-
     @GET
     @Path("GETFULLDETAILS/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -427,7 +423,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetActivityLogs")
     @Produces(MediaType.APPLICATION_JSON)
@@ -448,7 +443,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetLogWithParam/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -470,7 +464,6 @@ public class ACRGBFETCH {
     }
 //------------------------------------------------------------
     //GET  REQUEST USING MB USER ID
-
     @GET
     @Path("GetMBRequest/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -492,7 +485,6 @@ public class ACRGBFETCH {
     }
 //------------------------------------------------------------
     //GET HCPN
-
     @GET
     @Path("GetManagingBoard/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -514,7 +506,6 @@ public class ACRGBFETCH {
     }
 //------------------------------------------------------------    
     //GET GET FACILITY USING PRO USERID
-
     @GET
     @Path("GetFacilityUsingProAccountUserID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -536,7 +527,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GETALLFACILITY/{tags}/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -597,7 +587,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetManagingBoardWithProID/{proid}/{levelname}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -638,7 +627,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetMBUsingMBID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -659,7 +647,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetBalanceTerminatedContract/{userid}/{levelname}/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -778,7 +765,6 @@ public class ACRGBFETCH {
                             result.setMessage("Contract type not found " + type);
                             break;
                         }
-
                     }
                     break;
                 default:
@@ -826,7 +812,6 @@ public class ACRGBFETCH {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            // ACRGBWSResult updatecondate = um.UPDATEROLEINDEX(dataSource, "00", ucondateid, "NONUPDATE"); //ENDCONDATE
             ACRGBWSResult updatecondate = ct.EndContractUsingDateid(dataSource, ucondateid);
             result.setMessage(updatecondate.getMessage());
             result.setResult(updatecondate.getResult());
@@ -1036,7 +1021,6 @@ public class ACRGBFETCH {
                     result.setMessage("NOT FOUND REQUEST TYPE");
                     break;
             }
-
         }
         return result;
     }
@@ -1161,46 +1145,46 @@ public class ACRGBFETCH {
         return result;
     }
 
-    @GET
-    @Path("GETPREVIOUSMAPPED/{puserid}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GETPREVIOUSMAPPED(
-            @HeaderParam("token") String token,
-            @PathParam("puserid") String puserid) throws ParseException {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            Mapped map = new Mapped();
-            if (methods.GETROLE(dataSource, puserid, "ACTIVE").isSuccess()) {
-                ACRGBWSResult addss = map.GETPREVIOUSMAP(dataSource, methods.GETROLE(dataSource, puserid, "ACTIVE").getResult().trim());
-                result.setMessage(addss.getMessage());
-                result.setResult(addss.getResult());
-                result.setSuccess(addss.isSuccess());
-            }
-        }
-        return result;
-    }
+//    @GET
+//    @Path("GETPREVIOUSMAPPED/{puserid}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult GETPREVIOUSMAPPED(
+//            @HeaderParam("token") String token,
+//            @PathParam("puserid") String puserid) throws ParseException {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+//        if (!GetPayLoad.isSuccess()) {
+//            result.setMessage(GetPayLoad.getMessage());
+//        } else {
+//            Mapped map = new Mapped();
+//            if (methods.GETROLE(dataSource, puserid, "ACTIVE").isSuccess()) {
+//                ACRGBWSResult addss = map.GETPREVIOUSMAP(dataSource, methods.GETROLE(dataSource, puserid, "ACTIVE").getResult().trim());
+//                result.setMessage(addss.getMessage());
+//                result.setResult(addss.getResult());
+//                result.setSuccess(addss.isSuccess());
+//            }
+//        }
+//        return result;
+//    }
 
-    @GET
-    @Path("TestFile")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult TestFile() throws ParseException, IOException {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
+//    @GET
+//    @Path("TestFile")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult TestFile() throws ParseException, IOException {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+////        //--------------------------------------
+////        //./src/main/resources/resourcefile/resource.properties.txt
+////        ArrayList<String> data = rs.readFile("./src/main/resources/resourcefile/resource.properties.txt");
+////        System.out.println(data.get(0));
 //        //--------------------------------------
-//        //./src/main/resources/resourcefile/resource.properties.txt
-//        ArrayList<String> data = rs.readFile("./src/main/resources/resourcefile/resource.properties.txt");
-//        System.out.println(data.get(0));
-        //--------------------------------------
-        return result;
-    }
+//        return result;
+//    }
 
 //    @GET
 //    @Path("Test")
@@ -1239,11 +1223,6 @@ public class ACRGBFETCH {
 //        }
 //        return result;
 //    }
-    @GET
-    @Path("GETROLEINDEXUSERID/{puserid}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GETROLEINDEXUSERID(@PathParam("puserid") String puserid) {
-        return fetchmethods.GETROLEINDEXUSERID(dataSource, puserid);
-    }
+    
 
 }

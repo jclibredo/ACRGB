@@ -3392,7 +3392,6 @@ public class Methods {
                 LocalDateTime nowS = LocalDateTime.now();
                 java.util.Date dateNow = new SimpleDateFormat("MM-dd-yyyy").parse(dtf.format(nowS));
                 java.util.Date convertTo = new SimpleDateFormat("MM-dd-yyyy").parse(dateformat.format(resultset.getDate("DATETO")));
-//                //-------------------  DATE LEVEL   CONVERTION -------------------
                 ContractDate contractDate = new ContractDate();
                 contractDate.setCondateid(resultset.getString("CONDATEID"));
                 contractDate.setStatus(resultset.getString("STATUS"));
@@ -3419,7 +3418,6 @@ public class Methods {
                 result.setMessage("OK");
                 result.setSuccess(true);
             }
-            //-------------------------------------------------------------------------------
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);

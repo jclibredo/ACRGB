@@ -41,14 +41,11 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class UpdateMethods {
-
     public UpdateMethods() {
     }
-
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
     private final InsertMethods im = new InsertMethods();
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEASSETS(final DataSource datasource, Assets assets) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -156,8 +153,6 @@ public class UpdateMethods {
                     + contract.getSb() + "| Comitted volume:" + contract.getComittedClaimsVol()
                     + " " + contract.getQuarter() + " " + getinsertresult.getString("Message").equals("SUCC"));
             logs.UserLogsMethod(datasource, logsTags, userlogs, contract.getHcfid(), contract.getContractdate());
-
-            // }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -224,7 +219,6 @@ public class UpdateMethods {
             } else {
                 oldData = fm.GETUSERLEVEL(datasource, userlevel.getLevelid()).getMessage();
             }
-
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERLEVEL(:Message,:Code,:p_levelid,"
                     + ":p_levdetails)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -241,7 +235,6 @@ public class UpdateMethods {
                 userlogs.setActstatus("FAILED");
                 result.setMessage(getinsertresult.getString("Message"));
             }
-
             userlogs.setActby(userlevel.getCreatedby());
             userlogs.setActdetails(" Data before :" + oldData + " Data after Name: " + userlevel.getLevname() + " Details: " + userlevel.getLevdetails() + " | " + getinsertresult.getString("Message"));
             logs.UserLogsMethod(datasource, "EDIT-USER-LEVEL", userlogs, "0", "0");
@@ -379,8 +372,6 @@ public class UpdateMethods {
         }
         return result;
     }
-    
-    
      */
     // REMOVED ACCESS LEVEL USING ROLE INDEX
     public ACRGBWSResult RemoveAppellate(final DataSource datasource, final String userid, final String accessid) throws ParseException {
@@ -411,14 +402,12 @@ public class UpdateMethods {
             } else {
                 result.setMessage(errorList.toString());
             }
-
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult CONSTATSUPDATE(final DataSource datasource, final String uconid, final String ustats, final String uremarks, final String uenddate) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -447,7 +436,6 @@ public class UpdateMethods {
         }
         return result;
     }
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEHCPN(final DataSource datasource, final ManagingBoard mb) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -489,7 +477,6 @@ public class UpdateMethods {
         }
         return result;
     }
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEHCPNSTATS(final DataSource datasource, final LogStatus logstats) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -515,14 +502,12 @@ public class UpdateMethods {
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult APPROVEDHCPN(final DataSource datasource, final ManagingBoard mb) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -575,7 +560,6 @@ public class UpdateMethods {
         }
         return result;
     }
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATECONDATE(final DataSource datasource, final ContractDate contractdate) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -603,7 +587,6 @@ public class UpdateMethods {
         }
         return result;
     }
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEROLEINDEX(final DataSource datasource,
             final String uuserid,

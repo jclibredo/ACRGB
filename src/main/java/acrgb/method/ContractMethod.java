@@ -899,7 +899,7 @@ public class ContractMethod {
                 result.setSuccess(true);
                 result.setMessage("OK");
             } else {
-                result.setMessage("NO DATE FOUND");
+                result.setMessage("NO DATA FOUND");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());

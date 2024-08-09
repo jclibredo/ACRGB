@@ -408,8 +408,7 @@ public class Utility {
     public boolean ValidateToken(final String token) {
         boolean result = false;
         try {
-            Claims claims = Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(cipherkey))
-                    .parseClaimsJws(token).getBody();
+            Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(cipherkey)).parseClaimsJws(token).getBody();
             result = true;
         } catch (ExpiredJwtException | MalformedJwtException | SignatureException | UnsupportedJwtException | IllegalArgumentException ex) {
         }
@@ -444,14 +443,9 @@ public class Utility {
                     ACRGBPayload payload = this.ACRGBPayload();
                     payload.setCode1(this.DecryptString((String) claims.get("Code1")));
                     payload.setCode2(this.DecryptString((String) claims.get("Code2")));
-                    if (!this.isJWTExpired(claims)) {
-                        result.setSuccess(true);
-//                        result.setResult(this.ObjectMapper().writeValueAsString(payload));
-                    } else {
-                        result.setMessage("Token is expired");
-                    }
+                    result.setSuccess(true);
                 } else {
-                    result.setMessage("Invalid Token");
+                    result.setMessage("Invalid Token or Token Is Expired");
                 }
             }
         } catch (ExpiredJwtException | MalformedJwtException | SignatureException | UnsupportedJwtException | IllegalArgumentException ex) {
@@ -462,14 +456,14 @@ public class Utility {
         return result;
     }
 
-    public boolean isJWTExpired(Claims claims) {
-        if (claims.getExpiration() == null) {
-            return true;
-        } else {
-            Date expiresAt = claims.getExpiration();
-            return expiresAt.before(new Date());
-        }
-    }
+//    public boolean isJWTExpired(Claims claims) {
+//        if (claims.getExpiration() == null) {
+//            return true;
+//        } else {
+//            Date expiresAt = claims.getExpiration();
+//            return expiresAt.before(new Date());
+//        }
+//    }
 //CREATE 2FA CODE
 
     public String Create2FACode() {
