@@ -8,7 +8,6 @@ package acrgb;
 import acrgb.method.BookingMethod;
 import acrgb.method.ContractHistoryService;
 import acrgb.method.ContractMethod;
-
 import acrgb.method.ContractTagging;
 import acrgb.method.FetchMethods;
 import acrgb.method.GenerateRandomPassword;
@@ -359,6 +358,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetLevel/{levid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -381,6 +381,7 @@ public class ACRGBFETCH {
     }
 //------------------------------------------------------------
     //GET USER DETAILS
+
     @GET
     @Path("GETFULLDETAILS/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -423,6 +424,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetActivityLogs")
     @Produces(MediaType.APPLICATION_JSON)
@@ -443,6 +445,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetLogWithParam/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -464,6 +467,7 @@ public class ACRGBFETCH {
     }
 //------------------------------------------------------------
     //GET  REQUEST USING MB USER ID
+
     @GET
     @Path("GetMBRequest/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -485,6 +489,7 @@ public class ACRGBFETCH {
     }
 //------------------------------------------------------------
     //GET HCPN
+
     @GET
     @Path("GetManagingBoard/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -506,6 +511,7 @@ public class ACRGBFETCH {
     }
 //------------------------------------------------------------    
     //GET GET FACILITY USING PRO USERID
+
     @GET
     @Path("GetFacilityUsingProAccountUserID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -527,6 +533,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GETALLFACILITY/{tags}/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -587,6 +594,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetManagingBoardWithProID/{proid}/{levelname}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -627,6 +635,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetMBUsingMBID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -647,6 +656,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetBalanceTerminatedContract/{userid}/{levelname}/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1169,7 +1179,6 @@ public class ACRGBFETCH {
 //        }
 //        return result;
 //    }
-
 //    @GET
 //    @Path("TestFile")
 //    @Produces(MediaType.APPLICATION_JSON)
@@ -1185,7 +1194,6 @@ public class ACRGBFETCH {
 //        //--------------------------------------
 //        return result;
 //    }
-
 //    @GET
 //    @Path("Test")
 //    @Produces(MediaType.APPLICATION_JSON)
@@ -1223,6 +1231,4 @@ public class ACRGBFETCH {
 //        }
 //        return result;
 //    }
-    
-
 }

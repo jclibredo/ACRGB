@@ -5,6 +5,15 @@
  */
 package acrgb;
 
+import acrgb.structure.ACRGBWSResult;
+import antlr.Token;
+import com.jayway.restassured.RestAssured;
+import static com.jayway.restassured.RestAssured.given;
+import java.io.IOException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
+import org.junit.Test;
+
 /**
  *
  * @author MinoSun
@@ -13,21 +22,27 @@ public class ACRGBFETCHTest {
 
     public ACRGBFETCHTest() {
     }
-
-//    @Test
-//    public void testGetAssets() {
-////        System.out.println("GetAssets");
-////        String token = "";
-////        String tags = "";
-////        String phcfid = "";
-//        SchedulerMain instance = new SchedulerMain();
-//        ACRGBWSResult expResult = null;
-//        String result = instance.RunMethod();
-//        assertEquals(expResult, result);
-//        // TODO review the generated test code and remove the default call to fail.
-//        fail("The test case is a prototype.");
+//    private final String token = "eyJhbGciOiJIUzI1NiJ9.eyJDb2RlMSI6IkNRTmpQZmNucW5WQ3BrRVp6Q2RhZmYvVFVtbzU5YTc5cFlQeFhJU1ljc1UiLCJDb2RlMiI6InEvclJJaUVYMk1pdGloUlRERDBpa2ciLCJleHAiOjE3MjMwOTczMTl9.MhT197uMhY5g-oN1X6tGibWNQR0nU0SS16eZ1nWabek";
+//
+//    @Before
+//    public void setUp() {
+//        RestAssured.basePath = "http://localhost:7001/ACRGB/ACRGBFETCH";
 //    }
-
+//
+//    @Test
+//    public void testGetAssets() throws IOException {
+//        ObjectMapper mapper = new ObjectMapper();
+////        expect().statusCode(200).contentType(ContentType.JSON).when()
+////                .get("/AcquaGETRequest/GetAcqua/NATIONALITYALL/ACTIVE/00");
+////        TEST FOR GETT ALL NATIONALITY
+//        if (given().headers("token", token).when().get("/GetAssets/ACTIVE/525").getStatusCode() != 200) {
+//            System.out.println("Response Code : " + given().headers("token", token).when().get("/GetAssets/ACTIVE/525").getStatusCode());
+//        } else {
+//            ACRGBWSResult getAssets = mapper.readValue(given().headers("token", token).when().get("/GetAssets/ACTIVE/525").getBody().asString(), ACRGBWSResult.class);
+//            System.out.println(mapper.writeValueAsString(getAssets));
+//        }
+//
+//    }
 //    @BeforeClass
 //    public static void setUpClass() {
 //    }

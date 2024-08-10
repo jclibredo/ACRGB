@@ -64,23 +64,24 @@ public class ContractTagging {
                                 error.add(insertRoleIndex.getMessage());
                             }
                         }
-                        if (!contract.getContractdate().isEmpty()) {
-                            ContractDate conDate = utility.ObjectMapper().readValue(contract.getContractdate(), ContractDate.class);
-                            //UPDATE CONTRACT AND ASSETS UNDER 
-                            ACRGBWSResult updateConANDAssets = updateMethod.CONSTATSUPDATE(dataSource, con.getConid(), con.getStats(), con.getRemarks(), con.getEnddate());
-                            if (!updateConANDAssets.isSuccess()) {
-                                error.add(updateConANDAssets.getMessage());
-                            }
-                            //UPDATE ROLE INDEX 
-                            ACRGBWSResult updateAccessID = updateMethod.UPDATEMAPPEDROLEBASECONDATE(dataSource, contract.getHcfid(), conDate.getCondateid());
-                            if (!updateAccessID.isSuccess()) {
-                                error.add(updateAccessID.getMessage());
-                            }
+//                        if (!contract.getContractdate().isEmpty()) {
+//                            ContractDate conDate = utility.ObjectMapper().readValue(contract.getContractdate(), ContractDate.class);
+                        //UPDATE CONTRACT AND ASSETS UNDER 
+                        ACRGBWSResult updateConANDAssets = updateMethod.CONSTATSUPDATE(dataSource, con.getConid(), con.getStats(), con.getRemarks(), con.getEnddate());
+                        if (!updateConANDAssets.isSuccess()) {
+                            error.add(updateConANDAssets.getMessage());
                         }
+                        //UPDATE ROLE INDEX 
+                        ACRGBWSResult updateAccessID = updateMethod.UPDATEROLEINDEXBYACCESSID(dataSource, contract.getHcfid());
+                        if (!updateAccessID.isSuccess()) {
+                            error.add(updateAccessID.getMessage());
+                        }
+                        //  }
+                        result.setSuccess(true);
                     } else {
                         error.add("No Contract Found");
                     }
-                    result.setSuccess(true);
+
                     break;
                 }
                 case "HCPN": {
@@ -104,7 +105,6 @@ public class ContractTagging {
                             }
                         }
                         if (!contract.getContractdate().isEmpty()) {
-                            ContractDate conDate = utility.ObjectMapper().readValue(contract.getContractdate(), ContractDate.class);
                             //UPDATE CONTRACT AND ASSETS UNDER 
                             ACRGBWSResult updateConANDAssets = updateMethod.CONSTATSUPDATE(dataSource, con.getConid().trim(), con.getStats(), con.getRemarks(), con.getEnddate());
                             if (!updateConANDAssets.isSuccess()) {
@@ -119,31 +119,24 @@ public class ContractTagging {
                                     if (contractHCIList.isSuccess()) {
                                         //MAPPED CONTRACT
                                         Contract hciContract = utility.ObjectMapper().readValue(contractHCIList.getResult(), Contract.class);
-                                        if (hciContract.getContractdate() != null) {
-                                            //MAPPED CONTRACT DATE
-                                            ContractDate conDates = utility.ObjectMapper().readValue(hciContract.getContractdate(), ContractDate.class);
-                                            //UPDATE CONTRACT AND ASSETS UNDER 
-                                            ACRGBWSResult updateConANDAssetss = updateMethod.CONSTATSUPDATE(dataSource, hciContract.getConid().trim(), con.getStats(), hciContract.getRemarks(), con.getEnddate());
-                                            if (!updateConANDAssetss.isSuccess()) {
-                                                error.add("Contract and Assets " + updateConANDAssetss.getMessage());
-                                            }
-                                            //UPDATE ROLE INDEX 
-                                            ACRGBWSResult updateAccessIDs = updateMethod.UPDATEMAPPEDROLEBASECONDATE(dataSource, listRole.get(i).trim(), conDates.getCondateid());
-                                            if (!updateAccessIDs.isSuccess()) {
-                                                error.add(updateAccessIDs.getMessage());
-                                            }
+                                        //UPDATE CONTRACT AND ASSETS UNDER 
+                                        ACRGBWSResult updateConANDAssetss = updateMethod.CONSTATSUPDATE(dataSource, hciContract.getConid().trim(), con.getStats(), hciContract.getRemarks(), con.getEnddate());
+                                        if (!updateConANDAssetss.isSuccess()) {
+                                            error.add("Contract and Assets " + updateConANDAssetss.getMessage());
+                                        }
+                                        //UPDATE ROLE INDEX 
+                                        ACRGBWSResult updateAccessIDs = updateMethod.UPDATEROLEINDEXBYACCESSID(dataSource, listRole.get(i).trim());
+                                        if (!updateAccessIDs.isSuccess()) {
+                                            error.add(updateAccessIDs.getMessage());
                                         }
                                     }
                                 }
                             }
                             //UPDATE ROLE INDEX 
-                            ACRGBWSResult updateAccessID = updateMethod.UPDATEMAPPEDROLEBASECONDATE(dataSource, contract.getHcfid().trim(), conDate.getCondateid().trim());
+                            ACRGBWSResult updateAccessID = updateMethod.UPDATEROLEINDEXBYACCESSID(dataSource, contract.getHcfid().trim());
                             if (!updateAccessID.isSuccess()) {
                                 error.add(updateAccessID.getMessage());
                             }
-                            //GET MAPPED ACTIVE FACILITY WITH CONTRACT 
-                            //System.out.println("|" + contract.getHcfid() + "|");
-
                         } else {
                             error.add("No Facility Found Under HCPN " + contract.getHcfid().trim());
                         }
@@ -158,10 +151,10 @@ public class ContractTagging {
                             error.add(insertRoleIndex.getMessage());
                         }
                         //END REMAP SELECTED HCPN TO PRO
+                        result.setSuccess(true);
                     } else {
                         error.add("No Contract Found");
                     }
-                    result.setSuccess(true);
                     break;
                 }
                 default:
@@ -192,7 +185,7 @@ public class ContractTagging {
             if (remapRoleIndex.isSuccess()) {
                 //GET RESULT AND REMAP VALUE
                 List<UserRoleIndex> roleList = Arrays.asList(utility.ObjectMapper().readValue(remapRoleIndex.getResult(), UserRoleIndex[].class));
-                for (int x = 0; x < roleList.size(); x++) {    
+                for (int x = 0; x < roleList.size(); x++) {
                     UserRoleIndex newRole = new UserRoleIndex();
                     newRole.setAccessid(roleList.get(x).getAccessid());
                     newRole.setUserid(roleList.get(x).getUserid());
@@ -235,8 +228,7 @@ public class ContractTagging {
             } else {
                 result.setMessage(statement.getString("Message") + " " + error + " " + updatecondate.getMessage());
             }
-            
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractTagging.class.getName()).log(Level.SEVERE, null, ex);

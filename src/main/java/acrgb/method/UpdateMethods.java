@@ -41,11 +41,13 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class UpdateMethods {
+
     public UpdateMethods() {
     }
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
     private final InsertMethods im = new InsertMethods();
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEASSETS(final DataSource datasource, Assets assets) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -408,6 +410,7 @@ public class UpdateMethods {
         }
         return result;
     }
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult CONSTATSUPDATE(final DataSource datasource, final String uconid, final String ustats, final String uremarks, final String uenddate) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -436,6 +439,7 @@ public class UpdateMethods {
         }
         return result;
     }
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEHCPN(final DataSource datasource, final ManagingBoard mb) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -477,6 +481,7 @@ public class UpdateMethods {
         }
         return result;
     }
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEHCPNSTATS(final DataSource datasource, final LogStatus logstats) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -508,6 +513,7 @@ public class UpdateMethods {
         }
         return result;
     }
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult APPROVEDHCPN(final DataSource datasource, final ManagingBoard mb) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -560,6 +566,7 @@ public class UpdateMethods {
         }
         return result;
     }
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATECONDATE(final DataSource datasource, final ContractDate contractdate) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -587,6 +594,7 @@ public class UpdateMethods {
         }
         return result;
     }
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEROLEINDEX(final DataSource datasource,
             final String uuserid,
@@ -1026,20 +1034,47 @@ public class UpdateMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult UPDATEMAPPEDROLEBASECONDATE(
+//    public ACRGBWSResult UPDATEMAPPEDROLEBASECONDATE(
+//            final DataSource datasource,
+//            final String accessid,
+//            final String pcondate) throws ParseException {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        try (Connection connection = datasource.getConnection()) {
+//            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEMAPPEDROLEBASECONDATE(:Message,:Code,:accessid,:pcondate)");
+//            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+//            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+//            getinsertresult.setString("accessid", accessid);
+//            getinsertresult.setString("pcondate", pcondate);
+//            getinsertresult.execute();
+//            if (getinsertresult.getString("Message").equals("SUCC")) {
+//                result.setMessage(getinsertresult.getString("Message"));
+//                result.setSuccess(true);
+//            } else {
+//                result.setMessage(getinsertresult.getString("Message"));
+//            }
+//        } catch (SQLException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
+
+    //----------------------------------------------------------------------------------------------------------
+    public ACRGBWSResult UPDATEROLEINDEXBYACCESSID(
             final DataSource datasource,
-            final String accessid,
-            final String pcondate) throws ParseException {
+            final String accessid) throws ParseException {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEMAPPEDROLEBASECONDATE(:Message,:Code,:accessid,:pcondate)");
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEROLEINDEXBYACCESSID(:Message,:Code,:accessid)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("accessid", accessid);
-            getinsertresult.setString("pcondate", pcondate);
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setMessage(getinsertresult.getString("Message"));
