@@ -38,7 +38,7 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class LedgerMethod {
-
+    
     public LedgerMethod() {
     }
     private final Utility utility = new Utility();
@@ -108,7 +108,7 @@ public class LedgerMethod {
         }
         return result;
     }
-
+    
     public ACRGBWSResult GETASSETSBYHCF(final DataSource dataSource, final String phcfid, final String pdatefrom, final String pdateto) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -152,14 +152,14 @@ public class LedgerMethod {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-
+    
     public ACRGBWSResult GETSUMAMOUNTCLAIMS(final DataSource dataSource,
             final String uaccreno,
             final String udatefrom,
@@ -188,9 +188,9 @@ public class LedgerMethod {
                 fca.setTotalclaims(resultset.getString("COUNTVAL"));
                 fca.setDatefiled(dateformat.format(resultset.getDate("DATESUB")));
                 fcalist.add(fca);
-
+                
             }
-
+            
             if (fcalist.size() > 0) {
                 result.setResult(utility.ObjectMapper().writeValueAsString(fcalist));
                 result.setMessage("OK");
@@ -198,7 +198,7 @@ public class LedgerMethod {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
@@ -232,9 +232,9 @@ public class LedgerMethod {
                 fca.setTotalclaims(resultset.getString("COUNTVAL"));
                 fca.setDatefiled(dateformat.format(resultset.getDate("DATESUB")));
                 fcalist.add(fca);
-
+                
             }
-
+            
             if (fcalist.size() > 0) {
                 result.setResult(utility.ObjectMapper().writeValueAsString(fcalist));
                 result.setMessage("OK");
@@ -242,7 +242,7 @@ public class LedgerMethod {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
@@ -556,7 +556,7 @@ public class LedgerMethod {
                     }
                 }
             }
-
+            
             if (ledgerlist.size() > 0) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(ledgerlist));
@@ -564,7 +564,7 @@ public class LedgerMethod {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
@@ -580,10 +580,11 @@ public class LedgerMethod {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        ArrayList<String> errorList = new ArrayList<>();
         ArrayList<Ledger> ledgerlist = new ArrayList<>();
         try {
-            Double remaining = 0.00;
-            Double begin = 0.00;
+            double remaining = 0.00;
+            double begin = 0.00;
             ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, upmmc_no, contractid, "INACTIVE");
             if (restA.isSuccess()) {
                 List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
@@ -619,7 +620,10 @@ public class LedgerMethod {
                     ledgerlist.add(ledger);
                     //====================================================
                 }
+            } else {
+                errorList.add("No Assets Found Under Selected Contract");
             }
+            System.out.println("FIRST CONDITION RESULT " + restA);
             //GET LIQUIDATION PART
             ACRGBWSResult getContractDate = fm.GETCONTRACTCONID(dataSource, contractid, "INACTIVE");
             if (getContractDate.isSuccess()) {
@@ -654,15 +658,19 @@ public class LedgerMethod {
                             ledgerlist.add(SubledgerA);
                         }
                     }
+                    System.out.println("INNER CONDITION " + getAmountPayable);
                 }
+            } else {
+                errorList.add("Contract Not Found");
             }
-
+            System.out.println("SECOND CONDITION RESULT " + getContractDate);
+            
             if (ledgerlist.size() > 0) {
                 result.setMessage("OK");
                 result.setResult(utility.ObjectMapper().writeValueAsString(ledgerlist));
                 result.setSuccess(true);
             } else {
-                result.setMessage("N/A");
+                result.setMessage(utility.ObjectMapper().writeValueAsString(errorList));
             }
         } catch (IOException ex) {
             result.setMessage(ex.toString());
@@ -670,5 +678,5 @@ public class LedgerMethod {
         }
         return result;
     }
-
+    
 }

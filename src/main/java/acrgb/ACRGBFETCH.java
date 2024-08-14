@@ -1231,4 +1231,14 @@ public class ACRGBFETCH {
 //        }
 //        return result;
 //    }
+    @GET
+    @Path("GetCaptchaCode")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetCaptchaCode() {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("OK");
+        result.setSuccess(true);
+        result.setResult(utility.Create2FACode());
+        return result;
+    }
 }

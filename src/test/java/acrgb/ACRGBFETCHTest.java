@@ -22,24 +22,36 @@ public class ACRGBFETCHTest {
 
     public ACRGBFETCHTest() {
     }
-//    private final String token = "eyJhbGciOiJIUzI1NiJ9.eyJDb2RlMSI6IkNRTmpQZmNucW5WQ3BrRVp6Q2RhZmYvVFVtbzU5YTc5cFlQeFhJU1ljc1UiLCJDb2RlMiI6InEvclJJaUVYMk1pdGloUlRERDBpa2ciLCJleHAiOjE3MjMwOTczMTl9.MhT197uMhY5g-oN1X6tGibWNQR0nU0SS16eZ1nWabek";
+    private final String token = "eyJhbGciOiJIUzI1NiJ9.eyJDb2RlMSI6IkNRTmpQZmNucW5WQ3BrRVp6Q2RhZmYvVFVtbzU5YTc5cFlQeFhJU1ljc1UiLCJDb2RlMiI6InEvclJJaUVYMk1pdGloUlRERDBpa2ciLCJleHAiOjE3MjMwOTczMTl9.MhT197uMhY5g-oN1X6tGibWNQR0nU0SS16eZ1nWabek";
 //
+
 //    @Before
 //    public void setUp() {
 //        RestAssured.basePath = "http://localhost:7001/ACRGB/ACRGBFETCH";
 //    }
-//
 //    @Test
 //    public void testGetAssets() throws IOException {
 //        ObjectMapper mapper = new ObjectMapper();
-////        expect().statusCode(200).contentType(ContentType.JSON).when()
-////                .get("/AcquaGETRequest/GetAcqua/NATIONALITYALL/ACTIVE/00");
-////        TEST FOR GETT ALL NATIONALITY
-//        if (given().headers("token", token).when().get("/GetAssets/ACTIVE/525").getStatusCode() != 200) {
-//            System.out.println("Response Code : " + given().headers("token", token).when().get("/GetAssets/ACTIVE/525").getStatusCode());
+//////        expect().statusCode(200).contentType(ContentType.JSON).when()
+//////                .get("/AcquaGETRequest/GetAcqua/NATIONALITYALL/ACTIVE/00");
+//////        TEST FOR GETT ALL NATIONALITY
+//////        if (given().headers("token", token).when().get("/GetAssets/ACTIVE/525").getStatusCode() != 200) {
+//////            System.out.println("Response Code : " + given().headers("token", token).when().get("/GetAssets/ACTIVE/525").getStatusCode());
+//////        } else {
+//////            ACRGBWSResult getAssets = mapper.readValue(given().headers("token", token).when().get("/GetAssets/ACTIVE/525").getBody().asString(), ACRGBWSResult.class);
+//////            System.out.println(mapper.writeValueAsString(getAssets));
+//////        }
+////
+//////        String recode = "300806";
+//////        String conid = "57";
+//////        String tags = "FACILITY";
+//////        String reqtype = "00";
+//////        ACRGBWSResult getAssets = mapper.readValue(given().headers("token", token).when().get("/PerContractLedger/300806/57/FACILITY/INACTIVE").getBody().asString(), ACRGBWSResult.class);
+//        ACRGBWSResult getAssets = mapper.readValue(given().headers("token", token).when().get("/GetCaptchaCode").getBody().asString(), ACRGBWSResult.class);
+//        if (getAssets.isSuccess()) {
+//            System.out.println("Captcha Code Result " + getAssets.getResult());
 //        } else {
-//            ACRGBWSResult getAssets = mapper.readValue(given().headers("token", token).when().get("/GetAssets/ACTIVE/525").getBody().asString(), ACRGBWSResult.class);
-//            System.out.println(mapper.writeValueAsString(getAssets));
+//            System.out.println(getAssets.getMessage());
 //        }
 //
 //    }

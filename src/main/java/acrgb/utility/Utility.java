@@ -124,6 +124,24 @@ public class Utility {
         return result;
     }
 
+    public static boolean isWindows() {
+        return (System.getProperty("os.name").toLowerCase().contains("win"));
+    }
+
+    public static boolean isMac() {
+        return (System.getProperty("os.name").toLowerCase().contains("mac"));
+    }
+
+    public static boolean isUnix() {
+        return (System.getProperty("os.name").toLowerCase().contains("nix")
+                || System.getProperty("os.name").toLowerCase().contains("nux")
+                || System.getProperty("os.name").toLowerCase().contains("aix"));
+    }
+
+    public static boolean isSolaris() {
+        return (System.getProperty("os.name").toLowerCase().contains("sunos"));
+    }
+
     public boolean IsValidNumber(String string) {
         try {
             Integer.parseInt(string);
@@ -465,7 +483,6 @@ public class Utility {
 //        }
 //    }
 //CREATE 2FA CODE
-
     public String Create2FACode() {
         int randnums = 0;
         for (int i = 0; i < 1; i++) {
