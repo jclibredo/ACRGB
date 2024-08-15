@@ -740,7 +740,7 @@ public class ACRGBFETCH {
                             break;
                         }
                         case "INACTIVE": {
-                            ACRGBWSResult getResultHCPN = lm.GETLedgerPerContractHCPNLedger(dataSource, hcpncode, contract);
+                            ACRGBWSResult getResultHCPN = lm.GETLedgerPerContractHCPNLedger(dataSource, hcpncode, contract, type);
                             result.setMessage(getResultHCPN.getMessage());
                             result.setResult(getResultHCPN.getResult());
                             result.setSuccess(getResultHCPN.isSuccess());
@@ -765,7 +765,7 @@ public class ACRGBFETCH {
                             break;
                         }
                         case "INACTIVE": {
-                            ACRGBWSResult getResultAllHCPN = lm.GETLedgerAllContractAPEXInactive(dataSource, hcpncode, contract);//hcpncode  user ID of account of PROUSER
+                            ACRGBWSResult getResultAllHCPN = lm.GETLedgerAllContractAPEXInactive(dataSource, hcpncode, contract, type);//hcpncode  user ID of account of PROUSER
                             result.setMessage(getResultAllHCPN.getMessage());
                             result.setResult(getResultAllHCPN.getResult());
                             result.setSuccess(getResultAllHCPN.isSuccess());
@@ -891,7 +891,7 @@ public class ACRGBFETCH {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult BookingResult = bm.GETALLCLAIMS(dataSource, hcpncode, contractid, tags);
+            ACRGBWSResult BookingResult = bm.GETALLCLAIMS(dataSource, hcpncode, contractid, tags.trim().toUpperCase(), "INACTIVE");
             result.setMessage(BookingResult.getMessage());
             result.setResult(BookingResult.getResult());
             result.setSuccess(BookingResult.isSuccess());

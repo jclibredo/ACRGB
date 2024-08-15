@@ -12,6 +12,7 @@ import acrgb.structure.ConBalance;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.NclaimsData;
+import acrgb.structure.UserActivity;
 import acrgb.utility.Utility;
 import java.io.IOException;
 import java.sql.CallableStatement;
@@ -116,7 +117,9 @@ public class BookingMethod {
         FetchMethods fm = new FetchMethods();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := "
-                    + "ACR_GB.ACRGBPKG.GETALLCLAIMSFORBOOK(:u_accreno,:u_tags,"
+                    + "ACR_GB.ACRGBPKG.GETALLCLAIMSFORBOOK("
+                    + ":u_accreno,"
+                    + ":u_tags,"
                     + ":u_from,:u_to); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("u_accreno", upmccno.trim());
@@ -202,7 +205,7 @@ public class BookingMethod {
     }
 
     //GET CONTRACT WHERE STATUS IS ACTIVE
-    public ACRGBWSResult GETENDEDCONTRACT(final DataSource dataSource, final Book book) {
+    public ACRGBWSResult GETENDEDCONTRACT(final DataSource dataSource, final Book book, final String utags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -212,7 +215,7 @@ public class BookingMethod {
         InsertMethods im = new InsertMethods();
         ArrayList<String> errorList = new ArrayList<>();
         try {
-            ACRGBWSResult getConResult = fm.GETCONTRACTCONID(dataSource, book.getConid(), "INACTIVE");
+            ACRGBWSResult getConResult = fm.GETCONTRACTCONID(dataSource, book.getConid(), utags.trim().toUpperCase());
             if (getConResult.isSuccess()) {
                 switch (book.getTags().toUpperCase()) {
                     case "FACILITY": {
@@ -222,48 +225,66 @@ public class BookingMethod {
                         //ACRGBWSResult get
                         if (HCIContract.getContractdate() != null) {
                             ContractDate contractdate = utility.ObjectMapper().readValue(HCIContract.getContractdate(), ContractDate.class);
-                            ACRGBWSResult claimstList = this.GETALLCLAIMSFORBOOK(dataSource,
-                                    HCIContract.getHcfid(), contractdate.getDatefrom(), contractdate.getDateto());
-                            if (claimstList.isSuccess()) {
-                                // for (int lop = 0; lop < 3000000; lop++) {
-                                List<NclaimsData> claimstListResult = Arrays.asList(utility.ObjectMapper().readValue(claimstList.getResult(), NclaimsData[].class));
-                                for (int conb = 0; conb < claimstListResult.size(); conb++) {
-                                    ACRGBWSResult insertClaims = im.ACRBOOKINGDATA(dataSource, claimstListResult.get(conb), book.getBooknum(),
-                                            book.getDatecreated(), book.getCreatedby());
-                                    if (!insertClaims.isSuccess()) {
-                                        errorList.add(insertClaims.getMessage());
-                                    }
-                                    totalClaimAmount += Double.parseDouble(claimstListResult.get(conb).getClaimamount());
+//                            ACRGBWSResult claimstList = this.GETALLCLAIMSFORBOOK(dataSource,
+//                                    HCIContract.getHcfid(), contractdate.getDatefrom(), contractdate.getDateto());
+//                            if (claimstList.isSuccess()) {
+                            ACRGBWSResult autoInsert = this.AUTOBOOKDATA(dataSource,
+                                    book.getBooknum(),
+                                    book.getHcpncode().trim(), "G",
+                                    contractdate.getDatefrom().trim(),
+                                    contractdate.getDateto().trim(),
+                                    book.getCreatedby());
+                            if (!autoInsert.isSuccess()) {
+                                errorList.add(autoInsert.getMessage());
+                            }
+
+                            //GET CLAIMS TOTAL AMOUNT UNDER FACILITY
+                            ACRGBWSResult getClaimsAmount = this.CLAIMSAMOUNTBOOK(dataSource,
+                                    book.getHcpncode().trim(), "G", contractdate.getDatefrom().trim(), contractdate.getDateto().trim());
+                            if (getClaimsAmount.isSuccess()) {
+                                totalClaimAmount += Double.parseDouble(getClaimsAmount.getResult());
+                            }
+                            // for (int lop = 0; lop < 3000000; lop++) {
+//                                List<NclaimsData> claimstListResult = Arrays.asList(utility.ObjectMapper().readValue(claimstList.getResult(), NclaimsData[].class));
+//                                for (int conb = 0; conb < claimstListResult.size(); conb++) {
+//
+//                                    ACRGBWSResult insertClaims = im.ACRBOOKINGDATA(dataSource,
+//                                            claimstListResult.get(conb), book.getBooknum(),
+//                                            book.getDatecreated(), book.getCreatedby());
+//                                    if (!insertClaims.isSuccess()) {
+//                                        errorList.add(insertClaims.getMessage());
+//                                    }
+//                                    totalClaimAmount += Double.parseDouble(claimstListResult.get(conb).getClaimamount());
+//                                }
+                            //INSERT BOOKING REFERENCES
+                            ACRGBWSResult bookReference = this.ACRBOOKING(dataSource, book);
+                            if (!bookReference.isSuccess()) {
+                                errorList.add(bookReference.getMessage());
+                            }
+                            //INSERT PREVIOUS BALANCE
+                            ACRGBWSResult GetAssetsByConID = fm.GETASSETSBYCONID(dataSource, HCIContract.getConid());
+                            if (GetAssetsByConID.isSuccess()) {
+                                List<Assets> listOfAssets = Arrays.asList(utility.ObjectMapper().readValue(GetAssetsByConID.getResult(), Assets[].class));
+                                for (int u = 0; u < listOfAssets.size(); u++) {
+                                    totalClaimAssets += Double.parseDouble(listOfAssets.get(u).getAmount());
                                 }
-                                //INSERT BOOKING REFERENCES
-                                ACRGBWSResult bookReference = this.ACRBOOKING(dataSource, book);
-                                if (!bookReference.isSuccess()) {
-                                    errorList.add(bookReference.getMessage());
-                                }
-                                //INSERT PREVIOUS BALANCE
-                                ACRGBWSResult GetAssetsByConID = fm.GETASSETSBYCONID(dataSource, HCIContract.getConid());
-                                if (GetAssetsByConID.isSuccess()) {
-                                    List<Assets> listOfAssets = Arrays.asList(utility.ObjectMapper().readValue(GetAssetsByConID.getResult(), Assets[].class));
-                                    for (int u = 0; u < listOfAssets.size(); u++) {
-                                        totalClaimAssets += Double.parseDouble(listOfAssets.get(u).getAmount());
-                                    }
-                                    //INSERT CON BALANCE 
-                                    ConBalance conbal = new ConBalance();
-                                    conbal.setBooknum(book.getBooknum());
-                                    conbal.setCondateid(contractdate.getCondateid());
-                                    conbal.setAccount(book.getHcpncode());
-                                    conbal.setConbalance(String.valueOf(totalClaimAssets - totalClaimAmount));
-                                    conbal.setConamount(HCIContract.getBaseamount());
-                                    conbal.setConutilized(String.valueOf(totalClaimAmount));
-                                    conbal.setDatecreated(book.getDatecreated());
-                                    conbal.setCreatedby(book.getCreatedby());
-                                    conbal.setConid(book.getConid());
-                                    ACRGBWSResult InsertPreviousba = this.INSERTCONBALANCE(dataSource, conbal);
-                                    if (!InsertPreviousba.isSuccess()) {
-                                        errorList.add(InsertPreviousba.getMessage());
-                                    }
+                                //INSERT CON BALANCE 
+                                ConBalance conbal = new ConBalance();
+                                conbal.setBooknum(book.getBooknum());
+                                conbal.setCondateid(contractdate.getCondateid());
+                                conbal.setAccount(book.getHcpncode());
+                                conbal.setConbalance(String.valueOf(totalClaimAssets - totalClaimAmount));
+                                conbal.setConamount(HCIContract.getBaseamount());
+                                conbal.setConutilized(String.valueOf(totalClaimAmount));
+                                conbal.setDatecreated(book.getDatecreated());
+                                conbal.setCreatedby(book.getCreatedby());
+                                conbal.setConid(book.getConid());
+                                ACRGBWSResult InsertPreviousba = this.INSERTCONBALANCE(dataSource, conbal);
+                                if (!InsertPreviousba.isSuccess()) {
+                                    errorList.add(InsertPreviousba.getMessage());
                                 }
                             }
+                            //}
                         }
                         break;
                     }
@@ -273,23 +294,47 @@ public class BookingMethod {
                         Contract HCPNContract = utility.ObjectMapper().readValue(getConResult.getResult(), Contract.class);
                         if (HCPNContract.getContractdate() != null) {
                             ContractDate contractdate = utility.ObjectMapper().readValue(HCPNContract.getContractdate(), ContractDate.class);
-                            ACRGBWSResult FacilityList = methods.GETROLEMULITPLE(dataSource, book.getHcpncode().trim(), "INACTIVE");
-                            if (FacilityList.isSuccess()) {
-                                List<String> HCFCodeList = Arrays.asList(FacilityList.getResult().split(","));
-                                for (int u = 0; u < HCFCodeList.size(); u++) {
-                                    ACRGBWSResult claimstList = this.GETALLCLAIMSFORBOOK(dataSource,
-                                            HCFCodeList.get(u), contractdate.getDatefrom(), contractdate.getDateto());
-                                    if (claimstList.isSuccess()) {
-                                        List<NclaimsData> claimstListResult = Arrays.asList(utility.ObjectMapper().readValue(claimstList.getResult(), NclaimsData[].class));
-                                        for (int conb = 0; conb < claimstListResult.size(); conb++) {
-                                            ACRGBWSResult insertClaims = im.ACRBOOKINGDATA(dataSource, claimstListResult.get(conb), book.getBooknum(),
-                                                    book.getDatecreated(), book.getCreatedby());
-                                            if (!insertClaims.isSuccess()) {
-                                                errorList.add(insertClaims.getMessage());
-                                            }
-                                            totalClaimAmount += Double.parseDouble(claimstListResult.get(conb).getClaimamount());
-                                        }
+                            ACRGBWSResult hciList = methods.GETROLEMULITPLE(dataSource, book.getHcpncode().trim(), utags.trim().toUpperCase());
+                            if (hciList.isSuccess()) {
+                                List<String> hciCodeList = Arrays.asList(hciList.getResult().split(","));
+                                for (int u = 0; u < hciCodeList.size(); u++) {
+                                    ACRGBWSResult autoInsert = this.AUTOBOOKDATA(dataSource,
+                                            book.getBooknum(),
+                                            hciCodeList.get(u).trim(), "G",
+                                            contractdate.getDatefrom().trim(),
+                                            contractdate.getDateto().trim(),
+                                            book.getCreatedby());
+                                    if (!autoInsert.isSuccess()) {
+                                        errorList.add(autoInsert.getMessage());
                                     }
+                                    //GET CLAIMS TOTAL AMOUNT UNDER FACILITY
+                                    ACRGBWSResult getClaimsAmount = this.CLAIMSAMOUNTBOOK(dataSource,
+                                            hciCodeList.get(u).trim(), "G", contractdate.getDatefrom().trim(), contractdate.getDateto().trim());
+                                    if (getClaimsAmount.isSuccess()) {
+                                        totalClaimAmount += Double.parseDouble(getClaimsAmount.getResult());
+                                    }
+
+//                                    ACRGBWSResult claimstList = this.GETALLCLAIMSFORBOOK(dataSource,
+//                                            hciCodeList.get(u).trim(),
+//                                            contractdate.getDatefrom().trim(),
+//                                            contractdate.getDateto().trim());
+//
+//                                    if (claimstList.isSuccess()) {
+//
+//                                        List<NclaimsData> claimstListResult = Arrays.asList(utility.ObjectMapper().readValue(claimstList.getResult(), NclaimsData[].class));
+//
+//                                        for (int conb = 0; conb < claimstListResult.size(); conb++) {
+//                                            ACRGBWSResult insertClaims = im.ACRBOOKINGDATA(dataSource,
+//                                                    claimstListResult.get(conb),
+//                                                    book.getBooknum(),
+//                                                    book.getDatecreated(),
+//                                                    book.getCreatedby());
+//                                            if (!insertClaims.isSuccess()) {
+//                                                errorList.add(insertClaims.getMessage());
+//                                            }
+//                                            //totalClaimAmount += Double.parseDouble(claimstListResult.get(conb).getClaimamount());
+//                                        }
+//                                    }
                                 }
                                 //INSERT BOOKING REFERENCES
                                 ACRGBWSResult bookReference = this.ACRBOOKING(dataSource, book);
@@ -320,7 +365,7 @@ public class BookingMethod {
                                     }
                                 }
                             } else {
-                                result.setMessage(FacilityList.getMessage());
+                                result.setMessage(hciList.getMessage());
                             }
                         }
                         break;
@@ -345,7 +390,10 @@ public class BookingMethod {
     }
 
     //GET CONTRACT WHERE STATUS IS ACTIVE
-    public ACRGBWSResult GETALLCLAIMS(final DataSource dataSource, final String hcpncode, String contractid,
+    public ACRGBWSResult GETALLCLAIMS(final DataSource dataSource,
+            final String hcpncode,
+            final String contractid,
+            final String type,
             final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -356,9 +404,9 @@ public class BookingMethod {
         ArrayList<String> errorList = new ArrayList<>();
         ArrayList<NclaimsData> claimslist = new ArrayList<>();
         try {
-            ACRGBWSResult getConResult = fm.GETCONTRACTCONID(dataSource, contractid, "INACTIVE");
+            ACRGBWSResult getConResult = fm.GETCONTRACTCONID(dataSource, contractid, tags.trim().toUpperCase());
             if (getConResult.isSuccess()) {
-                switch (tags.toUpperCase()) {
+                switch (type.toUpperCase()) {
                     case "FACILITY": {
                         Contract HciContract = utility.ObjectMapper().readValue(getConResult.getResult(), Contract.class);
                         if (HciContract.getContractdate() != null) {
@@ -378,7 +426,7 @@ public class BookingMethod {
                         Contract HCPNContract = utility.ObjectMapper().readValue(getConResult.getResult(), Contract.class);
                         if (HCPNContract.getContractdate() != null) {
                             ContractDate contractdate = utility.ObjectMapper().readValue(HCPNContract.getContractdate(), ContractDate.class);
-                            ACRGBWSResult FacilityList = methods.GETROLEMULITPLE(dataSource, hcpncode.trim(), "INACTIVE");
+                            ACRGBWSResult FacilityList = methods.GETROLEMULITPLE(dataSource, hcpncode.trim(), tags.trim().toUpperCase());
                             if (FacilityList.isSuccess()) {
                                 List<String> HCFCodeList = Arrays.asList(FacilityList.getResult().split(","));
                                 for (int u = 0; u < HCFCodeList.size(); u++) {
@@ -410,6 +458,82 @@ public class BookingMethod {
             }
 
         } catch (IOException | ParseException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    public ACRGBWSResult CLAIMSAMOUNTBOOK(final DataSource dataSource,
+            final String upmmcno,
+            final String utags,
+            final String udatefrom,
+            final String udateto) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.CLAIMSAMOUNTBOOK(:upmmcno,:utags,"
+                    + ":udatefrom,:udateto); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("upmmcno", upmmcno.trim().toUpperCase());
+            statement.setString("utags", utags.trim().toUpperCase());
+            statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(udatefrom.trim().toUpperCase()).getTime()));
+            statement.setDate("udateto", (Date) new Date(utility.StringToDate(udateto.trim().toUpperCase()).getTime()));
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                result.setMessage(resultset.getString("CLAIMSVOLUME"));
+                result.setSuccess(true);
+                result.setResult(resultset.getString("CLAIMSTOTAL"));
+            } else {
+                result.setMessage("N/A");
+            }
+        } catch (SQLException | ParseException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    public ACRGBWSResult AUTOBOOKDATA(final DataSource dataSource,
+            final String ubooknum,
+            final String upmmcno,
+            final String utags,
+            final String udatefrom,
+            final String udateto,
+            final String createdby) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        UserActivityLogs logs = new UserActivityLogs();
+        try (Connection connection = dataSource.getConnection()) {
+            UserActivity userlogs = utility.UserActivity();
+            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKG.AUTOBOOKDATA(:Message,:Code,"
+                    + ":ubooknum,:upmmcno,:utags,:udatefrom,:udateto)");
+            statement.registerOutParameter("Message", OracleTypes.VARCHAR);
+            statement.registerOutParameter("Code", OracleTypes.INTEGER);
+            statement.setString("ubooknum", ubooknum.trim().toUpperCase());
+            statement.setString("upmmcno", upmmcno.trim().toUpperCase());
+            statement.setString("utags", utags.trim().toUpperCase());
+            statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(udatefrom.trim().toUpperCase()).getTime()));
+            statement.setDate("udateto", (Date) new Date(utility.StringToDate(udateto.trim().toUpperCase()).getTime()));
+            statement.execute();
+            //------------------------------------------------------------------------------------------------
+            if (statement.getString("Message").equals("SUCC")) {
+                result.setSuccess(true);
+                result.setMessage(statement.getString("Message"));
+                userlogs.setActstatus("SUCCESS");
+            } else {
+                result.setMessage(statement.getString("Message"));
+                userlogs.setActstatus("FAILED");
+            }
+            userlogs.setActdetails(" book " + upmmcno + " | " + statement.getString("Message"));
+            userlogs.setActby(createdby); // 1,2,2,APEX,HCPN
+            logs.UserLogsMethod(dataSource, "INSERT-CLAIMS-BOOK-DATA", userlogs, upmmcno, "0");
+        } catch (SQLException | ParseException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }

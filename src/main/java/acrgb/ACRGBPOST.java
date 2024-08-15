@@ -572,7 +572,7 @@ public class ACRGBPOST {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public ACRGBWSResult BookData(
-            @HeaderParam("token") String token, 
+            @HeaderParam("token") String token,
             final Book book) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -582,7 +582,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult BookingResult = bm.GETENDEDCONTRACT(dataSource, book);
+            ACRGBWSResult BookingResult = bm.GETENDEDCONTRACT(dataSource, book, "INACTIVE");
             result.setMessage(BookingResult.getMessage());
             result.setResult(BookingResult.getResult());
             result.setSuccess(BookingResult.isSuccess());
