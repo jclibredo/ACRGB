@@ -419,6 +419,8 @@ public class LedgerMethod {
             }
             //GET LIQUIDATION PART
             ACRGBWSResult getContractDate = fm.GETCONTRACTCONID(dataSource, conid, utags);
+            System.out.println("Get Contract by con id" + getContractDate);
+
             if (getContractDate.isSuccess()) {
                 Contract cons = utility.ObjectMapper().readValue(getContractDate.getResult(), Contract.class);
                 if (cons.getContractdate() != null) {
@@ -457,6 +459,8 @@ public class LedgerMethod {
                             }
                         }
                     }
+                } else {
+                    System.out.println("Condate is null under " + cons.getConid());
                 }
             }
             if (ledgerlist.size() > 0) {

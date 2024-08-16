@@ -124,8 +124,6 @@ public class Methods {
         }
     }
 
-    //-------------------------- NEW OBJECT -----------------
-    //--------------------------------------------------------
     // ACR GB USERNAME CHECKING
     public ACRGBWSResult ACRUSERNAME(final DataSource dataSource, final String p_username) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -203,7 +201,6 @@ public class Methods {
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);

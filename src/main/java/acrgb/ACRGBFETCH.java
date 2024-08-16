@@ -1014,7 +1014,7 @@ public class ACRGBFETCH {
         } else {
             switch (target.toUpperCase().trim()) {
                 case "NOTBOOK": {
-                    ACRGBWSResult GetAllContract = fetchmethods.GETALLCONTRACT(dataSource, tags, "0");
+                    ACRGBWSResult GetAllContract = fetchmethods.GETALLCONTRACTNOTBBOK(dataSource, tags, "0");
                     result.setMessage(GetAllContract.getMessage());
                     result.setResult(GetAllContract.getResult());
                     result.setSuccess(GetAllContract.isSuccess());
@@ -1022,6 +1022,13 @@ public class ACRGBFETCH {
                 }
                 case "BOOK": {
                     ACRGBWSResult GetAllContract = fetchmethods.GETBOOKCONTRACT(dataSource, tags, "0");
+                    result.setMessage(GetAllContract.getMessage());
+                    result.setResult(GetAllContract.getResult());
+                    result.setSuccess(GetAllContract.isSuccess());
+                    break;
+                }
+                 case "ALL": {
+                    ACRGBWSResult GetAllContract = fetchmethods.GETALLCONTRACT(dataSource, tags, "0");
                     result.setMessage(GetAllContract.getMessage());
                     result.setResult(GetAllContract.getResult());
                     result.setSuccess(GetAllContract.isSuccess());

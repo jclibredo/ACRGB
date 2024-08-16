@@ -9,6 +9,7 @@ import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.ForgetPassword;
 import acrgb.utility.Utility;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.Properties;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -19,6 +20,7 @@ import javax.mail.internet.MimeMessage;
 //-----------------------------------------------
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
 import javax.mail.PasswordAuthentication;
 import javax.sql.DataSource;
@@ -32,7 +34,66 @@ import javax.sql.DataSource;
 @RequestScoped
 public class Forgetpassword {
 
+    @Resource(lookup = "mail/acrgbmail")
+    private Session acrgbmail;
+
     private final Utility utility = new Utility();
+
+    public ACRGBWSResult SendEmail(
+            final DataSource dataSource,
+            final ForgetPassword forgetPassword,
+            final String emailto,
+            final String randpass) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setSuccess(false);
+        result.setResult("");
+        Methods methods = new Methods();
+        UpdateMethods updatemethods = new UpdateMethods();
+        GenerateRandomPassword generatepass = new GenerateRandomPassword();
+        try {
+
+            Message message = new MimeMessage(acrgbmail);
+            message.setFrom(new InternetAddress("EMAILFROM", false));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(emailto, false));
+            message.setSubject("PHILHEALTH ACR-GB SYSTEM");
+            message.setSentDate(new Date());
+            if (randpass.length() > 0) {
+                //--------------
+                message.setContent(utility.EmailTemplate(emailto.trim(), randpass), "text/html");
+                Transport.send(message);
+                //---------------
+                result.setResult(randpass);
+                result.setSuccess(true);
+                result.setMessage("Account credentials successfully sent to " + emailto.trim());
+            } else {
+                ACRGBWSResult validateUsername = methods.ACRUSERNAME(dataSource, emailto.trim());
+                if (validateUsername.isSuccess()) {
+                    result.setMessage(emailto + "User email not found");
+                } else {
+                    String newpass = generatepass.GenerateRandomPassword(10);
+                    //-----------------
+                    message.setContent(utility.EmailTemplate(emailto, newpass), "text/html");
+                    Transport.send(message);
+                    //------------------
+                    ACRGBWSResult updatepassword = updatemethods.UPDATEPASSCODE(dataSource, emailto.trim(), newpass);
+                    if (updatepassword.isSuccess()) {
+                        result.setSuccess(true);
+                        result.setMessage(updatepassword.getMessage());
+                    } else {
+                        result.setMessage(updatepassword.getMessage());
+                    }
+                }
+            }
+        } catch (MessagingException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Forgetpassword.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ParseException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Forgetpassword.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
 
     public ACRGBWSResult Forgetpassword(final DataSource dataSource,
             final ForgetPassword forgetPassword,

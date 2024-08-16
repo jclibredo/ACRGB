@@ -85,7 +85,8 @@ public class ACRGBPOST {
     @Path("INSERTASSETS")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTASSETS(@HeaderParam("token") String token, final Assets assets) throws SQLException {
+    public ACRGBWSResult INSERTASSETS(@HeaderParam("token") String token, 
+            final Assets assets) throws SQLException {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
