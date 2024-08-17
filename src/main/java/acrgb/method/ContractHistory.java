@@ -15,7 +15,6 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -156,7 +155,7 @@ public class ContractHistory {
             } else {
                 result.setMessage("N/A");
             }
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -191,7 +190,7 @@ public class ContractHistory {
             } else {
                 result.setMessage("N/A");
             }
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -264,7 +263,7 @@ public class ContractHistory {
             } else {
                 result.setMessage("N/A");
             }
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -300,7 +299,7 @@ public class ContractHistory {
             } else {
                 result.setMessage("N/A");
             }
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -348,7 +347,7 @@ public class ContractHistory {
             } else {
                 result.setMessage("N/A");
             }
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -386,8 +385,6 @@ public class ContractHistory {
 
         } catch (IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

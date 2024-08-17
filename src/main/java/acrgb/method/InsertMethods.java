@@ -31,7 +31,6 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -106,7 +105,7 @@ public class InsertMethods {
             //ACTIVITY LOGS
             logs.UserLogsMethod(datasource, logsTags, userlogs, assets.getHcfid().trim(), assets.getTranchid().trim());
             //END ACTIVITY LOGS
-        } catch (SQLException | ParseException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -186,7 +185,7 @@ public class InsertMethods {
             userlogs.setActdetails("Amount :" + contract.getAmount() + "| SB :" + contract.getSb() + "| Comitted volume:" + contract.getComittedClaimsVol() + " " + contract.getQuarter());
             logs.UserLogsMethod(datasource, logsTags, userlogs, contract.getHcfid(), contract.getContractdate());
 
-        } catch (SQLException | ParseException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -223,7 +222,7 @@ public class InsertMethods {
             userlogs.setActdetails(" Tranche type :"
                     + tranch.getTranchtype() + " " + getinsertresult.getString("Message"));
             logs.UserLogsMethod(datasource, "ADD-TRANCHE", userlogs, "0", "0");
-        } catch (SQLException | ParseException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -275,7 +274,7 @@ public class InsertMethods {
 
             logs.UserLogsMethod(datasource, "ADD-USERINFO", userlogs, "0", "0");
             //USER LOGS
-        } catch (SQLException | ParseException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -313,7 +312,7 @@ public class InsertMethods {
             userlogs.setActdetails(" Level : " + userlevel.getLevname() + " " + getinsertresult.getString("Message"));
             logs.UserLogsMethod(datasource, "ADD-USER-LEVEL", userlogs, "0", "0");
             //END USER LOGS
-        } catch (SQLException | ParseException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -321,7 +320,7 @@ public class InsertMethods {
     }
 
 //---------------------------------------------------------------------------------------------------
-    public ACRGBWSResult INSERTUSER(final DataSource datasource, final User user, final ForgetPassword forgetpass) throws ParseException {
+    public ACRGBWSResult INSERTUSER(final DataSource datasource, final User user, final ForgetPassword forgetpass)   {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -373,7 +372,7 @@ public class InsertMethods {
             userlogs.setActdetails(result.getMessage());
             logs.UserLogsMethod(datasource, "ADD-USERACCOUNT", userlogs, user.getLeveid(), user.getDid());
             //USER LOGS
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -381,7 +380,7 @@ public class InsertMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult INSEROLEINDEX(final DataSource datasource, UserRoleIndex userroleindex) throws ParseException {
+    public ACRGBWSResult INSEROLEINDEX(final DataSource datasource, UserRoleIndex userroleindex) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -419,7 +418,7 @@ public class InsertMethods {
                 result.setSuccess(true);
                 result.setMessage("OK");
             }
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -427,7 +426,7 @@ public class InsertMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult REMOVEDACCESSLEVEL(final DataSource datasource, UserRoleIndex userroleindex) throws ParseException {
+    public ACRGBWSResult REMOVEDACCESSLEVEL(final DataSource datasource, UserRoleIndex userroleindex)   {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -461,7 +460,7 @@ public class InsertMethods {
             } else {
                 result.setMessage(errorList.toString());
             }
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -471,7 +470,7 @@ public class InsertMethods {
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult INACTIVEDATA(final DataSource datasource, final String tags,
             final String dataid,
-            final String createdby) throws ParseException {
+            final String createdby)  {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -526,7 +525,7 @@ public class InsertMethods {
     public ACRGBWSResult ACTIVEDATA(final DataSource datasource,
             final String tags,
             final String dataid,
-            final String createdby) throws ParseException {
+            final String createdby)   {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -577,7 +576,7 @@ public class InsertMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult INSERTHCPN(final DataSource datasource, final ManagingBoard mb) throws ParseException {
+    public ACRGBWSResult INSERTHCPN(final DataSource datasource, final ManagingBoard mb)   {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -626,7 +625,9 @@ public class InsertMethods {
                                 LogStatus logstats = new LogStatus();
                                 logstats.setAccount(mb.getControlnumber());
                                 logstats.setActby(mb.getCreatedby());
-                                logstats.setDatechange(mb.getDatecreated());
+                                logstats.setDatefrom(mb.getLicensedatefrom());
+                                logstats.setDateto(mb.getLicensedateto());
+                                logstats.setRemarks("New Registration");
                                 logstats.setStatus("2");
                                 ACRGBWSResult logsResult = this.INSERTSTATSLOG(datasource, logstats);
                                 if (logsResult.isSuccess() && accreResult.isSuccess()) {
@@ -664,7 +665,7 @@ public class InsertMethods {
     }
 
     //INSERT ACCREDITATION  
-    public ACRGBWSResult INSERTACCREDITAION(final DataSource datasource, final Accreditation accre) throws ParseException {
+    public ACRGBWSResult INSERTACCREDITAION(final DataSource datasource, final Accreditation accre)  {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -695,7 +696,7 @@ public class InsertMethods {
             userlogs.setActdetails("Accreditation period" + accre.getDatefrom() + " - " + accre.getDateto() + " " + result.getMessage());
             logs.UserLogsMethod(datasource, "ADD-ACCREDITATION-HCPN", userlogs, accre.getAccreno(), "0");
             //==============ACTIVLITY LOGS AREA ===========================
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -703,22 +704,26 @@ public class InsertMethods {
     }
 
     //INSERT LOGS STATUS
-    public ACRGBWSResult INSERTSTATSLOG(final DataSource datasource, final LogStatus logsS) throws ParseException {
+    public ACRGBWSResult INSERTSTATSLOG(final DataSource datasource, final LogStatus logsS) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        java.util.Date d1 = new java.util.Date();
         UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userlogs = utility.UserActivity();
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTSTATSLOG(:Message,:Code,"
-                    + ":uaccount,:ustatus,:udatechange,:uactby)");
+                    + ":uaccount,:ustatus,:udatechange,:uactby,:uremarks,:udatefrom,:udateto)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("uaccount", logsS.getAccount());
             getinsertresult.setString("ustatus", logsS.getStatus());
-            getinsertresult.setDate("udatechange", (Date) new Date(utility.StringToDate(logsS.getDatechange()).getTime()));
+            getinsertresult.setTimestamp("udatechange", new java.sql.Timestamp(d1.getTime()));
             getinsertresult.setString("uactby", logsS.getActby());
+            getinsertresult.setString("uremarks", logsS.getRemarks());
+            getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(logsS.getDatefrom()).getTime()));
+            getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(logsS.getDateto()).getTime()));
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 userlogs.setActstatus("SUCCESS");
@@ -733,7 +738,7 @@ public class InsertMethods {
             // userlogs.setActdetails("Accreditation period" + accre.getDatefrom() + " - " + accre.getDateto() + " " + result.getMessage());
             logs.UserLogsMethod(datasource, "ADD-STATSLOG", userlogs, "0", "0");
             //USER LOGS
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -744,7 +749,7 @@ public class InsertMethods {
             final String userid, //SINGLE
             final String accessid, //MULTIPLE
             final String createdby,
-            final String datecreated) throws ParseException {
+            final String datecreated)  {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -782,7 +787,7 @@ public class InsertMethods {
                 result.setSuccess(true);
                 result.setMessage("OK");
             }
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -790,7 +795,7 @@ public class InsertMethods {
     }
 
     //INSERT BOOK
-    public ACRGBWSResult ACRBOOKING(final DataSource datasource, final Book book) throws ParseException {
+    public ACRGBWSResult ACRBOOKING(final DataSource datasource, final Book book)  {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -821,7 +826,7 @@ public class InsertMethods {
             userlogs.setActdetails(book.getBooknum());
             logs.UserLogsMethod(datasource, "INSERT-BOOK-REF", userlogs, book.getConid(), book.getHcpncode());
 
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -830,7 +835,7 @@ public class InsertMethods {
 
     //INSERT BOOK DATA
     public ACRGBWSResult ACRBOOKINGDATA(final DataSource datasource,
-            final NclaimsData nclaims, final String booknum, final String datecreated, final String createdby) throws ParseException {
+            final NclaimsData nclaims, final String booknum, final String datecreated, final String createdby)  {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -900,7 +905,7 @@ public class InsertMethods {
     }
 
     //INSERT LOGS STATUS
-    public ACRGBWSResult INSERTCONDATE(final DataSource datasource, final ContractDate contractdate) throws ParseException {
+    public ACRGBWSResult INSERTCONDATE(final DataSource datasource, final ContractDate contractdate)   {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -937,7 +942,7 @@ public class InsertMethods {
             userLogs.setActdetails(contractdate.getDatefrom() + " - " + contractdate.getDateto() + "|" + result.getMessage());
             logs.UserLogsMethod(datasource, "ADD-CONTRACT-DATE", userLogs, "0", "0");
             //==============ACTIVLITY LOGS AREA ===========================
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -945,7 +950,7 @@ public class InsertMethods {
     }
 
     //INSERT USER ACCOUNT BATCH UPLOAD
-    public ACRGBWSResult INSERTUSERACCOUNTBATCHUPLOAD(final DataSource datasource, final UserInfo userinfo, final ForgetPassword forgetpass) throws ParseException {
+    public ACRGBWSResult INSERTUSERACCOUNTBATCHUPLOAD(final DataSource datasource, final UserInfo userinfo, final ForgetPassword forgetpass)   {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -1014,7 +1019,6 @@ public class InsertMethods {
                 infologs.setActstatus("FAILED");
                 result.setMessage(getinsertresult.getString("Message"));
             }
-
             infologs.setActby(userinfo.getCreatedby());
             infologs.setActdetails(" Contact :" + userinfo.getContact() + " Email :" + userinfo.getEmail() + " Lastname :" + userinfo.getLastname() + " FirstName :" + userinfo.getFirstname() + " " + getinsertresult.getString("Message"));
             logs.UserLogsMethod(datasource, "ADD-USERINFO-BATCH", infologs, userinfo.getDesignation(), "0");

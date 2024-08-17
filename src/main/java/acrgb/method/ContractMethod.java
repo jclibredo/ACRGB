@@ -21,7 +21,6 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -272,7 +271,6 @@ public class ContractMethod {
                     contractdate.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
                     contractdate.setStatus(resultset.getString("STATUS"));
                     //GET CONTRACT USING CONID
-
                     ACRGBWSResult getAccountbyConid = this.GETCONTRACTBYCONDATEID(dataSource, resultset.getString("CONDATEID"));
                     if (getAccountbyConid.isSuccess()) {
                         List<Contract> contratList = Arrays.asList(utility.ObjectMapper().readValue(getAccountbyConid.getMessage(), Contract[].class));
@@ -565,7 +563,7 @@ public class ContractMethod {
             } else {
                 result.setMessage(methods.GETROLE(dataSource, userid, tags).getMessage());
             }
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -666,7 +664,7 @@ public class ContractMethod {
             } else {
                 result.setMessage(methods.GETROLE(dataSource, userid, tags).getMessage());
             }
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -802,7 +800,7 @@ public class ContractMethod {
             } else {
                 result.setMessage(methods.GETROLE(dataSource, userid, tags).getMessage());
             }
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }

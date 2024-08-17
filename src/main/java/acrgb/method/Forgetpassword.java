@@ -8,7 +8,6 @@ package acrgb.method;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.ForgetPassword;
 import acrgb.utility.Utility;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.Properties;
 import javax.mail.Message;
@@ -88,9 +87,6 @@ public class Forgetpassword {
         } catch (MessagingException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Forgetpassword.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(Forgetpassword.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -159,9 +155,6 @@ public class Forgetpassword {
             }
             result.setSuccess(true);
         } catch (MessagingException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(Forgetpassword.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Forgetpassword.class.getName()).log(Level.SEVERE, null, ex);
         }

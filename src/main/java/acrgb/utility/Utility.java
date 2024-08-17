@@ -65,7 +65,7 @@ public class Utility {
             + "(?=.*[a-z])(?=.*[A-Z])"
             + "(?=.*[@#$%^&+=])"
             + "(?=\\S+$).{8,20}$";
-    private static final String cipherkey = "A263B7980A15ADE7";
+    private static final String CIPHERKEY = "A263B7980A15ADE7";
     private final String email_pattern = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
 //represents starting character of the string.
@@ -178,22 +178,32 @@ public class Utility {
         }
     }
 
-    public Date StringToDate(String stringdate) throws ParseException {
-        java.util.Date sf = this.SimpleDateFormat("MM-dd-yyyy").parse(stringdate);
+    public Date StringToDate(String stringdate) {
+        java.util.Date sf = null;
+        try {
+            sf = this.SimpleDateFormat("MM-dd-yyyy").parse(stringdate);
+        } catch (ParseException ex) {
+            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return sf;
     }
 
-    public Date StringToDateTime(String stringdatetime) throws ParseException {
-        java.util.Date sf = this.SimpleDateFormat("MM-dd-yyyy hh:mm a").parse(stringdatetime);
+    public Date StringToDateTime(String stringdatetime) {
+        java.util.Date sf = null;
+        try {
+            sf = this.SimpleDateFormat("MM-dd-yyyy hh:mm a").parse(stringdatetime);
+        } catch (ParseException ex) {
+            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return sf;
     }
 
-    public String ComputeDateBackward(String dates, int diff) throws ParseException {
+    public String ComputeDateBackward(String dates, int diff) {
         String dateResults = String.valueOf(LocalDate.parse(dates).minusYears(diff).format(DateTimeFormatter.ofPattern("MM-dd-yyyy")));
         return dateResults;
     }
 
-    public ACRGBWSResult ProcessDateAmountComputation(String datefrom, String dateto) throws ParseException {
+    public ACRGBWSResult ProcessDateAmountComputation(String datefrom, String dateto) {
         ACRGBWSResult result = this.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -251,10 +261,8 @@ public class Utility {
                 result.setMessage("N/A");
             }
 
-        } catch (NumberFormatException | ParseException ex) {
+        } catch (NumberFormatException | ParseException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
             Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
         }
 
@@ -385,7 +393,7 @@ public class Utility {
     //GENERATE TOKEN METHODS
     public String GenerateToken(String username, String password) {
         SignatureAlgorithm algorithm = SignatureAlgorithm.HS256;
-        byte[] userkeybytes = DatatypeConverter.parseBase64Binary(cipherkey);
+        byte[] userkeybytes = DatatypeConverter.parseBase64Binary(CIPHERKEY);
         Key signingkey = new SecretKeySpec(userkeybytes, algorithm.getJcaName());
         JwtBuilder builder = Jwts.builder()
                 .claim("Code1", EncryptString(username))
@@ -412,7 +420,7 @@ public class Utility {
     private void SetKey() {
         MessageDigest sha = null;
         try {
-            String userkey = cipherkey;
+            String userkey = CIPHERKEY;
             key = userkey.getBytes("UTF-8");
             sha = MessageDigest.getInstance("SHA-1");
             key = sha.digest(key);
@@ -426,7 +434,7 @@ public class Utility {
     public boolean ValidateToken(final String token) {
         boolean result = false;
         try {
-            Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(cipherkey)).parseClaimsJws(token).getBody();
+            Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(CIPHERKEY)).parseClaimsJws(token).getBody();
             result = true;
         } catch (ExpiredJwtException | MalformedJwtException | SignatureException | UnsupportedJwtException | IllegalArgumentException ex) {
         }
@@ -457,7 +465,7 @@ public class Utility {
                 result.setMessage("Token is required");
             } else {
                 if (this.ValidateToken(token) == true) {
-                    Claims claims = Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(cipherkey)).parseClaimsJws(token).getBody();
+                    Claims claims = Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(CIPHERKEY)).parseClaimsJws(token).getBody();
                     ACRGBPayload payload = this.ACRGBPayload();
                     payload.setCode1(this.DecryptString((String) claims.get("Code1")));
                     payload.setCode2(this.DecryptString((String) claims.get("Code2")));

@@ -10,6 +10,7 @@ import acrgb.method.InsertMethods;
 import acrgb.method.Methods;
 import acrgb.method.UpdateMethods;
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.Accreditation;
 import acrgb.structure.Archived;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
@@ -22,9 +23,6 @@ import acrgb.structure.UserInfo;
 import acrgb.structure.UserLevel;
 import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.text.ParseException;
 import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
 import javax.sql.DataSource;
@@ -59,14 +57,13 @@ public class ACRGBUPDATE {
      * @param token
      * @param assets
      * @return an instance of java.lang.String
-     * @throws java.sql.SQLException
      */
     @PUT
     @Path("UPDATEASSETS")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATEASSETS(@HeaderParam("token") String token,
-            final Assets assets) throws SQLException {
+            final Assets assets)  {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -89,7 +86,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATECONTRACT(@HeaderParam("token") String token,
-            final Contract contract) throws SQLException {
+            final Contract contract)  {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -112,7 +109,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATETRANCH(@HeaderParam("token") String token,
-            final Tranch tranch) throws SQLException {
+            final Tranch tranch)  {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -137,7 +134,7 @@ public class ACRGBUPDATE {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATEUSERLEVEL(
             @HeaderParam("token") String token,
-            final UserLevel userlevel) throws SQLException {
+            final UserLevel userlevel)  {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -167,7 +164,7 @@ public class ACRGBUPDATE {
             @HeaderParam("mailhost") String mailhost,
             @HeaderParam("mailport") String mailport,
             @HeaderParam("mailfrom") String mailfrom,
-            final User user) throws SQLException, IOException {
+            final User user){
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -209,7 +206,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATEUSERLEVEL(@HeaderParam("token") String token,
-            final User user) throws SQLException {
+            final User user){
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -233,7 +230,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult RESETPASSWORD(@HeaderParam("token") String token,
-            final User user) throws SQLException {
+            final User user) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -257,7 +254,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult INACTIVE(@HeaderParam("token") String token,
-            final Archived arhived) throws SQLException, ParseException {
+            final Archived arhived) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -282,7 +279,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult ACTIVE(@HeaderParam("token") String token,
-            final Archived arhived) throws SQLException, ParseException {
+            final Archived arhived) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -307,7 +304,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult RemoveAccessRole(@HeaderParam("token") String token,
-            final UserRoleIndex userroleindex) throws SQLException, ParseException {
+            final UserRoleIndex userroleindex){
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -317,7 +314,6 @@ public class ACRGBUPDATE {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-
             ACRGBWSResult insertresult = methods.REMOVEDROLEINDEX(dataSource, userroleindex.getUserid(), userroleindex.getAccessid(), userroleindex.getCreatedby());
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
@@ -349,8 +345,6 @@ public class ACRGBUPDATE {
 //        }
 //        return result;
 //    }
-    
-    
     //CONTRACT TAGGING PROCESS
     @PUT
     @Path("TAGGINGCONTRACT")
@@ -402,7 +396,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult RemoveAppellate(@HeaderParam("token") String token,
-            final UserRoleIndex userroleindex) throws SQLException, ParseException {
+            final UserRoleIndex userroleindex) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -426,7 +420,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATEUSERDETAILS(@HeaderParam("token") String token,
-            final UserInfo userinfo) throws SQLException, ParseException {
+            final UserInfo userinfo) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -451,7 +445,7 @@ public class ACRGBUPDATE {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult APPROVEDHCPN(
             @HeaderParam("token") String token,
-            final ManagingBoard mb) throws SQLException, ParseException {
+            final ManagingBoard mb) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -475,7 +469,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult APPROVEDHCPN(@HeaderParam("token") String token,
-            final ContractDate contractdate) throws SQLException, ParseException {
+            final ContractDate contractdate) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -499,7 +493,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATEHCPN(@HeaderParam("token") String token,
-            final ManagingBoard mb) throws SQLException, ParseException {
+            final ManagingBoard mb) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -547,7 +541,7 @@ public class ACRGBUPDATE {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATEUSERROLE(
             @HeaderParam("token") String token,
-            final User user) throws SQLException, ParseException {
+            final User user) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -574,7 +568,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult DELETEDATA(@HeaderParam("token") String token,
-            final Archived arhived) throws SQLException, ParseException {
+            final Archived arhived) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -589,6 +583,30 @@ public class ACRGBUPDATE {
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
+        }
+        return result;
+    }
+
+    @PUT
+    @Path("UPDATEACCREDITATION")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult UPDATEACCREDITATION(
+            @HeaderParam("token") String token,
+            final Accreditation accreditation) {
+        //TODO return proper representation object
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult updateResult = methods.UpdateHCPNAccreditation(dataSource, accreditation);
+            result.setMessage(updateResult.getMessage());
+            result.setSuccess(updateResult.isSuccess());
+            result.setResult(updateResult.getResult());
         }
         return result;
     }

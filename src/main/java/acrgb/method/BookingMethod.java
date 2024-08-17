@@ -65,7 +65,7 @@ public class BookingMethod {
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-        } catch (SQLException | ParseException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -98,7 +98,7 @@ public class BookingMethod {
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
-        } catch (SQLException | ParseException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -197,7 +197,7 @@ public class BookingMethod {
                 result.setMessage("N/A");
             }
 
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -212,7 +212,6 @@ public class BookingMethod {
         result.setSuccess(false);
         FetchMethods fm = new FetchMethods();
         Methods methods = new Methods();
-        InsertMethods im = new InsertMethods();
         ArrayList<String> errorList = new ArrayList<>();
         try {
             ACRGBWSResult getConResult = fm.GETCONTRACTCONID(dataSource, book.getConid(), utags.trim().toUpperCase());
@@ -382,7 +381,7 @@ public class BookingMethod {
                 result.setResult(utility.ObjectMapper().writeValueAsString(errorList));
             }
 
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -457,7 +456,7 @@ public class BookingMethod {
                 result.setResult(utility.ObjectMapper().writeValueAsString(errorList));
             }
 
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -490,7 +489,7 @@ public class BookingMethod {
             } else {
                 result.setMessage("N/A");
             }
-        } catch (SQLException | ParseException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -533,7 +532,7 @@ public class BookingMethod {
             userlogs.setActdetails(" book " + upmmcno + " | " + statement.getString("Message"));
             userlogs.setActby(createdby); // 1,2,2,APEX,HCPN
             logs.UserLogsMethod(dataSource, "INSERT-CLAIMS-BOOK-DATA", userlogs, upmmcno, "0");
-        } catch (SQLException | ParseException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }

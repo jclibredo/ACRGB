@@ -153,7 +153,7 @@ public class LedgerMethod {
                 result.setMessage("N/A");
             }
 
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -199,7 +199,7 @@ public class LedgerMethod {
                 result.setMessage("N/A");
             }
 
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -243,7 +243,7 @@ public class LedgerMethod {
                 result.setMessage("N/A");
             }
 
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -360,7 +360,7 @@ public class LedgerMethod {
             } else {
                 result.setMessage("N/A");
             }
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -419,8 +419,6 @@ public class LedgerMethod {
             }
             //GET LIQUIDATION PART
             ACRGBWSResult getContractDate = fm.GETCONTRACTCONID(dataSource, conid, utags);
-            System.out.println("Get Contract by con id" + getContractDate);
-
             if (getContractDate.isSuccess()) {
                 Contract cons = utility.ObjectMapper().readValue(getContractDate.getResult(), Contract.class);
                 if (cons.getContractdate() != null) {
@@ -459,8 +457,6 @@ public class LedgerMethod {
                             }
                         }
                     }
-                } else {
-                    System.out.println("Condate is null under " + cons.getConid());
                 }
             }
             if (ledgerlist.size() > 0) {
@@ -470,7 +466,7 @@ public class LedgerMethod {
             } else {
                 result.setMessage("N/A");
             }
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }

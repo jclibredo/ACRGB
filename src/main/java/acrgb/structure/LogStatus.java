@@ -20,5 +20,8 @@ public class LogStatus {
     private String status;
     private String datechange;
     private String actby;
+    private String remarks;
+    private String datefrom;
+    private String dateto;
 
 }

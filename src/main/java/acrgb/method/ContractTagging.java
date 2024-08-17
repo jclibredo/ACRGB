@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -163,14 +162,14 @@ public class ContractTagging {
             }
             result.setMessage(String.join(",", error));
             result.setResult("");
-        } catch (ParseException | IOException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractTagging.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
 
-    public ACRGBWSResult EndContractUsingDateid(final DataSource dataSource, final String dateid) throws ParseException {
+    public ACRGBWSResult EndContractUsingDateid(final DataSource dataSource, final String dateid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");

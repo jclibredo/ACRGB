@@ -22,5 +22,7 @@ public class Accreditation {
     private String datecreated;
     private String createdby;
     private String status;
+    private String remarks;
+    private String types;
 
 }

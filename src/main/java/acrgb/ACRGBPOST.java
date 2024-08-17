@@ -30,7 +30,6 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -78,15 +77,14 @@ public class ACRGBPOST {
      * @param token
      * @param assets
      * @return an instance of java.lang.String
-     * @throws java.sql.SQLException
      */
     //INSERTASSETS
     @POST
     @Path("INSERTASSETS")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTASSETS(@HeaderParam("token") String token, 
-            final Assets assets) throws SQLException {
+    public ACRGBWSResult INSERTASSETS(@HeaderParam("token") String token,
+            final Assets assets) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -111,7 +109,7 @@ public class ACRGBPOST {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult INSERTHCPN(
             @HeaderParam("token") String token,
-            final ManagingBoard mb) throws SQLException, ParseException {
+            final ManagingBoard mb){
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -134,7 +132,7 @@ public class ACRGBPOST {
     @Path("INSERTCONTRACT")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTCONTRACT(@HeaderParam("token") String token, final Contract contract) throws SQLException, ParseException {
+    public ACRGBWSResult INSERTCONTRACT(@HeaderParam("token") String token, final Contract contract) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -156,7 +154,7 @@ public class ACRGBPOST {
     @Path("INSERTTRANCH")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTTRANCH(@HeaderParam("token") String token, final Tranch tranch) throws SQLException {
+    public ACRGBWSResult INSERTTRANCH(@HeaderParam("token") String token, final Tranch tranch){
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -179,7 +177,7 @@ public class ACRGBPOST {
     @Path("INSERTUSERDETAILS")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTUSERDETAILS(@HeaderParam("token") String token, final UserInfo userinfo) throws SQLException {
+    public ACRGBWSResult INSERTUSERDETAILS(@HeaderParam("token") String token, final UserInfo userinfo){
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -202,7 +200,7 @@ public class ACRGBPOST {
     @Path("INSERTUSERLEVEL")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTUSERLEVEL(@HeaderParam("token") String token, final UserLevel userlevel) throws SQLException, ParseException {
+    public ACRGBWSResult INSERTUSERLEVEL(@HeaderParam("token") String token, final UserLevel userlevel){
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -231,8 +229,7 @@ public class ACRGBPOST {
             @HeaderParam("mailhost") String mailhost,
             @HeaderParam("mailport") String mailport,
             @HeaderParam("mailfrom") String mailfrom,
-            final User user) throws SQLException, ParseException {
-        // public ACRGBWSResult INSERTUSER(final User user) throws SQLException, ParseException {
+            final User user){
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -260,7 +257,7 @@ public class ACRGBPOST {
     @Path("UserLogin")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UserLogin(final User user) throws SQLException {
+    public ACRGBWSResult UserLogin(final User user){
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = methods.ACRUSERLOGIN(dataSource,
@@ -297,7 +294,7 @@ public class ACRGBPOST {
     @Path("INSERTMBREQUEST")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult MBREQUEST(@HeaderParam("token") String token, final MBRequestSummary mbrequestsummry) throws SQLException, ParseException {
+    public ACRGBWSResult MBREQUEST(@HeaderParam("token") String token, final MBRequestSummary mbrequestsummry){
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -319,7 +316,7 @@ public class ACRGBPOST {
     @Path("INSERTROLEINDEX")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult ROLEINDEX(@HeaderParam("token") String token, final UserRoleIndex userroleindex) throws SQLException, ParseException {
+    public ACRGBWSResult ROLEINDEX(@HeaderParam("token") String token, final UserRoleIndex userroleindex) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -341,7 +338,7 @@ public class ACRGBPOST {
     @Path("INSERTAPPELLATE")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTAPPELLATE(@HeaderParam("token") String token, final UserRoleIndex userroleindex) throws SQLException, ParseException {
+    public ACRGBWSResult INSERTAPPELLATE(@HeaderParam("token") String token, final UserRoleIndex userroleindex) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -367,7 +364,7 @@ public class ACRGBPOST {
     @Path("INSERTCONDATE")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTCONDATE(@HeaderParam("token") String token, final ContractDate contractdate) throws SQLException, ParseException {
+    public ACRGBWSResult INSERTCONDATE(@HeaderParam("token") String token, final ContractDate contractdate) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -557,7 +554,7 @@ public class ACRGBPOST {
             result.setMessage("PLEASE SEE UPLOAD RESULT STATUS");
             result.setSuccess(true);
             result.setResult(utility.ObjectMapper().writeValueAsString(errorList));
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ACRGBPOST.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -642,7 +639,8 @@ public class ACRGBPOST {
             result.setResult(utility.ObjectMapper().writeValueAsString(errorList));
             result.setSuccess(true);
 
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.getLocalizedMessage());
             Logger.getLogger(ACRGBPOST.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -653,10 +651,10 @@ public class ACRGBPOST {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public ACRGBWSResult Remap(@HeaderParam("token") String token,
-            final UserRoleIndex roleIndex) throws ParseException {
+            final UserRoleIndex roleIndex) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
-        result.setResult("");
+        result.setResult(""); 
         result.setSuccess(false);
         ACRGBWSResult GetPayLoad = utility.GetPayload(token);
         if (!GetPayLoad.isSuccess()) {

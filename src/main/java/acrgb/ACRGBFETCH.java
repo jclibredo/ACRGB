@@ -20,8 +20,6 @@ import acrgb.structure.ManagingBoard;
 import acrgb.structure.User;
 import acrgb.utility.Utility;
 import java.io.IOException;
-import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -493,7 +491,7 @@ public class ACRGBFETCH {
     @GET
     @Path("GetManagingBoard/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetManagingBoard(@HeaderParam("token") String token, @PathParam("tags") String tags) throws ParseException, SQLException {
+    public ACRGBWSResult GetManagingBoard(@HeaderParam("token") String token, @PathParam("tags") String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -516,7 +514,7 @@ public class ACRGBFETCH {
     @Path("GetFacilityUsingProAccountUserID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetFacilityUsingProAccountUserID(@HeaderParam("token") String token,
-            @PathParam("pid") String pid) throws ParseException {
+            @PathParam("pid") String pid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -599,7 +597,7 @@ public class ACRGBFETCH {
     @Path("GetManagingBoardWithProID/{proid}/{levelname}")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetManagingBoardWithProID(@HeaderParam("token") String token, @PathParam("proid") String proid,
-            @PathParam("levelname") String levelname) throws ParseException {
+            @PathParam("levelname") String levelname) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -639,7 +637,7 @@ public class ACRGBFETCH {
     @GET
     @Path("GetMBUsingMBID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetMBUsingMBID(@HeaderParam("token") String token, @PathParam("pid") String pid) throws ParseException {
+    public ACRGBWSResult GetMBUsingMBID(@HeaderParam("token") String token, @PathParam("pid") String pid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -662,7 +660,7 @@ public class ACRGBFETCH {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetBalanceTerminatedContract(@HeaderParam("token") String token, @PathParam("userid") String userid,
             @PathParam("levelname") String levelname,
-            @PathParam("tags") String tags) throws ParseException {
+            @PathParam("tags") String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -813,7 +811,7 @@ public class ACRGBFETCH {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult AutoEndContractDate(
             @HeaderParam("token") String token,
-            @PathParam("ucondateid") String ucondateid) throws ParseException {   //TAGS MUST BE LEVELACCESS
+            @PathParam("ucondateid") String ucondateid) {   //TAGS MUST BE LEVELACCESS
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -1027,7 +1025,7 @@ public class ACRGBFETCH {
                     result.setSuccess(GetAllContract.isSuccess());
                     break;
                 }
-                 case "ALL": {
+                case "ALL": {
                     ACRGBWSResult GetAllContract = fetchmethods.GETALLCONTRACT(dataSource, tags, "0");
                     result.setMessage(GetAllContract.getMessage());
                     result.setResult(GetAllContract.getResult());
@@ -1095,16 +1093,13 @@ public class ACRGBFETCH {
                 } else {
                     result.setMessage(code + " Code is invalid");
                 }
-
             } else {
                 result.setMessage(GetResult.getMessage());
             }
-
         } catch (IOException ex) {
             result.setMessage(ex.getLocalizedMessage());
             Logger.getLogger(ACRGBFETCH.class.getName()).log(Level.SEVERE, null, ex);
         }
-
         //--------------------------------------
         return result;
     }
@@ -1119,7 +1114,7 @@ public class ACRGBFETCH {
             @HeaderParam("mailapikey") String mailapikey,
             @HeaderParam("mailhost") String mailhost,
             @HeaderParam("mailport") String mailport,
-            @HeaderParam("mailfrom") String mailfrom) throws ParseException {
+            @HeaderParam("mailfrom") String mailfrom) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -1145,23 +1140,22 @@ public class ACRGBFETCH {
 //    public String JobExecutor() {
 //        return JobExecutor().toString();
 //    }
-    @GET
-    @Path("PROCESSENDPERIODDATE/{tags}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult PROCESSENDPERIODDATE(@PathParam("tags") String tags) throws ParseException {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        //--------------------------------------
-        ACRGBWSResult GetResult = methods.PROCESSENDPERIODDATE(dataSource, tags);
-        result.setMessage(GetResult.getMessage());
-        result.setResult(GetResult.getResult());
-        result.setSuccess(GetResult.isSuccess());
-        //--------------------------------------
-        return result;
-    }
-
+//    @GET
+//    @Path("PROCESSENDPERIODDATE/{tags}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult PROCESSENDPERIODDATE(@PathParam("tags") String tags) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        //--------------------------------------
+//        ACRGBWSResult GetResult = methods.PROCESSENDPERIODDATE(dataSource, tags);
+//        result.setMessage(GetResult.getMessage());
+//        result.setResult(GetResult.getResult());
+//        result.setSuccess(GetResult.isSuccess());
+//        //--------------------------------------
+//        return result;
+//    }
 //    @GET
 //    @Path("GETPREVIOUSMAPPED/{puserid}")
 //    @Produces(MediaType.APPLICATION_JSON)
@@ -1248,4 +1242,24 @@ public class ACRGBFETCH {
         result.setResult(utility.Create2FACode());
         return result;
     }
+
+    @GET
+    @Path("AutoProcessData")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult AutoProcessData(@HeaderParam("token") String token) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("OK");
+        result.setSuccess(true);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            //CHECKING OF ENDED ACCREDITATION
+            methods.GETACTIVEACCREDITATION(dataSource, "ACTIVE");
+            //CHECKING OF ENDED CONTRACT PERIOD
+            methods.PROCESSENDPERIODDATE(dataSource, "ACTIVE");
+        }
+        return result;
+    }
+
 }

@@ -9,6 +9,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.enterprise.context.RequestScoped;
 
 /**
@@ -21,26 +23,35 @@ public class ConfigReader {
     public ConfigReader() {
     }
 
-    public Properties getProperties() throws FileNotFoundException, IOException {
-        FileInputStream fp = new FileInputStream("D:\\Java Swing\\ACRGB\\src\\main\\java\\Configuration\\config.properties");
+    public Properties getProperties() {
         Properties prop = new Properties();
-        prop.load(fp);
+        try {
+            FileInputStream fp = new FileInputStream("D:\\Java Swing\\ACRGB\\src\\main\\java\\Configuration\\config.properties");
+            prop.load(fp);
+            return prop;
+        } catch (FileNotFoundException ex) {
+            ex.getLocalizedMessage();
+            Logger.getLogger(ConfigReader.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            ex.getLocalizedMessage();
+            Logger.getLogger(ConfigReader.class.getName()).log(Level.SEVERE, null, ex);
+        }
         return prop;
     }
 
-    public String getSchemaName() throws IOException {
+    public String getSchemaName() {
         return getProperties().getProperty("SCHEMA_NAME");
     }
 
-    public String getJndiName() throws IOException {
+    public String getJndiName() {
         return getProperties().getProperty("JNDI_NAME");
     }
 
-    public String getDBPass() throws IOException {
+    public String getDBPass() {
         return getProperties().getProperty("DBPASS");
     }
 
-    public String getDBUser() throws IOException {
+    public String getDBUser() {
         return getProperties().getProperty("DBUSER");
     }
 }

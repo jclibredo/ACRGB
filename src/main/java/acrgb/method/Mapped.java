@@ -6,15 +6,11 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
-import acrgb.structure.HealthCareFacility;
-import acrgb.structure.ManagingBoard;
 import acrgb.utility.Utility;
-import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.context.RequestScoped;

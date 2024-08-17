@@ -78,6 +78,7 @@ public class Methods {
                         User user = new User();
                         user.setUserid(userlist.get(x).getUserid());
                         user.setLeveid(userlist.get(x).getLeveid().toUpperCase());
+                        user.setLeveldetails(userlist.get(x).getLeveldetails());
                         user.setUsername(userlist.get(x).getUsername());
                         user.setUserpassword(userlist.get(x).getUserpassword());
                         user.setDatecreated(userlist.get(x).getDatecreated());
@@ -2143,7 +2144,7 @@ public class Methods {
                 result.setMessage("N/A");
             }
             //-------------------------------------------------------------------------------
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -2198,7 +2199,6 @@ public class Methods {
                                 errorList.add(getinsertresult.getString("Message"));
                             }
                         }
-
                         if (errCounter == 0) {
                             result.setMessage("OK");
                             result.setSuccess(true);
@@ -2208,11 +2208,9 @@ public class Methods {
                     } else {
                         result.setMessage(getinsertresult.getString("Message"));
                     }
-
                 }
-
             }
-        } catch (SQLException | ParseException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -2320,7 +2318,7 @@ public class Methods {
                     result.setMessage("NO DATA FOUND");
                 }
             }
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -2416,7 +2414,7 @@ public class Methods {
     public ACRGBWSResult REMOVEDROLEINDEX(final DataSource datasource,
             final String userid,
             final String accessid,
-            final String createdby) throws ParseException {
+            final String createdby) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2453,7 +2451,7 @@ public class Methods {
                 result.setMessage("OK");
 
             }
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -2526,7 +2524,7 @@ public class Methods {
                 }
             }
 
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -2597,7 +2595,7 @@ public class Methods {
                 }
             }
 
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -2669,7 +2667,7 @@ public class Methods {
                 }
             }
 
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -2719,7 +2717,7 @@ public class Methods {
 
                 //----------------------------------------------------------
             }
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -2762,7 +2760,7 @@ public class Methods {
     }
 
     public ACRGBWSResult GETROLE(final DataSource dataSource, final String puserid,
-            final String utags) throws ParseException {
+            final String utags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2789,7 +2787,7 @@ public class Methods {
     }
 
     public ACRGBWSResult GETROLEMULITPLE(final DataSource dataSource,
-            final String puserid, final String utags) throws ParseException {
+            final String puserid, final String utags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2819,7 +2817,7 @@ public class Methods {
         return result;
     }
 
-    public ACRGBWSResult GETROLEREVERESE(final DataSource dataSource, final String puserid, final String utags) throws ParseException {
+    public ACRGBWSResult GETROLEREVERESE(final DataSource dataSource, final String puserid, final String utags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2846,7 +2844,7 @@ public class Methods {
     }
 
     public ACRGBWSResult GETROLEREVERESEMULTIPLE(final DataSource dataSource,
-            final String puserid, final String utags) throws ParseException {
+            final String puserid, final String utags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2877,7 +2875,7 @@ public class Methods {
     }
 
     //GET APEX FACILITY
-    public ACRGBWSResult GETAPEXFACILITY(final DataSource dataSource) throws ParseException {
+    public ACRGBWSResult GETAPEXFACILITY(final DataSource dataSource) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2912,7 +2910,7 @@ public class Methods {
     }
 
     //GET REPORTS FOR LIST OF SELECTED NETWORK
-    public ACRGBWSResult GetReportsOfSelectedAPEXFacility(final DataSource dataSource, final String tags, final String puserid) throws ParseException {
+    public ACRGBWSResult GetReportsOfSelectedAPEXFacility(final DataSource dataSource, final String tags, final String puserid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2979,7 +2977,7 @@ public class Methods {
     }
 
     //GET REPORTS EVERY FACILITY USING MB ID
-    public ACRGBWSResult GetReportsOfSelectedFacilityUnderHCPN(final DataSource dataSource, final String tags, final String puserid) throws ParseException {
+    public ACRGBWSResult GetReportsOfSelectedFacilityUnderHCPN(final DataSource dataSource, final String tags, final String puserid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -3047,7 +3045,7 @@ public class Methods {
 
     //GET COMPUTED REMAINING BALANCE FOR TERMINATED CONTRACT PER FACILITY
     public ACRGBWSResult GetRemainingBalanceForTerminatedContract(final DataSource dataSource, final String userid,
-            final String tags) throws ParseException {
+            final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -3097,7 +3095,7 @@ public class Methods {
     }
 
     //GET TERMINATED CONTRACT OF APEX FACILITY
-    public ACRGBWSResult GetRemainingBalanceForTerminatedContractApex(final DataSource dataSource) throws ParseException {
+    public ACRGBWSResult GetRemainingBalanceForTerminatedContractApex(final DataSource dataSource) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -3132,7 +3130,7 @@ public class Methods {
     }
 
     //GET END CONTRACT OF APEX FACILITY
-    public ACRGBWSResult GetRemainingBalanceForEndContractApex(final DataSource dataSource) throws ParseException {
+    public ACRGBWSResult GetRemainingBalanceForEndContractApex(final DataSource dataSource) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -3196,7 +3194,7 @@ public class Methods {
                 result.setMessage("N/A");
             }
 
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -3205,7 +3203,7 @@ public class Methods {
 
     //GET COMPUTED REMAINING BALANCE FOR TERMINATED CONTRACT PER FACILITY
     public ACRGBWSResult GetRemainingBalanceForEndContract(final DataSource dataSource,
-            final String userid, final String tags) throws ParseException {
+            final String userid, final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -3246,7 +3244,6 @@ public class Methods {
             } else {
                 result.setMessage("N/A");
             }
-
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -3258,7 +3255,7 @@ public class Methods {
     public ACRGBWSResult GETROLEMULITPLEFORENDROLE(final DataSource dataSource,
             final String puserid,
             final String utags,
-            final String condateid) throws ParseException {
+            final String condateid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -3362,14 +3359,14 @@ public class Methods {
                 result.setMessage("N/A");
             }
             //-------------------------------------------------------------------------------
-        } catch (SQLException | IOException | ParseException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
 
-    //GET AVERAGE AMOUNT AND VOLUME OF CLAIMS
+    //GET ACTIVE CONTRACT DATE PERIOD
     public ACRGBWSResult PROCESSENDPERIODDATE(final DataSource dataSource, final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -3466,11 +3463,118 @@ public class Methods {
             if (resultset.next()) {
                 result.setSuccess(true);
             }
-        } catch (SQLException | ParseException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
 
+//     //GET ACTIVE CONTRACT DATE PERIOD
+//    public ACRGBWSResult TerminateAccreditation(final DataSource dataSource, final Accreditation accreditation) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        try (Connection connection = dataSource.getConnection()) {
+//           
+//            
+//            
+//            
+//            
+//            
+//            
+//            
+//        } catch (SQLException | IOException | ParseException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
+//    
+    public ACRGBWSResult UpdateHCPNAccreditation(final DataSource datasource, final Accreditation accreditation) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        java.util.Date d1 = new java.util.Date();
+        try (Connection connection = datasource.getConnection()) {
+            UserActivityLogs logs = new UserActivityLogs();
+            UserActivity userLogs = utility.UserActivity();
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEHCPNACCREDITATION(:Message,:Code,"
+                    + ":paccount,:pdateaction,:pcreatedby,:pstatus,:premarks,:ptags,:pdatefrom,:pdateto)");
+            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+            getinsertresult.setString("paccount", accreditation.getAccreno());
+            getinsertresult.setTimestamp("udatechange", new java.sql.Timestamp(d1.getTime()));
+            getinsertresult.setString("pcreatedby", accreditation.getCreatedby());
+            getinsertresult.setString("pstatus", accreditation.getStatus());
+            getinsertresult.setString("premarks", accreditation.getRemarks());
+            getinsertresult.setString("ptags", accreditation.getTypes().trim());
+            getinsertresult.setDate("pdatefrom", (Date) new Date(utility.StringToDate(accreditation.getDatefrom()).getTime()));
+            getinsertresult.setDate("pdateto", (Date) new Date(utility.StringToDate(accreditation.getDateto()).getTime()));
+            getinsertresult.execute();
+            if (getinsertresult.getString("Message").equals("SUCC")) {
+                result.setSuccess(true);
+                result.setMessage("OK");
+                userLogs.setActstatus("SUCCESS");
+            } else {
+                userLogs.setActstatus("FAILED");
+                result.setMessage(getinsertresult.getString("Message"));
+            }
+            userLogs.setActby(accreditation.getCreatedby());
+            logs.UserLogsMethod(datasource, "EDIT-ACCREDITATION-HCPN", userLogs, accreditation.getCreatedby(), accreditation.getAccreno());
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //AUTO END ACCREDITATION 
+    public ACRGBWSResult GETACTIVEACCREDITATION(final DataSource dataSource, final String utags) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETALLACCREDITATION(:utags); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("utags", utags.trim());
+            statement.execute();
+            ArrayList<String> errorList = new ArrayList<>();
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM-dd-yyyy");
+            LocalDateTime nowS = LocalDateTime.now();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                java.util.Date dateNow = new SimpleDateFormat("MM-dd-yyyy").parse(dtf.format(nowS));
+                java.util.Date convertTo = new SimpleDateFormat("MM-dd-yyyy").parse(dateformat.format(resultset.getDate("DATETO")));
+                if (dateNow.compareTo(convertTo) > 0) {
+                    Accreditation accre = new Accreditation();
+                    accre.setAccreno(resultset.getString("ACCRENO"));
+                    accre.setRemarks("Expired Registration");
+                    accre.setCreatedby(resultset.getString("CREATEDBY"));
+                    accre.setStatus("3");
+                    accre.setTypes("NONRENEW");
+                    accre.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));
+                    accre.setDateto(dateformat.format(resultset.getDate("DATETO")));
+                    ACRGBWSResult updateResult = this.UpdateHCPNAccreditation(dataSource, accre);
+                    if (!updateResult.isSuccess()) {
+                        errorList.add(updateResult.getMessage());
+                    }
+                }
+            }
+            if (errorList.size() > 0) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(errorList.toString());
+            } else {
+                result.setMessage("N/A");
+            }
+        } catch (SQLException | ParseException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
 }
