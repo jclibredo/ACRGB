@@ -20,7 +20,6 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -204,7 +203,7 @@ public class BookingMethod {
         return result;
     }
 
-    //GET CONTRACT WHERE STATUS IS ACTIVE
+    //GET CONTRACT WHERE STATUS IS INACTIVE
     public ACRGBWSResult GETENDEDCONTRACT(final DataSource dataSource, final Book book, final String utags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -224,9 +223,6 @@ public class BookingMethod {
                         //ACRGBWSResult get
                         if (HCIContract.getContractdate() != null) {
                             ContractDate contractdate = utility.ObjectMapper().readValue(HCIContract.getContractdate(), ContractDate.class);
-//                            ACRGBWSResult claimstList = this.GETALLCLAIMSFORBOOK(dataSource,
-//                                    HCIContract.getHcfid(), contractdate.getDatefrom(), contractdate.getDateto());
-//                            if (claimstList.isSuccess()) {
                             ACRGBWSResult autoInsert = this.AUTOBOOKDATA(dataSource,
                                     book.getBooknum(),
                                     book.getHcpncode().trim(), "G",
@@ -236,25 +232,12 @@ public class BookingMethod {
                             if (!autoInsert.isSuccess()) {
                                 errorList.add(autoInsert.getMessage());
                             }
-
                             //GET CLAIMS TOTAL AMOUNT UNDER FACILITY
                             ACRGBWSResult getClaimsAmount = this.CLAIMSAMOUNTBOOK(dataSource,
                                     book.getHcpncode().trim(), "G", contractdate.getDatefrom().trim(), contractdate.getDateto().trim());
                             if (getClaimsAmount.isSuccess()) {
                                 totalClaimAmount += Double.parseDouble(getClaimsAmount.getResult());
                             }
-                            // for (int lop = 0; lop < 3000000; lop++) {
-//                                List<NclaimsData> claimstListResult = Arrays.asList(utility.ObjectMapper().readValue(claimstList.getResult(), NclaimsData[].class));
-//                                for (int conb = 0; conb < claimstListResult.size(); conb++) {
-//
-//                                    ACRGBWSResult insertClaims = im.ACRBOOKINGDATA(dataSource,
-//                                            claimstListResult.get(conb), book.getBooknum(),
-//                                            book.getDatecreated(), book.getCreatedby());
-//                                    if (!insertClaims.isSuccess()) {
-//                                        errorList.add(insertClaims.getMessage());
-//                                    }
-//                                    totalClaimAmount += Double.parseDouble(claimstListResult.get(conb).getClaimamount());
-//                                }
                             //INSERT BOOKING REFERENCES
                             ACRGBWSResult bookReference = this.ACRBOOKING(dataSource, book);
                             if (!bookReference.isSuccess()) {
@@ -283,7 +266,6 @@ public class BookingMethod {
                                     errorList.add(InsertPreviousba.getMessage());
                                 }
                             }
-                            //}
                         }
                         break;
                     }
@@ -312,28 +294,6 @@ public class BookingMethod {
                                     if (getClaimsAmount.isSuccess()) {
                                         totalClaimAmount += Double.parseDouble(getClaimsAmount.getResult());
                                     }
-
-//                                    ACRGBWSResult claimstList = this.GETALLCLAIMSFORBOOK(dataSource,
-//                                            hciCodeList.get(u).trim(),
-//                                            contractdate.getDatefrom().trim(),
-//                                            contractdate.getDateto().trim());
-//
-//                                    if (claimstList.isSuccess()) {
-//
-//                                        List<NclaimsData> claimstListResult = Arrays.asList(utility.ObjectMapper().readValue(claimstList.getResult(), NclaimsData[].class));
-//
-//                                        for (int conb = 0; conb < claimstListResult.size(); conb++) {
-//                                            ACRGBWSResult insertClaims = im.ACRBOOKINGDATA(dataSource,
-//                                                    claimstListResult.get(conb),
-//                                                    book.getBooknum(),
-//                                                    book.getDatecreated(),
-//                                                    book.getCreatedby());
-//                                            if (!insertClaims.isSuccess()) {
-//                                                errorList.add(insertClaims.getMessage());
-//                                            }
-//                                            //totalClaimAmount += Double.parseDouble(claimstListResult.get(conb).getClaimamount());
-//                                        }
-//                                    }
                                 }
                                 //INSERT BOOKING REFERENCES
                                 ACRGBWSResult bookReference = this.ACRBOOKING(dataSource, book);

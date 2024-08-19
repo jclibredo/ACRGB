@@ -6,6 +6,7 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.Book;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.UserRoleIndex;
@@ -41,6 +42,7 @@ public class ContractTagging {
         Methods methods = new Methods();
         UpdateMethods updateMethod = new UpdateMethods();
         InsertMethods im = new InsertMethods();
+        BookingMethod bm = new BookingMethod();
         ArrayList<String> error = new ArrayList<>();
         try {
             switch (tags.trim().toUpperCase()) {
@@ -63,8 +65,6 @@ public class ContractTagging {
                                 error.add(insertRoleIndex.getMessage());
                             }
                         }
-//                        if (!contract.getContractdate().isEmpty()) {
-//                            ContractDate conDate = utility.ObjectMapper().readValue(contract.getContractdate(), ContractDate.class);
                         //UPDATE CONTRACT AND ASSETS UNDER 
                         ACRGBWSResult updateConANDAssets = updateMethod.CONSTATSUPDATE(dataSource, con.getConid(), con.getStats(), con.getRemarks(), con.getEnddate());
                         if (!updateConANDAssets.isSuccess()) {
@@ -75,12 +75,24 @@ public class ContractTagging {
                         if (!updateAccessID.isSuccess()) {
                             error.add(updateAccessID.getMessage());
                         }
-                        //  }
                         result.setSuccess(true);
+                        //AUTO BOOK CLAIMS UNDER CONTRACT OF SELECTED APEX FACILITY
+                        Book book = new Book();
+                        book.setBooknum("ACRGB" + utility.SimpleDateFormat("MMddyyyyHHmmss").format(new java.util.Date()));
+                        book.setConid(con.getConid());
+                        book.setHcpncode(contract.getHcfid());
+                        book.setCreatedby(con.getCreatedby());
+                        book.setDatecreated(utility.SimpleDateFormat("MM-dd-yyyy").format(new java.util.Date()));
+                        book.setTags("FACILITY");
+                        ACRGBWSResult bookingResult = bm.GETENDEDCONTRACT(dataSource, book, "INACTIVE");
+                        if (!bookingResult.isSuccess()) {
+                            error.add(bookingResult.getMessage());
+                        }
+                        //END OF AUTOBOOK
+
                     } else {
                         error.add("No Contract Found");
                     }
-
                     break;
                 }
                 case "HCPN": {
@@ -129,6 +141,7 @@ public class ContractTagging {
                                             error.add(updateAccessIDs.getMessage());
                                         }
                                     }
+
                                 }
                             }
                             //UPDATE ROLE INDEX 
@@ -151,6 +164,20 @@ public class ContractTagging {
                         }
                         //END REMAP SELECTED HCPN TO PRO
                         result.setSuccess(true);
+
+                        //AUTO BOOK CLAIMS DATA UNDER SELECTED HCPN
+                        Book book = new Book();
+                        book.setBooknum("ACRGB" + utility.SimpleDateFormat("MMddyyyyHHmmss").format(new java.util.Date()));
+                        book.setConid(con.getConid());
+                        book.setHcpncode(contract.getHcfid());
+                        book.setCreatedby(con.getCreatedby());
+                        book.setDatecreated(utility.SimpleDateFormat("MM-dd-yyyy").format(new java.util.Date()));
+                        book.setTags("HCPN");
+                        ACRGBWSResult bookingResult = bm.GETENDEDCONTRACT(dataSource, book, "INACTIVE");
+                        if (!bookingResult.isSuccess()) {
+                            error.add(bookingResult.getMessage());
+                        }
+                        //END OF AUTOBBOK
                     } else {
                         error.add("No Contract Found");
                     }
@@ -209,6 +236,14 @@ public class ContractTagging {
                         if (!updateConANDAssets.isSuccess()) {
                             error.add(updateConANDAssets.getMessage());
                         }
+                        
+                        //AUTOBOOK AREA
+                        
+                        
+                        
+                        
+                        //END OF AUTOBOOK AREA
+                        
                     }
                 }
             }

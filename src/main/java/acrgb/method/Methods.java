@@ -452,12 +452,39 @@ public class Methods {
                                                 ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                                                 if (getFacilityA.isSuccess()) {
                                                     HealthCareFacility hciList = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
-                                                    switch (hciList.getHcilevel().toUpperCase().trim()) {
-                                                        case "T1":
-                                                        case "T2":
-                                                        case "SH": {
-                                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                    //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                                    if (utility.isValidZBenCode(fcaA.get(f).getC1rvcode())) {
+                                                    } else if (utility.isValidZBenCode(fcaA.get(f).getC2rvcode())) {
+                                                    } else if (utility.isValidZBenCode(fcaA.get(f).getC1icdcode())) {
+                                                    } else if (utility.isValidZBenCode(fcaA.get(f).getC2icdcode())) {
+                                                    } else {
+                                                        switch (hciList.getHcilevel().toUpperCase().trim()) {
+                                                            case "T1":
+                                                            case "T2":
+                                                            case "SH": {
+                                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                                        //WITH 30 AND 10
+                                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                            claimsSb += Percent10n30;
+                                                                            totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                                        } else {
+                                                                            claims30percent += Percent30;
+                                                                            claimsSb += Percent10w30;
+                                                                            totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                                            totalcomputeA.setSb(String.valueOf(Percent10w30));
+                                                                        }
+                                                                    } else {
+                                                                        //WITH 10
+                                                                        claimsSb += Percent10n30;
+                                                                        totalcomputeA.setThirty(String.valueOf(claimsSb));
+                                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                                    }
+                                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                     //WITH 30 AND 10
                                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
                                                                             || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
@@ -467,43 +494,39 @@ public class Methods {
                                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                                         totalcomputeA.setSb(String.valueOf(Percent10n30));
                                                                     } else {
-                                                                        claims30percent += Percent30;
                                                                         claimsSb += Percent10w30;
+                                                                        claims30percent += Percent30;
                                                                         totalcomputeA.setThirty(String.valueOf(Percent30));
                                                                         totalcomputeA.setSb(String.valueOf(Percent10w30));
                                                                     }
                                                                 } else {
                                                                     //WITH 10
                                                                     claimsSb += Percent10n30;
-                                                                    totalcomputeA.setThirty(String.valueOf(claimsSb));
-                                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                }
-                                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                                //WITH 30 AND 10
-                                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
-                                                                    claimsSb += Percent10n30;
                                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                                     totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                } else {
-                                                                    claimsSb += Percent10w30;
-                                                                    claims30percent += Percent30;
-                                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                    totalcomputeA.setSb(String.valueOf(Percent10w30));
                                                                 }
-                                                            } else {
-                                                                //WITH 10
-                                                                claimsSb += Percent10n30;
-                                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                                break;
                                                             }
-                                                            break;
-                                                        }
-                                                        default: {
-                                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                            default: {
+                                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                                        // WITH 30
+                                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                            totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                            totalcomputeA.setSb(String.valueOf(0.00));
+                                                                        } else {
+                                                                            claims30percent += Percent30;
+                                                                            totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                                            totalcomputeA.setSb(String.valueOf(0.00));
+                                                                        }
+                                                                    } else {
+                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                        totalcomputeA.setSb(String.valueOf(0.00));
+                                                                    }
+                                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                     // WITH 30
                                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
                                                                             || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
@@ -517,31 +540,14 @@ public class Methods {
                                                                         totalcomputeA.setSb(String.valueOf(0.00));
                                                                     }
                                                                 } else {
+                                                                    //
                                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                                     totalcomputeA.setSb(String.valueOf(0.00));
                                                                 }
-                                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                                // WITH 30
-                                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                                } else {
-                                                                    claims30percent += Percent30;
-                                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                                }
-                                                            } else {
-                                                                //
-                                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                totalcomputeA.setSb(String.valueOf(0.00));
+                                                                break;
                                                             }
-                                                            break;
                                                         }
                                                     }
-
                                                     totalbaseamount += totalAmount;
                                                     claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                     totalcomputeA.setHospital(getFacilityA.getResult());
@@ -641,12 +647,37 @@ public class Methods {
                                             ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                                             if (getFacilityA.isSuccess()) {
                                                 HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
-                                                switch (hci.getHcilevel().toUpperCase().trim()) {
-                                                    case "T1":
-                                                    case "T2":
-                                                    case "SH": {
-                                                        if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                                if (utility.isValidZBenCode(fcaA.get(f).getC1rvcode())) {
+                                                } else if (utility.isValidZBenCode(fcaA.get(f).getC2rvcode())) {
+                                                } else if (utility.isValidZBenCode(fcaA.get(f).getC1icdcode())) {
+                                                } else if (utility.isValidZBenCode(fcaA.get(f).getC2icdcode())) {
+                                                } else {
+                                                    switch (hci.getHcilevel().toUpperCase().trim()) {
+                                                        case "T1":
+                                                        case "T2":
+                                                        case "SH": {
+                                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                        claimsSb += Percent10n30;
+                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                                    } else {
+                                                                        claims30percent += Percent30;
+                                                                        claimsSb += Percent10w30;
+                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                                        totalcomputeA.setSb(String.valueOf(Percent10w30));
+                                                                    }
+                                                                } else {
+                                                                    claimsSb += Percent10n30;
+                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                                }
+                                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
                                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
                                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
@@ -655,8 +686,8 @@ public class Methods {
                                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                                     totalcomputeA.setSb(String.valueOf(Percent10n30));
                                                                 } else {
-                                                                    claims30percent += Percent30;
                                                                     claimsSb += Percent10w30;
+                                                                    claims30percent += Percent30;
                                                                     totalcomputeA.setThirty(String.valueOf(Percent30));
                                                                     totalcomputeA.setSb(String.valueOf(Percent10w30));
                                                                 }
@@ -665,30 +696,27 @@ public class Methods {
                                                                 totalcomputeA.setThirty(String.valueOf(0.00));
                                                                 totalcomputeA.setSb(String.valueOf(Percent10n30));
                                                             }
-                                                        } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
-                                                                claimsSb += Percent10n30;
-                                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                            } else {
-                                                                claimsSb += Percent10w30;
-                                                                claims30percent += Percent30;
-                                                                totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                            }
-                                                        } else {
-                                                            claimsSb += Percent10n30;
-                                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                            break;
                                                         }
-                                                        break;
-                                                    }
-                                                    default: {
-                                                        if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                        default: {
+                                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                        totalcomputeA.setSb(String.valueOf(0.00));
+                                                                    } else {
+                                                                        claims30percent += Percent30;
+                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                                        totalcomputeA.setSb(String.valueOf(0.00));
+                                                                    }
+                                                                } else {
+                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                    totalcomputeA.setSb(String.valueOf(0.00));
+                                                                }
+                                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
                                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
                                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
@@ -704,26 +732,10 @@ public class Methods {
                                                                 totalcomputeA.setThirty(String.valueOf(0.00));
                                                                 totalcomputeA.setSb(String.valueOf(0.00));
                                                             }
-                                                        } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
-                                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                totalcomputeA.setSb(String.valueOf(0.00));
-                                                            } else {
-                                                                claims30percent += Percent30;
-                                                                totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                totalcomputeA.setSb(String.valueOf(0.00));
-                                                            }
-                                                        } else {
-                                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                                            totalcomputeA.setSb(String.valueOf(0.00));
+                                                            break;
                                                         }
-                                                        break;
                                                     }
                                                 }
-
                                                 totalbaseamount += totalAmount;
                                                 claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                 totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
@@ -816,12 +828,37 @@ public class Methods {
                                 double Percent10n30 = totalAmount * 0.10;
                                 //------------------------------------------------       
                                 HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
-                                switch (hci.getHcilevel().toUpperCase().trim()) {
-                                    case "T1":
-                                    case "T2":
-                                    case "SH": {
-                                        if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                if (utility.isValidZBenCode(fcaA.get(datese).getC1rvcode())) {
+                                } else if (utility.isValidZBenCode(fcaA.get(datese).getC2rvcode())) {
+                                } else if (utility.isValidZBenCode(fcaA.get(datese).getC1icdcode())) {
+                                } else if (utility.isValidZBenCode(fcaA.get(datese).getC2icdcode())) {
+                                } else {
+                                    switch (hci.getHcilevel().toUpperCase().trim()) {
+                                        case "T1":
+                                        case "T2":
+                                        case "SH": {
+                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
+                                                        claimsSb += Percent10n30;
+                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                    } else {
+                                                        claims30percent += Percent30;
+                                                        claimsSb += Percent10w30;
+                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                        totalcomputeA.setSb(String.valueOf(Percent10w30));
+                                                    }
+                                                } else {
+                                                    claimsSb += Percent10n30;
+                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                }
+                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
@@ -830,8 +867,8 @@ public class Methods {
                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                     totalcomputeA.setSb(String.valueOf(Percent10n30));
                                                 } else {
-                                                    claims30percent += Percent30;
                                                     claimsSb += Percent10w30;
+                                                    claims30percent += Percent30;
                                                     totalcomputeA.setThirty(String.valueOf(Percent30));
                                                     totalcomputeA.setSb(String.valueOf(Percent10w30));
                                                 }
@@ -840,30 +877,27 @@ public class Methods {
                                                 totalcomputeA.setThirty(String.valueOf(0.00));
                                                 totalcomputeA.setSb(String.valueOf(Percent10n30));
                                             }
-                                        } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
-                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
-                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
-                                                claimsSb += Percent10n30;
-                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                            } else {
-                                                claimsSb += Percent10w30;
-                                                claims30percent += Percent30;
-                                                totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                            }
-                                        } else {
-                                            claimsSb += Percent10n30;
-                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                            break;
                                         }
-                                        break;
-                                    }
-                                    default: {
-                                        if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                        default: {
+                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
+                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+                                                        totalcomputeA.setSb(String.valueOf(0.00));
+                                                    } else {
+                                                        claims30percent += Percent30;
+                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                        totalcomputeA.setSb(String.valueOf(0.00));
+                                                    }
+                                                } else {
+                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+                                                    totalcomputeA.setSb(String.valueOf(0.00));
+                                                }
+                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
@@ -879,23 +913,8 @@ public class Methods {
                                                 totalcomputeA.setThirty(String.valueOf(0.00));
                                                 totalcomputeA.setSb(String.valueOf(0.00));
                                             }
-                                        } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
-                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
-                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
-                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                totalcomputeA.setSb(String.valueOf(0.00));
-                                            } else {
-                                                claims30percent += Percent30;
-                                                totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                totalcomputeA.setSb(String.valueOf(0.00));
-                                            }
-                                        } else {
-                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                            totalcomputeA.setSb(String.valueOf(0.00));
+                                            break;
                                         }
-                                        break;
                                     }
                                 }
                                 totalbaseamount += totalAmount;
@@ -958,25 +977,53 @@ public class Methods {
                                             double Percent30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
                                             double Percent10w30 = (totalAmount + Percent30) * 0.10;
                                             double Percent10n30 = totalAmount * 0.10;
-                                            switch (hci.getHcilevel().toUpperCase().trim()) {
-                                                case "T1":
-                                                case "T2":
-                                                case "SH": {
-                                                    if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+
+                                            //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                            if (utility.isValidZBenCode(fcaA.get(gets).getC1rvcode())) {
+                                            } else if (utility.isValidZBenCode(fcaA.get(gets).getC2rvcode())) {
+                                            } else if (utility.isValidZBenCode(fcaA.get(gets).getC1icdcode())) {
+                                            } else if (utility.isValidZBenCode(fcaA.get(gets).getC2icdcode())) {
+                                            } else {
+                                                switch (hci.getHcilevel().toUpperCase().trim()) {
+                                                    case "T1":
+                                                    case "T2":
+                                                    case "SH": {
+                                                        if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
+                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
+                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
+                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                    //claims30percent += Percent30;
+                                                                    claimsSb += Percent10n30;
+                                                                    totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                                    totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
+                                                                } else {
+                                                                    claims30percent += Percent30;
+                                                                    claimsSb += Percent10w30;
+                                                                    totalcomputeHCPN.setThirty(String.valueOf(Percent30));
+                                                                    totalcomputeHCPN.setSb(String.valueOf(Percent10w30));
+                                                                }
+
+                                                            } else {
+                                                                claimsSb += Percent10n30;
+                                                                totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                                totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
+                                                            }
+
+                                                        } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                             if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
                                                                     || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
                                                                     || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
                                                                     || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
-                                                                //claims30percent += Percent30;
                                                                 claimsSb += Percent10n30;
                                                                 totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                                totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
+                                                                totalcomputeHCPN.setSb(String.valueOf(claimsSb));
                                                             } else {
                                                                 claims30percent += Percent30;
                                                                 claimsSb += Percent10w30;
                                                                 totalcomputeHCPN.setThirty(String.valueOf(Percent30));
-                                                                totalcomputeHCPN.setSb(String.valueOf(Percent10w30));
+                                                                totalcomputeHCPN.setSb(String.valueOf(claimsSb));
                                                             }
 
                                                         } else {
@@ -984,67 +1031,47 @@ public class Methods {
                                                             totalcomputeHCPN.setThirty(String.valueOf(0.00));
                                                             totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
                                                         }
-
-                                                    } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
-                                                            claimsSb += Percent10n30;
-                                                            totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                            totalcomputeHCPN.setSb(String.valueOf(claimsSb));
-                                                        } else {
-                                                            claims30percent += Percent30;
-                                                            claimsSb += Percent10w30;
-                                                            totalcomputeHCPN.setThirty(String.valueOf(Percent30));
-                                                            totalcomputeHCPN.setSb(String.valueOf(claimsSb));
-                                                        }
-
-                                                    } else {
-                                                        claimsSb += Percent10n30;
-                                                        totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                        totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
+                                                        break;
                                                     }
-                                                    break;
-                                                }
-                                                default: {
-                                                    if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                    default: {
+                                                        if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
+                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
+                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
+                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                    totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                                    totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                                } else {
+                                                                    claims30percent += Percent30;
+                                                                    totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                                    totalcomputeHCPN.setThirty(String.valueOf(Percent30));
+                                                                }
+                                                            } else {
+                                                                totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                                totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                            }
+                                                        } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                             if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
                                                                     || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
                                                                     || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
                                                                     || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
-                                                                totalcomputeHCPN.setSb(String.valueOf(0.00));
                                                                 totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                                totalcomputeHCPN.setSb(String.valueOf(0.00));
                                                             } else {
                                                                 claims30percent += Percent30;
-                                                                totalcomputeHCPN.setSb(String.valueOf(0.00));
                                                                 totalcomputeHCPN.setThirty(String.valueOf(Percent30));
+                                                                totalcomputeHCPN.setSb(String.valueOf(0.00));
                                                             }
                                                         } else {
                                                             totalcomputeHCPN.setThirty(String.valueOf(0.00));
                                                             totalcomputeHCPN.setSb(String.valueOf(0.00));
                                                         }
-                                                    } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
-                                                            totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                            totalcomputeHCPN.setSb(String.valueOf(0.00));
-                                                        } else {
-                                                            claims30percent += Percent30;
-                                                            totalcomputeHCPN.setThirty(String.valueOf(Percent30));
-                                                            totalcomputeHCPN.setSb(String.valueOf(0.00));
-                                                        }
-                                                    } else {
-                                                        totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                        totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                        break;
                                                     }
-                                                    break;
                                                 }
-                                            }
 
+                                            }
                                             claimsCount += Integer.parseInt(fcaA.get(gets).getTotalclaims());
                                             TotalBaseAmount += totalAmount;
                                             totalcomputeHCPN.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(gets).getTotalclaims())));
@@ -1130,12 +1157,37 @@ public class Methods {
                                         double Percent30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
                                         double Percent10w30 = (totalAmount + Percent30) * 0.10;
                                         double Percent10n30 = totalAmount * 0.10;
-                                        switch (hci.getHcilevel().toUpperCase().trim()) {
-                                            case "T1":
-                                            case "T2":
-                                            case "SH": {
-                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                        //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                        if (utility.isValidZBenCode(fcaA.get(gets).getC1rvcode())) {
+                                        } else if (utility.isValidZBenCode(fcaA.get(gets).getC2rvcode())) {
+                                        } else if (utility.isValidZBenCode(fcaA.get(gets).getC1icdcode())) {
+                                        } else if (utility.isValidZBenCode(fcaA.get(gets).getC2icdcode())) {
+                                        } else {
+                                            switch (hci.getHcilevel().toUpperCase().trim()) {
+                                                case "T1":
+                                                case "T2":
+                                                case "SH": {
+                                                    if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                claimsSb += Percent10n30;
+                                                                totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                                totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
+                                                            } else {
+                                                                claims30percent += Percent30;
+                                                                claimsSb += Percent10w30;
+                                                                totalcomputeHCPN.setThirty(String.valueOf(Percent30));
+                                                                totalcomputeHCPN.setSb(String.valueOf(Percent10w30));
+                                                            }
+                                                        } else {
+                                                            claimsSb += Percent10n30;
+                                                            totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                            totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
+                                                        }
+                                                    } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                         if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
                                                                 || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
                                                                 || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
@@ -1154,30 +1206,27 @@ public class Methods {
                                                         totalcomputeHCPN.setThirty(String.valueOf(0.00));
                                                         totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
                                                     }
-                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
-                                                        claimsSb += Percent10n30;
-                                                        totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                        totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
-                                                    } else {
-                                                        claims30percent += Percent30;
-                                                        claimsSb += Percent10w30;
-                                                        totalcomputeHCPN.setThirty(String.valueOf(Percent30));
-                                                        totalcomputeHCPN.setSb(String.valueOf(Percent10w30));
-                                                    }
-                                                } else {
-                                                    claimsSb += Percent10n30;
-                                                    totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                    totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
+                                                    break;
                                                 }
-                                                break;
-                                            }
-                                            default: {
-                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                default: {
+                                                    if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                                totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                            } else {
+                                                                claims30percent += Percent30;
+                                                                totalcomputeHCPN.setThirty(String.valueOf(Percent30));
+                                                                totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                            }
+                                                        } else {
+                                                            totalcomputeHCPN.setThirty(String.valueOf(0.00));
+                                                            totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                        }
+                                                    } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                         if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
                                                                 || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
                                                                 || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
@@ -1193,23 +1242,8 @@ public class Methods {
                                                         totalcomputeHCPN.setThirty(String.valueOf(0.00));
                                                         totalcomputeHCPN.setSb(String.valueOf(0.00));
                                                     }
-                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
-                                                        totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                        totalcomputeHCPN.setSb(String.valueOf(0.00));
-                                                    } else {
-                                                        claims30percent += Percent30;
-                                                        totalcomputeHCPN.setThirty(String.valueOf(Percent30));
-                                                        totalcomputeHCPN.setSb(String.valueOf(0.00));
-                                                    }
-                                                } else {
-                                                    totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                    totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                    break;
                                                 }
-                                                break;
                                             }
                                         }
                                         TotalBaseAmount += totalAmount;
@@ -1320,7 +1354,7 @@ public class Methods {
                                                 double totalAmount = Double.parseDouble(fcaA.get(f).getTotalamount());
                                                 double Percent30 = Double.parseDouble(fcaA.get(f).getTotalamount()) * 0.30;
                                                 double Percent10w30 = (totalAmount + Percent30) * 0.10;
-                                                double Percent10n30 = totalAmount * 0.10;
+                                                double Percent10n30 = totalAmount * 0.10; 
                                                 totalbaseamount += Double.parseDouble(fcaA.get(f).getTotalamount());
                                                 claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                 //------------------------------------------------     
@@ -1328,12 +1362,37 @@ public class Methods {
                                                 ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                                                 if (getFacilityA.isSuccess()) {
                                                     HealthCareFacility hciList = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
-                                                    switch (hciList.getHcilevel().toUpperCase().trim()) {
-                                                        case "T1":
-                                                        case "T2":
-                                                        case "SH": {
-                                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                    //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                                    if (utility.isValidZBenCode(fcaA.get(f).getC1rvcode())) {
+                                                    } else if (utility.isValidZBenCode(fcaA.get(f).getC2rvcode())) {
+                                                    } else if (utility.isValidZBenCode(fcaA.get(f).getC1icdcode())) {
+                                                    } else if (utility.isValidZBenCode(fcaA.get(f).getC2icdcode())) {
+                                                    } else {
+                                                        switch (hciList.getHcilevel().toUpperCase().trim()) {
+                                                            case "T1":
+                                                            case "T2":
+                                                            case "SH": {
+                                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                            claimsSb += Percent10n30;
+                                                                            totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                                        } else {
+                                                                            claims30percent += Percent30;
+                                                                            claimsSb += Percent10w30;
+                                                                            totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                                            totalcomputeA.setSb(String.valueOf(Percent10w30));
+                                                                        }
+                                                                    } else {
+                                                                        claimsSb += Percent10n30;
+                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                                    }
+                                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
                                                                             || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
                                                                             || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
@@ -1342,8 +1401,8 @@ public class Methods {
                                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                                         totalcomputeA.setSb(String.valueOf(Percent10n30));
                                                                     } else {
-                                                                        claims30percent += Percent30;
                                                                         claimsSb += Percent10w30;
+                                                                        claims30percent += Percent30;
                                                                         totalcomputeA.setThirty(String.valueOf(Percent30));
                                                                         totalcomputeA.setSb(String.valueOf(Percent10w30));
                                                                     }
@@ -1352,30 +1411,27 @@ public class Methods {
                                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                                     totalcomputeA.setSb(String.valueOf(Percent10n30));
                                                                 }
-                                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
-                                                                    claimsSb += Percent10n30;
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                } else {
-                                                                    claimsSb += Percent10w30;
-                                                                    claims30percent += Percent30;
-                                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                    totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                                }
-                                                            } else {
-                                                                claimsSb += Percent10n30;
-                                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                                break;
                                                             }
-                                                            break;
-                                                        }
-                                                        default: {
-                                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                            default: {
+                                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                            totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                            totalcomputeA.setSb(String.valueOf(0.00));
+                                                                        } else {
+                                                                            claims30percent += Percent30;
+                                                                            totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                                            totalcomputeA.setSb(String.valueOf(0.00));
+                                                                        }
+                                                                    } else {
+                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                        totalcomputeA.setSb(String.valueOf(0.00));
+                                                                    }
+                                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
                                                                             || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
                                                                             || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
@@ -1391,23 +1447,8 @@ public class Methods {
                                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                                     totalcomputeA.setSb(String.valueOf(0.00));
                                                                 }
-                                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                                } else {
-                                                                    claims30percent += Percent30;
-                                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                                }
-                                                            } else {
-                                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                totalcomputeA.setSb(String.valueOf(0.00));
+                                                                break;
                                                             }
-                                                            break;
                                                         }
                                                     }
                                                     totalbaseamount += totalAmount;
@@ -1420,7 +1461,6 @@ public class Methods {
                                                     totalcomputeA.setTotalamount(String.valueOf(totalAmount));
                                                     totalcomputeList.add(totalcomputeA);
                                                 }
-
                                             }
                                         }
                                     }
@@ -1508,12 +1548,37 @@ public class Methods {
                                             ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                                             if (getFacilityA.isSuccess()) {
                                                 HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
-                                                switch (hci.getHcilevel().toUpperCase().trim()) {
-                                                    case "T1":
-                                                    case "T2":
-                                                    case "SH": {
-                                                        if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                                if (utility.isValidZBenCode(fcaA.get(f).getC1rvcode())) {
+                                                } else if (utility.isValidZBenCode(fcaA.get(f).getC2rvcode())) {
+                                                } else if (utility.isValidZBenCode(fcaA.get(f).getC1icdcode())) {
+                                                } else if (utility.isValidZBenCode(fcaA.get(f).getC2icdcode())) {
+                                                } else {
+                                                    switch (hci.getHcilevel().toUpperCase().trim()) {
+                                                        case "T1":
+                                                        case "T2":
+                                                        case "SH": {
+                                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                        claimsSb += Percent10n30;
+                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                                    } else {
+                                                                        claims30percent += Percent30;
+                                                                        claimsSb += Percent10w30;
+                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                                        totalcomputeA.setSb(String.valueOf(Percent10w30));
+                                                                    }
+                                                                } else {
+                                                                    claimsSb += Percent10n30;
+                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                                }
+                                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
                                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
                                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
@@ -1522,8 +1587,8 @@ public class Methods {
                                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                                     totalcomputeA.setSb(String.valueOf(Percent10n30));
                                                                 } else {
-                                                                    claims30percent += Percent30;
                                                                     claimsSb += Percent10w30;
+                                                                    claims30percent += Percent30;
                                                                     totalcomputeA.setThirty(String.valueOf(Percent30));
                                                                     totalcomputeA.setSb(String.valueOf(Percent10w30));
                                                                 }
@@ -1532,30 +1597,27 @@ public class Methods {
                                                                 totalcomputeA.setThirty(String.valueOf(0.00));
                                                                 totalcomputeA.setSb(String.valueOf(Percent10n30));
                                                             }
-                                                        } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
-                                                                claimsSb += Percent10n30;
-                                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                            } else {
-                                                                claimsSb += Percent10w30;
-                                                                claims30percent += Percent30;
-                                                                totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                            }
-                                                        } else {
-                                                            claimsSb += Percent10n30;
-                                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                            break;
                                                         }
-                                                        break;
-                                                    }
-                                                    default: {
-                                                        if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                        default: {
+                                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                        totalcomputeA.setSb(String.valueOf(0.00));
+                                                                    } else {
+                                                                        claims30percent += Percent30;
+                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                                        totalcomputeA.setSb(String.valueOf(0.00));
+                                                                    }
+                                                                } else {
+                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                    totalcomputeA.setSb(String.valueOf(0.00));
+                                                                }
+                                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
                                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
                                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
@@ -1571,26 +1633,10 @@ public class Methods {
                                                                 totalcomputeA.setThirty(String.valueOf(0.00));
                                                                 totalcomputeA.setSb(String.valueOf(0.00));
                                                             }
-                                                        } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
-                                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                totalcomputeA.setSb(String.valueOf(0.00));
-                                                            } else {
-                                                                claims30percent += Percent30;
-                                                                totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                totalcomputeA.setSb(String.valueOf(0.00));
-                                                            }
-                                                        } else {
-                                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                                            totalcomputeA.setSb(String.valueOf(0.00));
+                                                            break;
                                                         }
-                                                        break;
                                                     }
                                                 }
-
                                                 totalbaseamount += totalAmount;
                                                 claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                 totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
@@ -1681,12 +1727,37 @@ public class Methods {
                                 double Percent30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
                                 double Percent10w30 = (totalAmount + Percent30) * 0.10;
                                 double Percent10n30 = totalAmount * 0.10;
-                                switch (hci.getHcilevel().toUpperCase().trim()) {
-                                    case "T1":
-                                    case "T2":
-                                    case "SH": {
-                                        if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                if (utility.isValidZBenCode(fcaA.get(datese).getC1rvcode())) {
+                                } else if (utility.isValidZBenCode(fcaA.get(datese).getC2rvcode())) {
+                                } else if (utility.isValidZBenCode(fcaA.get(datese).getC1icdcode())) {
+                                } else if (utility.isValidZBenCode(fcaA.get(datese).getC2icdcode())) {
+                                } else {
+                                    switch (hci.getHcilevel().toUpperCase().trim()) {
+                                        case "T1":
+                                        case "T2":
+                                        case "SH": {
+                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
+                                                        claimsSb += Percent10n30;
+                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                    } else {
+                                                        claims30percent += Percent30;
+                                                        claimsSb += Percent10w30;
+                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                        totalcomputeA.setSb(String.valueOf(Percent10w30));
+                                                    }
+                                                } else {
+                                                    claimsSb += Percent10n30;
+                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                }
+                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
@@ -1695,8 +1766,8 @@ public class Methods {
                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                     totalcomputeA.setSb(String.valueOf(Percent10n30));
                                                 } else {
-                                                    claims30percent += Percent30;
                                                     claimsSb += Percent10w30;
+                                                    claims30percent += Percent30;
                                                     totalcomputeA.setThirty(String.valueOf(Percent30));
                                                     totalcomputeA.setSb(String.valueOf(Percent10w30));
                                                 }
@@ -1705,30 +1776,28 @@ public class Methods {
                                                 totalcomputeA.setThirty(String.valueOf(0.00));
                                                 totalcomputeA.setSb(String.valueOf(Percent10n30));
                                             }
-                                        } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
-                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
-                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
-                                                claimsSb += Percent10n30;
-                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                            } else {
-                                                claimsSb += Percent10w30;
-                                                claims30percent += Percent30;
-                                                totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                            }
-                                        } else {
-                                            claimsSb += Percent10n30;
-                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                            break;
                                         }
-                                        break;
-                                    }
-                                    default: {
-                                        if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                        default: {
+                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
+                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+                                                        totalcomputeA.setSb(String.valueOf(0.00));
+                                                    } else {
+                                                        claims30percent += Percent30;
+                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                        totalcomputeA.setSb(String.valueOf(0.00));
+                                                    }
+
+                                                } else {
+                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+                                                    totalcomputeA.setSb(String.valueOf(0.00));
+                                                }
+                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
                                                         || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
@@ -1740,31 +1809,14 @@ public class Methods {
                                                     totalcomputeA.setThirty(String.valueOf(Percent30));
                                                     totalcomputeA.setSb(String.valueOf(0.00));
                                                 }
-
                                             } else {
                                                 totalcomputeA.setThirty(String.valueOf(0.00));
                                                 totalcomputeA.setSb(String.valueOf(0.00));
                                             }
-                                        } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
-                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
-                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
-                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                totalcomputeA.setSb(String.valueOf(0.00));
-                                            } else {
-                                                claims30percent += Percent30;
-                                                totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                totalcomputeA.setSb(String.valueOf(0.00));
-                                            }
-                                        } else {
-                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                            totalcomputeA.setSb(String.valueOf(0.00));
+                                            break;
                                         }
-                                        break;
                                     }
                                 }
-
                                 totalbaseamount += totalAmount;
                                 claimCount += Integer.parseInt(fcaA.get(datese).getTotalclaims());
                                 //-----------------------------------
@@ -1855,12 +1907,38 @@ public class Methods {
                                         double Percent30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
                                         double Percent10w30 = (totalAmount + Percent30) * 0.10;
                                         double Percent10n30 = totalAmount * 0.10;
-                                        switch (hci.getHcilevel().toUpperCase().trim()) {
-                                            case "T1":
-                                            case "T2":
-                                            case "SH": {
-                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                        //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                        if (utility.isValidZBenCode(fcaA.get(gets).getC1rvcode())) {
+                                        } else if (utility.isValidZBenCode(fcaA.get(gets).getC2rvcode())) {
+                                        } else if (utility.isValidZBenCode(fcaA.get(gets).getC1icdcode())) {
+                                        } else if (utility.isValidZBenCode(fcaA.get(gets).getC2icdcode())) {
+                                        } else {
+                                            switch (hci.getHcilevel().toUpperCase().trim()) {
+                                                case "T1":
+                                                case "T2":
+                                                case "SH": {
+                                                    if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                claimsSb += Percent10n30;
+                                                                totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                            } else {
+                                                                claims30percent += Percent30;
+                                                                claimsSb += Percent10w30;
+                                                                totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                                totalcomputeA.setSb(String.valueOf(Percent10w30));
+                                                            }
+                                                        } else {
+                                                            claimsSb += Percent10n30;
+                                                            totalcomputeA.setThirty(String.valueOf(0.00));
+                                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                        }
+
+                                                    } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                         if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
                                                                 || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
                                                                 || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
@@ -1879,31 +1957,27 @@ public class Methods {
                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                         totalcomputeA.setSb(String.valueOf(Percent10n30));
                                                     }
-
-                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
-                                                        claimsSb += Percent10n30;
-                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                    } else {
-                                                        claims30percent += Percent30;
-                                                        claimsSb += Percent10w30;
-                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                        totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                    }
-                                                } else {
-                                                    claimsSb += Percent10n30;
-                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                    break;
                                                 }
-                                                break;
-                                            }
-                                            default: {
-                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                default: {
+                                                    if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+                                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                totalcomputeA.setThirty(String.valueOf(0.00));
+                                                                totalcomputeA.setSb(String.valueOf(0.00));
+                                                            } else {
+                                                                claims30percent += Percent30;
+                                                                totalcomputeA.setSb(String.valueOf(0.00));
+                                                                totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                            }
+                                                        } else {
+                                                            totalcomputeA.setThirty(String.valueOf(0.00));
+                                                            totalcomputeA.setSb(String.valueOf(0.00));
+                                                        }
+                                                    } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                         if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
                                                                 || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
                                                                 || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
@@ -1912,30 +1986,15 @@ public class Methods {
                                                             totalcomputeA.setSb(String.valueOf(0.00));
                                                         } else {
                                                             claims30percent += Percent30;
-                                                            totalcomputeA.setSb(String.valueOf(0.00));
                                                             totalcomputeA.setThirty(String.valueOf(Percent30));
+                                                            totalcomputeA.setSb(String.valueOf(0.00));
                                                         }
                                                     } else {
                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                         totalcomputeA.setSb(String.valueOf(0.00));
                                                     }
-                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
-                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                    } else {
-                                                        claims30percent += Percent30;
-                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                    }
-                                                } else {
-                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                    totalcomputeA.setSb(String.valueOf(0.00));
+                                                    break;
                                                 }
-                                                break;
                                             }
                                         }
                                         claimCount += Integer.parseInt(fcaA.get(gets).getTotalclaims());

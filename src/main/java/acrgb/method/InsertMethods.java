@@ -170,10 +170,6 @@ public class InsertMethods {
                     um.UPDATEAPELLATE(datasource, "NONUPDATE", appellate);
                     //END INSERT CONTRACT ID TO APPELLATE TABLE
                 }
-//                else {
-////                    um.UPDATEROLEINDEX(datasource,
-////                            contract.getHcfid(), contract.getContractdate(), "HCIUPDATE");
-//                }
                 result.setMessage(getinsertresult.getString("Message"));
                 result.setSuccess(true);
                 userlogs.setActstatus("SUCCESS");
@@ -709,7 +705,6 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        java.util.Date d1 = new java.util.Date();
         UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userlogs = utility.UserActivity();
@@ -719,7 +714,7 @@ public class InsertMethods {
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("uaccount", logsS.getAccount());
             getinsertresult.setString("ustatus", logsS.getStatus());
-            getinsertresult.setTimestamp("udatechange", new java.sql.Timestamp(d1.getTime()));
+            getinsertresult.setTimestamp("udatechange", new java.sql.Timestamp(new java.util.Date().getTime()));
             getinsertresult.setString("uactby", logsS.getActby());
             getinsertresult.setString("uremarks", logsS.getRemarks());
             getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(logsS.getDatefrom()).getTime()));

@@ -76,6 +76,14 @@ public class Utility {
 //white spaces don’t allowed in the entire string.
 //.{8, 20} represents at least 8 characters and at most 20 characters.
 //$ represents the end of the string.  
+    String[] ZBEN = {"Z016.1", "Z016.2", "Z016.3", "Z016.4", "Z016.5", "Z016.6", "Z016.7", "Z016.8", "Z016.9 "};
+
+    public boolean isValidZBenCode(String code) {
+        boolean result = false;
+        result = Arrays.asList(ZBEN).contains(code);
+        return result;
+    }
+
     public ACRGBWSResult ACRGBWSResult() {
         return new ACRGBWSResult();
     }
