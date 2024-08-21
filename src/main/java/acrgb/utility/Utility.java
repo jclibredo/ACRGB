@@ -40,6 +40,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 import javax.crypto.BadPaddingException;
@@ -68,6 +69,13 @@ public class Utility {
     private static final String CIPHERKEY = "A263B7980A15ADE7";
     private final String email_pattern = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
+    private static final String UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final String LOWER = UPPER.toLowerCase();
+    private static final String DIGITS = "0123456789";
+    private static final String SPECIAL_CHARS = "!@#$";
+    private static final String ALL_CHARS = UPPER + LOWER + DIGITS + SPECIAL_CHARS;
+    private static final SecureRandom random = new SecureRandom();
+
 //represents starting character of the string.
 //represents a digit must occur at least once.
 //represents a lower case alphabet must occur at least once.
@@ -77,6 +85,24 @@ public class Utility {
 //.{8, 20} represents at least 8 characters and at most 20 characters.
 //$ represents the end of the string.  
     String[] ZBEN = {"Z016.1", "Z016.2", "Z016.3", "Z016.4", "Z016.5", "Z016.6", "Z016.7", "Z016.8", "Z016.9 "};
+
+    public String GenerateRandomPassword(int length) {
+        StringBuilder password = new StringBuilder(length);
+        // At least one uppercase letter
+        password.append(UPPER.charAt(random.nextInt(UPPER.length())));
+        // At least one lowercase letter
+        password.append(LOWER.charAt(random.nextInt(LOWER.length())));
+        // At least one digit
+        password.append(DIGITS.charAt(random.nextInt(DIGITS.length())));
+        // At least one special character
+        password.append(SPECIAL_CHARS.charAt(random.nextInt(SPECIAL_CHARS.length())));
+
+        // Remaining characters randomly selected from all characters
+        for (int i = 4; i < length; i++) {
+            password.append(ALL_CHARS.charAt(random.nextInt(ALL_CHARS.length())));
+        }
+        return password.toString();
+    }
 
     public boolean isValidZBenCode(String code) {
         boolean result = false;

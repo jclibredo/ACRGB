@@ -15,12 +15,12 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\ACRGBPOST.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\AccountPayable.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\LogStatus.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Total.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Email.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\DateSettings.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\ContractTagging.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\utility\NamedParameterStatement.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\UserActivityLogs.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\BookingMethod.java
-D:\Java Swing\ACRGB\src\main\java\acrgb\method\Forgetpassword.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\ACRGBUPDATE.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\FacilityComputedAmount.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ManagingBoard.java
@@ -54,6 +54,7 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserInfo.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserActivity.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserLevel.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ProcessAmountBadget.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\method\EmailSender.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\ContractHistory.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ConBalance.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\ACRGBFETCH.java

@@ -52,18 +52,18 @@ public class ACRGBUPDATE {
     private final InsertMethods insertmethods = new InsertMethods();
 
     /**
-     * Retrieves representation of an instance of acrgb.ACRGB
+     * Retrieves representation of an instance of ACRGB
      *
      * @param token
      * @param assets
-     * @return an instance of java.lang.String
+     * @return an instance of java.String
      */
     @PUT
     @Path("UPDATEASSETS")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATEASSETS(@HeaderParam("token") String token,
-            final Assets assets)  {
+            final Assets assets) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -86,7 +86,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATECONTRACT(@HeaderParam("token") String token,
-            final Contract contract)  {
+            final Contract contract) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -109,7 +109,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATETRANCH(@HeaderParam("token") String token,
-            final Tranch tranch)  {
+            final Tranch tranch) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -134,7 +134,7 @@ public class ACRGBUPDATE {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATEUSERLEVEL(
             @HeaderParam("token") String token,
-            final UserLevel userlevel)  {
+            final UserLevel userlevel) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -164,7 +164,7 @@ public class ACRGBUPDATE {
             @HeaderParam("mailhost") String mailhost,
             @HeaderParam("mailport") String mailport,
             @HeaderParam("mailfrom") String mailfrom,
-            final User user){
+            final User user) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -177,7 +177,6 @@ public class ACRGBUPDATE {
         forgetPassword.setMailhost(mailhost.trim());
         forgetPassword.setMailport(mailport.trim());
         ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-        // System.out.println("PARAMETERS " + user);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -187,12 +186,12 @@ public class ACRGBUPDATE {
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
             } else if (user.getUserpassword().isEmpty() && !user.getUsername().isEmpty()) {
-                ACRGBWSResult insertresult = methods.CHANGEUSERNAME(dataSource, user.getUserid(), user.getUsername());
+                ACRGBWSResult insertresult = methods.CHANGEUSERNAME(dataSource, user.getUserid(), user.getUsername(), user.getCreatedby());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
             } else {
-                ACRGBWSResult insertresult = methods.UPDATEUSERCREDENTIALS(dataSource, user.getUserid(), user.getUsername(), user.getUserpassword());
+                ACRGBWSResult insertresult = methods.UPDATEUSERCREDENTIALS(dataSource, user.getUserid(), user.getUsername(), user.getUserpassword(), user.getCreatedby());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
@@ -206,7 +205,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATEUSERLEVEL(@HeaderParam("token") String token,
-            final User user){
+            final User user) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -304,7 +303,7 @@ public class ACRGBUPDATE {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult RemoveAccessRole(@HeaderParam("token") String token,
-            final UserRoleIndex userroleindex){
+            final UserRoleIndex userroleindex) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -551,7 +550,7 @@ public class ACRGBUPDATE {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = updatemethods.UPDATEUSERLEVEL(dataSource,
+            ACRGBWSResult insertresult = updatemethods.UPDATEUSEROLE(dataSource,
                     user.getCreatedby(),
                     user.getDatecreated(),
                     user.getLeveid(),

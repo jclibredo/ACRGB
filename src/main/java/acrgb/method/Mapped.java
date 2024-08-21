@@ -41,7 +41,7 @@ public class Mapped {
         result.setSuccess(false);
         result.setResult("");
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMAXCONDATE(:puserid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMAXCONDATE(:puserid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("puserid", puserid.trim());
             statement.execute();
@@ -69,7 +69,7 @@ public class Mapped {
 //        result.setSuccess(false);
 //        try (Connection connection = dataSource.getConnection()) {
 //            if (this.GETMAXCONDATE(dataSource, puserid).isSuccess()) {
-//                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETPREVIOUSMAP(:puserid,:pcondate); end;");
+//                CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETPREVIOUSMAP(:puserid,:pcondate); end;");
 //                statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //                statement.setString("puserid", puserid.trim());
 //                statement.setString("pcondate", this.GETMAXCONDATE(dataSource, puserid).getResult().trim());

@@ -104,6 +104,11 @@ public class UserActivityLogs {
 
                 break;
             }
+            case "EDIT-USERINFO-EMAIL": {
+                m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " edited " + userActivity.getActdetails(), userActivity.getActstatus());
+                break;
+            }
+
             //USER INFO ACTIVITY
             case "ADD-USERINFO": {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "CREATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " insert " + userActivity.getActdetails(), userActivity.getActstatus());
@@ -151,6 +156,7 @@ public class UserActivityLogs {
 
                 break;
             }
+
             //CONTRACT TAGGING
             case "TAGGING-CONTRACT": {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " tagg contract of " + GetAccount(dataSource, objectid1.trim()) + "  acction perform :" + userActivity.getActdetails(), userActivity.getActstatus());

@@ -7,7 +7,7 @@ package acrgb;
 
 import acrgb.method.BookingMethod;
 import acrgb.method.FetchMethods;
-import acrgb.method.Forgetpassword;
+import acrgb.method.EmailSender;
 import acrgb.method.InsertMethods;
 import acrgb.method.Methods;
 import acrgb.structure.ACRGBWSResult;
@@ -109,7 +109,7 @@ public class ACRGBPOST {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult INSERTHCPN(
             @HeaderParam("token") String token,
-            final ManagingBoard mb){
+            final ManagingBoard mb) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -154,7 +154,7 @@ public class ACRGBPOST {
     @Path("INSERTTRANCH")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTTRANCH(@HeaderParam("token") String token, final Tranch tranch){
+    public ACRGBWSResult INSERTTRANCH(@HeaderParam("token") String token, final Tranch tranch) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -177,7 +177,7 @@ public class ACRGBPOST {
     @Path("INSERTUSERDETAILS")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTUSERDETAILS(@HeaderParam("token") String token, final UserInfo userinfo){
+    public ACRGBWSResult INSERTUSERDETAILS(@HeaderParam("token") String token, final UserInfo userinfo) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -200,7 +200,7 @@ public class ACRGBPOST {
     @Path("INSERTUSERLEVEL")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTUSERLEVEL(@HeaderParam("token") String token, final UserLevel userlevel){
+    public ACRGBWSResult INSERTUSERLEVEL(@HeaderParam("token") String token, final UserLevel userlevel) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -229,7 +229,7 @@ public class ACRGBPOST {
             @HeaderParam("mailhost") String mailhost,
             @HeaderParam("mailport") String mailport,
             @HeaderParam("mailfrom") String mailfrom,
-            final User user){
+            final User user) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -257,7 +257,7 @@ public class ACRGBPOST {
     @Path("UserLogin")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult UserLogin(final User user){
+    public ACRGBWSResult UserLogin(final User user) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = methods.ACRUSERLOGIN(dataSource,
@@ -294,7 +294,7 @@ public class ACRGBPOST {
     @Path("INSERTMBREQUEST")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult MBREQUEST(@HeaderParam("token") String token, final MBRequestSummary mbrequestsummry){
+    public ACRGBWSResult MBREQUEST(@HeaderParam("token") String token, final MBRequestSummary mbrequestsummry) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -401,9 +401,13 @@ public class ACRGBPOST {
         fp.setMailfrom(mailfrom);
         fp.setMailhost(mailhost);
         fp.setMailport(mailport);
+        //Email email = new Email();
         ACRGBWSResult result = utility.ACRGBWSResult();
-        Forgetpassword pass = new Forgetpassword();
-        ACRGBWSResult insertresult = pass.Forgetpassword(dataSource, fp, emailto.getEmailto(), "");
+        EmailSender pass = new EmailSender();
+//        email.setRecipient(emailto.getEmailto());
+//        email.setSubject("ACR-GB");
+        ACRGBWSResult insertresult = pass.OldEmailSender(dataSource, fp, emailto.getEmailto(), "");
+//        ACRGBWSResult insertresult = pass.EmailSender(dataSource, email);
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());
@@ -479,10 +483,10 @@ public class ACRGBPOST {
                         error.add("| DESIGNATION IS REQUIRED");
                     }
                     //VALIDATE USER LEVEL
-                    if (!fm.FORUSERLEVEL(dataSource, userinfo.get(x).getRole()).isSuccess()) {
+                    if (!fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).isSuccess()) {
                         error.add("| ROLE NOT VALID");
                     } else {
-                        UserLevel level = utility.ObjectMapper().readValue(fm.FORUSERLEVEL(dataSource, userinfo.get(x).getRole()).getResult(), UserLevel.class);
+                        UserLevel level = utility.ObjectMapper().readValue(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).getResult(), UserLevel.class);
                         switch (level.getLevname().toLowerCase().trim()) {
                             case "PRO": {
                                 if (!methods.GetProWithPROID(dataSource, userinfo.get(x).getDesignation().trim()).isSuccess()) {
@@ -504,7 +508,6 @@ public class ACRGBPOST {
                             }
                         }
                     }
-
                     if (error.size() > 0) {
                         error.add("| LINE NUMBER[" + userinfo.get(x).getId() + "]");
                         errorList.add(error);
@@ -520,23 +523,23 @@ public class ACRGBPOST {
                         userInfo.setLastname(userinfo.get(x).getLastname());
                         switch (userinfo.get(x).getRole().trim().toLowerCase()) {
                             case "HCI": {
-                                userInfo.setRole("193");
+                                userInfo.setRole(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).getMessage());
                                 break;
                             }
                             case "HCPN": {
-                                userInfo.setRole("83");
+                                userInfo.setRole(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).getMessage());
                                 break;
                             }
                             case "PRO": {
-                                userInfo.setRole("82");
+                                userInfo.setRole(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).getMessage());
                                 break;
                             }
                             default: {
                                 break;
                             }
                         }
-                        if (fm.FORUSERLEVEL(dataSource, userinfo.get(x).getRole()).isSuccess()) {
-                            UserLevel level = utility.ObjectMapper().readValue(fm.FORUSERLEVEL(dataSource, userinfo.get(x).getRole()).getResult(), UserLevel.class);
+                        if (fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).isSuccess()) {
+                            UserLevel level = utility.ObjectMapper().readValue(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).getResult(), UserLevel.class);
                             if (level.getLevname().toUpperCase().equals("PRO")) {
                                 userInfo.setDesignation("2024" + userinfo.get(x).getDesignation());
                             } else {
@@ -601,9 +604,9 @@ public class ACRGBPOST {
         ArrayList<String> errorList = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
             for (int x = 0; x < Integer.parseInt(nclaims.getTotalclaims()); x++) {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.INSERTCLAIMS(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.INSERTCLAIMS(:Message,:Code,"
                         + ":useries,:uaccreno,:upmccno,:udateadmission,:udatesubmitted,:uclaimamount,"
-                        + ":utags,:urvscode,:uicdcode,:utrn,:ubentype,:uclaimid,:uhcfname,:c1rvcode,:c2rvcode,:c1icdcode,:c2icdcode,:uopdtst)");
+                        + ":utags,:utrn,:uclaimid,:uhcfname,:c1rvcode,:c2rvcode,:c1icdcode,:c2icdcode,:uopdtst)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("useries", nclaims.getSeries());
@@ -614,10 +617,7 @@ public class ACRGBPOST {
                 getinsertresult.setDate("udatesubmitted", (Date) new Date(utility.StringToDate(nclaims.getDatesubmitted()).getTime()));
                 getinsertresult.setString("uclaimamount", nclaims.getClaimamount());
                 getinsertresult.setString("utags", nclaims.getTags());
-                getinsertresult.setString("urvscode", nclaims.getRvscode());
-                getinsertresult.setString("uicdcode", nclaims.getIcdcode());
                 getinsertresult.setString("utrn", nclaims.getTrn());
-                getinsertresult.setString("ubentype", nclaims.getBentype());
                 getinsertresult.setString("uclaimid", nclaims.getClaimid());
                 getinsertresult.setString("uhcfname", nclaims.getHcfname());
                 getinsertresult.setString("c1rvcode", nclaims.getC1rvcode());
@@ -654,7 +654,7 @@ public class ACRGBPOST {
             final UserRoleIndex roleIndex) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
-        result.setResult(""); 
+        result.setResult("");
         result.setSuccess(false);
         ACRGBWSResult GetPayLoad = utility.GetPayload(token);
         if (!GetPayLoad.isSuccess()) {

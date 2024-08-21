@@ -9,16 +9,17 @@ import acrgb.method.BookingMethod;
 import acrgb.method.ContractHistoryService;
 import acrgb.method.ContractMethod;
 import acrgb.method.ContractTagging;
+import acrgb.method.EmailSender;
 import acrgb.method.FetchMethods;
 import acrgb.method.GenerateRandomPassword;
 import acrgb.method.LedgerMethod;
 import acrgb.method.Methods;
-import acrgb.method.UpdateMethods;
 import acrgb.structure.ACRGBWSResult;
-import acrgb.structure.ForgetPassword;
+import acrgb.structure.Email;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.User;
 import acrgb.utility.Utility;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,7 +59,6 @@ public class ACRGBFETCH {
     private final Methods methods = new Methods();
     private final LedgerMethod lm = new LedgerMethod();
     private final ContractMethod con = new ContractMethod();
-    private final UpdateMethods um = new UpdateMethods();
     private final BookingMethod bm = new BookingMethod();
     private final ContractTagging ct = new ContractTagging();
 
@@ -1104,36 +1104,35 @@ public class ACRGBFETCH {
         return result;
     }
 
-    @GET
-    @Path("Create2FA")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult Create2FA(
-            @HeaderParam("userid") String userid,
-            @HeaderParam("email") String email,
-            @HeaderParam("mailuser") String mailuser,
-            @HeaderParam("mailapikey") String mailapikey,
-            @HeaderParam("mailhost") String mailhost,
-            @HeaderParam("mailport") String mailport,
-            @HeaderParam("mailfrom") String mailfrom) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ForgetPassword forgetPassword = new ForgetPassword();
-        forgetPassword.setAppuser(mailuser.trim());
-        forgetPassword.setApppass(mailapikey);
-        forgetPassword.setMailfrom(mailfrom.trim());
-        forgetPassword.setMailhost(mailhost.trim());
-        forgetPassword.setMailport(mailport.trim());
-        //--------------------------------------
-        ACRGBWSResult GetResult = um.UPDATEUSERFOR2FA(dataSource, forgetPassword, email, userid);
-        result.setMessage(GetResult.getMessage());
-        result.setResult(GetResult.getResult());
-        result.setSuccess(GetResult.isSuccess());
-        //--------------------------------------
-        return result;
-    }
-
+//    @GET
+//    @Path("Create2FA")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult Create2FA(
+//            @HeaderParam("userid") String userid,
+//            @HeaderParam("email") String email,
+//            @HeaderParam("mailuser") String mailuser,
+//            @HeaderParam("mailapikey") String mailapikey,
+//            @HeaderParam("mailhost") String mailhost,
+//            @HeaderParam("mailport") String mailport,
+//            @HeaderParam("mailfrom") String mailfrom) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ForgetPassword forgetPassword = new ForgetPassword();
+//        forgetPassword.setAppuser(mailuser.trim());
+//        forgetPassword.setApppass(mailapikey);
+//        forgetPassword.setMailfrom(mailfrom.trim());
+//        forgetPassword.setMailhost(mailhost.trim());
+//        forgetPassword.setMailport(mailport.trim());
+//        //--------------------------------------
+//        ACRGBWSResult GetResult = um.UPDATEUSERFOR2FA(dataSource, forgetPassword, email, userid);
+//        result.setMessage(GetResult.getMessage());
+//        result.setResult(GetResult.getResult());
+//        result.setSuccess(GetResult.isSuccess());
+//        //--------------------------------------
+//        return result;
+//    }
 //    @GET
 //    @Path("JobExecutor")
 //    @Produces(MediaType.APPLICATION_JSON)
@@ -1259,6 +1258,36 @@ public class ACRGBFETCH {
             //CHECKING OF ENDED CONTRACT PERIOD
             methods.PROCESSENDPERIODDATE(dataSource, "ACTIVE");
         }
+        return result;
+    }
+
+    @GET
+    @Path("WarFilePath")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String WarFilePath() {
+        String filePath = new File(ACRGBFETCH.class.getProtectionDomain().getCodeSource().getLocation().toString()).getPath();
+        return filePath.replaceAll("\\\\ACRGB-0.1", "").replaceAll("\\\\WEB-INF", "").replaceAll("\\\\classes", "").replaceAll("file:\\\\", "");
+    }
+
+    @GET
+    @Path("TestEmailSender/{recipient}/{mailfrom}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public ACRGBWSResult TestEmailSender(
+            @PathParam("recipient") String recipient,
+            @PathParam("mailfrom") String mailfrom) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        //--------------------------------
+        EmailSender pass = new EmailSender();
+        //--------------------------------
+        Email email = new Email();
+        email.setSender(mailfrom);
+        email.setRecipient(recipient);
+        email.setSubject("ACR-GB");
+        //---------------------------------
+        ACRGBWSResult insertresult = pass.EmailSender(dataSource, email);
+        result.setMessage(insertresult.getMessage());
+        result.setSuccess(insertresult.isSuccess());
+        result.setResult(insertresult.getResult());
         return result;
     }
 

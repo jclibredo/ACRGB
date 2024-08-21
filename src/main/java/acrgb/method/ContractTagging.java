@@ -164,7 +164,6 @@ public class ContractTagging {
                         }
                         //END REMAP SELECTED HCPN TO PRO
                         result.setSuccess(true);
-
                         //AUTO BOOK CLAIMS DATA UNDER SELECTED HCPN
                         Book book = new Book();
                         book.setBooknum("ACRGB" + utility.SimpleDateFormat("MMddyyyyHHmmss").format(new java.util.Date()));
@@ -236,14 +235,6 @@ public class ContractTagging {
                         if (!updateConANDAssets.isSuccess()) {
                             error.add(updateConANDAssets.getMessage());
                         }
-                        
-                        //AUTOBOOK AREA
-                        
-                        
-                        
-                        
-                        //END OF AUTOBOOK AREA
-                        
                     }
                 }
             }
@@ -251,7 +242,7 @@ public class ContractTagging {
             ACRGBWSResult updatecondate = updateMethod.UPDATEROLEINDEX(dataSource, "00", "00", dateid.trim(), "NONUPDATE");
             //------------------------------------------------------------------------------------------------------------------------
             //TAGGING OF CONTRACT PERIOD TO END CHANGE STATUS TO 3
-            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.TAGCONTRACTPERIOD(:Message,:Code,:pcondateid)");
+            CallableStatement statement = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.TAGCONTRACTPERIOD(:Message,:Code,:pcondateid)");
             statement.registerOutParameter("Message", OracleTypes.VARCHAR);
             statement.registerOutParameter("Code", OracleTypes.INTEGER);
             statement.setString("pcondateid", dateid.trim());
@@ -297,7 +288,7 @@ public class ContractTagging {
 //                }
 //            }
 //            //TAGGING OF CONTRACT PERIOD TO END CHANGE STATUS TO 3
-//            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.TAGCONTRACTPERIOD(:Message,:Code,:pcondateid)");
+//            CallableStatement statement = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.TAGCONTRACTPERIOD(:Message,:Code,:pcondateid)");
 //            statement.registerOutParameter("Message", OracleTypes.VARCHAR);
 //            statement.registerOutParameter("Code", OracleTypes.INTEGER);
 //            statement.setString("pcondateid", dateid.trim());

@@ -5,6 +5,7 @@
  */
 package acrgb.method.resourcefile;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -54,4 +55,10 @@ public class ConfigReader {
     public String getDBUser() {
         return getProperties().getProperty("DBUSER");
     }
+
+    public String GetAbsolutePath() {
+//        InputStream in = new InputStreamReader(FileLoaderServlet.class.getClassLoader().getResourceAsStream("file.txt") );
+        return new File(ConfigReader.class.toString()).getPath();
+    }
+
 }
