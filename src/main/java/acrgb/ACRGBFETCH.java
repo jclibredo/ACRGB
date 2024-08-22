@@ -1270,21 +1270,20 @@ public class ACRGBFETCH {
     }
 
     @GET
-    @Path("TestEmailSender/{recipient}/{mailfrom}")
+    @Path("TestEmailSender/{recipient}/{newpass}")
     @Produces(MediaType.TEXT_PLAIN)
     public ACRGBWSResult TestEmailSender(
             @PathParam("recipient") String recipient,
-            @PathParam("mailfrom") String mailfrom) {
+            @PathParam("newpass") String newpass) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         //--------------------------------
         EmailSender pass = new EmailSender();
         //--------------------------------
         Email email = new Email();
-        email.setSender(mailfrom);
         email.setRecipient(recipient);
         email.setSubject("ACR-GB");
         //---------------------------------
-        ACRGBWSResult insertresult = pass.EmailSender(dataSource, email);
+        ACRGBWSResult insertresult = pass.EmailSender(dataSource, email, newpass);
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());

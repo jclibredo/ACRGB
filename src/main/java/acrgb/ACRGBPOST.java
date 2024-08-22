@@ -15,6 +15,7 @@ import acrgb.structure.Assets;
 import acrgb.structure.Book;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
+import acrgb.structure.Email;
 import acrgb.structure.ForgetPassword;
 import acrgb.structure.MBRequestSummary;
 import acrgb.structure.ManagingBoard;
@@ -239,13 +240,13 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ForgetPassword fp = new ForgetPassword();
-            fp.setAppuser(mailuser);
-            fp.setApppass(mailapikey);
-            fp.setMailfrom(mailfrom);
-            fp.setMailhost(mailhost);
-            fp.setMailport(mailport);
-            ACRGBWSResult insertresult = insertmethods.INSERTUSER(dataSource, user, fp);
+//            ForgetPassword fp = new ForgetPassword();
+//            fp.setAppuser(mailuser);
+//            fp.setApppass(mailapikey);
+//            fp.setMailfrom(mailfrom);
+//            fp.setMailhost(mailhost);
+//            fp.setMailport(mailport);
+            ACRGBWSResult insertresult = insertmethods.INSERTUSER(dataSource, user);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -394,23 +395,16 @@ public class ACRGBPOST {
             @HeaderParam("mailport") String mailport,
             @HeaderParam("mailfrom") String mailfrom,
             final ForgetPassword emailto) {
-        //TODO return proper representation object
-        ForgetPassword fp = new ForgetPassword();
-        fp.setAppuser(mailuser);
-        fp.setApppass(mailapikey);
-        fp.setMailfrom(mailfrom);
-        fp.setMailhost(mailhost);
-        fp.setMailport(mailport);
-        //Email email = new Email();
         ACRGBWSResult result = utility.ACRGBWSResult();
         EmailSender pass = new EmailSender();
-//        email.setRecipient(emailto.getEmailto());
-//        email.setSubject("ACR-GB");
-        ACRGBWSResult insertresult = pass.OldEmailSender(dataSource, fp, emailto.getEmailto(), "");
-//        ACRGBWSResult insertresult = pass.EmailSender(dataSource, email);
+        //-------------------------------------
+        Email email = new Email();
+        email.setRecipient(emailto.getEmailto());
+        ACRGBWSResult insertresult = pass.EmailSender(dataSource, email, "");
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());
+        //-------------------------------------
         return result;
     }
 
@@ -432,12 +426,12 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ForgetPassword forgetPassword = new ForgetPassword();
-        forgetPassword.setAppuser(mailuser.trim());
-        forgetPassword.setApppass(mailapikey);
-        forgetPassword.setMailfrom(mailfrom.trim());
-        forgetPassword.setMailhost(mailhost.trim());
-        forgetPassword.setMailport(mailport.trim());
+//        ForgetPassword forgetPassword = new ForgetPassword();
+//        forgetPassword.setAppuser(mailuser.trim());
+//        forgetPassword.setApppass(mailapikey);
+//        forgetPassword.setMailfrom(mailfrom.trim());
+//        forgetPassword.setMailhost(mailhost.trim());
+//        forgetPassword.setMailport(mailport.trim());
         Collection errorList = new ArrayList<>();
         try {
             ACRGBWSResult GetPayLoad = utility.GetPayload(token);
@@ -546,7 +540,8 @@ public class ACRGBPOST {
                                 userInfo.setDesignation(userinfo.get(x).getDesignation());
                             }
                         }
-                        ACRGBWSResult InsertCleanData = insertmethods.INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo, forgetPassword);
+
+                        ACRGBWSResult InsertCleanData = insertmethods.INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo);
                         if (!InsertCleanData.isSuccess()) {
                             error.add("| LINE NUMBER[" + userinfo.get(x).getId() + "]");
                             error.add(InsertCleanData.getMessage());

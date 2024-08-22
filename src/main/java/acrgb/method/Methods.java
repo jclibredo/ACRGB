@@ -10,6 +10,7 @@ import acrgb.structure.Accreditation;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.DateSettings;
+import acrgb.structure.Email;
 import acrgb.structure.ExcludedCode;
 import acrgb.structure.FacilityComputedAmount;
 import acrgb.structure.ForgetPassword;
@@ -233,6 +234,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         UpdateMethods um = new UpdateMethods();
+        EmailSender emailSender = new EmailSender();
         try (Connection connection = dataSource.getConnection()) {
             int counteruser = 0;
             ACRGBWSResult checkUsername = fm.COUNTUSERNAME(dataSource, p_username);
@@ -257,7 +259,11 @@ public class Methods {
                         result.setSuccess(true);
                         User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
                         ACRGBWSResult updateInfo = um.UPDATEUSERINFOBYDID(dataSource, p_username.trim(), getUser.getDid().trim(), createdby.trim());
-                        result.setMessage(getinsertresult.getString("Message"));
+                        result.setMessage(getinsertresult.getString("Message") + " " + updateInfo.getMessage());
+                        //EMAIL SENDER
+                        Email email = new Email();
+                        email.setRecipient(p_username);
+                        emailSender.EmailSender(dataSource, email, p_password.trim());
                     } else {
                         result.setMessage(GetDID.getMessage());
                     }
@@ -346,8 +352,7 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        UpdateMethods um = new UpdateMethods();
-        EmailSender fp = new EmailSender();
+        EmailSender emailSender = new EmailSender();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -360,7 +365,10 @@ public class Methods {
                 ACRGBWSResult GetEmail = fm.GETUSERBYUSERID(dataSource, userid.trim());
                 if (GetEmail.isSuccess()) {
                     User user = utility.ObjectMapper().readValue(GetEmail.getResult(), User.class);
-                    ACRGBWSResult GetResult = fp.OldEmailSender(dataSource, forgetPassword, user.getUsername(), p_password);
+                    //---------------------------------------
+                    Email email = new Email();
+                    email.setRecipient(user.getUsername());
+                    ACRGBWSResult GetResult = emailSender.EmailSender(dataSource, email, p_password);
                     result.setSuccess(true);
                     result.setMessage(getinsertresult.getString("Message") + " " + GetResult.getMessage());
                 } else {

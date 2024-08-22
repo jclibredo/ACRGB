@@ -12,7 +12,7 @@ import acrgb.structure.Assets;
 import acrgb.structure.Book;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
-import acrgb.structure.ForgetPassword;
+import acrgb.structure.Email;
 import acrgb.structure.LogStatus;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Pro;
@@ -314,7 +314,7 @@ public class InsertMethods {
     }
 
 //---------------------------------------------------------------------------------------------------
-    public ACRGBWSResult INSERTUSER(final DataSource datasource, final User user, final ForgetPassword forgetpass)   {
+    public ACRGBWSResult INSERTUSER(final DataSource datasource, final User user) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -346,7 +346,9 @@ public class InsertMethods {
                             userlogs.setActstatus("SUCCESS");
                             result.setSuccess(true);
                             //SEND PASSCODE TO EMAIL IF SUCCESS
-                            emailsender.OldEmailSender(datasource, forgetpass, user.getUsername().trim(), user.getUserpassword().trim());
+                            Email email = new Email();
+                            email.setRecipient(user.getUsername());
+                            emailsender.EmailSender(datasource, email, user.getUserpassword().trim());
                             result.setMessage(getinsertresult.getString("Message"));
                         } else {
                             userlogs.setActstatus("FAILED");
@@ -420,7 +422,7 @@ public class InsertMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult REMOVEDACCESSLEVEL(final DataSource datasource, UserRoleIndex userroleindex)   {
+    public ACRGBWSResult REMOVEDACCESSLEVEL(final DataSource datasource, UserRoleIndex userroleindex) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -464,7 +466,7 @@ public class InsertMethods {
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult INACTIVEDATA(final DataSource datasource, final String tags,
             final String dataid,
-            final String createdby)  {
+            final String createdby) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -519,7 +521,7 @@ public class InsertMethods {
     public ACRGBWSResult ACTIVEDATA(final DataSource datasource,
             final String tags,
             final String dataid,
-            final String createdby)   {
+            final String createdby) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -570,7 +572,7 @@ public class InsertMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult INSERTHCPN(final DataSource datasource, final ManagingBoard mb)   {
+    public ACRGBWSResult INSERTHCPN(final DataSource datasource, final ManagingBoard mb) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -659,7 +661,7 @@ public class InsertMethods {
     }
 
     //INSERT ACCREDITATION  
-    public ACRGBWSResult INSERTACCREDITAION(final DataSource datasource, final Accreditation accre)  {
+    public ACRGBWSResult INSERTACCREDITAION(final DataSource datasource, final Accreditation accre) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -742,7 +744,7 @@ public class InsertMethods {
             final String userid, //SINGLE
             final String accessid, //MULTIPLE
             final String createdby,
-            final String datecreated)  {
+            final String datecreated) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -788,7 +790,7 @@ public class InsertMethods {
     }
 
     //INSERT BOOK
-    public ACRGBWSResult ACRBOOKING(final DataSource datasource, final Book book)  {
+    public ACRGBWSResult ACRBOOKING(final DataSource datasource, final Book book) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -893,9 +895,8 @@ public class InsertMethods {
 //        }
 //        return result;
 //    }
-
     //INSERT LOGS STATUS
-    public ACRGBWSResult INSERTCONDATE(final DataSource datasource, final ContractDate contractdate)   {
+    public ACRGBWSResult INSERTCONDATE(final DataSource datasource, final ContractDate contractdate) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -940,7 +941,7 @@ public class InsertMethods {
     }
 
     //INSERT USER ACCOUNT BATCH UPLOAD
-    public ACRGBWSResult INSERTUSERACCOUNTBATCHUPLOAD(final DataSource datasource, final UserInfo userinfo, final ForgetPassword forgetpass)   {
+    public ACRGBWSResult INSERTUSERACCOUNTBATCHUPLOAD(final DataSource datasource, final UserInfo userinfo) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -978,7 +979,8 @@ public class InsertMethods {
                     //END GENERATE PASS
                     user.setDatecreated(userinfo.getDatecreated());
                     user.setLeveid(userinfo.getRole());
-                    ACRGBWSResult insertNewAccount = this.INSERTUSER(datasource, user, forgetpass);
+                    //-----------------------------
+                    ACRGBWSResult insertNewAccount = this.INSERTUSER(datasource, user);
                     if (insertNewAccount.isSuccess()) {
                         //INSERT USER ROLE
                         ACRGBWSResult getUserUsingEmail = fm.GETACCOUNTUSINGEMAIL(datasource, userinfo.getEmail());
