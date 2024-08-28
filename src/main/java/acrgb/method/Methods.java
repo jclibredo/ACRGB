@@ -366,11 +366,12 @@ public class Methods {
                 if (GetEmail.isSuccess()) {
                     User user = utility.ObjectMapper().readValue(GetEmail.getResult(), User.class);
                     //---------------------------------------
+                    result.setSuccess(true);
+                    result.setMessage(getinsertresult.getString("Message"));
+                    //-----------------------------------------
                     Email email = new Email();
                     email.setRecipient(user.getUsername());
                     ACRGBWSResult GetResult = emailSender.EmailSender(dataSource, email, p_password);
-                    result.setSuccess(true);
-                    result.setMessage(getinsertresult.getString("Message") + " " + GetResult.getMessage());
                 } else {
                     result.setMessage(GetEmail.getMessage());
                 }
@@ -497,9 +498,7 @@ public class Methods {
                                                     HealthCareFacility hciList = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
                                                     //Z BEN CODE CHECKING AREA SKIP IF TRUE
                                                     if (utility.isValidZBenCode(fcaA.get(f).getC1rvcode())) {
-                                                    } else if (utility.isValidZBenCode(fcaA.get(f).getC2rvcode())) {
                                                     } else if (utility.isValidZBenCode(fcaA.get(f).getC1icdcode())) {
-                                                    } else if (utility.isValidZBenCode(fcaA.get(f).getC2icdcode())) {
                                                     } else {
                                                         switch (hciList.getHcilevel().toUpperCase().trim()) {
                                                             case "T1":
@@ -510,8 +509,7 @@ public class Methods {
                                                                         //WITH 30 AND 10
                                                                         if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
                                                                                 || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                             claimsSb += Percent10n30;
                                                                             totalcomputeA.setThirty(String.valueOf(0.00));
                                                                             totalcomputeA.setSb(String.valueOf(Percent10n30));
@@ -530,9 +528,7 @@ public class Methods {
                                                                 } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                     //WITH 30 AND 10
                                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                         claimsSb += Percent10n30;
                                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                                         totalcomputeA.setSb(String.valueOf(Percent10n30));
@@ -555,9 +551,7 @@ public class Methods {
                                                                     if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                                         // WITH 30
                                                                         if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                             totalcomputeA.setThirty(String.valueOf(0.00));
                                                                             totalcomputeA.setSb(String.valueOf(0.00));
                                                                         } else {
@@ -572,9 +566,7 @@ public class Methods {
                                                                 } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                     // WITH 30
                                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                                         totalcomputeA.setSb(String.valueOf(0.00));
                                                                     } else {
@@ -692,9 +684,7 @@ public class Methods {
                                                 HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
                                                 //Z BEN CODE CHECKING AREA SKIP IF TRUE
                                                 if (utility.isValidZBenCode(fcaA.get(f).getC1rvcode())) {
-                                                } else if (utility.isValidZBenCode(fcaA.get(f).getC2rvcode())) {
                                                 } else if (utility.isValidZBenCode(fcaA.get(f).getC1icdcode())) {
-                                                } else if (utility.isValidZBenCode(fcaA.get(f).getC2icdcode())) {
                                                 } else {
                                                     switch (hci.getHcilevel().toUpperCase().trim()) {
                                                         case "T1":
@@ -703,9 +693,7 @@ public class Methods {
                                                             if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                                 if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                         claimsSb += Percent10n30;
                                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                                         totalcomputeA.setSb(String.valueOf(Percent10n30));
@@ -722,9 +710,7 @@ public class Methods {
                                                                 }
                                                             } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                     claimsSb += Percent10n30;
                                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                                     totalcomputeA.setSb(String.valueOf(Percent10n30));
@@ -745,9 +731,7 @@ public class Methods {
                                                             if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                                 if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                                         totalcomputeA.setSb(String.valueOf(0.00));
                                                                     } else {
@@ -761,9 +745,7 @@ public class Methods {
                                                                 }
                                                             } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                                     totalcomputeA.setSb(String.valueOf(0.00));
                                                                 } else {
@@ -873,9 +855,7 @@ public class Methods {
                                 HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
                                 //Z BEN CODE CHECKING AREA SKIP IF TRUE
                                 if (utility.isValidZBenCode(fcaA.get(datese).getC1rvcode())) {
-                                } else if (utility.isValidZBenCode(fcaA.get(datese).getC2rvcode())) {
                                 } else if (utility.isValidZBenCode(fcaA.get(datese).getC1icdcode())) {
-                                } else if (utility.isValidZBenCode(fcaA.get(datese).getC2icdcode())) {
                                 } else {
                                     switch (hci.getHcilevel().toUpperCase().trim()) {
                                         case "T1":
@@ -884,9 +864,7 @@ public class Methods {
                                             if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                 if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
                                                         claimsSb += Percent10n30;
                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                         totalcomputeA.setSb(String.valueOf(Percent10n30));
@@ -903,9 +881,7 @@ public class Methods {
                                                 }
                                             } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
+                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
                                                     claimsSb += Percent10n30;
                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                     totalcomputeA.setSb(String.valueOf(Percent10n30));
@@ -926,9 +902,7 @@ public class Methods {
                                             if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                 if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                         totalcomputeA.setSb(String.valueOf(0.00));
                                                     } else {
@@ -942,9 +916,7 @@ public class Methods {
                                                 }
                                             } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
+                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                     totalcomputeA.setSb(String.valueOf(0.00));
                                                 } else {
@@ -1023,9 +995,7 @@ public class Methods {
 
                                             //Z BEN CODE CHECKING AREA SKIP IF TRUE
                                             if (utility.isValidZBenCode(fcaA.get(gets).getC1rvcode())) {
-                                            } else if (utility.isValidZBenCode(fcaA.get(gets).getC2rvcode())) {
                                             } else if (utility.isValidZBenCode(fcaA.get(gets).getC1icdcode())) {
-                                            } else if (utility.isValidZBenCode(fcaA.get(gets).getC2icdcode())) {
                                             } else {
                                                 switch (hci.getHcilevel().toUpperCase().trim()) {
                                                     case "T1":
@@ -1034,9 +1004,7 @@ public class Methods {
                                                         if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                             if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
                                                                     //claims30percent += Percent30;
                                                                     claimsSb += Percent10n30;
                                                                     totalcomputeHCPN.setThirty(String.valueOf(0.00));
@@ -1056,9 +1024,7 @@ public class Methods {
 
                                                         } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                             if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
                                                                 claimsSb += Percent10n30;
                                                                 totalcomputeHCPN.setThirty(String.valueOf(0.00));
                                                                 totalcomputeHCPN.setSb(String.valueOf(claimsSb));
@@ -1080,9 +1046,7 @@ public class Methods {
                                                         if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                             if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
                                                                     totalcomputeHCPN.setSb(String.valueOf(0.00));
                                                                     totalcomputeHCPN.setThirty(String.valueOf(0.00));
                                                                 } else {
@@ -1096,9 +1060,7 @@ public class Methods {
                                                             }
                                                         } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                             if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
                                                                 totalcomputeHCPN.setThirty(String.valueOf(0.00));
                                                                 totalcomputeHCPN.setSb(String.valueOf(0.00));
                                                             } else {
@@ -1202,9 +1164,7 @@ public class Methods {
                                         double Percent10n30 = totalAmount * 0.10;
                                         //Z BEN CODE CHECKING AREA SKIP IF TRUE
                                         if (utility.isValidZBenCode(fcaA.get(gets).getC1rvcode())) {
-                                        } else if (utility.isValidZBenCode(fcaA.get(gets).getC2rvcode())) {
                                         } else if (utility.isValidZBenCode(fcaA.get(gets).getC1icdcode())) {
-                                        } else if (utility.isValidZBenCode(fcaA.get(gets).getC2icdcode())) {
                                         } else {
                                             switch (hci.getHcilevel().toUpperCase().trim()) {
                                                 case "T1":
@@ -1213,9 +1173,7 @@ public class Methods {
                                                     if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                         if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                             if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
                                                                 claimsSb += Percent10n30;
                                                                 totalcomputeHCPN.setThirty(String.valueOf(0.00));
                                                                 totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
@@ -1232,9 +1190,7 @@ public class Methods {
                                                         }
                                                     } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                         if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
                                                             claimsSb += Percent10n30;
                                                             totalcomputeHCPN.setThirty(String.valueOf(0.00));
                                                             totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
@@ -1255,9 +1211,7 @@ public class Methods {
                                                     if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                         if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                             if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
                                                                 totalcomputeHCPN.setThirty(String.valueOf(0.00));
                                                                 totalcomputeHCPN.setSb(String.valueOf(0.00));
                                                             } else {
@@ -1271,9 +1225,7 @@ public class Methods {
                                                         }
                                                     } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                         if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
                                                             totalcomputeHCPN.setThirty(String.valueOf(0.00));
                                                             totalcomputeHCPN.setSb(String.valueOf(0.00));
                                                         } else {
@@ -1407,9 +1359,7 @@ public class Methods {
                                                     HealthCareFacility hciList = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
                                                     //Z BEN CODE CHECKING AREA SKIP IF TRUE
                                                     if (utility.isValidZBenCode(fcaA.get(f).getC1rvcode())) {
-                                                    } else if (utility.isValidZBenCode(fcaA.get(f).getC2rvcode())) {
                                                     } else if (utility.isValidZBenCode(fcaA.get(f).getC1icdcode())) {
-                                                    } else if (utility.isValidZBenCode(fcaA.get(f).getC2icdcode())) {
                                                     } else {
                                                         switch (hciList.getHcilevel().toUpperCase().trim()) {
                                                             case "T1":
@@ -1418,9 +1368,7 @@ public class Methods {
                                                                 if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                                     if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                                         if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                             claimsSb += Percent10n30;
                                                                             totalcomputeA.setThirty(String.valueOf(0.00));
                                                                             totalcomputeA.setSb(String.valueOf(Percent10n30));
@@ -1437,9 +1385,7 @@ public class Methods {
                                                                     }
                                                                 } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                         claimsSb += Percent10n30;
                                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                                         totalcomputeA.setSb(String.valueOf(Percent10n30));
@@ -1460,9 +1406,7 @@ public class Methods {
                                                                 if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                                     if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                                         if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                             totalcomputeA.setThirty(String.valueOf(0.00));
                                                                             totalcomputeA.setSb(String.valueOf(0.00));
                                                                         } else {
@@ -1476,9 +1420,7 @@ public class Methods {
                                                                     }
                                                                 } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                                         totalcomputeA.setSb(String.valueOf(0.00));
                                                                     } else {
@@ -1593,9 +1535,7 @@ public class Methods {
                                                 HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
                                                 //Z BEN CODE CHECKING AREA SKIP IF TRUE
                                                 if (utility.isValidZBenCode(fcaA.get(f).getC1rvcode())) {
-                                                } else if (utility.isValidZBenCode(fcaA.get(f).getC2rvcode())) {
                                                 } else if (utility.isValidZBenCode(fcaA.get(f).getC1icdcode())) {
-                                                } else if (utility.isValidZBenCode(fcaA.get(f).getC2icdcode())) {
                                                 } else {
                                                     switch (hci.getHcilevel().toUpperCase().trim()) {
                                                         case "T1":
@@ -1604,9 +1544,7 @@ public class Methods {
                                                             if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                                 if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                         claimsSb += Percent10n30;
                                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                                         totalcomputeA.setSb(String.valueOf(Percent10n30));
@@ -1623,9 +1561,7 @@ public class Methods {
                                                                 }
                                                             } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                     claimsSb += Percent10n30;
                                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                                     totalcomputeA.setSb(String.valueOf(Percent10n30));
@@ -1646,9 +1582,7 @@ public class Methods {
                                                             if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                                 if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                                         totalcomputeA.setSb(String.valueOf(0.00));
                                                                     } else {
@@ -1662,9 +1596,7 @@ public class Methods {
                                                                 }
                                                             } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
                                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                                     totalcomputeA.setSb(String.valueOf(0.00));
                                                                 } else {
@@ -1772,9 +1704,7 @@ public class Methods {
                                 double Percent10n30 = totalAmount * 0.10;
                                 //Z BEN CODE CHECKING AREA SKIP IF TRUE
                                 if (utility.isValidZBenCode(fcaA.get(datese).getC1rvcode())) {
-                                } else if (utility.isValidZBenCode(fcaA.get(datese).getC2rvcode())) {
                                 } else if (utility.isValidZBenCode(fcaA.get(datese).getC1icdcode())) {
-                                } else if (utility.isValidZBenCode(fcaA.get(datese).getC2icdcode())) {
                                 } else {
                                     switch (hci.getHcilevel().toUpperCase().trim()) {
                                         case "T1":
@@ -1783,9 +1713,7 @@ public class Methods {
                                             if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                 if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
                                                         claimsSb += Percent10n30;
                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                         totalcomputeA.setSb(String.valueOf(Percent10n30));
@@ -1802,9 +1730,7 @@ public class Methods {
                                                 }
                                             } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
+                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
                                                     claimsSb += Percent10n30;
                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                     totalcomputeA.setSb(String.valueOf(Percent10n30));
@@ -1825,9 +1751,7 @@ public class Methods {
                                             if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                 if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                     if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
+                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
                                                         totalcomputeA.setThirty(String.valueOf(0.00));
                                                         totalcomputeA.setSb(String.valueOf(0.00));
                                                     } else {
@@ -1842,9 +1766,7 @@ public class Methods {
                                                 }
                                             } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                 if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2rvcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC2icdcode()).isSuccess()) {
+                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
                                                     totalcomputeA.setThirty(String.valueOf(0.00));
                                                     totalcomputeA.setSb(String.valueOf(0.00));
                                                 } else {
@@ -1952,9 +1874,7 @@ public class Methods {
                                         double Percent10n30 = totalAmount * 0.10;
                                         //Z BEN CODE CHECKING AREA SKIP IF TRUE
                                         if (utility.isValidZBenCode(fcaA.get(gets).getC1rvcode())) {
-                                        } else if (utility.isValidZBenCode(fcaA.get(gets).getC2rvcode())) {
                                         } else if (utility.isValidZBenCode(fcaA.get(gets).getC1icdcode())) {
-                                        } else if (utility.isValidZBenCode(fcaA.get(gets).getC2icdcode())) {
                                         } else {
                                             switch (hci.getHcilevel().toUpperCase().trim()) {
                                                 case "T1":
@@ -1963,9 +1883,7 @@ public class Methods {
                                                     if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                         if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                             if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
                                                                 claimsSb += Percent10n30;
                                                                 totalcomputeA.setThirty(String.valueOf(0.00));
                                                                 totalcomputeA.setSb(String.valueOf(Percent10n30));
@@ -1983,9 +1901,7 @@ public class Methods {
 
                                                     } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                         if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
                                                             claimsSb += Percent10n30;
                                                             totalcomputeA.setThirty(String.valueOf(0.00));
                                                             totalcomputeA.setSb(String.valueOf(Percent10n30));
@@ -2006,9 +1922,7 @@ public class Methods {
                                                     if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
                                                         if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
                                                             if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
                                                                 totalcomputeA.setThirty(String.valueOf(0.00));
                                                                 totalcomputeA.setSb(String.valueOf(0.00));
                                                             } else {
@@ -2022,9 +1936,7 @@ public class Methods {
                                                         }
                                                     } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
                                                         if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC2icdcode()).isSuccess()) {
+                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
                                                             totalcomputeA.setThirty(String.valueOf(0.00));
                                                             totalcomputeA.setSb(String.valueOf(0.00));
                                                         } else {
@@ -2497,6 +2409,8 @@ public class Methods {
                     mb.setCreatedby(creator.getMessage());
                 }
                 mb.setStatus(resultset.getString("STATUS"));
+                mb.setBankname(resultset.getString("BANKNAME"));
+                mb.setBankaccount(resultset.getString("BANKACCOUNT"));
                 mb.setControlnumber(resultset.getString("CONNUMBER"));
                 result.setMessage("OK");
                 result.setSuccess(true);
@@ -3679,4 +3593,48 @@ public class Methods {
         }
         return result;
     }
+
+    public ACRGBWSResult GETMBUSINGMBID(final DataSource dataSource, final String umbuserid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            //---------------------------------------------------- 
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBUSINGMBID(:umbuserid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("umbuserid", umbuserid.trim());
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                //--------------------------------------------------------
+                ManagingBoard mb = new ManagingBoard();
+                mb.setMbid(resultset.getString("MBID"));
+                mb.setMbname(resultset.getString("MBNAME"));
+                mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                } else {
+                    mb.setCreatedby(creator.getMessage());
+                }
+                mb.setStatus(resultset.getString("STATUS"));
+                mb.setControlnumber(resultset.getString("CONNUMBER"));
+                mb.setBankname(resultset.getString("BANKNAME"));
+                mb.setBankaccount(resultset.getString("BANKACCOUNT"));
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(mb));
+                //------------------------------------------------------
+            } else {
+                result.setMessage("NO DATA");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
 }

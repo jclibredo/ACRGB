@@ -162,71 +162,73 @@ public class FetchMethods {
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             ArrayList<HealthCareFacility> hcflist = new ArrayList<>();
             while (resultset.next()) {
-                HealthCareFacility hcf = new HealthCareFacility();
-                hcf.setHcfname(resultset.getString("HCFNAME"));
-                hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
-                hcf.setHcfcode(resultset.getString("HCFCODE"));
-                hcf.setHcilevel(resultset.getString("HCILEVEL"));
-                hcf.setType(resultset.getString("HCFTYPE"));
-                if (resultset.getString("HCFTYPE").equals("AH")) {
-                    //GETAPPELLATE
-                    ACRGBWSResult restA = this.GETAPPELLATE(dataSource, resultset.getString("HCFCODE"), tags.toUpperCase().trim());
-                    List<String> hcpnlist = Arrays.asList(restA.getResult().split(","));
-                    ArrayList<String> mblist = new ArrayList<>();
-                    ArrayList<String> prolist = new ArrayList<>();
-                    for (int h = 0; h < hcpnlist.size(); h++) {
-                        ACRGBWSResult mgresult = methods.GETMBWITHID(dataSource, hcpnlist.get(h));
-                        if (mgresult.isSuccess()) {
-                            ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
-                            mblist.add(mb.getControlnumber());
-                            ACRGBWSResult restC = methods.GETROLEREVERESE(dataSource, mb.getControlnumber(), tags);
-                            if (restC.isSuccess()) {
-                                //GET PRO USING PROID
-                                ACRGBWSResult getproid = methods.GetProWithPROID(dataSource, restC.getResult());
-                                if (getproid.isSuccess()) {
-                                    Pro pro = utility.ObjectMapper().readValue(getproid.getResult(), Pro.class);
-                                    prolist.add(pro.getProname());
+                if (resultset.getString("HCFTYPE") != null) {
+                    HealthCareFacility hcf = new HealthCareFacility();
+                    hcf.setHcfname(resultset.getString("HCFNAME"));
+                    hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
+                    hcf.setHcfcode(resultset.getString("HCFCODE"));
+                    hcf.setHcilevel(resultset.getString("HCILEVEL"));
+                    hcf.setType(resultset.getString("HCFTYPE"));
+                    if (resultset.getString("HCFTYPE").equals("AH")) {
+                        //GETAPPELLATE
+                        ACRGBWSResult restA = this.GETAPPELLATE(dataSource, resultset.getString("HCFCODE"), tags.toUpperCase().trim());
+                        List<String> hcpnlist = Arrays.asList(restA.getResult().split(","));
+                        ArrayList<String> mblist = new ArrayList<>();
+                        ArrayList<String> prolist = new ArrayList<>();
+                        for (int h = 0; h < hcpnlist.size(); h++) {
+                            ACRGBWSResult mgresult = methods.GETMBWITHID(dataSource, hcpnlist.get(h));
+                            if (mgresult.isSuccess()) {
+                                ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
+                                mblist.add(mb.getControlnumber());
+                                ACRGBWSResult restC = methods.GETROLEREVERESE(dataSource, mb.getControlnumber(), tags);
+                                if (restC.isSuccess()) {
+                                    //GET PRO USING PROID
+                                    ACRGBWSResult getproid = methods.GetProWithPROID(dataSource, restC.getResult());
+                                    if (getproid.isSuccess()) {
+                                        Pro pro = utility.ObjectMapper().readValue(getproid.getResult(), Pro.class);
+                                        prolist.add(pro.getProname());
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (mblist.isEmpty()) {
-                        hcf.setMb("N/A");
-                    } else if (prolist.isEmpty()) {
-                        hcf.setProid("N/A");
+                        if (mblist.isEmpty()) {
+                            hcf.setMb("N/A");
+                        } else if (prolist.isEmpty()) {
+                            hcf.setProid("N/A");
+                        } else {
+                            hcf.setProid(prolist.toString());
+                            hcf.setMb(mblist.toString());
+                        }
                     } else {
-                        hcf.setProid(prolist.toString());
-                        hcf.setMb(mblist.toString());
-                    }
-                } else {
-                    ACRGBWSResult methodsresult = methods.GETROLEREVERESE(dataSource, resultset.getString("HCFCODE"), tags);
-                    if (methodsresult.isSuccess()) {
-                        ACRGBWSResult mgresult = methods.GETMBWITHID(dataSource, methodsresult.getResult());
-                        if (mgresult.isSuccess()) {
-                            ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
-                            hcf.setMb(mb.getControlnumber());
-                            ACRGBWSResult restC = methods.GETROLEREVERESE(dataSource, mb.getControlnumber(), tags);
-                            if (restC.isSuccess()) {
-                                //GET PRO USING PROID
-                                ACRGBWSResult getproid = methods.GetProWithPROID(dataSource, restC.getResult());
-                                if (getproid.isSuccess()) {
-                                    Pro pro = utility.ObjectMapper().readValue(getproid.getResult(), Pro.class);
-                                    hcf.setProid(pro.getProname());
+                        ACRGBWSResult methodsresult = methods.GETROLEREVERESE(dataSource, resultset.getString("HCFCODE"), tags);
+                        if (methodsresult.isSuccess()) {
+                            ACRGBWSResult mgresult = methods.GETMBWITHID(dataSource, methodsresult.getResult());
+                            if (mgresult.isSuccess()) {
+                                ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
+                                hcf.setMb(mb.getControlnumber());
+                                ACRGBWSResult restC = methods.GETROLEREVERESE(dataSource, mb.getControlnumber(), tags);
+                                if (restC.isSuccess()) {
+                                    //GET PRO USING PROID
+                                    ACRGBWSResult getproid = methods.GetProWithPROID(dataSource, restC.getResult());
+                                    if (getproid.isSuccess()) {
+                                        Pro pro = utility.ObjectMapper().readValue(getproid.getResult(), Pro.class);
+                                        hcf.setProid(pro.getProname());
+                                    } else {
+                                        hcf.setProid(getproid.getMessage());
+                                    }
                                 } else {
-                                    hcf.setProid(getproid.getMessage());
+                                    hcf.setProid(restC.getMessage());
                                 }
                             } else {
-                                hcf.setProid(restC.getMessage());
+                                hcf.setMb(mgresult.getMessage());
                             }
-                        } else {
-                            hcf.setMb(mgresult.getMessage());
                         }
                     }
+                    hcf.setAmount("N/A");
+                    hcf.setRemainingbalance("N/A");
+                    hcflist.add(hcf);
                 }
 
-                hcf.setAmount("N/A");
-                hcf.setRemainingbalance("N/A");
-                hcflist.add(hcf);
             }
             if (hcflist.size() > 0) {
                 result.setMessage("OK");
@@ -997,40 +999,39 @@ public class FetchMethods {
     }
 
 //ACR_HCF
-    public ACRGBWSResult ACR_HCF(final DataSource dataSource) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.ACR_HCF(); end;");
-            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.execute();
-            ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            ArrayList<HealthCareFacility> listHCF = new ArrayList<>();
-            while (resultset.next()) {
-                HealthCareFacility hcf = new HealthCareFacility();
-                hcf.setHcfname(resultset.getString("HCFNAME"));
-                hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
-                hcf.setHcfcode(resultset.getString("HCFCODE"));
-                hcf.setType(resultset.getString("HCFTYPE"));
-                hcf.setHcilevel(resultset.getString("HCILEVEL"));
-                listHCF.add(hcf);
-            }
-            if (listHCF.size() > 0) {
-                result.setMessage("OK");
-                result.setSuccess(true);
-                result.setResult(utility.ObjectMapper().writeValueAsString(listHCF));
-            } else {
-                result.setMessage("N/A");
-            }
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+//    public ACRGBWSResult ACR_HCF(final DataSource dataSource) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        try (Connection connection = dataSource.getConnection()) {
+//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.ACR_HCF(); end;");
+//            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+//            statement.execute();
+//            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+//            ArrayList<HealthCareFacility> listHCF = new ArrayList<>();
+//            while (resultset.next()) {
+//                HealthCareFacility hcf = new HealthCareFacility();
+//                hcf.setHcfname(resultset.getString("HCFNAME"));
+//                hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
+//                hcf.setHcfcode(resultset.getString("HCFCODE"));
+//                hcf.setType(resultset.getString("HCFTYPE"));
+//                hcf.setHcilevel(resultset.getString("HCILEVEL"));
+//                listHCF.add(hcf);
+//            }
+//            if (listHCF.size() > 0) {
+//                result.setMessage("OK");
+//                result.setSuccess(true);
+//                result.setResult(utility.ObjectMapper().writeValueAsString(listHCF));
+//            } else {
+//                result.setMessage("N/A");
+//            }
+//        } catch (SQLException | IOException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
     //ACR_TRANCH METHOD
     public ACRGBWSResult ACR_TRANCH(final DataSource dataSource, final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();

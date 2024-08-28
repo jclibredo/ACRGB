@@ -7,10 +7,8 @@ package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Email;
-import acrgb.structure.ForgetPassword;
 import acrgb.utility.Utility;
 import java.util.Date;
-import java.util.Properties;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -22,7 +20,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
-import javax.mail.PasswordAuthentication;
 import javax.sql.DataSource;
 //import jakarta.mail.internet.InternetAddress;
 //import jakarta.mail.internet.MimeMessage;
@@ -62,7 +59,7 @@ public class EmailSender {
             } else {
                 ACRGBWSResult validateUsername = methods.ACRUSERNAME(dataSource, email.getRecipient().trim());
                 if (validateUsername.isSuccess()) {
-                    result.setMessage(email.getRecipient() + "User email not found");
+                    result.setMessage(email.getRecipient() + " User email not found");
                 } else {
                     String newPass = utility.GenerateRandomPassword(10);
                     message.setContent(utility.EmailTemplate(email.getRecipient(), newPass), "text/html");

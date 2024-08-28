@@ -447,32 +447,37 @@ public class UpdateMethods {
         UserActivityLogs logs = new UserActivityLogs();
         Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
-            ManagingBoard mbOld = utility.ObjectMapper().readValue(methods.GETMBWITHID(datasource, mb.getMbid()).getResult(), ManagingBoard.class);
-            String oldData = mbOld.getAddress() + "|" + mbOld.getMbname() + "|" + mbOld.getBankaccount() + "|" + mbOld.getBankname() + "|" + mbOld.getControlnumber();
-            UserActivity userlogs = utility.UserActivity();
-            String logsTags = "EDIT-HCPN";
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEHCPN(:Message,:Code,"
-                    + ":umbname,:ucontrolnum,:uaddress,:ubankaccount,:ubankname,:umbid)");
-            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("umbname", mb.getMbname().toUpperCase());
-            getinsertresult.setString("ucontrolnum", mb.getControlnumber());
-            getinsertresult.setString("uaddress", mb.getAddress());
-            getinsertresult.setString("ubankaccount", mb.getBankaccount());
-            getinsertresult.setString("ubankname", mb.getBankname());
-            getinsertresult.setString("umbid", mb.getMbid());
-            getinsertresult.execute();
-            if (getinsertresult.getString("Message").equals("SUCC")) {
-                result.setMessage(getinsertresult.getString("Message"));
-                result.setSuccess(true);
-                userlogs.setActstatus("SUCCESS");
+            ACRGBWSResult getOldMBData = methods.GETMBUSINGMBID(datasource, mb.getMbid());
+            if (getOldMBData.isSuccess()) {
+                ManagingBoard mbOld = utility.ObjectMapper().readValue(getOldMBData.getResult(), ManagingBoard.class);
+                String oldData = mbOld.getAddress() + "|" + mbOld.getMbname() + "|" + mbOld.getBankaccount() + "|" + mbOld.getBankname() + "|" + mbOld.getControlnumber();
+                UserActivity userlogs = utility.UserActivity();
+                String logsTags = "EDIT-HCPN";
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEHCPN(:Message,:Code,"
+                        + ":umbname,:ucontrolnum,:uaddress,:ubankaccount,:ubankname,:umbid)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("umbname", mb.getMbname().toUpperCase());
+                getinsertresult.setString("ucontrolnum", mb.getControlnumber());
+                getinsertresult.setString("uaddress", mb.getAddress());
+                getinsertresult.setString("ubankaccount", mb.getBankaccount());
+                getinsertresult.setString("ubankname", mb.getBankname());
+                getinsertresult.setString("umbid", mb.getMbid());
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setSuccess(true);
+                    userlogs.setActstatus("SUCCESS");
+                } else {
+                    userlogs.setActstatus("FAILED");
+                    result.setMessage(getinsertresult.getString("Message"));
+                }
+                userlogs.setActdetails("NEW DATA BANK:" + mb.getBankname() + " ACCOUNT:" + mb.getBankaccount() + " NAME:" + mb.getMbname() + " ADDRESS:" + mb.getAddress() + " CONTROL NUMBER:" + mb.getControlnumber() + " - " + getinsertresult.getString("Message"));
+                userlogs.setActby(mb.getCreatedby());
+                logs.UserLogsMethod(datasource, logsTags, userlogs, mb.getMbid(), oldData);
             } else {
-                userlogs.setActstatus("FAILED");
-                result.setMessage(getinsertresult.getString("Message"));
+                result.setMessage(getOldMBData.getMessage());
             }
-            userlogs.setActdetails("NEW DATA BANK:" + mb.getBankname() + " ACCOUNT:" + mb.getBankaccount() + " NAME:" + mb.getMbname() + " ADDRESS:" + mb.getAddress() + " CONTROL NUMBER:" + mb.getControlnumber() + " - " + getinsertresult.getString("Message"));
-            userlogs.setActby(mb.getCreatedby());
-            logs.UserLogsMethod(datasource, logsTags, userlogs, mb.getMbid(), oldData);
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);

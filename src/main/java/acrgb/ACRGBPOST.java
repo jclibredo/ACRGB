@@ -240,12 +240,6 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-//            ForgetPassword fp = new ForgetPassword();
-//            fp.setAppuser(mailuser);
-//            fp.setApppass(mailapikey);
-//            fp.setMailfrom(mailfrom);
-//            fp.setMailhost(mailhost);
-//            fp.setMailport(mailport);
             ACRGBWSResult insertresult = insertmethods.INSERTUSER(dataSource, user);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());

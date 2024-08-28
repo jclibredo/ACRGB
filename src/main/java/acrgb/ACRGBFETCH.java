@@ -14,12 +14,12 @@ import acrgb.method.FetchMethods;
 import acrgb.method.GenerateRandomPassword;
 import acrgb.method.LedgerMethod;
 import acrgb.method.Methods;
+import acrgb.method.ValidateClaims;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Email;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.User;
 import acrgb.utility.Utility;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1261,13 +1261,13 @@ public class ACRGBFETCH {
         return result;
     }
 
-    @GET
-    @Path("WarFilePath")
-    @Produces(MediaType.TEXT_PLAIN)
-    public String WarFilePath() {
-        String filePath = new File(ACRGBFETCH.class.getProtectionDomain().getCodeSource().getLocation().toString()).getPath();
-        return filePath.replaceAll("\\\\ACRGB-0.1", "").replaceAll("\\\\WEB-INF", "").replaceAll("\\\\classes", "").replaceAll("file:\\\\", "");
-    }
+//    @GET
+//    @Path("WarFilePath")
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public String WarFilePath() {
+//        String filePath = new File(ACRGBFETCH.class.getProtectionDomain().getCodeSource().getLocation().toString()).getPath();
+//        return filePath.replaceAll("\\\\ACRGB-0.1", "").replaceAll("\\\\WEB-INF", "").replaceAll("\\\\classes", "").replaceAll("file:\\\\", "");
+//    }
 
     @GET
     @Path("TestEmailSender/{recipient}/{newpass}")
@@ -1287,6 +1287,21 @@ public class ACRGBFETCH {
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());
+        return result;
+    }
+
+    @GET
+    @Path("ValidateClaims/{upmccno}/{useries}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public ACRGBWSResult ValidateClaims(
+            @PathParam("upmccno") String upmccno,
+            @PathParam("useries") String useries) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        ValidateClaims vc = new ValidateClaims();
+        ACRGBWSResult vcResult = vc.ValidateClaims(dataSource, upmccno, useries);
+        result.setMessage(vcResult.getMessage());
+        result.setSuccess(vcResult.isSuccess());
+        result.setResult(vcResult.getResult());
         return result;
     }
 
