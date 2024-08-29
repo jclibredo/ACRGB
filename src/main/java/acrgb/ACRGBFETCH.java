@@ -1268,7 +1268,6 @@ public class ACRGBFETCH {
 //        String filePath = new File(ACRGBFETCH.class.getProtectionDomain().getCodeSource().getLocation().toString()).getPath();
 //        return filePath.replaceAll("\\\\ACRGB-0.1", "").replaceAll("\\\\WEB-INF", "").replaceAll("\\\\classes", "").replaceAll("file:\\\\", "");
 //    }
-
     @GET
     @Path("TestEmailSender/{recipient}/{newpass}")
     @Produces(MediaType.TEXT_PLAIN)
@@ -1292,16 +1291,22 @@ public class ACRGBFETCH {
 
     @GET
     @Path("ValidateClaims/{upmccno}/{useries}")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult ValidateClaims(
+            @HeaderParam("token") String token,
             @PathParam("upmccno") String upmccno,
             @PathParam("useries") String useries) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ValidateClaims vc = new ValidateClaims();
-        ACRGBWSResult vcResult = vc.ValidateClaims(dataSource, upmccno, useries);
-        result.setMessage(vcResult.getMessage());
-        result.setSuccess(vcResult.isSuccess());
-        result.setResult(vcResult.getResult());
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ValidateClaims vc = new ValidateClaims();
+            ACRGBWSResult vcResult = vc.ValidateClaims(dataSource, upmccno, useries);
+            result.setMessage(vcResult.getMessage());
+            result.setSuccess(vcResult.isSuccess());
+            result.setResult(vcResult.getResult());
+        }
         return result;
     }
 

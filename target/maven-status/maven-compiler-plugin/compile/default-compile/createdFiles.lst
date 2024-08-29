@@ -61,3 +61,4 @@ acrgb\structure\Total.class
 acrgb\ApplicationConfig.class
 acrgb\structure\UserLevel.class
 acrgb\structure\UserRoleIndex.class
+acrgb\method\ValidateClaims.class
