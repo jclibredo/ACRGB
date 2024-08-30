@@ -1100,7 +1100,6 @@ public class ACRGBFETCH {
             result.setMessage(ex.getLocalizedMessage());
             Logger.getLogger(ACRGBFETCH.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //--------------------------------------
         return result;
     }
 
