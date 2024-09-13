@@ -902,71 +902,71 @@ public class UpdateMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult DELETEDATA(final DataSource datasource,
-            final String tags,
-            final String dataid,
-            final String createdby) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.DELETEDATA(:Message,:Code,"
-                    + ":p_tags,:p_dataid)");
-            if (tags.toUpperCase().trim().equals("USER")) {
-                if (fm.GETUSERBYUSERID(datasource, dataid).isSuccess()) {
-                    User user = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(datasource, dataid).getResult(), User.class);
-                    statement.registerOutParameter("Message", OracleTypes.VARCHAR);
-                    statement.registerOutParameter("Code", OracleTypes.INTEGER);
-                    statement.setString("p_tags", "USERDETAILS".trim().toUpperCase());
-                    statement.setInt("p_dataid", Integer.parseInt(user.getDid()));
-                    statement.execute();
-                    if (statement.getString("Message").equals("SUCC")) {
-                        result.setSuccess(true);
-                        result.setMessage(statement.getString("Message"));
-                    } else {
-                        result.setMessage(statement.getString("Message"));
-                    }
-                }
-            }
-            statement.registerOutParameter("Message", OracleTypes.VARCHAR);
-            statement.registerOutParameter("Code", OracleTypes.INTEGER);
-            statement.setString("p_tags", tags);
-            statement.setInt("p_dataid", Integer.parseInt(dataid));
-            statement.execute();
-            if (statement.getString("Message").equals("SUCC")) {
-//                    UserActivity userlogs = utility.UserActivity();  
-//                    String actdetails = "UPDATE STATUS TO ACTIVE" + tags + " TO 3 Data ID" + dataid;
-//                    userlogs.setActby(createdby);
-//                    userlogs.setActdate(datecreated);
-//                    userlogs.setActdetails(actdetails);
-//                    ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
-                result.setSuccess(true);
-                result.setMessage(statement.getString("Message"));
-            } else {
-                result.setMessage(statement.getString("Message"));
-            }
-
-            //==============ACTIVLITY LOGS AREA ===========================
-//                UserActivity userlogs = utility.UserActivity();
-//                String actdetails = "Add new  HCPN "
-//                        + "" + mb.getMbname().toUpperCase() + " Address"
-//                        + "" + mb.getAddress() + " Control Number " + mb.getControlnumber();
-//                userlogs.setActby(mb.getCreatedby());
-//                if (getinsertresult.getString("Message").equals("SUCC")) {
-//                    userlogs.setActstatus("SUCCESS");
-//                } else {
-//                    userlogs.setActstatus("FAILED");
+//    public ACRGBWSResult DELETEDATA(final DataSource datasource,
+//            final String tags,
+//            final String dataid,
+//            final String createdby) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        try (Connection connection = datasource.getConnection()) {
+//            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.DELETEDATA(:Message,:Code,"
+//                    + ":p_tags,:p_dataid)");
+//            if (tags.toUpperCase().trim().equals("USER")) {
+//                if (fm.GETUSERBYUSERID(datasource, dataid).isSuccess()) {
+//                    User user = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(datasource, dataid,"").getResult(), User.class);
+//                    statement.registerOutParameter("Message", OracleTypes.VARCHAR);
+//                    statement.registerOutParameter("Code", OracleTypes.INTEGER);
+//                    statement.setString("p_tags", "USERDETAILS".trim().toUpperCase());
+//                    statement.setInt("p_dataid", Integer.parseInt(user.getDid()));
+//                    statement.execute();
+//                    if (statement.getString("Message").equals("SUCC")) {
+//                        result.setSuccess(true);
+//                        result.setMessage(statement.getString("Message"));
+//                    } else {
+//                        result.setMessage(statement.getString("Message"));
+//                    }
 //                }
-//                userlogs.setActdetails(actdetails);
-//                methods.ActivityLogs(datasource, userlogs);
-            //==============ACTIVLITY LOGS AREA ===========================
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
+//            }
+//            statement.registerOutParameter("Message", OracleTypes.VARCHAR);
+//            statement.registerOutParameter("Code", OracleTypes.INTEGER);
+//            statement.setString("p_tags", tags);
+//            statement.setInt("p_dataid", Integer.parseInt(dataid));
+//            statement.execute();
+//            if (statement.getString("Message").equals("SUCC")) {
+////                    UserActivity userlogs = utility.UserActivity();  
+////                    String actdetails = "UPDATE STATUS TO ACTIVE" + tags + " TO 3 Data ID" + dataid;
+////                    userlogs.setActby(createdby);
+////                    userlogs.setActdate(datecreated);
+////                    userlogs.setActdetails(actdetails);
+////                    ACRGBWSResult insertActivitylogs = methods.ActivityLogs(datasource, userlogs);
+//                result.setSuccess(true);
+//                result.setMessage(statement.getString("Message"));
+//            } else {
+//                result.setMessage(statement.getString("Message"));
+//            }
+//
+//            //==============ACTIVLITY LOGS AREA ===========================
+////                UserActivity userlogs = utility.UserActivity();
+////                String actdetails = "Add new  HCPN "
+////                        + "" + mb.getMbname().toUpperCase() + " Address"
+////                        + "" + mb.getAddress() + " Control Number " + mb.getControlnumber();
+////                userlogs.setActby(mb.getCreatedby());
+////                if (getinsertresult.getString("Message").equals("SUCC")) {
+////                    userlogs.setActstatus("SUCCESS");
+////                } else {
+////                    userlogs.setActstatus("FAILED");
+////                }
+////                userlogs.setActdetails(actdetails);
+////                methods.ActivityLogs(datasource, userlogs);
+//            //==============ACTIVLITY LOGS AREA ===========================
+//        } catch (SQLException | IOException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
 
     // UPDATE USER FOR 2FA CREDENTIALS
     public ACRGBWSResult UPDATEMAPEDCONTAGGING(final DataSource datasource,

@@ -6,6 +6,7 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.Appellate;
 import acrgb.structure.Book;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
@@ -17,6 +18,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,6 +45,7 @@ public class ContractTagging {
         UpdateMethods updateMethod = new UpdateMethods();
         InsertMethods im = new InsertMethods();
         BookingMethod bm = new BookingMethod();
+        ProcessAffiliate pf = new ProcessAffiliate();
         ArrayList<String> error = new ArrayList<>();
         try {
             switch (tags.trim().toUpperCase()) {
@@ -84,12 +87,10 @@ public class ContractTagging {
                         book.setCreatedby(con.getCreatedby());
                         book.setDatecreated(utility.SimpleDateFormat("MM-dd-yyyy").format(new java.util.Date()));
                         book.setTags("FACILITY");
-                        ACRGBWSResult bookingResult = bm.GETENDEDCONTRACT(dataSource, book, "INACTIVE");
+                        ACRGBWSResult bookingResult = bm.PROCESSENDEDCONTRACT(dataSource, book, "INACTIVE");
                         if (!bookingResult.isSuccess()) {
                             error.add(bookingResult.getMessage());
                         }
-                        //END OF AUTOBOOK
-
                     } else {
                         error.add("No Contract Found");
                     }
@@ -172,11 +173,27 @@ public class ContractTagging {
                         book.setCreatedby(con.getCreatedby());
                         book.setDatecreated(utility.SimpleDateFormat("MM-dd-yyyy").format(new java.util.Date()));
                         book.setTags("HCPN");
-                        ACRGBWSResult bookingResult = bm.GETENDEDCONTRACT(dataSource, book, "INACTIVE");
+                        ACRGBWSResult bookingResult = bm.PROCESSENDEDCONTRACT(dataSource, book, "INACTIVE");
                         if (!bookingResult.isSuccess()) {
                             error.add(bookingResult.getMessage());
                         }
-                        //END OF AUTOBBOK
+                        ACRGBWSResult pfResult = pf.GETAFFILIATE(dataSource, "0", contract.getHcfid(), "0");
+                        if (pfResult.isSuccess()) {
+                            List<Appellate> pfList = Arrays.asList(utility.ObjectMapper().readValue(pfResult.getResult(), Appellate[].class));
+                            for (int i = 0; i < pfList.size(); i++) {
+                                im.INSERTAPPELLATE(dataSource, pfList.get(i).getAccesscode(), pfList.get(i).getControlcode(), con.getCreatedby(), con.getDatecreated());
+                            }
+                            //END OF AUTOBBOK
+                            Appellate appellate = new Appellate();
+                            appellate.setAccesscode(contract.getHcfid());
+                            appellate.setStatus("3");
+                            appellate.setConid(contract.getContractdate());
+                            //update affiliated facility under hcpn
+                            ACRGBWSResult updateAffiliates = updateMethod.UPDATEAPELLATE(dataSource, "HCPN", appellate);
+                            if (!updateAffiliates.isSuccess()) {
+                                error.add(updateAffiliates.getMessage());
+                            }
+                        }
                     } else {
                         error.add("No Contract Found");
                     }
@@ -204,6 +221,8 @@ public class ContractTagging {
         ContractMethod methods = new ContractMethod();
         UpdateMethods updateMethod = new UpdateMethods();
         InsertMethods insertMethods = new InsertMethods();
+        ProcessAffiliate pf = new ProcessAffiliate();
+        String createdwho = "";
         try (Connection connection = dataSource.getConnection()) {
             //GET ACTIVE ROLE INDEX MAPPED ACCOUNT
             ACRGBWSResult remapRoleIndex = methods.GETROLEINDEXCONDATE(dataSource, dateid.trim());
@@ -221,6 +240,7 @@ public class ContractTagging {
                         error.add(insertRole.getMessage());
                     }
                 }
+
             }
             //GET LIST OF CONTRACT USING CONTRACT DATE ID
             ACRGBWSResult getContractList = methods.GETCONTRACTBYCONDATEID(dataSource, dateid.trim());
@@ -237,6 +257,10 @@ public class ContractTagging {
                         }
                     }
                 }
+                
+                
+                
+                createdwho = contractList.get(0).getCreatedby();
             }
             //END MAPPED ROLE INDEX STATUS TO 3
             ACRGBWSResult updatecondate = updateMethod.UPDATEROLEINDEX(dataSource, "00", "00", dateid.trim(), "NONUPDATE");
@@ -253,6 +277,22 @@ public class ContractTagging {
             } else {
                 result.setMessage(statement.getString("Message") + " " + error + " " + updatecondate.getMessage());
             }
+            //process end affiliates and remap 
+            ACRGBWSResult pfResult = pf.GETAFFILIATE(dataSource, "0", "0", dateid.trim());
+            if (pfResult.isSuccess()) {
+                List<Appellate> pfList = Arrays.asList(utility.ObjectMapper().readValue(pfResult.getResult(), Appellate[].class));
+                for (int i = 0; i < pfList.size(); i++) {
+                    insertMethods.INSERTAPPELLATE(dataSource, pfList.get(i).getAccesscode(), pfList.get(i).getControlcode(), createdwho, utility.SimpleDateFormat("MM-dd-yyyy").format(new Date()));
+                }
+                //END OF AUTOBBOK
+                Appellate appellate = new Appellate();
+                appellate.setAccesscode("0");
+                appellate.setStatus("3");
+                appellate.setConid(dateid.trim());
+                //update affiliated facility under hcpn
+                updateMethod.UPDATEAPELLATE(dataSource, "UOTHERS", appellate);
+            }
+            //end process end affiliates and remap 
 
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());

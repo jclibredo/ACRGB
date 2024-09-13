@@ -43,6 +43,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Calendar;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -59,7 +60,7 @@ import okhttp3.OkHttpClient;
 @ApplicationScoped
 @Singleton
 public class Utility {
-
+    
     private static SecretKeySpec secretkey;
     private byte[] key;
     String regex = "^(?=.*[0-9])"
@@ -68,7 +69,7 @@ public class Utility {
             + "(?=\\S+$).{8,20}$";
     private static final String CIPHERKEY = "A263B7980A15ADE7";
     private final String email_pattern = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
-
+    
     private static final String UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final String LOWER = UPPER.toLowerCase();
     private static final String DIGITS = "0123456789";
@@ -84,8 +85,6 @@ public class Utility {
 //white spaces don’t allowed in the entire string.
 //.{8, 20} represents at least 8 characters and at most 20 characters.
 //$ represents the end of the string.  
-    String[] ZBEN = {"Z016.1", "Z016.2", "Z016.3", "Z016.4", "Z016.5", "Z016.6", "Z016.7", "Z016.8", "Z016.9 "};
-
     public String GenerateRandomPassword(int length) {
         StringBuilder password = new StringBuilder(length);
         // At least one uppercase letter
@@ -103,48 +102,42 @@ public class Utility {
         }
         return password.toString();
     }
-
-    public boolean isValidZBenCode(String code) {
-        boolean result = false;
-        result = Arrays.asList(ZBEN).contains(code);
-        return result;
-    }
-
+    
     public ACRGBWSResult ACRGBWSResult() {
         return new ACRGBWSResult();
     }
-
+    
     public OkHttpClient OkHttpClient() {
-
+        
         return new OkHttpClient();
     }
-
+    
     public ACRGBPayload ACRGBPayload() {
         return new ACRGBPayload();
     }
-
+    
     public UserActivity UserActivity() {
         return new UserActivity();
     }
-
+    
     public Contract Contract() {
         return new Contract();
     }
-
+    
     public SimpleDateFormat SimpleDateFormat(String pattern) {
         return new SimpleDateFormat(pattern);
     }
-
+    
     public ObjectMapper ObjectMapper() {
         return new ObjectMapper();
     }
-
+    
     public boolean validatePassword(String password) {
         Pattern p = Pattern.compile(regex);
         Matcher m = p.matcher(password);
         return m.matches();
     }
-
+    
     public String GetStrings(String name) {
         String result = "";
         try {
@@ -157,25 +150,25 @@ public class Utility {
         }
         return result;
     }
-
+    
     public static boolean isWindows() {
         return (System.getProperty("os.name").toLowerCase().contains("win"));
     }
-
+    
     public static boolean isMac() {
         return (System.getProperty("os.name").toLowerCase().contains("mac"));
     }
-
+    
     public static boolean isUnix() {
         return (System.getProperty("os.name").toLowerCase().contains("nix")
                 || System.getProperty("os.name").toLowerCase().contains("nux")
                 || System.getProperty("os.name").toLowerCase().contains("aix"));
     }
-
+    
     public static boolean isSolaris() {
         return (System.getProperty("os.name").toLowerCase().contains("sunos"));
     }
-
+    
     public boolean IsValidNumber(String string) {
         try {
             Integer.parseInt(string);
@@ -184,12 +177,12 @@ public class Utility {
             return false;
         }
     }
-
+    
     public boolean isValidPhoneNumber(String phone_number) {
         boolean isValid = phone_number.matches("\\d{11}");
         return isValid;
     }
-
+    
     public boolean IsValidDate(String string) {
         SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
         sdf.setLenient(false);
@@ -200,7 +193,7 @@ public class Utility {
             return false;
         }
     }
-
+    
     public boolean IsValidDateDifference(String string) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         sdf.setLenient(false);
@@ -211,7 +204,7 @@ public class Utility {
             return false;
         }
     }
-
+    
     public Date StringToDate(String stringdate) {
         java.util.Date sf = null;
         try {
@@ -221,7 +214,7 @@ public class Utility {
         }
         return sf;
     }
-
+    
     public Date StringToDateTime(String stringdatetime) {
         java.util.Date sf = null;
         try {
@@ -231,12 +224,26 @@ public class Utility {
         }
         return sf;
     }
-
+    
     public String ComputeDateBackward(String dates, int diff) {
         String dateResults = String.valueOf(LocalDate.parse(dates).minusYears(diff).format(DateTimeFormatter.ofPattern("MM-dd-yyyy")));
         return dateResults;
     }
-
+    
+    public String AddMinusDaysDate(String date, String val) {
+        String dateresult = "";
+        try {
+            SimpleDateFormat sdsf = this.SimpleDateFormat("MM-dd-yyyy");
+            Calendar c = Calendar.getInstance();
+            c.setTime(sdsf.parse(date.replaceAll("\\s", "")));
+            c.add(Calendar.DAY_OF_MONTH, Integer.parseInt(val.replaceAll("\\s", "")));
+            dateresult = sdsf.format(c.getTime());
+        } catch (ParseException ex) {
+            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return dateresult;
+    }
+    
     public ACRGBWSResult ProcessDateAmountComputation(String datefrom, String dateto) {
         ACRGBWSResult result = this.ACRGBWSResult();
         result.setMessage("");
@@ -294,15 +301,15 @@ public class Utility {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (NumberFormatException | ParseException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        
         return result;
     }
-
+    
     public boolean isValidEmail(String email) {
         boolean isValid = email.matches(email_pattern);
         return isValid;
@@ -383,7 +390,7 @@ public class Utility {
 
         return EmailSentTemplate;
     }
-
+    
     public String FA2Template(String useremail, String code) {
         String EmailSentTemplate = "<body style='background-color:grey'>\n"
                 + "    <table align='center' border='0' cellpadding='0' cellspacing='0'\n"
@@ -435,9 +442,9 @@ public class Utility {
                 .setExpiration(new Date(System.currentTimeMillis() + 30 * 480000))//ADD EXPIRE TIME 8HOURS
                 .signWith(algorithm, signingkey);
         return builder.compact();
-
+        
     }
-
+    
     public String EncryptString(String string) {
         String result = null;
         try {
@@ -450,7 +457,7 @@ public class Utility {
         }
         return result;
     }
-
+    
     private void SetKey() {
         MessageDigest sha = null;
         try {
@@ -464,7 +471,7 @@ public class Utility {
             Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+    
     public boolean ValidateToken(final String token) {
         boolean result = false;
         try {
@@ -474,7 +481,7 @@ public class Utility {
         }
         return result;
     }
-
+    
     public String DecryptString(String string) {
         String result = null;
         try {
@@ -488,7 +495,7 @@ public class Utility {
         }
         return result;
     }
-
+    
     public ACRGBWSResult GetPayload(String token) {
         ACRGBWSResult result = this.ACRGBWSResult();
         result.setMessage("");
@@ -511,7 +518,7 @@ public class Utility {
         } catch (ExpiredJwtException | MalformedJwtException | SignatureException | UnsupportedJwtException | IllegalArgumentException ex) {
             result.setMessage("Invalid Token : " + ex.getLocalizedMessage());
             Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
-
+            
         }
         return result;
     }
@@ -546,5 +553,5 @@ public class Utility {
         }
         return result;
     }
-
+    
 }

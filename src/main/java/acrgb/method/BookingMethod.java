@@ -201,7 +201,7 @@ public class BookingMethod {
     }
 
     //GET CONTRACT WHERE STATUS IS INACTIVE
-    public ACRGBWSResult GETENDEDCONTRACT(final DataSource dataSource, final Book book, final String utags) {
+    public ACRGBWSResult PROCESSENDEDCONTRACT(final DataSource dataSource, final Book book, final String utags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -227,7 +227,7 @@ public class BookingMethod {
                                     contractdate.getDateto().trim(),
                                     book.getCreatedby());
                             if (!autoInsert.isSuccess()) {
-                                errorList.add(autoInsert.getMessage());
+                                errorList.add(autoInsert.getMessage()); 
                             }
                             //GET CLAIMS TOTAL AMOUNT UNDER FACILITY
                             ACRGBWSResult getClaimsAmount = this.CLAIMSAMOUNTBOOK(dataSource,

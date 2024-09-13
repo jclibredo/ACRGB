@@ -7,6 +7,7 @@ acrgb\structure\NclaimsData.class
 acrgb\method\UpdateMethods.class
 acrgb\method\Methods$UserPassword.class
 acrgb\structure\Summary.class
+acrgb\method\ProcessAffiliate.class
 acrgb\structure\Assets.class
 acrgb\structure\ContractDate.class
 acrgb\structure\MBRequestSummary.class
@@ -42,6 +43,7 @@ acrgb\structure\User.class
 acrgb\structure\Appellate.class
 acrgb\structure\DateSettings.class
 acrgb\structure\AssetsType.class
+acrgb\structure\CaseRate.class
 acrgb\structure\AccountPayable.class
 acrgb\structure\ProcessAmountBadget.class
 acrgb\method\Methods.class
@@ -58,6 +60,7 @@ acrgb\method\job\QuartzJob.class
 acrgb\utility\NamedParameterStatement.class
 acrgb\structure\Archived.class
 acrgb\structure\Total.class
+acrgb\method\CurrentBalance.class
 acrgb\ApplicationConfig.class
 acrgb\structure\UserLevel.class
 acrgb\structure\UserRoleIndex.class

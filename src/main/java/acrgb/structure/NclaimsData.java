@@ -40,5 +40,6 @@ public class NclaimsData {
     private String c2icdcode;
     private String count;
     private String uopdtst;
+    private String refiledate;
 
 }

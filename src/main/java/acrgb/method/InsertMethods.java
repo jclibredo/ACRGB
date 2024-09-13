@@ -165,7 +165,8 @@ public class InsertMethods {
                     appellate.setAccesscode(contract.getHcfid());
                     appellate.setStatus("2");
                     appellate.setConid(contract.getContractdate());
-                    um.UPDATEAPELLATE(datasource, "NONUPDATE", appellate);
+                    //
+                    um.UPDATEAPELLATE(datasource, "UPDATE", appellate);
                     //END INSERT CONTRACT ID TO APPELLATE TABLE
                 }
                 result.setMessage(getinsertresult.getString("Message"));
@@ -323,7 +324,7 @@ public class InsertMethods {
         UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userlogs = utility.UserActivity();
-            if (!fm.GETUSERDETAILSBYDID(datasource, user.getDid()).isSuccess()) {
+            if (!fm.GETUSERDETAILSBYDID(datasource, user.getDid(), "ACTIVE").isSuccess()) {
                 result.setMessage("USER INFO ID NOT FOUND");
             } else {
                 // ACRGBWSResult validateUsername = methods.ACRUSERNAME(datasource, user.getUsername());
@@ -465,7 +466,8 @@ public class InsertMethods {
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult INACTIVEDATA(final DataSource datasource, final String tags,
             final String dataid,
-            final String createdby) {
+            final String createdby,
+            final String ustatus) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -476,15 +478,36 @@ public class InsertMethods {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INACTIVEDATA(:Message,:Code,"
                     + ":tags,:dataid)");
             if (tags.toUpperCase().trim().equals("USER")) {
-                if (fm.GETUSERBYUSERID(datasource, dataid).isSuccess()) {
-                    User user = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(datasource, dataid).getResult(), User.class);
+                if (fm.GETUSERBYUSERID(datasource, dataid, ustatus).isSuccess()) {
+                    User user = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(datasource, dataid, ustatus).getResult(), User.class);
+                    //----------------------------------------------------------
+                    if (!user.getDid().isEmpty()) {
+                        UserInfo userinfo = utility.ObjectMapper().readValue(user.getDid(), UserInfo.class);
+                        getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                        getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                        getinsertresult.setString("tags", "USERDETAILS".trim().toUpperCase());
+                        getinsertresult.setInt("dataid", Integer.parseInt(userinfo.getDid()));
+                        getinsertresult.execute();
+                        if (getinsertresult.getString("Message").equals("SUCC")) {
+                            result.setSuccess(true);
+                            result.setMessage(getinsertresult.getString("Message"));
+                            userLogs.setActstatus("SUCCESS");
+                        } else {
+                            userLogs.setActstatus("FAILED");
+                            result.setMessage(getinsertresult.getString("Message"));
+                        }
+                    }
+
+                    //----------------------------------------------------------
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                    getinsertresult.setString("p_tags", "USERDETAILS".trim().toUpperCase());
-                    getinsertresult.setInt("p_dataid", Integer.parseInt(user.getDid()));
+                    getinsertresult.setString("tags", "USER".trim().toUpperCase());
+                    getinsertresult.setInt("dataid", Integer.parseInt(dataid));
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
                         userLogs.setActstatus("SUCCESS");
+                        result.setSuccess(true);
+                        result.setMessage(getinsertresult.getString("Message"));
                     } else {
                         userLogs.setActstatus("FAILED");
                         result.setMessage(getinsertresult.getString("Message"));
@@ -520,7 +543,8 @@ public class InsertMethods {
     public ACRGBWSResult ACTIVEDATA(final DataSource datasource,
             final String tags,
             final String dataid,
-            final String createdby) {
+            final String createdby,
+            final String ustatus) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -531,33 +555,60 @@ public class InsertMethods {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACTIVEDATA(:Message,:Code,"
                     + ":tags,:dataid)");
             if (tags.toUpperCase().trim().equals("USER")) {
-                if (fm.GETUSERBYUSERID(datasource, dataid).isSuccess()) {
-                    User user = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(datasource, dataid).getResult(), User.class);
+                if (fm.GETUSERBYUSERID(datasource, dataid, ustatus).isSuccess()) {
+                    User user = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(datasource, dataid, ustatus).getResult(), User.class);
+                    //----------------------------------------------------------
+                    if (!user.getDid().isEmpty()) {
+                        UserInfo userinfo = utility.ObjectMapper().readValue(user.getDid(), UserInfo.class);
+                        getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                        getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                        getinsertresult.setString("tags", "USERDETAILS".trim().toUpperCase());
+                        getinsertresult.setInt("dataid", Integer.parseInt(userinfo.getDid()));
+                        getinsertresult.execute();
+                        if (getinsertresult.getString("Message").equals("SUCC")) {
+                            result.setSuccess(true);
+                            result.setMessage(getinsertresult.getString("Message"));
+                        } else {
+                            result.setMessage(getinsertresult.getString("Message"));
+                        }
+                    }
+                    //----------------------------------------------------------
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                    getinsertresult.setString("p_tags", "USERDETAILS".trim().toUpperCase());
-                    getinsertresult.setInt("p_dataid", Integer.parseInt(user.getDid()));
+                    getinsertresult.setString("tags", "USER".trim().toUpperCase());
+                    getinsertresult.setInt("dataid", Integer.parseInt(dataid));
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
+                        userLogs.setActstatus("SUCCESS");
+                        result.setSuccess(true);
+                        result.setMessage(getinsertresult.getString("Message"));
                     } else {
+                        userLogs.setActstatus("FAILED");
                         result.setMessage(getinsertresult.getString("Message"));
                     }
+                    //----------------------------------------------------------
+                } else {
+                    userLogs.setActstatus("FAILED");
+                    result.setMessage("No Data Found");
                 }
-            }
-            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("tags", tags.trim().toUpperCase());
-            getinsertresult.setInt("dataid", Integer.parseInt(dataid));
-            getinsertresult.execute();
-            UserActivity userlogs = utility.UserActivity();
-            if (getinsertresult.getString("Message").equals("SUCC")) {
-                userlogs.setActstatus("SUCCESS");
-                result.setSuccess(true);
-                result.setMessage(getinsertresult.getString("Message"));
             } else {
-                userlogs.setActstatus("FAILED");
-                result.setMessage(getinsertresult.getString("Message"));
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("tags", tags.trim().toUpperCase());
+                getinsertresult.setInt("dataid", Integer.parseInt(dataid));
+                getinsertresult.execute();
+                UserActivity userlogs = utility.UserActivity();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    userlogs.setActstatus("SUCCESS");
+                    result.setSuccess(true);
+                    result.setMessage(getinsertresult.getString("Message"));
+                } else {
+                    userlogs.setActstatus("FAILED");
+                    result.setMessage(getinsertresult.getString("Message"));
+                }
+
             }
+
             //USER LOGS
             userLogs.setActby(createdby);
             userLogs.setActdetails(tags);
@@ -740,8 +791,8 @@ public class InsertMethods {
     }
 
     public ACRGBWSResult INSERTAPPELLATE(final DataSource datasource,
-            final String userid, //SINGLE
-            final String accessid, //MULTIPLE
+            final String userid, //SINGLE   ACCESSCODE
+            final String accessid, //MULTIPLE  CONTROLCODE
             final String createdby,
             final String datecreated) {
         ACRGBWSResult result = utility.ACRGBWSResult();

@@ -420,12 +420,6 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-//        ForgetPassword forgetPassword = new ForgetPassword();
-//        forgetPassword.setAppuser(mailuser.trim());
-//        forgetPassword.setApppass(mailapikey);
-//        forgetPassword.setMailfrom(mailfrom.trim());
-//        forgetPassword.setMailhost(mailhost.trim());
-//        forgetPassword.setMailport(mailport.trim());
         Collection errorList = new ArrayList<>();
         try {
             ACRGBWSResult GetPayLoad = utility.GetPayload(token);
@@ -572,7 +566,9 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult BookingResult = bm.GETENDEDCONTRACT(dataSource, book, "INACTIVE");
+            
+           // CHECK PROCESS ALL ENDED CONTRACT             
+            ACRGBWSResult BookingResult = bm.PROCESSENDEDCONTRACT(dataSource, book, "INACTIVE");
             result.setMessage(BookingResult.getMessage());
             result.setResult(BookingResult.getResult());
             result.setSuccess(BookingResult.isSuccess());

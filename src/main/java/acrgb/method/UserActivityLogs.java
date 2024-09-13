@@ -319,8 +319,8 @@ public class UserActivityLogs {
         try {
             switch (tags.toUpperCase().trim()) {
                 case "ACCOUNT": { //USERID
-                    if (fm.GETUSERBYUSERID(dataSource, id).isSuccess()) {
-                        User user = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(dataSource, id).getResult(), User.class);
+                    if (fm.GETUSERBYUSERID(dataSource, id, "INACTIVE").isSuccess()) {
+                        User user = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(dataSource, id, "INACTIVE").getResult(), User.class);
                         if (!user.getDid().equals("N/A")) {
                             UserInfo userInfo = utility.ObjectMapper().readValue(user.getDid(), UserInfo.class);
                             result = userInfo.getLastname() + " , " + userInfo.getFirstname();
@@ -328,8 +328,19 @@ public class UserActivityLogs {
                             result = "false";
                         }
                     } else {
-                        result = "false";
+                        if (fm.GETUSERBYUSERID(dataSource, id, "ACTIVE").isSuccess()) {
+                            User user = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(dataSource, id, "ACTIVE").getResult(), User.class);
+                            if (!user.getDid().equals("N/A")) {
+                                UserInfo userInfo = utility.ObjectMapper().readValue(user.getDid(), UserInfo.class);
+                                result = userInfo.getLastname() + " , " + userInfo.getFirstname();
+                            } else {
+                                result = "false";
+                            }
+                        } else {
+                            result = "false";
+                        }
                     }
+
                     break;
                 }
                 case "PRO": { //PRO CODE
@@ -399,11 +410,17 @@ public class UserActivityLogs {
                     break;
                 }
                 case "USERINFO": { //USER DID
-                    if (fm.GETUSERDETAILSBYDID(dataSource, id).isSuccess()) {
-                        UserInfo userInfo = utility.ObjectMapper().readValue(fm.GETUSERDETAILSBYDID(dataSource, id).getResult(), UserInfo.class);
+                    if (fm.GETUSERDETAILSBYDID(dataSource, id, "ACTIVE").isSuccess()) {
+                        UserInfo userInfo = utility.ObjectMapper().readValue(fm.GETUSERDETAILSBYDID(dataSource, id, "ACTIVE").getResult(), UserInfo.class);
                         result = "LastName: " + userInfo.getLastname() + " | FirstName :" + userInfo.getFirstname() + " | Username :" + userInfo.getEmail();
                     } else {
-                        result = "false";
+                        if (fm.GETUSERDETAILSBYDID(dataSource, id, "INACTIVE").isSuccess()) {
+                            UserInfo userInfo = utility.ObjectMapper().readValue(fm.GETUSERDETAILSBYDID(dataSource, id, "INACTIVE").getResult(), UserInfo.class);
+                            result = "LastName: " + userInfo.getLastname() + " | FirstName :" + userInfo.getFirstname() + " | Username :" + userInfo.getEmail();
+                        } else {
+                            result = "false";
+                        }
+
                     }
                     break;
                 }

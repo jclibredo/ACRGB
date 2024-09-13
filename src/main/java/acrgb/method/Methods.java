@@ -7,11 +7,12 @@ package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Accreditation;
+import acrgb.structure.Appellate;
+import acrgb.structure.CaseRate;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.DateSettings;
 import acrgb.structure.Email;
-import acrgb.structure.ExcludedCode;
 import acrgb.structure.FacilityComputedAmount;
 import acrgb.structure.ForgetPassword;
 import acrgb.structure.HealthCareFacility;
@@ -89,12 +90,14 @@ public class Methods {
                                 user.setUserpassword(userlist.get(x).getUserpassword());
                                 user.setDatecreated(userlist.get(x).getDatecreated());
                                 user.setStatus(userlist.get(x).getStatus());
+                                //----------------------------------------------
                                 ACRGBWSResult detailsresult = fm.GETFULLDETAILS(datasource, userlist.get(x).getUserid());
                                 if (detailsresult.isSuccess()) {
                                     user.setDid(detailsresult.getResult());
                                 } else {
                                     user.setDid(detailsresult.getMessage());
                                 }
+                                //----------------------------------------------
                                 user.setCreatedby(userlist.get(x).getCreatedby());
                                 result.setSuccess(true);
                                 result.setResult(utility.ObjectMapper().writeValueAsString(user));
@@ -254,7 +257,7 @@ public class Methods {
                 getinsertresult.setString("p_stats", "2");
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
-                    ACRGBWSResult GetDID = fm.GETUSERBYUSERID(dataSource, userid.trim());
+                    ACRGBWSResult GetDID = fm.GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
                     if (GetDID.isSuccess()) {
                         result.setSuccess(true);
                         User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
@@ -302,7 +305,7 @@ public class Methods {
                 getinsertresult.setString("p_stats", "2".trim());
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
-                    ACRGBWSResult GetDID = fm.GETUSERBYUSERID(dataSource, userid.trim());
+                    ACRGBWSResult GetDID = fm.GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
                     if (GetDID.isSuccess()) {
                         result.setSuccess(true);
                         User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
@@ -362,7 +365,7 @@ public class Methods {
             getinsertresult.setString("p_stats", "2");
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
-                ACRGBWSResult GetEmail = fm.GETUSERBYUSERID(dataSource, userid.trim());
+                ACRGBWSResult GetEmail = fm.GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
                 if (GetEmail.isSuccess()) {
                     User user = utility.ObjectMapper().readValue(GetEmail.getResult(), User.class);
                     //---------------------------------------
@@ -413,15 +416,23 @@ public class Methods {
     }
 
     // CHANGEUSELEVEL
-    public ACRGBWSResult GETSUMMARY(final DataSource dataSource, final String phcfid) {
+    public ACRGBWSResult GETSUMMARY(
+            final DataSource dataSource,
+            final String utags,
+            final String phcfid,
+            final String utranchid,
+            final String uconid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETSUMMARY(:phcfid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETSUMMARY(:utags,:phcfid,:utranchid,:uconid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("utags", utags.trim());
             statement.setString("phcfid", phcfid.trim());
+            statement.setString("utranchid", utranchid.trim());
+            statement.setString("uconid", uconid.trim());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             if (resultset.next()) {
@@ -444,7 +455,8 @@ public class Methods {
 
     //--------------------------------------------------------
     //ACR GB GET SUMMARY
-    public ACRGBWSResult GetBaseAmountForSummary(final DataSource dataSource,
+    public ACRGBWSResult GetBaseAmountForSummary(
+            final DataSource dataSource,
             final String tags,
             final String userid,
             final String datefrom,
@@ -455,6 +467,7 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        ContractMethod cm = new ContractMethod();
         try {
             switch (tags.toUpperCase()) {
                 case "USERPRO": {//USERID IS PRO ACCOUNT USERID
@@ -463,7 +476,6 @@ public class Methods {
                         ACRGBWSResult getHCPNUnderUsingProCode = this.GETROLEMULITPLE(dataSource, getPRO.getResult(), stats);
                         if (getHCPNUnderUsingProCode.isSuccess()) {
                             int claimCount = 0;
-                            double claims30percent = 0.00;
                             double claimsSb = 0.00;
                             double totalbaseamount = 0.00;
                             List<String> ListOFHCPN = Arrays.asList(getHCPNUnderUsingProCode.getResult().split(","));
@@ -479,121 +491,92 @@ public class Methods {
                                             List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
                                             //DATE SETTINGS
                                             for (int f = 0; f < fcaA.size(); f++) {
-                                                //==== GET FACILITY USING HOSPITAL CODE
-                                                java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
-                                                java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
-                                                java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(f).getDatefiled());
-                                                SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
-                                                //------------------------------------------------
-                                                double totalAmount = Double.parseDouble(fcaA.get(f).getTotalamount());
-                                                double Percent30 = Double.parseDouble(fcaA.get(f).getTotalamount()) * 0.30;
-                                                double Percent10w30 = (totalAmount + Percent30) * 0.10;
-                                                double Percent10n30 = totalAmount * 0.10;
-                                                totalbaseamount += Double.parseDouble(fcaA.get(f).getTotalamount());
-                                                claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                //------------------------------------------------     
-                                                FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
                                                 ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                                                 if (getFacilityA.isSuccess()) {
+                                                    FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
                                                     HealthCareFacility hciList = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
                                                     //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                                    if (utility.isValidZBenCode(fcaA.get(f).getC1rvcode())) {
-                                                    } else if (utility.isValidZBenCode(fcaA.get(f).getC1icdcode())) {
-                                                    } else {
+                                                    if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode()).isSuccess()
+                                                            && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                        double countamount = 0.00;
                                                         switch (hciList.getHcilevel().toUpperCase().trim()) {
                                                             case "T1":
                                                             case "T2":
                                                             case "SH": {
-                                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                                        //WITH 30 AND 10
-                                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC2rvcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                            claimsSb += Percent10n30;
-                                                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                        } else {
-                                                                            claims30percent += Percent30;
-                                                                            claimsSb += Percent10w30;
-                                                                            totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                            totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                                        }
-                                                                    } else {
-                                                                        //WITH 10
-                                                                        claimsSb += Percent10n30;
-                                                                        totalcomputeA.setThirty(String.valueOf(claimsSb));
-                                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                    }
-                                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                                    //WITH 30 AND 10
-                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                        claimsSb += Percent10n30;
-                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                    } else {
-                                                                        claimsSb += Percent10w30;
-                                                                        claims30percent += Percent30;
-                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                        totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                                    }
+                                                                //--------------------------------------------------------------------------------
+                                                                if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                                    countamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                                    countamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                                                 } else {
-                                                                    //WITH 10
-                                                                    claimsSb += Percent10n30;
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                                    totalcomputeA.setC1icdcode("");
+                                                                    totalcomputeA.setC1rvcode("");
                                                                 }
+                                                                if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                                    countamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                                    countamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                } else {
+                                                                    totalcomputeA.setC2icdcode("");
+                                                                    totalcomputeA.setC2rvcode("");
+                                                                }
+                                                                double amountANDvolume = countamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                totalcomputeA.setThirty(String.valueOf(00));
+                                                                totalcomputeA.setSb(String.valueOf(amountANDvolume * 0.10));
+                                                                claimsSb += amountANDvolume * 0.10;
                                                                 break;
                                                             }
                                                             default: {
-                                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                                        // WITH 30
-                                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                            totalcomputeA.setSb(String.valueOf(0.00));
-                                                                        } else {
-                                                                            claims30percent += Percent30;
-                                                                            totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                            totalcomputeA.setSb(String.valueOf(0.00));
-                                                                        }
-                                                                    } else {
-                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                                    }
-                                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                                    // WITH 30
-                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                                    } else {
-                                                                        claims30percent += Percent30;
-                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                                    }
+                                                                //--------------------------------------------------------------------------------
+                                                                if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                                    countamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                                    countamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                                                 } else {
-                                                                    //
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(0.00));
+                                                                    totalcomputeA.setC1icdcode("");
+                                                                    totalcomputeA.setC1rvcode("");
                                                                 }
+                                                                if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                                    countamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                                    countamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                } else {
+                                                                    totalcomputeA.setC2icdcode("");
+                                                                    totalcomputeA.setC2rvcode("");
+                                                                }
+                                                                totalcomputeA.setThirty(String.valueOf(00));
+                                                                totalcomputeA.setSb(String.valueOf(00));
                                                                 break;
                                                             }
                                                         }
-                                                    }
-                                                    totalbaseamount += totalAmount;
-                                                    claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    totalcomputeA.setHospital(getFacilityA.getResult());
-                                                    totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
-                                                    totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                                    totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                                    totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
-                                                    totalcomputeA.setTotalamount(String.valueOf(totalAmount));
-                                                    totalcomputeList.add(totalcomputeA);
-                                                }
 
+                                                        totalcomputeA.setHospital(getFacilityA.getResult());
+                                                        totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                                        totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                        totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                        totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                        totalcomputeA.setTotalamount(String.valueOf(countamount * Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                        totalcomputeList.add(totalcomputeA);
+                                                        totalbaseamount += countamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                        claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -602,21 +585,19 @@ public class Methods {
 
                             // SETTINGS OF FINAL COMPUTATION
                             FacilityComputedAmount totalcompute = new FacilityComputedAmount();
+                            totalcompute.setThirty(String.valueOf(00));
                             if (claimsSb > 0.00) {
                                 totalcompute.setSb(String.valueOf(claimsSb / 3));
                             } else {
                                 totalcompute.setSb(String.valueOf(claimsSb));
                             }
-                            if (claims30percent > 0.00) {
-                                totalcompute.setThirty(String.valueOf(claims30percent / 3));
-                            } else {
-                                totalcompute.setThirty(String.valueOf(claims30percent));
-                            }
+                            //BASE AMOUNT
                             if (totalbaseamount > 0.00) {
                                 totalcompute.setTotalamount(String.valueOf(totalbaseamount / 3));
                             } else {
                                 totalcompute.setTotalamount(String.valueOf(totalbaseamount));
                             }
+                            //BASE AMOUNT
                             if (claimCount > 0) {
                                 totalcompute.setTotalclaims(String.valueOf(claimCount / 3));
                             } else {
@@ -665,113 +646,92 @@ public class Methods {
                                     if (restA.isSuccess()) {
                                         List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
                                         for (int f = 0; f < fcaA.size(); f++) {
-                                            //==== GET FACILITY USING HOSPITAL CODE
-                                            java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
-                                            java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
-                                            java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(f).getDatefiled());
-                                            SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
-                                            //------------------------------------------------
-                                            double totalAmount = Double.parseDouble(fcaA.get(f).getTotalamount());
-                                            double Percent30 = Double.parseDouble(fcaA.get(f).getTotalamount()) * 0.30;
-                                            double Percent10w30 = (totalAmount + Percent30) * 0.10;
-                                            double Percent10n30 = totalAmount * 0.10;
-                                            totalbaseamount += Double.parseDouble(fcaA.get(f).getTotalamount());
-                                            claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                            //------------------------------------------------     
-                                            FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
                                             ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                                             if (getFacilityA.isSuccess()) {
+                                                FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
                                                 HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
                                                 //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                                if (utility.isValidZBenCode(fcaA.get(f).getC1rvcode())) {
-                                                } else if (utility.isValidZBenCode(fcaA.get(f).getC1icdcode())) {
-                                                } else {
+                                                if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode()).isSuccess()
+                                                        && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                    double totalamount = 0.00;
                                                     switch (hci.getHcilevel().toUpperCase().trim()) {
                                                         case "T1":
                                                         case "T2":
                                                         case "SH": {
-                                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                        claimsSb += Percent10n30;
-                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                    } else {
-                                                                        claims30percent += Percent30;
-                                                                        claimsSb += Percent10w30;
-                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                        totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                                    }
-                                                                } else {
-                                                                    claimsSb += Percent10n30;
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                }
-                                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                    claimsSb += Percent10n30;
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                } else {
-                                                                    claimsSb += Percent10w30;
-                                                                    claims30percent += Percent30;
-                                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                    totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                                }
+                                                            //--------------------------------------------------------------------------------
+                                                            if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                            } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                                             } else {
-                                                                claimsSb += Percent10n30;
-                                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                                totalcomputeA.setC1icdcode("");
+                                                                totalcomputeA.setC1rvcode("");
                                                             }
+                                                            if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                            } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                            } else {
+                                                                totalcomputeA.setC2icdcode("");
+                                                                totalcomputeA.setC2rvcode("");
+                                                            }
+                                                            double amountANDvolume = totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setThirty(String.valueOf(00));
+                                                            totalcomputeA.setSb(String.valueOf(amountANDvolume * 0.10));
+                                                            claimsSb += amountANDvolume * 0.10;
                                                             break;
                                                         }
                                                         default: {
-                                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                                    } else {
-                                                                        claims30percent += Percent30;
-                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                                    }
-                                                                } else {
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                                }
-                                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                                } else {
-                                                                    claims30percent += Percent30;
-                                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                                }
+                                                            //--------------------------------------------------------------------------------
+                                                            if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                            } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                                             } else {
-                                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                totalcomputeA.setSb(String.valueOf(0.00));
+                                                                totalcomputeA.setC1icdcode("");
+                                                                totalcomputeA.setC1rvcode("");
                                                             }
+
+                                                            if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                            } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                            } else {
+                                                                totalcomputeA.setC2icdcode("");
+                                                                totalcomputeA.setC2rvcode("");
+                                                            }
+                                                            totalcomputeA.setThirty(String.valueOf(00));
+                                                            totalcomputeA.setSb(String.valueOf(00));
                                                             break;
                                                         }
                                                     }
+                                                    totalcomputeA.setHospital(getFacilityA.getResult());
+                                                    totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                                    totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                    totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                    totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));;
+                                                    totalcomputeA.setTotalamount(String.valueOf(totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                    computationList.add(totalcomputeA);
+                                                    totalbaseamount += totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                    claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                 }
-                                                totalbaseamount += totalAmount;
-                                                claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
-                                                totalcomputeA.setHospital(getFacilityA.getResult());
-                                                totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                                totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                                totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
-                                                totalcomputeA.setTotalamount(String.valueOf(totalAmount));
-                                                computationList.add(totalcomputeA);
                                             }
-
                                         }
                                     }
                                 }
@@ -785,12 +745,9 @@ public class Methods {
                         } else {
                             totalcompute.setSb(String.valueOf(claimsSb));
                         }
-                        if (claims30percent > 0.00) {
-                            totalcompute.setThirty(String.valueOf(claims30percent / 3));
-                        } else {
-                            totalcompute.setThirty(String.valueOf(claims30percent));
-                        }
+                        totalcompute.setThirty(String.valueOf(claims30percent));
                         if (totalbaseamount > 0.00) {
+                            // double amountbase = totalbaseamount * claimCount;
                             totalcompute.setTotalamount(String.valueOf(totalbaseamount / 3));
                         } else {
                             totalcompute.setTotalamount(String.valueOf(totalbaseamount));
@@ -831,118 +788,89 @@ public class Methods {
                     ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, userid, datefrom.trim(), dateto.trim());
                     if (restA.isSuccess()) {
                         ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
-                        int claimCount = 0;
-                        double claims30percent = 0.00;
-                        double claimsSb = 0.00;
-                        double totalbaseamount = 0.00;
                         List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
                         //DATE SETTINGS AREA
-                        for (int datese = 0; datese < fcaA.size(); datese++) {
-                            FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                            ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(datese).getHospital());
+                        for (int f = 0; f < fcaA.size(); f++) {
+                            ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                             if (getFacilityA.isSuccess()) {
-                                //------------------------------------------------
-                                java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
-                                java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
-                                java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(datese).getDatefiled());
-                                SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
-                                //------------------------------------------------
-                                double totalAmount = Double.parseDouble(fcaA.get(datese).getTotalamount());
-                                double Percent30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
-                                double Percent10w30 = (totalAmount + Percent30) * 0.10;
-                                double Percent10n30 = totalAmount * 0.10;
-                                //------------------------------------------------       
+                                FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
                                 HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
                                 //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                if (utility.isValidZBenCode(fcaA.get(datese).getC1rvcode())) {
-                                } else if (utility.isValidZBenCode(fcaA.get(datese).getC1icdcode())) {
-                                } else {
+                                if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode()).isSuccess()
+                                        && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                    double totalamount = 0.00;
                                     switch (hci.getHcilevel().toUpperCase().trim()) {
                                         case "T1":
                                         case "T2":
                                         case "SH": {
-                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
-                                                        claimsSb += Percent10n30;
-                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                    } else {
-                                                        claims30percent += Percent30;
-                                                        claimsSb += Percent10w30;
-                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                        totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                    }
-                                                } else {
-                                                    claimsSb += Percent10n30;
-                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                }
-                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
-                                                    claimsSb += Percent10n30;
-                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                } else {
-                                                    claimsSb += Percent10w30;
-                                                    claims30percent += Percent30;
-                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                    totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                }
+                                            //--------------------------------------------------------------------------------
+                                            if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                            } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                             } else {
-                                                claimsSb += Percent10n30;
-                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                totalcomputeA.setC1icdcode("");
+                                                totalcomputeA.setC1rvcode("");
                                             }
+                                            if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                            } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                            } else {
+                                                totalcomputeA.setC2icdcode("");
+                                                totalcomputeA.setC2rvcode("");
+                                            }
+                                            double amountANDvolume = totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                            totalcomputeA.setThirty(String.valueOf(00));
+                                            totalcomputeA.setSb(String.valueOf(amountANDvolume * 0.10));
                                             break;
                                         }
                                         default: {
-                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
-                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                    } else {
-                                                        claims30percent += Percent30;
-                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                    }
-                                                } else {
-                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                }
-                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
-                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                } else {
-                                                    claims30percent += Percent30;
-                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                }
+                                            if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                            } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                             } else {
-                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                totalcomputeA.setSb(String.valueOf(0.00));
+                                                totalcomputeA.setC1icdcode("");
+                                                totalcomputeA.setC1rvcode("");
                                             }
+                                            if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                            } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                            } else {
+                                                totalcomputeA.setC2icdcode("");
+                                                totalcomputeA.setC2rvcode("");
+                                            }
+                                            totalcomputeA.setThirty(String.valueOf(00));
+                                            totalcomputeA.setSb(String.valueOf(00));
                                             break;
                                         }
                                     }
+                                    totalcomputeA.setHospital(getFacilityA.getResult());
+                                    totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                    totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                    totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                    totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                    totalcomputeA.setTotalamount(String.valueOf(totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                    totalcomputeList.add(totalcomputeA);
                                 }
-                                totalbaseamount += totalAmount;
-                                claimCount += Integer.parseInt(fcaA.get(datese).getTotalclaims());
-                                //-----------------------------------
-                                totalcomputeA.setTotalamount(String.valueOf(totalAmount));
-                                totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(datese).getTotalclaims())));
-                                //-------------------------------------------------
-                                totalcomputeA.setYearfrom(fcaA.get(datese).getYearfrom());
-                                totalcomputeA.setYearto(fcaA.get(datese).getYearto());
-                                totalcomputeA.setDatefiled(fcaA.get(datese).getDatefiled());
-                                totalcomputeA.setHospital(getFacilityA.getResult());
-                                totalcomputeList.add(totalcomputeA);
                             }
                         }
                         if (totalcomputeList.size() > 0) {
@@ -957,133 +885,114 @@ public class Methods {
                     }
                     break;
                 }
-                case "HCPN"://USERID IS HCPNCODE/ACCRENO
-                    //GET ALL FACILITY UNDER OF HCPN                                                     
+                case "HCPN": {//USERID IS HCPNCODE/ACCRENO
+                    //GET ALL FACILITY UNDER OF HCPN       
                     if (facilitylist.trim().equals("OLD")) {
+                        int claimsCount = 0;
+                        double claims30percent = 0.00;
+                        double claimsSb = 0.00;
+                        double TotalBaseAmount = 0.00;
+                        ArrayList<FacilityComputedAmount> totalcomputeHCPNList = new ArrayList<>();
+                        List<String> hcflist = Arrays.asList(facilitylist.trim().split(","));
                         ACRGBWSResult getFacilityUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
                         if (getFacilityUnder.isSuccess()) {
-                            ArrayList<FacilityComputedAmount> totalcomputeHCPNList = new ArrayList<>();
-                            List<String> hcflist = Arrays.asList(getFacilityUnder.getResult().split(","));
-                            //double totalDateSettingYearClaimAmount = 0.00;
-                            int claimsCount = 0;
-                            double claims30percent = 0.00;
-                            double claimsSb = 0.00;
-                            double TotalBaseAmount = 0.00;
                             for (int y = 0; y < hcflist.size(); y++) {
                                 ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, hcflist.get(y).trim(), datefrom.trim(), dateto.trim());
                                 if (restC.isSuccess()) {
                                     //DATE SETTINGS
                                     List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
-                                    for (int gets = 0; gets < fcaA.size(); gets++) {
-                                        FacilityComputedAmount totalcomputeHCPN = new FacilityComputedAmount();
-                                        totalcomputeHCPN.setYearfrom(fcaA.get(gets).getYearfrom());
-                                        totalcomputeHCPN.setYearto(fcaA.get(gets).getYearto());
+                                    for (int f = 0; f < fcaA.size(); f++) {
                                         //GET FACILITY
-                                        ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(gets).getHospital());
+                                        ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                                         if (getHCI.isSuccess()) {
-                                            //------------------------------------------------
-                                            java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
-                                            java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
-                                            java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(gets).getDatefiled());
-                                            SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
-                                            //------------------------------------------------
                                             HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class);
-                                            double totalAmount = Double.parseDouble(fcaA.get(gets).getTotalamount());
-                                            double Percent30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
-                                            double Percent10w30 = (totalAmount + Percent30) * 0.10;
-                                            double Percent10n30 = totalAmount * 0.10;
-
+                                            FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                            totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                            totalcomputeA.setYearto(fcaA.get(f).getYearto());
                                             //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                            if (utility.isValidZBenCode(fcaA.get(gets).getC1rvcode())) {
-                                            } else if (utility.isValidZBenCode(fcaA.get(gets).getC1icdcode())) {
-                                            } else {
+                                            if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode()).isSuccess()
+                                                    && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                double totalamount = 0.00;
                                                 switch (hci.getHcilevel().toUpperCase().trim()) {
                                                     case "T1":
                                                     case "T2":
                                                     case "SH": {
-                                                        if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
-                                                                    //claims30percent += Percent30;
-                                                                    claimsSb += Percent10n30;
-                                                                    totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
-                                                                } else {
-                                                                    claims30percent += Percent30;
-                                                                    claimsSb += Percent10w30;
-                                                                    totalcomputeHCPN.setThirty(String.valueOf(Percent30));
-                                                                    totalcomputeHCPN.setSb(String.valueOf(Percent10w30));
-                                                                }
-
-                                                            } else {
-                                                                claimsSb += Percent10n30;
-                                                                totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                                totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
-                                                            }
-
-                                                        } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
-                                                                claimsSb += Percent10n30;
-                                                                totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                                totalcomputeHCPN.setSb(String.valueOf(claimsSb));
-                                                            } else {
-                                                                claims30percent += Percent30;
-                                                                claimsSb += Percent10w30;
-                                                                totalcomputeHCPN.setThirty(String.valueOf(Percent30));
-                                                                totalcomputeHCPN.setSb(String.valueOf(claimsSb));
-                                                            }
-
+                                                        //--------------------------------------------------------------------------------
+                                                        if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                            CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                            totalamount += Double.parseDouble(getCR.getAmount());
+                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                        } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                            CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                            totalamount += Double.parseDouble(getCR.getAmount());
+                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                                         } else {
-                                                            claimsSb += Percent10n30;
-                                                            totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                            totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
+                                                            totalcomputeA.setC1icdcode("");
+                                                            totalcomputeA.setC1rvcode("");
                                                         }
+
+                                                        if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                            CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                            totalamount += Double.parseDouble(getCR.getAmount());
+                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                        } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                            CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                            totalamount += Double.parseDouble(getCR.getAmount());
+                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                        } else {
+                                                            totalcomputeA.setC2icdcode("");
+                                                            totalcomputeA.setC2rvcode("");
+                                                        }
+
+                                                        double amountANDvolume = totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                        totalcomputeA.setThirty(String.valueOf(00));
+                                                        totalcomputeA.setSb(String.valueOf(amountANDvolume * 0.10));
+                                                        claimsSb += amountANDvolume * 0.10;
                                                         break;
                                                     }
                                                     default: {
-                                                        if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                            if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
-                                                                    totalcomputeHCPN.setSb(String.valueOf(0.00));
-                                                                    totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                                } else {
-                                                                    claims30percent += Percent30;
-                                                                    totalcomputeHCPN.setSb(String.valueOf(0.00));
-                                                                    totalcomputeHCPN.setThirty(String.valueOf(Percent30));
-                                                                }
-                                                            } else {
-                                                                totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                                totalcomputeHCPN.setSb(String.valueOf(0.00));
-                                                            }
-                                                        } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
-                                                                totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                                totalcomputeHCPN.setSb(String.valueOf(0.00));
-                                                            } else {
-                                                                claims30percent += Percent30;
-                                                                totalcomputeHCPN.setThirty(String.valueOf(Percent30));
-                                                                totalcomputeHCPN.setSb(String.valueOf(0.00));
-                                                            }
+                                                        if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                            CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                            totalamount += Double.parseDouble(getCR.getAmount());
+                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                        } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                            CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                            totalamount += Double.parseDouble(getCR.getAmount());
+                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                                         } else {
-                                                            totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                            totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                            totalcomputeA.setC1icdcode("");
+                                                            totalcomputeA.setC1rvcode("");
                                                         }
+
+                                                        if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                            CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                            totalamount += Double.parseDouble(getCR.getAmount());
+                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                        } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                            CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                            totalamount += Double.parseDouble(getCR.getAmount());
+                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                        } else {
+                                                            totalcomputeA.setC2icdcode("");
+                                                            totalcomputeA.setC2rvcode("");
+                                                        }
+                                                        totalcomputeA.setThirty(String.valueOf(00));
+                                                        totalcomputeA.setSb(String.valueOf(00));
                                                         break;
                                                     }
                                                 }
-
+                                                totalcomputeA.setHospital(getHCI.getResult());
+                                                totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                                totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                totalcomputeA.setTotalamount(String.valueOf(totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                totalcomputeHCPNList.add(totalcomputeA);
+                                                //-----------------------------------
+                                                TotalBaseAmount += totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                claimsCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                //-----------------------------------
                                             }
-                                            claimsCount += Integer.parseInt(fcaA.get(gets).getTotalclaims());
-                                            TotalBaseAmount += totalAmount;
-                                            totalcomputeHCPN.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(gets).getTotalclaims())));
-                                            totalcomputeHCPN.setTotalamount(String.valueOf(totalAmount));
-                                            totalcomputeHCPN.setHospital(getHCI.getResult());
-                                            totalcomputeHCPN.setDatefiled(fcaA.get(gets).getDatefiled());
-                                            totalcomputeHCPNList.add(totalcomputeHCPN);
                                         }
                                     }
                                 }
@@ -1094,11 +1003,7 @@ public class Methods {
                             } else {
                                 totalcomputeHCPNA.setSb(String.valueOf(claimsSb));
                             }
-                            if (claims30percent > 0.00) {
-                                totalcomputeHCPNA.setThirty(String.valueOf(claims30percent / 3));
-                            } else {
-                                totalcomputeHCPNA.setThirty(String.valueOf(claims30percent));
-                            }
+                            totalcomputeHCPNA.setThirty(String.valueOf(claims30percent));
                             totalcomputeHCPNA.setYearfrom(datefrom);
                             totalcomputeHCPNA.setYearto(dateto);
                             if (TotalBaseAmount > 0.00) {
@@ -1131,142 +1036,120 @@ public class Methods {
                         } else {
                             result.setMessage(getFacilityUnder.getMessage());
                         }
-
-                        //============================== COSTUMIZED LIST OF CAILITY
+                        //-----------------------------------------------
                     } else {
-                        ArrayList<FacilityComputedAmount> totalcomputeHCPNList = new ArrayList<>();
-                        List<String> hcflist = Arrays.asList(facilitylist.trim().split(","));
-                        // double totalDateSettingYearClaimAmount = 0.00;
                         int claimsCount = 0;
                         double claims30percent = 0.00;
                         double claimsSb = 0.00;
                         double TotalBaseAmount = 0.00;
+                        ArrayList<FacilityComputedAmount> totalcomputeHCPNList = new ArrayList<>();
+                        List<String> hcflist = Arrays.asList(facilitylist.trim().split(","));
                         for (int y = 0; y < hcflist.size(); y++) {
                             ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, hcflist.get(y).trim(), datefrom.trim(), dateto.trim());
                             if (restC.isSuccess()) {
-                                //DATE SETTINGS
                                 List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
-                                for (int gets = 0; gets < fcaA.size(); gets++) {
-                                    FacilityComputedAmount totalcomputeHCPN = new FacilityComputedAmount();
+                                for (int f = 0; f < fcaA.size(); f++) {
                                     //GET FACILITY
-                                    ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(gets).getHospital());
+                                    ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                                     if (getHCI.isSuccess()) {
-                                        //------------------------------------------------
-                                        java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
-                                        java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
-                                        java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(gets).getDatefiled());
-                                        SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
+                                        FacilityComputedAmount totalcomputeHCPN = new FacilityComputedAmount();
                                         //------------------------------------------------
                                         HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class);
-                                        double totalAmount = Double.parseDouble(fcaA.get(gets).getTotalamount());
-                                        double Percent30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
-                                        double Percent10w30 = (totalAmount + Percent30) * 0.10;
-                                        double Percent10n30 = totalAmount * 0.10;
                                         //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                        if (utility.isValidZBenCode(fcaA.get(gets).getC1rvcode())) {
-                                        } else if (utility.isValidZBenCode(fcaA.get(gets).getC1icdcode())) {
-                                        } else {
+                                        if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode()).isSuccess()
+                                                && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                            double totalamount = 0.00;
                                             switch (hci.getHcilevel().toUpperCase().trim()) {
                                                 case "T1":
                                                 case "T2":
                                                 case "SH": {
-                                                    if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
-                                                                claimsSb += Percent10n30;
-                                                                totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                                totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
-                                                            } else {
-                                                                claims30percent += Percent30;
-                                                                claimsSb += Percent10w30;
-                                                                totalcomputeHCPN.setThirty(String.valueOf(Percent30));
-                                                                totalcomputeHCPN.setSb(String.valueOf(Percent10w30));
-                                                            }
-                                                        } else {
-                                                            claimsSb += Percent10n30;
-                                                            totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                            totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
-                                                        }
-                                                    } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
-                                                            claimsSb += Percent10n30;
-                                                            totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                            totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
-                                                        } else {
-                                                            claims30percent += Percent30;
-                                                            claimsSb += Percent10w30;
-                                                            totalcomputeHCPN.setThirty(String.valueOf(Percent30));
-                                                            totalcomputeHCPN.setSb(String.valueOf(Percent10w30));
-                                                        }
+                                                    if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+
+                                                        totalcomputeHCPN.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                    } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeHCPN.setC1rvcode(fcaA.get(f).getC1rvcode());
                                                     } else {
-                                                        claimsSb += Percent10n30;
-                                                        totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                        totalcomputeHCPN.setSb(String.valueOf(Percent10n30));
+                                                        totalcomputeHCPN.setC1icdcode("");
+                                                        totalcomputeHCPN.setC1rvcode("");
                                                     }
+                                                    if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeHCPN.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                    } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeHCPN.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                    } else {
+                                                        totalcomputeHCPN.setC2icdcode("");
+                                                        totalcomputeHCPN.setC2rvcode("");
+                                                    }
+
+                                                    double amountANDvolume = totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                    totalcomputeHCPN.setThirty(String.valueOf(00));
+                                                    totalcomputeHCPN.setSb(String.valueOf(amountANDvolume * 0.10));
+                                                    claimsSb += amountANDvolume * 0.10;
                                                     break;
                                                 }
                                                 default: {
-                                                    if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
-                                                                totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                                totalcomputeHCPN.setSb(String.valueOf(0.00));
-                                                            } else {
-                                                                claims30percent += Percent30;
-                                                                totalcomputeHCPN.setThirty(String.valueOf(Percent30));
-                                                                totalcomputeHCPN.setSb(String.valueOf(0.00));
-                                                            }
-                                                        } else {
-                                                            totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                            totalcomputeHCPN.setSb(String.valueOf(0.00));
-                                                        }
-                                                    } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
-                                                            totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                            totalcomputeHCPN.setSb(String.valueOf(0.00));
-                                                        } else {
-                                                            claims30percent += Percent30;
-                                                            totalcomputeHCPN.setThirty(String.valueOf(Percent30));
-                                                            totalcomputeHCPN.setSb(String.valueOf(0.00));
-                                                        }
+                                                    if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeHCPN.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                    } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeHCPN.setC1rvcode(fcaA.get(f).getC1rvcode());
                                                     } else {
-                                                        totalcomputeHCPN.setThirty(String.valueOf(0.00));
-                                                        totalcomputeHCPN.setSb(String.valueOf(0.00));
+                                                        totalcomputeHCPN.setC1icdcode("");
+                                                        totalcomputeHCPN.setC1rvcode("");
                                                     }
+                                                    if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeHCPN.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                    } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeHCPN.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                    } else {
+                                                        totalcomputeHCPN.setC2icdcode("");
+                                                        totalcomputeHCPN.setC2rvcode("");
+                                                    }
+                                                    totalcomputeHCPN.setThirty(String.valueOf(00));
+                                                    totalcomputeHCPN.setSb(String.valueOf(00));
                                                     break;
                                                 }
                                             }
+                                            totalcomputeHCPN.setHospital(getHCI.getResult());
+                                            totalcomputeHCPN.setDatefiled(fcaA.get(f).getDatefiled());
+                                            totalcomputeHCPN.setYearfrom(fcaA.get(f).getYearfrom());
+                                            totalcomputeHCPN.setYearto(fcaA.get(f).getYearto());
+                                            totalcomputeHCPN.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                            totalcomputeHCPN.setTotalamount(String.valueOf(totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                            totalcomputeHCPNList.add(totalcomputeHCPN);
+                                            //---------------------------------------
+                                            TotalBaseAmount += totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                            claimsCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                            //-------------------------------------------
                                         }
-                                        TotalBaseAmount += totalAmount;
-                                        claimsCount += Integer.parseInt(fcaA.get(gets).getTotalclaims());
-                                        totalcomputeHCPN.setYearfrom(fcaA.get(gets).getYearfrom());
-                                        totalcomputeHCPN.setYearto(fcaA.get(gets).getYearto());
-                                        totalcomputeHCPN.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(gets).getTotalclaims())));
-                                        totalcomputeHCPN.setHospital(getHCI.getResult());
-                                        totalcomputeHCPN.setTotalamount(String.valueOf(totalAmount));
-                                        totalcomputeHCPN.setDatefiled(fcaA.get(gets).getDatefiled());
-                                        totalcomputeHCPNList.add(totalcomputeHCPN);
                                     }
-
                                 }
                             }
                         }
-
                         FacilityComputedAmount totalcomputeHCPNA = new FacilityComputedAmount();
                         if (claimsSb > 0.00) {
                             totalcomputeHCPNA.setSb(String.valueOf(claimsSb / 3));
                         } else {
                             totalcomputeHCPNA.setSb(String.valueOf(claimsSb));
                         }
-                        if (claims30percent > 0.00) {
-                            totalcomputeHCPNA.setThirty(String.valueOf(claims30percent / 3));
-                        } else {
-                            totalcomputeHCPNA.setThirty(String.valueOf(claims30percent));
-                        }
+                        totalcomputeHCPNA.setThirty(String.valueOf(claims30percent));
+                        totalcomputeHCPNA.setYearfrom(datefrom);
+                        totalcomputeHCPNA.setYearto(dateto);
                         if (TotalBaseAmount > 0.00) {
                             totalcomputeHCPNA.setTotalamount(String.valueOf(TotalBaseAmount / 3));
                         } else {
@@ -1277,8 +1160,6 @@ public class Methods {
                         } else {
                             totalcomputeHCPNA.setTotalclaims(String.valueOf(claimsCount));
                         }
-                        totalcomputeHCPNA.setYearfrom(datefrom);
-                        totalcomputeHCPNA.setYearto(dateto);
                         //GET HCPN
                         ACRGBWSResult getHCPN = this.GETMBWITHID(dataSource, userid);
                         if (getHCPN.isSuccess()) {
@@ -1297,16 +1178,17 @@ public class Methods {
                         }
                     }
                     break;
+                }
             }
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
+
     // GET SUMMARY FOR INSERTING CONTRACT
     //ACR GB GET SUMMARY
-
     public ACRGBWSResult GetBaseAmountForContract(final DataSource dataSource,
             final String tags,
             final String userid,
@@ -1317,15 +1199,16 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        ContractMethod cm = new ContractMethod();
         try {
             switch (tags.toUpperCase()) {
                 case "USERPRO"://USERID IS PRO ACCOUNT USERID
+                {
                     ACRGBWSResult getPRO = this.GETROLE(dataSource, userid, stats);
                     if (getPRO.isSuccess()) {
                         ACRGBWSResult getHCPNUnderUsingProCode = this.GETROLEMULITPLE(dataSource, getPRO.getResult(), stats);
                         if (getHCPNUnderUsingProCode.isSuccess()) {
                             int claimCount = 0;
-                            double claims30percent = 0.00;
                             double claimsSb = 0.00;
                             double totalbaseamount = 0.00;
                             List<String> ListOFHCPN = Arrays.asList(getHCPNUnderUsingProCode.getResult().split(","));
@@ -1341,117 +1224,184 @@ public class Methods {
                                             //DATE SETTINGS
                                             for (int f = 0; f < fcaA.size(); f++) {
                                                 //==== GET FACILITY USING HOSPITAL CODE
-                                                java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
-                                                java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
-                                                java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(f).getDatefiled());
-                                                SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
-                                                //------------------------------------------------
-                                                double totalAmount = Double.parseDouble(fcaA.get(f).getTotalamount());
-                                                double Percent30 = Double.parseDouble(fcaA.get(f).getTotalamount()) * 0.30;
-                                                double Percent10w30 = (totalAmount + Percent30) * 0.10;
-                                                double Percent10n30 = totalAmount * 0.10;
-                                                totalbaseamount += Double.parseDouble(fcaA.get(f).getTotalamount());
-                                                claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
+//                                                java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
+//                                                java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(f).getDatefiled());
+//                                                SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
+//                                                //------------------------------------------------
+//                                                double totalAmount = Double.parseDouble(fcaA.get(f).getTotalamount());
+//                                                double Percent30 = Double.parseDouble(fcaA.get(f).getTotalamount()) * 0.30;
+//                                                double Percent10w30 = (totalAmount + Percent30) * 0.10;
+//                                                double Percent10n30 = totalAmount * 0.10;
+//                                                totalbaseamount += Double.parseDouble(fcaA.get(f).getTotalamount());
+//                                                claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                 //------------------------------------------------     
-                                                FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+
                                                 ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                                                 if (getFacilityA.isSuccess()) {
+                                                    FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
                                                     HealthCareFacility hciList = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
                                                     //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                                    if (utility.isValidZBenCode(fcaA.get(f).getC1rvcode())) {
-                                                    } else if (utility.isValidZBenCode(fcaA.get(f).getC1icdcode())) {
-                                                    } else {
+                                                    if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode()).isSuccess()
+                                                            && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                        double totalamount = 0.00;
                                                         switch (hciList.getHcilevel().toUpperCase().trim()) {
                                                             case "T1":
                                                             case "T2":
                                                             case "SH": {
-                                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                            claimsSb += Percent10n30;
-                                                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                        } else {
-                                                                            claims30percent += Percent30;
-                                                                            claimsSb += Percent10w30;
-                                                                            totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                            totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                                        }
-                                                                    } else {
-                                                                        claimsSb += Percent10n30;
-                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                    }
-                                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                        claimsSb += Percent10n30;
-                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                    } else {
-                                                                        claimsSb += Percent10w30;
-                                                                        claims30percent += Percent30;
-                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                        totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                                    }
+                                                                if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                                    totalamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                                    totalamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                                                 } else {
-                                                                    claimsSb += Percent10n30;
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                                    totalcomputeA.setC1icdcode("");
+                                                                    totalcomputeA.setC1rvcode("");
                                                                 }
+
+                                                                if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                                    totalamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                                    totalamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                } else {
+                                                                    totalcomputeA.setC2icdcode("");
+                                                                    totalcomputeA.setC2rvcode("");
+                                                                }
+
+                                                                double amountANDvolume = totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                totalcomputeA.setThirty(String.valueOf(00));
+                                                                totalcomputeA.setSb(String.valueOf(amountANDvolume * 0.10));
+                                                                claimsSb += amountANDvolume * 0.10;
+
+//                                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+//                                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+//                                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+//                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
+//                                                                            claimsSb += Percent10n30;
+//                                                                            totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                                        } else {
+//                                                                            claims30percent += Percent30;
+//                                                                            claimsSb += Percent10w30;
+//                                                                            totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                                            totalcomputeA.setSb(String.valueOf(Percent10w30));
+//                                                                        }
+//                                                                    } else {
+//                                                                        claimsSb += Percent10n30;
+//                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                                    }
+//                                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
+//                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+//                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
+//                                                                        claimsSb += Percent10n30;
+//                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                                    } else {
+//                                                                        claimsSb += Percent10w30;
+//                                                                        claims30percent += Percent30;
+//                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                                        totalcomputeA.setSb(String.valueOf(Percent10w30));
+//                                                                    }
+//                                                                } else {
+//                                                                    claimsSb += Percent10n30;
+//                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                                }
                                                                 break;
                                                             }
                                                             default: {
-                                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                            totalcomputeA.setSb(String.valueOf(0.00));
-                                                                        } else {
-                                                                            claims30percent += Percent30;
-                                                                            totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                            totalcomputeA.setSb(String.valueOf(0.00));
-                                                                        }
-                                                                    } else {
-                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                                    }
-                                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                                    } else {
-                                                                        claims30percent += Percent30;
-                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                                    }
+                                                                if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                                    totalamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                                    totalamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                                                 } else {
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(0.00));
+                                                                    totalcomputeA.setC1icdcode("");
+                                                                    totalcomputeA.setC1rvcode("");
                                                                 }
+                                                                if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                                    totalamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                                    CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                                    totalamount += Double.parseDouble(getCR.getAmount());
+                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                } else {
+                                                                    totalcomputeA.setC2icdcode("");
+                                                                    totalcomputeA.setC2rvcode("");
+                                                                }
+                                                                totalcomputeA.setThirty(String.valueOf(00));
+                                                                totalcomputeA.setSb(String.valueOf(00));
+//                                                                if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+//                                                                    if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+//                                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+//                                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
+//                                                                            totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                            totalcomputeA.setSb(String.valueOf(0.00));
+//                                                                        } else {
+//                                                                            claims30percent += Percent30;
+//                                                                            totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                                            totalcomputeA.setSb(String.valueOf(0.00));
+//                                                                        }
+//                                                                    } else {
+//                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                        totalcomputeA.setSb(String.valueOf(0.00));
+//                                                                    }
+//                                                                } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
+//                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+//                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
+//                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                        totalcomputeA.setSb(String.valueOf(0.00));
+//                                                                    } else {
+//                                                                        claims30percent += Percent30;
+//                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                                        totalcomputeA.setSb(String.valueOf(0.00));
+//                                                                    }
+//                                                                } else {
+//                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                    totalcomputeA.setSb(String.valueOf(0.00));
+//                                                                }
                                                                 break;
                                                             }
                                                         }
+                                                        totalcomputeA.setHospital(getFacilityA.getResult());
+                                                        totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                                        totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                        totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                        totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                        totalcomputeA.setTotalamount(String.valueOf(totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                        totalcomputeList.add(totalcomputeA);
+                                                        totalbaseamount += totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                        claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                     }
-                                                    totalbaseamount += totalAmount;
-                                                    claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    totalcomputeA.setHospital(getFacilityA.getResult());
-                                                    totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
-                                                    totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                                    totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                                    totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
-                                                    totalcomputeA.setTotalamount(String.valueOf(totalAmount));
-                                                    totalcomputeList.add(totalcomputeA);
+//                                                    totalbaseamount += totalAmount;
+//                                                    claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                    totalcomputeA.setHospital(getFacilityA.getResult());
+//                                                    totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+//                                                    totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+//                                                    totalcomputeA.setYearto(fcaA.get(f).getYearto());
+//                                                    totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+//                                                    totalcomputeA.setTotalamount(String.valueOf(totalAmount));
+//                                                    totalcomputeList.add(totalcomputeA);
+
                                                 }
                                             }
                                         }
                                     }
                                 }
                             }
-
                             // SETTINGS OF FINAL COMPUTATION
                             FacilityComputedAmount totalcompute = new FacilityComputedAmount();
                             if (claimsSb > 0.00) {
@@ -1459,11 +1409,7 @@ public class Methods {
                             } else {
                                 totalcompute.setSb(String.valueOf(claimsSb));
                             }
-                            if (claims30percent > 0.00) {
-                                totalcompute.setThirty(String.valueOf(claims30percent / 3));
-                            } else {
-                                totalcompute.setThirty(String.valueOf(claims30percent));
-                            }
+                            totalcompute.setThirty(String.valueOf(0.00));
                             if (totalbaseamount > 0.00) {
                                 totalcompute.setTotalamount(String.valueOf(totalbaseamount / 3));
                             } else {
@@ -1498,12 +1444,13 @@ public class Methods {
                         result.setMessage(getPRO.getMessage());
                     }
                     break;
+                }
                 case "PRO": {//USERID IS PROCODE
                     ACRGBWSResult getHCPNUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
                     int claimCount = 0;
-                    double claims30percent = 0.00;
                     double claimsSb = 0.00;
                     double totalbaseamount = 0.00;
+
                     if (getHCPNUnder.isSuccess()) {
                         List<String> HCPNList = Arrays.asList(getHCPNUnder.getResult().split(","));
                         ArrayList<FacilityComputedAmount> computationList = new ArrayList<>();
@@ -1517,112 +1464,168 @@ public class Methods {
                                         List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
                                         for (int f = 0; f < fcaA.size(); f++) {
                                             //==== GET FACILITY USING HOSPITAL CODE
-                                            java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
-                                            java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
-                                            java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(f).getDatefiled());
-                                            SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
+//                                            java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
+//                                            java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
+//                                            java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(f).getDatefiled());
+//                                            SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
                                             //------------------------------------------------
-                                            double totalAmount = Double.parseDouble(fcaA.get(f).getTotalamount());
-                                            double Percent30 = Double.parseDouble(fcaA.get(f).getTotalamount()) * 0.30;
-                                            double Percent10w30 = (totalAmount + Percent30) * 0.10;
-                                            double Percent10n30 = totalAmount * 0.10;
-                                            totalbaseamount += Double.parseDouble(fcaA.get(f).getTotalamount());
-                                            claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                            double totalAmount = Double.parseDouble(fcaA.get(f).getTotalamount());
+//                                            double Percent30 = Double.parseDouble(fcaA.get(f).getTotalamount()) * 0.30;
+//                                            double Percent10w30 = (totalAmount + Percent30) * 0.10;
+//                                            double Percent10n30 = totalAmount * 0.10;
+//                                            totalbaseamount += Double.parseDouble(fcaA.get(f).getTotalamount());
+//                                            claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                             //------------------------------------------------     
-                                            FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+
                                             ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                                             if (getFacilityA.isSuccess()) {
+                                                double totalamount = 0.00;
+                                                FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
                                                 HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
                                                 //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                                if (utility.isValidZBenCode(fcaA.get(f).getC1rvcode())) {
-                                                } else if (utility.isValidZBenCode(fcaA.get(f).getC1icdcode())) {
-                                                } else {
+                                                if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode()).isSuccess()
+                                                        && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode()).isSuccess()) {
                                                     switch (hci.getHcilevel().toUpperCase().trim()) {
                                                         case "T1":
                                                         case "T2":
                                                         case "SH": {
-                                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                        claimsSb += Percent10n30;
-                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                    } else {
-                                                                        claims30percent += Percent30;
-                                                                        claimsSb += Percent10w30;
-                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                        totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                                    }
-                                                                } else {
-                                                                    claimsSb += Percent10n30;
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                }
-                                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                    claimsSb += Percent10n30;
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                                } else {
-                                                                    claimsSb += Percent10w30;
-                                                                    claims30percent += Percent30;
-                                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                    totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                                }
+                                                            if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                            } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                                             } else {
-                                                                claimsSb += Percent10n30;
-                                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                                totalcomputeA.setC1icdcode("");
+                                                                totalcomputeA.setC1rvcode("");
                                                             }
+                                                            if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                            } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                            } else {
+                                                                totalcomputeA.setC2icdcode("");
+                                                                totalcomputeA.setC2rvcode("");
+                                                            }
+                                                            double amountANDvolume = totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setThirty(String.valueOf(00));
+                                                            totalcomputeA.setSb(String.valueOf(amountANDvolume * 0.10));
+                                                            claimsSb += amountANDvolume * 0.10;
+
+//                                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+//                                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+//                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+//                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
+//                                                                        claimsSb += Percent10n30;
+//                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                                    } else {
+//                                                                        claims30percent += Percent30;
+//                                                                        claimsSb += Percent10w30;
+//                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                                        totalcomputeA.setSb(String.valueOf(Percent10w30));
+//                                                                    }
+//                                                                } else {
+//                                                                    claimsSb += Percent10n30;
+//                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                                }
+//                                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
+//                                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+//                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
+//                                                                    claimsSb += Percent10n30;
+//                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                                } else {
+//                                                                    claimsSb += Percent10w30;
+//                                                                    claims30percent += Percent30;
+//                                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                                    totalcomputeA.setSb(String.valueOf(Percent10w30));
+//                                                                }
+//                                                            } else {
+//                                                                claimsSb += Percent10n30;
+//                                                                totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                            }
                                                             break;
                                                         }
                                                         default: {
-                                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                                    } else {
-                                                                        claims30percent += Percent30;
-                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                                    }
-                                                                } else {
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                                }
-                                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
-                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
-                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                                } else {
-                                                                    claims30percent += Percent30;
-                                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                                }
+                                                            if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                            } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                                             } else {
-                                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                totalcomputeA.setSb(String.valueOf(0.00));
+                                                                totalcomputeA.setC1icdcode("");
+                                                                totalcomputeA.setC1rvcode("");
                                                             }
+
+                                                            if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                            } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                            } else {
+                                                                totalcomputeA.setC2icdcode("");
+                                                                totalcomputeA.setC2rvcode("");
+                                                            }
+                                                            totalcomputeA.setThirty(String.valueOf(00));
+                                                            totalcomputeA.setSb(String.valueOf(00));
+//                                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+//                                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+//                                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+//                                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
+//                                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                        totalcomputeA.setSb(String.valueOf(0.00));
+//                                                                    } else {
+//                                                                        claims30percent += Percent30;
+//                                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                                        totalcomputeA.setSb(String.valueOf(0.00));
+//                                                                    }
+//                                                                } else {
+//                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                    totalcomputeA.setSb(String.valueOf(0.00));
+//                                                                }
+//                                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
+//                                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1rvcode()).isSuccess()
+//                                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(f).getC1icdcode()).isSuccess()) {
+//                                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                    totalcomputeA.setSb(String.valueOf(0.00));
+//                                                                } else {
+//                                                                    claims30percent += Percent30;
+//                                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                                    totalcomputeA.setSb(String.valueOf(0.00));
+//                                                                }
+//                                                            } else {
+//                                                                totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                totalcomputeA.setSb(String.valueOf(0.00));
+//                                                            }
                                                             break;
                                                         }
                                                     }
                                                 }
-                                                totalbaseamount += totalAmount;
-                                                claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
                                                 totalcomputeA.setHospital(getFacilityA.getResult());
+                                                totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
                                                 totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
                                                 totalcomputeA.setYearto(fcaA.get(f).getYearto());
                                                 totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
-                                                totalcomputeA.setTotalamount(String.valueOf(totalAmount));
+                                                totalcomputeA.setTotalamount(String.valueOf(totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims())));
                                                 computationList.add(totalcomputeA);
+                                                totalbaseamount += totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                             }
-
                                         }
                                     }
                                 }
@@ -1635,11 +1638,7 @@ public class Methods {
                         } else {
                             totalcompute.setSb(String.valueOf(claimsSb));
                         }
-                        if (claims30percent > 0.00) {
-                            totalcompute.setThirty(String.valueOf(claims30percent / 3));
-                        } else {
-                            totalcompute.setThirty(String.valueOf(claims30percent));
-                        }
+                        totalcompute.setThirty(String.valueOf(0.00));
                         if (totalbaseamount > 0.00) {
                             totalcompute.setTotalamount(String.valueOf(totalbaseamount / 3));
                         } else {
@@ -1680,119 +1679,185 @@ public class Methods {
                     if (restA.isSuccess()) {
                         ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
                         int claimCount = 0;
-                        //double datesettingsclaimsValue = 0.00;
-                        double claims30percent = 0.00;
                         double claimsSb = 0.00;
                         double totalbaseamount = 0.00;
+
                         List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
                         //DATE SETTINGS AREA
-                        for (int datese = 0; datese < fcaA.size(); datese++) {
-                            FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                            ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(datese).getHospital());
+                        for (int f = 0; f < fcaA.size(); f++) {
+
+                            ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                             if (getFacilityA.isSuccess()) {
                                 //------------------------------------------------
-                                java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
-                                java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
-                                java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(datese).getDatefiled());
-                                SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
+//                                java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
+//                                java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
+//                                java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(datese).getDatefiled());
+//                                SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
                                 //------------------------------------------------
                                 HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
                                 //------------------------------------------------
-                                double totalAmount = Double.parseDouble(fcaA.get(datese).getTotalamount());
-                                double Percent30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
-                                double Percent10w30 = (totalAmount + Percent30) * 0.10;
-                                double Percent10n30 = totalAmount * 0.10;
+//                                double totalAmount = Double.parseDouble(fcaA.get(datese).getTotalamount());
+//                                double Percent30 = Double.parseDouble(fcaA.get(datese).getTotalamount()) * 0.30;
+//                                double Percent10w30 = (totalAmount + Percent30) * 0.10;
+//                                double Percent10n30 = totalAmount * 0.10;
                                 //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                if (utility.isValidZBenCode(fcaA.get(datese).getC1rvcode())) {
-                                } else if (utility.isValidZBenCode(fcaA.get(datese).getC1icdcode())) {
-                                } else {
+                                FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode()).isSuccess()
+                                        && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                    double totalamount = 0.00;
                                     switch (hci.getHcilevel().toUpperCase().trim()) {
                                         case "T1":
                                         case "T2":
                                         case "SH": {
-                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
-                                                        claimsSb += Percent10n30;
-                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                    } else {
-                                                        claims30percent += Percent30;
-                                                        claimsSb += Percent10w30;
-                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                        totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                    }
-                                                } else {
-                                                    claimsSb += Percent10n30;
-                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                }
-                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
-                                                    claimsSb += Percent10n30;
-                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                } else {
-                                                    claimsSb += Percent10w30;
-                                                    claims30percent += Percent30;
-                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                    totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                }
+                                            if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                            } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                             } else {
-                                                claimsSb += Percent10n30;
-                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                totalcomputeA.setC1icdcode("");
+                                                totalcomputeA.setC1rvcode("");
                                             }
+
+                                            if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                            } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                            } else {
+                                                totalcomputeA.setC2icdcode("");
+                                                totalcomputeA.setC2rvcode("");
+                                            }
+                                            double amountANDvolume = totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                            totalcomputeA.setThirty(String.valueOf(00));
+                                            totalcomputeA.setSb(String.valueOf(amountANDvolume * .10));
+                                            claimsSb += amountANDvolume * 0.10;
+
+//                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+//                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+//                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
+//                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
+//                                                        claimsSb += Percent10n30;
+//                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                    } else {
+//                                                        claims30percent += Percent30;
+//                                                        claimsSb += Percent10w30;
+//                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                        totalcomputeA.setSb(String.valueOf(Percent10w30));
+//                                                    }
+//                                                } else {
+//                                                    claimsSb += Percent10n30;
+//                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                }
+//                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
+//                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
+//                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
+//                                                    claimsSb += Percent10n30;
+//                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                    totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                } else {
+//                                                    claimsSb += Percent10w30;
+//                                                    claims30percent += Percent30;
+//                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                    totalcomputeA.setSb(String.valueOf(Percent10w30));
+//                                                }
+//                                            } else {
+//                                                claimsSb += Percent10n30;
+//                                                totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                            }
                                             break;
                                         }
                                         default: {
-                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
-                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                    } else {
-                                                        claims30percent += Percent30;
-                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                        totalcomputeA.setSb(String.valueOf(0.00));
-                                                    }
-
-                                                } else {
-                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                }
-                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
-                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
-                                                    totalcomputeA.setThirty(String.valueOf(0.00));
-                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                } else {
-                                                    claims30percent += Percent30;
-                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                    totalcomputeA.setSb(String.valueOf(0.00));
-                                                }
+                                            if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                            } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                             } else {
-                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                totalcomputeA.setSb(String.valueOf(0.00));
+                                                totalcomputeA.setC1icdcode("");
+                                                totalcomputeA.setC1rvcode("");
                                             }
+                                            if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                            } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                totalamount += Double.parseDouble(getCR.getAmount());
+                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                            } else {
+                                                totalcomputeA.setC2icdcode("");
+                                                totalcomputeA.setC2rvcode("");
+                                            }
+                                            totalcomputeA.setThirty(String.valueOf(00));
+                                            totalcomputeA.setSb(String.valueOf(00));
+//                                            if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+//                                                if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+//                                                    if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
+//                                                            || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
+//                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                        totalcomputeA.setSb(String.valueOf(0.00));
+//                                                    } else {
+//                                                        claims30percent += Percent30;
+//                                                        totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                        totalcomputeA.setSb(String.valueOf(0.00));
+//                                                    }
+//
+//                                                } else {
+//                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                    totalcomputeA.setSb(String.valueOf(0.00));
+//                                                }
+//                                            } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
+//                                                if (this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1rvcode()).isSuccess()
+//                                                        || this.ValidateExcludedCode(dataSource, fcaA.get(datese).getC1icdcode()).isSuccess()) {
+//                                                    totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                    totalcomputeA.setSb(String.valueOf(0.00));
+//                                                } else {
+//                                                    claims30percent += Percent30;
+//                                                    totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                    totalcomputeA.setSb(String.valueOf(0.00));
+//                                                }
+//                                            } else {
+//                                                totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                totalcomputeA.setSb(String.valueOf(0.00));
+//                                            }
                                             break;
                                         }
                                     }
+                                    totalcomputeA.setHospital(getFacilityA.getResult());
+                                    totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                    totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                    totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                    totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                    totalcomputeA.setTotalamount(String.valueOf(totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                    totalcomputeList.add(totalcomputeA);
+                                    totalbaseamount += totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                    claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                 }
-                                totalbaseamount += totalAmount;
-                                claimCount += Integer.parseInt(fcaA.get(datese).getTotalclaims());
-                                //-----------------------------------
-                                totalcomputeA.setTotalamount(String.valueOf(totalAmount));
-                                totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(datese).getTotalclaims())));
-                                //-------------------------------------------------
-                                totalcomputeA.setYearfrom(fcaA.get(datese).getYearfrom());
-                                totalcomputeA.setYearto(fcaA.get(datese).getYearto());
-                                totalcomputeA.setDatefiled(fcaA.get(datese).getDatefiled());
-                                totalcomputeA.setHospital(getFacilityA.getResult());
-                                totalcomputeList.add(totalcomputeA);
+//                                totalbaseamount += totalAmount;
+//                                claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                //-----------------------------------
+//                                totalcomputeA.setTotalamount(String.valueOf(totalAmount));
+//                                totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+//                                //-------------------------------------------------
+//                                totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+//                                totalcomputeA.setYearto(fcaA.get(f).getYearto());
+//                                totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+//                                totalcomputeA.setHospital(getFacilityA.getResult());
+//                                totalcomputeList.add(totalcomputeA);
+
                             }
                         }
 
@@ -1814,11 +1879,7 @@ public class Methods {
                         } else {
                             totalcompute.setTotalclaims(String.valueOf(claimCount));
                         }
-                        if (claims30percent > 0.00) {
-                            totalcompute.setThirty(String.valueOf(claims30percent / 3));
-                        } else {
-                            totalcompute.setThirty(String.valueOf(claims30percent));
-                        }
+                        totalcompute.setThirty(String.valueOf(0.00));
                         if (claimsSb > 0.00) {
                             totalcompute.setSb(String.valueOf(claimsSb / 3));
                         } else {
@@ -1841,124 +1902,194 @@ public class Methods {
                     break;
                 }
                 case "HCPN"://USERID IS HCPNCODE/ACCRENO
-                    //GET ALL FACILITY UNDER OF HCPN
+                //GET ALL FACILITY UNDER OF HCPN
+                {
                     ACRGBWSResult getFacilityUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
                     if (getFacilityUnder.isSuccess()) {
                         ArrayList<FacilityComputedAmount> totalcomputeHCPNList = new ArrayList<>();
                         List<String> hcflist = Arrays.asList(getFacilityUnder.getResult().split(","));
                         int claimCount = 0;
-                        //double datesettingsclaimsValue = 0.00;
-                        double claims30percent = 0.00;
+
                         double claimsSb = 0.00;
                         double totalbaseamount = 0.00;
                         for (int y = 0; y < hcflist.size(); y++) {
-                            FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                            ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, hcflist.get(y), datefrom.trim(), dateto.trim());
+
+                            ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, hcflist.get(y).trim(), datefrom.trim(), dateto.trim());
                             if (restC.isSuccess()) {
                                 //DATE SETTINGS
                                 List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
-                                for (int gets = 0; gets < fcaA.size(); gets++) {
+                                for (int f = 0; f < fcaA.size(); f++) {
                                     //GET FACILITY
-                                    ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(gets).getHospital());
+                                    ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital().trim());
                                     if (getHCI.isSuccess()) {
+                                        FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
                                         //------------------------------------------------
-                                        java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
-                                        java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
-                                        java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(gets).getDatefiled());
-                                        SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
+//                                        java.util.Date ConvertDate2024To = new SimpleDateFormat("MM-dd-yyyy").parse("02-13-2024");
+//                                        java.util.Date ConvertDate2024From = new SimpleDateFormat("MM-dd-yyyy").parse("01-01-2024");
+//                                        java.util.Date ClaimsDate = new SimpleDateFormat("MM-dd-yyyy").parse(fcaA.get(gets).getDatefiled());
+//                                        SimpleDateFormat YearFormat = new SimpleDateFormat("yyyy");
                                         //------------------------------------------------
                                         HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class);
-                                        double totalAmount = Double.parseDouble(fcaA.get(gets).getTotalamount());
-                                        double Percent30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
-                                        double Percent10w30 = (totalAmount + Percent30) * 0.10;
-                                        double Percent10n30 = totalAmount * 0.10;
+//                                        double totalAmount = Double.parseDouble(fcaA.get(gets).getTotalamount());
+//                                        double Percent30 = Double.parseDouble(fcaA.get(gets).getTotalamount()) * 0.30;
+//                                        double Percent10w30 = (totalAmount + Percent30) * 0.10;
+//                                        double Percent10n30 = totalAmount * 0.10;
                                         //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                        if (utility.isValidZBenCode(fcaA.get(gets).getC1rvcode())) {
-                                        } else if (utility.isValidZBenCode(fcaA.get(gets).getC1icdcode())) {
-                                        } else {
+                                        if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode()).isSuccess()
+                                                && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                            double totalamount = 0.00;
                                             switch (hci.getHcilevel().toUpperCase().trim()) {
                                                 case "T1":
                                                 case "T2":
                                                 case "SH": {
-                                                    if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
-                                                                claimsSb += Percent10n30;
-                                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                            } else {
-                                                                claims30percent += Percent30;
-                                                                claimsSb += Percent10w30;
-                                                                totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                                totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                            }
-                                                        } else {
-                                                            claimsSb += Percent10n30;
-                                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                        }
-
-                                                    } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
-                                                            claimsSb += Percent10n30;
-                                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
-                                                        } else {
-                                                            claims30percent += Percent30;
-                                                            claimsSb += Percent10w30;
-                                                            totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                            totalcomputeA.setSb(String.valueOf(Percent10w30));
-                                                        }
+                                                    if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                    } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                                     } else {
-                                                        claimsSb += Percent10n30;
-                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
+                                                        totalcomputeA.setC1icdcode("");
+                                                        totalcomputeA.setC1rvcode("");
                                                     }
+
+                                                    if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                    } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                    } else {
+                                                        totalcomputeA.setC2icdcode("");
+                                                        totalcomputeA.setC2rvcode("");
+                                                    }
+                                                    double amountANDvolume = totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                    totalcomputeA.setThirty(String.valueOf(00));
+                                                    totalcomputeA.setSb(String.valueOf(amountANDvolume * 0.10));
+                                                    claimsSb += amountANDvolume * 0.10;
+//                                                    if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+//                                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+//                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
+//                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
+//                                                                claimsSb += Percent10n30;
+//                                                                totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                            } else {
+//                                                                claims30percent += Percent30;
+//                                                                claimsSb += Percent10w30;
+//                                                                totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                                totalcomputeA.setSb(String.valueOf(Percent10w30));
+//                                                            }
+//                                                        } else {
+//                                                            claimsSb += Percent10n30;
+//                                                            totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                        }
+//
+//                                                    } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
+//                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
+//                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
+//                                                            claimsSb += Percent10n30;
+//                                                            totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                            totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                        } else {
+//                                                            claims30percent += Percent30;
+//                                                            claimsSb += Percent10w30;
+//                                                            totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                            totalcomputeA.setSb(String.valueOf(Percent10w30));
+//                                                        }
+//                                                    } else {
+//                                                        claimsSb += Percent10n30;
+//                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
+//                                                    }
+
                                                     break;
                                                 }
                                                 default: {
-                                                    if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
-                                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
-                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
-                                                                totalcomputeA.setThirty(String.valueOf(0.00));
-                                                                totalcomputeA.setSb(String.valueOf(0.00));
-                                                            } else {
-                                                                claims30percent += Percent30;
-                                                                totalcomputeA.setSb(String.valueOf(0.00));
-                                                                totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                            }
-                                                        } else {
-                                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                                            totalcomputeA.setSb(String.valueOf(0.00));
-                                                        }
-                                                    } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
-                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
-                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
-                                                            totalcomputeA.setThirty(String.valueOf(0.00));
-                                                            totalcomputeA.setSb(String.valueOf(0.00));
-                                                        } else {
-                                                            claims30percent += Percent30;
-                                                            totalcomputeA.setThirty(String.valueOf(Percent30));
-                                                            totalcomputeA.setSb(String.valueOf(0.00));
-                                                        }
+                                                    if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                    } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
                                                     } else {
-                                                        totalcomputeA.setThirty(String.valueOf(0.00));
-                                                        totalcomputeA.setSb(String.valueOf(0.00));
+                                                        totalcomputeA.setC1icdcode("");
+                                                        totalcomputeA.setC1rvcode("");
                                                     }
+
+                                                    if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                    } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                        CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode()).getResult(), CaseRate.class);
+                                                        totalamount += Double.parseDouble(getCR.getAmount());
+                                                        totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                    } else {
+                                                        totalcomputeA.setC2icdcode("");
+                                                        totalcomputeA.setC2rvcode("");
+                                                    }
+                                                    totalcomputeA.setThirty(String.valueOf(00));
+                                                    totalcomputeA.setSb(String.valueOf(00));
+//                                                    if (Integer.parseInt(YearFormat.format(ClaimsDate)) == 2024) {
+//                                                        if (ConvertDate2024From.compareTo(ClaimsDate) * ConvertDate2024To.compareTo(ClaimsDate) <= 0) {
+//                                                            if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
+//                                                                    || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
+//                                                                totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                                totalcomputeA.setSb(String.valueOf(0.00));
+//                                                            } else {
+//                                                                claims30percent += Percent30;
+//                                                                totalcomputeA.setSb(String.valueOf(0.00));
+//                                                                totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                            }
+//                                                        } else {
+//                                                            totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                            totalcomputeA.setSb(String.valueOf(0.00));
+//                                                        }
+//                                                    } else if (Integer.parseInt(YearFormat.format(ClaimsDate)) < 2024) {
+//                                                        if (this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1rvcode()).isSuccess()
+//                                                                || this.ValidateExcludedCode(dataSource, fcaA.get(gets).getC1icdcode()).isSuccess()) {
+//                                                            totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                            totalcomputeA.setSb(String.valueOf(0.00));
+//                                                        } else {
+//                                                            claims30percent += Percent30;
+//                                                            totalcomputeA.setThirty(String.valueOf(Percent30));
+//                                                            totalcomputeA.setSb(String.valueOf(0.00));
+//                                                        }
+//                                                    } else {
+//                                                        totalcomputeA.setThirty(String.valueOf(0.00));
+//                                                        totalcomputeA.setSb(String.valueOf(0.00));
+//                                                    }
                                                     break;
                                                 }
                                             }
+
+                                            totalcomputeA.setHospital(getHCI.getResult());
+                                            totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                            totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                            totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                            totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                            totalcomputeA.setTotalamount(String.valueOf(totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                            totalcomputeHCPNList.add(totalcomputeA);
+
+                                            totalbaseamount += totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                            claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                         }
-                                        claimCount += Integer.parseInt(fcaA.get(gets).getTotalclaims());
-                                        totalbaseamount += totalAmount;
-                                        totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(gets).getTotalclaims())));
-                                        totalcomputeA.setTotalamount(String.valueOf(totalAmount));
-                                        totalcomputeA.setHospital(getHCI.getResult());
-                                        totalcomputeA.setDatefiled(fcaA.get(gets).getDatefiled());
-                                        totalcomputeHCPNList.add(totalcomputeA);
+//                                        claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                        totalbaseamount += totalAmount;
+//                                        totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+//                                        totalcomputeA.setTotalamount(String.valueOf(totalAmount));
+//                                        totalcomputeA.setHospital(getHCI.getResult());
+//                                        totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+//                                        totalcomputeHCPNList.add(totalcomputeA);
+
                                     }
 
                                 }
@@ -1970,11 +2101,7 @@ public class Methods {
                         } else {
                             totalcomputeHCPNA.setSb(String.valueOf(claimsSb));
                         }
-                        if (claims30percent > 0.00) {
-                            totalcomputeHCPNA.setThirty(String.valueOf(claims30percent / 3));
-                        } else {
-                            totalcomputeHCPNA.setThirty(String.valueOf(claims30percent));
-                        }
+                        totalcomputeHCPNA.setThirty(String.valueOf(0.00));
                         if (totalbaseamount > 0.00) {
                             totalcomputeHCPNA.setTotalamount(String.valueOf(totalbaseamount / 3));
                         } else {
@@ -2007,9 +2134,9 @@ public class Methods {
                         result.setMessage(getFacilityUnder.getMessage());
                     }
                     break;
+                }
             }
-
-        } catch (IOException | ParseException ex) {
+        } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -2018,7 +2145,8 @@ public class Methods {
 
     // ACR GB USER ACTIVITY LOGS
 //    public ACRGBWSResult ActivityLogs(final DataSource dataSource, final UserActivity useractivity) {
-    public ACRGBWSResult ActivityLogs(final DataSource dataSource,
+    public ACRGBWSResult ActivityLogs(
+            final DataSource dataSource,
             final String actby,
             final String details,
             final String stats) {
@@ -2051,7 +2179,9 @@ public class Methods {
     }
 
     // ACR GB USER ACTIVITY LOGS WITH PARAMETER
-    public ACRGBWSResult GetLogsWithID(final DataSource dataSource, final String userid) {
+    public ACRGBWSResult GetLogsWithID(
+            final DataSource dataSource,
+            final String userid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2088,7 +2218,8 @@ public class Methods {
     }
 
     //GET AMOUNT PER FACILITY
-    public ACRGBWSResult GetAmountPerFacility(final DataSource dataSource,
+    public ACRGBWSResult GetAmountPerFacility(
+            final DataSource dataSource,
             final String uaccreno,
             final String datefrom,
             final String dateto) {
@@ -2166,7 +2297,9 @@ public class Methods {
     }
 
     //INSERT MB REQUEST
-    public ACRGBWSResult InsertMBRequest(DataSource dataSource, final MBRequestSummary mbrequestsummry) {
+    public ACRGBWSResult InsertMBRequest(
+            final DataSource dataSource,
+            final MBRequestSummary mbrequestsummry) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2232,7 +2365,9 @@ public class Methods {
     }
 
     // GET ALL REQUEST USING MB USERID ACCOUNT
-    public ACRGBWSResult FetchMBRequest(final DataSource dataSource, final String userid) {
+    public ACRGBWSResult FetchMBRequest(
+            final DataSource dataSource,
+            final String userid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2275,63 +2410,63 @@ public class Methods {
     }
 
     //GET ACCESS LEVEL USING USERID
-    public ACRGBWSResult GETROLEWITHID(final DataSource dataSource, final String pid, final String tags) {
+    public ACRGBWSResult GETROLEWITHID(
+            final DataSource dataSource,
+            final String pid,
+            final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try {
-            if (!utility.IsValidNumber(pid)) {
-                result.setMessage("INVALID NUMBER FORMAT");
-            } else {
-                ACRGBWSResult restA = this.GETROLE(dataSource, pid, tags);
-                if (restA.isSuccess()) {
-                    ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), tags);
-                    List<String> accessidlist = Arrays.asList(restB.getResult().split(","));
-                    ArrayList<ManagingBoard> mblist = new ArrayList<>();
-                    ArrayList<HealthCareFacility> facilitylist = new ArrayList<>();
-                    if (accessidlist.size() > 0) {
-                        for (int x = 0; x < accessidlist.size(); x++) {
-                            ACRGBWSResult getmbresult = this.GETMBWITHID(dataSource, accessidlist.get(x));
-                            if (getmbresult.isSuccess()) {
-                                ManagingBoard managingboard = utility.ObjectMapper().readValue(getmbresult.getResult(), ManagingBoard.class);
-                                //GET FALCITY UNDER EVERY MB
-                                ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, managingboard.getControlnumber(), tags);
-                                List<String> facilityidlist = Arrays.asList(restC.getResult().split(","));
-                                for (int y = 0; y < facilityidlist.size(); y++) {
-                                    ACRGBWSResult getfacility = fm.GETFACILITYID(dataSource, facilityidlist.get(y));
-                                    if (getfacility.isSuccess()) {
-                                        HealthCareFacility facility = utility.ObjectMapper().readValue(getfacility.getResult(), HealthCareFacility.class);
-                                        HealthCareFacility newfacility = new HealthCareFacility();
-                                        newfacility.setAmount(facility.getAmount());
-                                        newfacility.setType(facility.getType());
-                                        newfacility.setCreatedby(facility.getCreatedby());
-                                        newfacility.setDatecreated(facility.getDatecreated());
-                                        newfacility.setHcfaddress(facility.getHcfaddress());
-                                        newfacility.setHcfcode(facility.getHcfcode());
-                                        newfacility.setHcfid(facility.getHcfid());
-                                        newfacility.setHcfname(facility.getHcfname());
-                                        newfacility.setMb(utility.ObjectMapper().writeValueAsString(managingboard));
-                                        facilitylist.add(newfacility);
-                                    }
+            ACRGBWSResult restA = this.GETROLE(dataSource, pid, tags);
+            if (restA.isSuccess()) {
+                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), tags);
+                List<String> accessidlist = Arrays.asList(restB.getResult().split(","));
+                ArrayList<ManagingBoard> mblist = new ArrayList<>();
+                ArrayList<HealthCareFacility> facilitylist = new ArrayList<>();
+                if (accessidlist.size() > 0) {
+                    for (int x = 0; x < accessidlist.size(); x++) {
+                        ACRGBWSResult getmbresult = this.GETMBWITHID(dataSource, accessidlist.get(x));
+                        if (getmbresult.isSuccess()) {
+                            ManagingBoard managingboard = utility.ObjectMapper().readValue(getmbresult.getResult(), ManagingBoard.class);
+                            //GET FALCITY UNDER EVERY MB
+                            ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, managingboard.getControlnumber(), tags);
+                            List<String> facilityidlist = Arrays.asList(restC.getResult().split(","));
+                            for (int y = 0; y < facilityidlist.size(); y++) {
+                                ACRGBWSResult getfacility = fm.GETFACILITYID(dataSource, facilityidlist.get(y));
+                                if (getfacility.isSuccess()) {
+                                    HealthCareFacility facility = utility.ObjectMapper().readValue(getfacility.getResult(), HealthCareFacility.class);
+                                    HealthCareFacility newfacility = new HealthCareFacility();
+                                    newfacility.setAmount(facility.getAmount());
+                                    newfacility.setType(facility.getType());
+                                    newfacility.setCreatedby(facility.getCreatedby());
+                                    newfacility.setDatecreated(facility.getDatecreated());
+                                    newfacility.setHcfaddress(facility.getHcfaddress());
+                                    newfacility.setHcfcode(facility.getHcfcode());
+                                    newfacility.setHcfid(facility.getHcfid());
+                                    newfacility.setHcfname(facility.getHcfname());
+                                    newfacility.setMb(utility.ObjectMapper().writeValueAsString(managingboard));
+                                    facilitylist.add(newfacility);
                                 }
-                                mblist.add(managingboard);
                             }
+                            mblist.add(managingboard);
                         }
-                    } else {
-                        result.setMessage("NO DATA FOUND");
-                    }
-                    if (mblist.size() > 0) {
-                        result.setResult(utility.ObjectMapper().writeValueAsString(facilitylist));
-                        result.setMessage("OK");
-                        result.setSuccess(true);
-                    } else {
-                        result.setMessage("NO DATA FOUND");
                     }
                 } else {
                     result.setMessage("NO DATA FOUND");
                 }
+                if (mblist.size() > 0) {
+                    result.setResult(utility.ObjectMapper().writeValueAsString(facilitylist));
+                    result.setMessage("OK");
+                    result.setSuccess(true);
+                } else {
+                    result.setMessage("NO DATA FOUND");
+                }
+            } else {
+                result.setMessage("NO DATA FOUND");
             }
+
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2383,7 +2518,9 @@ public class Methods {
 //        return result;
 //    }
     //GET MB WITH ID
-    public ACRGBWSResult GETMBWITHID(final DataSource dataSource, final String pid) {
+    public ACRGBWSResult GETMBWITHID(
+            final DataSource dataSource,
+            final String pid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2427,7 +2564,8 @@ public class Methods {
     }
 
     // REMOVED ACCESS LEVEL USING ROLE INDEX
-    public ACRGBWSResult REMOVEDROLEINDEX(final DataSource datasource,
+    public ACRGBWSResult REMOVEDROLEINDEX(
+            final DataSource datasource,
             final String userid,
             final String accessid,
             final String createdby) {
@@ -2475,69 +2613,67 @@ public class Methods {
     }
 
     //GET MB WITH ID
-    public ACRGBWSResult GETALLMBWITHPROID(final DataSource dataSource, final String proid) {
+    public ACRGBWSResult GETALLMBWITHPROID(
+            final DataSource dataSource,
+            final String proid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            if (!utility.IsValidNumber(proid)) {
-                result.setMessage("INVALID NUMBER FORMAT");
-            } else {
-                ACRGBWSResult restA = this.GETROLE(dataSource, proid.trim(), "ACTIVE");
-                // System.out.println(restA);
-                ArrayList<ManagingBoard> mblist = new ArrayList<>();
-                if (restA.isSuccess()) {
-                    ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult().trim(), "ACTIVE");
-                    //  System.out.println(restB);
-                    List<String> fchlist = Arrays.asList(restB.getResult().split(","));
-                    for (int x = 0; x < fchlist.size(); x++) {
-                        //---------------------------------------------------- 
-                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
-                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                        statement.setString("pid", fchlist.get(x).trim());
-                        statement.execute();
-                        ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                        if (resultset.next()) {
-                            //--------------------------------------------------------
-                            ManagingBoard mb = new ManagingBoard();
-                            mb.setMbid(resultset.getString("MBID"));
-                            mb.setMbname(resultset.getString("MBNAME"));
-                            mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
-                            ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                            if (creator.isSuccess()) {
-                                UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
-                                mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                            } else {
-                                mb.setCreatedby("N/A");
-                            }
-                            mb.setStatus(resultset.getString("STATUS"));
-                            mb.setControlnumber(resultset.getString("CONNUMBER"));
-                            mb.setBankaccount(resultset.getString("BANKACCOUNT"));
-                            mb.setBankname(resultset.getString("BANKNAME"));
-                            mb.setAddress(resultset.getString("ADDRESS"));
-                            //GET ACCREDITATION USING CODE
-                            ACRGBWSResult accreResult = fm.GETACCREDITATION(dataSource, resultset.getString("CONNUMBER").trim());
-                            if (accreResult.isSuccess()) {
-                                Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class);
-                                mb.setLicensedatefrom(accree.getDatefrom());
-                                mb.setLicensedateto(accree.getDateto());
-                            } else {
-                                mb.setLicensedatefrom(accreResult.getMessage());
-                                mb.setLicensedateto(accreResult.getMessage());
-                            }
-                            mblist.add(mb);
-                            //------------------------------------------------------
+            ACRGBWSResult restA = this.GETROLE(dataSource, proid.trim(), "ACTIVE");
+            // System.out.println(restA);
+            ArrayList<ManagingBoard> mblist = new ArrayList<>();
+            if (restA.isSuccess()) {
+                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult().trim(), "ACTIVE");
+                //  System.out.println(restB);
+                List<String> fchlist = Arrays.asList(restB.getResult().split(","));
+                for (int x = 0; x < fchlist.size(); x++) {
+                    //---------------------------------------------------- 
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                    statement.setString("pid", fchlist.get(x).trim());
+                    statement.execute();
+                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                    if (resultset.next()) {
+                        //--------------------------------------------------------
+                        ManagingBoard mb = new ManagingBoard();
+                        mb.setMbid(resultset.getString("MBID"));
+                        mb.setMbname(resultset.getString("MBNAME"));
+                        mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                        ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                        if (creator.isSuccess()) {
+                            UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                            mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                        } else {
+                            mb.setCreatedby("N/A");
                         }
+                        mb.setStatus(resultset.getString("STATUS"));
+                        mb.setControlnumber(resultset.getString("CONNUMBER"));
+                        mb.setBankaccount(resultset.getString("BANKACCOUNT"));
+                        mb.setBankname(resultset.getString("BANKNAME"));
+                        mb.setAddress(resultset.getString("ADDRESS"));
+                        //GET ACCREDITATION USING CODE
+                        ACRGBWSResult accreResult = fm.GETACCREDITATION(dataSource, resultset.getString("CONNUMBER").trim());
+                        if (accreResult.isSuccess()) {
+                            Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class);
+                            mb.setLicensedatefrom(accree.getDatefrom());
+                            mb.setLicensedateto(accree.getDateto());
+                        } else {
+                            mb.setLicensedatefrom(accreResult.getMessage());
+                            mb.setLicensedateto(accreResult.getMessage());
+                        }
+                        mblist.add(mb);
+                        //------------------------------------------------------
                     }
                 }
-                if (mblist.size() > 0) {
-                    result.setMessage("OK");
-                    result.setSuccess(true);
-                    result.setResult(utility.ObjectMapper().writeValueAsString(mblist));
-                } else {
-                    result.setMessage("NO DATA FOUND");
-                }
+            }
+            if (mblist.size() > 0) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(mblist));
+            } else {
+                result.setMessage("NO DATA FOUND");
             }
 
         } catch (SQLException | IOException ex) {
@@ -2548,88 +2684,18 @@ public class Methods {
     }
 
     //GET MB WITH ID
-    public ACRGBWSResult GETALLMBWITHPROIDFORLEDGER(final DataSource dataSource, final String proid) {
+    public ACRGBWSResult GETALLMBWITHPROIDFORLEDGER(
+            final DataSource dataSource,
+            final String proid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            if (!utility.IsValidNumber(proid)) {
-                result.setMessage("INVALID NUMBER FORMAT");
-            } else {
-                ACRGBWSResult restA = this.GETROLE(dataSource, proid, "ACTIVE");
-                ArrayList<ManagingBoard> mblist = new ArrayList<>();
-                if (restA.isSuccess()) {
-                    ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), "INACTIVE");
-                    List<String> fchlist = Arrays.asList(restB.getResult().split(","));
-                    for (int x = 0; x < fchlist.size(); x++) {
-                        //---------------------------------------------------- 
-                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
-                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                        statement.setString("pid", fchlist.get(x));
-                        statement.execute();
-                        ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                        while (resultset.next()) {
-                            //--------------------------------------------------------
-                            ManagingBoard mb = new ManagingBoard();
-                            mb.setMbid(resultset.getString("MBID"));
-                            mb.setMbname(resultset.getString("MBNAME"));
-                            mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
-                            ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                            if (creator.isSuccess()) {
-                                UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
-                                mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
-                            } else {
-                                mb.setCreatedby("N/A");
-                            }
-                            mb.setStatus(resultset.getString("STATUS"));
-                            mb.setControlnumber(resultset.getString("CONNUMBER"));
-                            mb.setBankaccount(resultset.getString("BANKACCOUNT"));
-                            mb.setBankname(resultset.getString("BANKNAME"));
-                            mb.setAddress(resultset.getString("ADDRESS"));
-                            //GET ACCREDITATION USING CODE
-                            ACRGBWSResult accreResult = fm.GETACCREDITATION(dataSource, resultset.getString("CONNUMBER"));
-                            if (accreResult.isSuccess()) {
-                                Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class);
-                                mb.setLicensedatefrom(accree.getDatefrom());
-                                mb.setLicensedateto(accree.getDateto());
-                            } else {
-                                mb.setLicensedatefrom(accreResult.getMessage());
-                                mb.setLicensedateto(accreResult.getMessage());
-                            }
-                            mblist.add(mb);
-                            //------------------------------------------------------
-                        }
-                    }
-                }
-                if (mblist.size() > 0) {
-                    result.setMessage("OK");
-                    result.setSuccess(true);
-                    result.setResult(utility.ObjectMapper().writeValueAsString(mblist));
-                } else {
-                    result.setMessage("NO DATA FOUND");
-                }
-            }
-
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
-    //GET MB USING PROCODE
-    public ACRGBWSResult GETALLMBWITHPROCODE(final DataSource dataSource, final String proid, final String tags) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = dataSource.getConnection()) {
-            if (!utility.IsValidNumber(proid)) {
-                result.setMessage("INVALID NUMBER FORMAT");
-            } else {
-                ArrayList<ManagingBoard> mblist = new ArrayList<>();
-                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, proid, tags);
+            ACRGBWSResult restA = this.GETROLE(dataSource, proid, "ACTIVE");
+            ArrayList<ManagingBoard> mblist = new ArrayList<>();
+            if (restA.isSuccess()) {
+                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), "INACTIVE");
                 List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                 for (int x = 0; x < fchlist.size(); x++) {
                     //---------------------------------------------------- 
@@ -2649,18 +2715,14 @@ public class Methods {
                             UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
                             mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                         } else {
-                            mb.setCreatedby("DATA NOT FOUND");
+                            mb.setCreatedby("N/A");
                         }
                         mb.setStatus(resultset.getString("STATUS"));
                         mb.setControlnumber(resultset.getString("CONNUMBER"));
                         mb.setBankaccount(resultset.getString("BANKACCOUNT"));
                         mb.setBankname(resultset.getString("BANKNAME"));
                         mb.setAddress(resultset.getString("ADDRESS"));
-                        //-----------------------------------------------------
-                        ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("CONNUMBER"), tags.toUpperCase().trim());
-//                        List<String> hcfcodeList = Arrays.asList(reastC.getResult().split(","));
-//                        Double totaldiff = 0.00;
-                        mb.setBaseamount(String.valueOf(0.00));
+                        //GET ACCREDITATION USING CODE
                         ACRGBWSResult accreResult = fm.GETACCREDITATION(dataSource, resultset.getString("CONNUMBER"));
                         if (accreResult.isSuccess()) {
                             Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class);
@@ -2674,15 +2736,84 @@ public class Methods {
                         //------------------------------------------------------
                     }
                 }
-                if (mblist.size() > 0) {
-                    result.setMessage("OK");
-                    result.setSuccess(true);
-                    result.setResult(utility.ObjectMapper().writeValueAsString(mblist));
-                } else {
-                    result.setMessage("NO DATA FOUND");
+            }
+            if (mblist.size() > 0) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(mblist));
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET MB USING PROCODE
+    public ACRGBWSResult GETALLMBWITHPROCODE(
+            final DataSource dataSource,
+            final String proid,
+            final String tags) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            ArrayList<ManagingBoard> mblist = new ArrayList<>();
+            ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, proid, tags);
+            List<String> fchlist = Arrays.asList(restB.getResult().split(","));
+            for (int x = 0; x < fchlist.size(); x++) {
+                //---------------------------------------------------- 
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                statement.setString("pid", fchlist.get(x));
+                statement.execute();
+                ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                while (resultset.next()) {
+                    //--------------------------------------------------------
+                    ManagingBoard mb = new ManagingBoard();
+                    mb.setMbid(resultset.getString("MBID"));
+                    mb.setMbname(resultset.getString("MBNAME"));
+                    mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                    ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                    if (creator.isSuccess()) {
+                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                        mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+                    } else {
+                        mb.setCreatedby("DATA NOT FOUND");
+                    }
+                    mb.setStatus(resultset.getString("STATUS"));
+                    mb.setControlnumber(resultset.getString("CONNUMBER"));
+                    mb.setBankaccount(resultset.getString("BANKACCOUNT"));
+                    mb.setBankname(resultset.getString("BANKNAME"));
+                    mb.setAddress(resultset.getString("ADDRESS"));
+                    //-----------------------------------------------------
+                    ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("CONNUMBER"), tags.toUpperCase().trim());
+//                        List<String> hcfcodeList = Arrays.asList(reastC.getResult().split(","));
+//                        Double totaldiff = 0.00;
+                    mb.setBaseamount(String.valueOf(0.00));
+                    ACRGBWSResult accreResult = fm.GETACCREDITATION(dataSource, resultset.getString("CONNUMBER"));
+                    if (accreResult.isSuccess()) {
+                        Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class);
+                        mb.setLicensedatefrom(accree.getDatefrom());
+                        mb.setLicensedateto(accree.getDateto());
+                    } else {
+                        mb.setLicensedatefrom(accreResult.getMessage());
+                        mb.setLicensedateto(accreResult.getMessage());
+                    }
+                    mblist.add(mb);
+                    //------------------------------------------------------
                 }
             }
-
+            if (mblist.size() > 0) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(mblist));
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2691,48 +2822,45 @@ public class Methods {
     }
 
     //GET FACILITY WITH MBID
-    public ACRGBWSResult GETALLFACILITYWITHMBID(final DataSource dataSource,
-            final String proid, final String tags) {
+    public ACRGBWSResult GETALLFACILITYWITHMBID(
+            final DataSource dataSource,
+            final String proid,
+            final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            if (!utility.IsValidNumber(proid)) {
-                result.setMessage("INVALID NUMBER FORMAT");
-            } else {
-                ACRGBWSResult restA = this.GETROLEMULITPLE(dataSource, proid, tags.toUpperCase().trim());
-                List<String> resultlist = Arrays.asList(restA.getResult().split(","));
-                ArrayList<HealthCareFacility> fchlist = new ArrayList<>();
-                for (int x = 0; x < resultlist.size(); x++) {
-                    //---------------------------------------------------- 
-                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:pid); end;");
-                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                    statement.setString("pid", resultlist.get(x).trim());
-                    statement.execute();
-                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                    while (resultset.next()) {
-                        //--------------------------------------------------------
-                        HealthCareFacility hcf = new HealthCareFacility();
-                        hcf.setHcfname(resultset.getString("HCFNAME"));
-                        hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
-                        hcf.setHcfcode(resultset.getString("HCFCODE"));
-                        hcf.setType(resultset.getString("HCFTYPE"));
-                        hcf.setHcilevel(resultset.getString("HCILEVEL"));
-                        fchlist.add(hcf);
-                        //------------------------------------------------------
-                    }
+            ACRGBWSResult restA = this.GETROLEMULITPLE(dataSource, proid, tags.toUpperCase().trim());
+            List<String> resultlist = Arrays.asList(restA.getResult().split(","));
+            ArrayList<HealthCareFacility> fchlist = new ArrayList<>();
+            for (int x = 0; x < resultlist.size(); x++) {
+                //---------------------------------------------------- 
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:pid); end;");
+                statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                statement.setString("pid", resultlist.get(x).trim());
+                statement.execute();
+                ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                while (resultset.next()) {
+                    //--------------------------------------------------------
+                    HealthCareFacility hcf = new HealthCareFacility();
+                    hcf.setHcfname(resultset.getString("HCFNAME"));
+                    hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
+                    hcf.setHcfcode(resultset.getString("HCFCODE"));
+                    hcf.setType(resultset.getString("HCFTYPE"));
+                    hcf.setHcilevel(resultset.getString("HCILEVEL"));
+                    fchlist.add(hcf);
+                    //------------------------------------------------------
                 }
-                if (fchlist.size() > 0) {
-                    result.setMessage("OK");
-                    result.setSuccess(true);
-                    result.setResult(utility.ObjectMapper().writeValueAsString(fchlist));
-                } else {
-                    result.setMessage("NO DATA FOUND");
-                }
-
-                //----------------------------------------------------------
             }
+            if (fchlist.size() > 0) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(fchlist));
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+            //----------------------------------------------------------
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2740,7 +2868,9 @@ public class Methods {
         return result;
     }
 
-    public ACRGBWSResult GetProWithPROID(final DataSource dataSource, final String pproid) {
+    public ACRGBWSResult GetProWithPROID(
+            final DataSource dataSource,
+            final String pproid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2775,7 +2905,9 @@ public class Methods {
         return result;
     }
 
-    public ACRGBWSResult GETROLE(final DataSource dataSource, final String puserid,
+    public ACRGBWSResult GETROLE(
+            final DataSource dataSource,
+            final String puserid,
             final String utags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -2802,8 +2934,10 @@ public class Methods {
         return result;
     }
 
-    public ACRGBWSResult GETROLEMULITPLE(final DataSource dataSource,
-            final String puserid, final String utags) {
+    public ACRGBWSResult GETROLEMULITPLE(
+            final DataSource dataSource,
+            final String puserid,
+            final String utags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2833,7 +2967,45 @@ public class Methods {
         return result;
     }
 
-    public ACRGBWSResult GETROLEREVERESE(final DataSource dataSource, final String puserid, final String utags) {
+    public ACRGBWSResult GETROLEWITHIDANDNOTEMPTY(
+            final DataSource dataSource,
+            final String utags,
+            final String pid,
+            final String ucondate) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDANDNOTEMPTY(:utags,:pid,:ucondate); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("utags", utags.trim());
+            statement.setString("pid", pid.trim());
+            statement.setString("ucondate", ucondate.trim());
+            statement.execute();
+            ArrayList<String> listresult = new ArrayList<>();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                listresult.add(resultset.getString("ACCESSID"));
+            }
+            if (listresult.size() > 0) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(String.join(",", listresult));
+            } else {
+                result.setMessage("N/A");
+            }
+        } catch (SQLException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    public ACRGBWSResult GETROLEREVERESE(
+            final DataSource dataSource,
+            final String puserid,
+            final String utags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -2859,8 +3031,10 @@ public class Methods {
         return result;
     }
 
-    public ACRGBWSResult GETROLEREVERESEMULTIPLE(final DataSource dataSource,
-            final String puserid, final String utags) {
+    public ACRGBWSResult GETROLEREVERESEMULTIPLE(
+            final DataSource dataSource,
+            final String puserid,
+            final String utags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -3060,126 +3234,123 @@ public class Methods {
     }
 
     //GET COMPUTED REMAINING BALANCE FOR TERMINATED CONTRACT PER FACILITY
-    public ACRGBWSResult GetRemainingBalanceForTerminatedContract(final DataSource dataSource, final String userid,
-            final String tags) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ArrayList<Contract> contractlist = new ArrayList<>();
-        try {
-            //GET FACILITY UNDER PRO LEVEL USING USERID ACCOUNT
-            ACRGBWSResult restA = this.GETROLE(dataSource, userid, tags);//GET PRO ID USING USER ID
-            if (restA.isSuccess()) {
-                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), tags);//GET MB UNDER PRO USING PRO ID
-                if (restB.isSuccess()) {
-                    List<String> restBList = Arrays.asList(restB.getResult().split(","));
-                    for (int x = 0; x < restBList.size(); x++) {
-                        ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, restBList.get(x), tags);//GET MB UNDER PRO USING PRO ID
-                        if (restC.isSuccess()) {
-                            List<String> restCList = Arrays.asList(restC.getResult().split(","));
-                            for (int y = 0; y < restCList.size(); y++) {
-                                ACRGBWSResult conResult = fm.GetTerminateContract(dataSource, restCList.get(y));
-                                if (conResult.isSuccess()) {
-                                    Contract restD = utility.ObjectMapper().readValue(conResult.getResult(), Contract.class);
-                                    contractlist.add(restD);
-                                }
-                            }
-                            if (contractlist.isEmpty()) {
-                                result.setMessage("N/A ");
-                            } else {
-                                result.setMessage("OK");
-                                result.setSuccess(true);
-                                result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
-                            }
-                        } else {
-                            result.setMessage("N/A ");
-                        }
-                    }
-                } else {
-                    result.setMessage("N/A ");
-                }
-            } else {
-                result.setMessage("N/A ");
-            }
-
-        } catch (IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+//    public ACRGBWSResult GetRemainingBalanceForTerminatedContract(final DataSource dataSource, final String userid,
+//            final String tags) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ArrayList<Contract> contractlist = new ArrayList<>();
+//        try {
+//            //GET FACILITY UNDER PRO LEVEL USING USERID ACCOUNT
+//            ACRGBWSResult restA = this.GETROLE(dataSource, userid, tags);//GET PRO ID USING USER ID
+//            if (restA.isSuccess()) {
+//                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), tags);//GET MB UNDER PRO USING PRO ID
+//                if (restB.isSuccess()) {
+//                    List<String> restBList = Arrays.asList(restB.getResult().split(","));
+//                    for (int x = 0; x < restBList.size(); x++) {
+//                        ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, restBList.get(x), tags);//GET MB UNDER PRO USING PRO ID
+//                        if (restC.isSuccess()) {
+//                            List<String> restCList = Arrays.asList(restC.getResult().split(","));
+//                            for (int y = 0; y < restCList.size(); y++) {
+//                                ACRGBWSResult conResult = fm.GetTerminateContract(dataSource, restCList.get(y));
+//                                if (conResult.isSuccess()) {
+//                                    Contract restD = utility.ObjectMapper().readValue(conResult.getResult(), Contract.class);
+//                                    contractlist.add(restD);
+//                                }
+//                            }
+//                            if (contractlist.isEmpty()) {
+//                                result.setMessage("N/A ");
+//                            } else {
+//                                result.setMessage("OK");
+//                                result.setSuccess(true);
+//                                result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
+//                            }
+//                        } else {
+//                            result.setMessage("N/A ");
+//                        }
+//                    }
+//                } else {
+//                    result.setMessage("N/A ");
+//                }
+//            } else {
+//                result.setMessage("N/A ");
+//            }
+//
+//        } catch (IOException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
     //GET TERMINATED CONTRACT OF APEX FACILITY
-    public ACRGBWSResult GetRemainingBalanceForTerminatedContractApex(final DataSource dataSource) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ArrayList<Contract> contractlist = new ArrayList<>();
-        try {
-            //GET FACILITY UNDER PRO LEVEL USING USERID ACCOUNT
-            ACRGBWSResult apexResult = this.GETAPEXFACILITY(dataSource);
-            if (apexResult.isSuccess()) {
-                List<HealthCareFacility> hcfList = Arrays.asList(utility.ObjectMapper().readValue(apexResult.getResult(), HealthCareFacility[].class));
-                for (int v = 0; v < hcfList.size(); v++) {
-                    ACRGBWSResult conResult = fm.GetTerminateContract(dataSource, hcfList.get(v).getHcfcode());
-                    if (conResult.isSuccess()) {
-                        Contract restA = utility.ObjectMapper().readValue(conResult.getResult(), Contract.class);
-                        contractlist.add(restA);
-                    }
-                }
-            }
-            if (contractlist.isEmpty()) {
-                result.setMessage("N/A ");
-            } else {
-                result.setMessage("OK");
-                result.setSuccess(true);
-                result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
-            }
-
-        } catch (IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+//    public ACRGBWSResult GetRemainingBalanceForTerminatedContractApex(final DataSource dataSource) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ArrayList<Contract> contractlist = new ArrayList<>();
+//        try {
+//            //GET FACILITY UNDER PRO LEVEL USING USERID ACCOUNT
+//            ACRGBWSResult apexResult = this.GETAPEXFACILITY(dataSource);
+//            if (apexResult.isSuccess()) {
+//                List<HealthCareFacility> hcfList = Arrays.asList(utility.ObjectMapper().readValue(apexResult.getResult(), HealthCareFacility[].class));
+//                for (int v = 0; v < hcfList.size(); v++) {
+//                    ACRGBWSResult conResult = fm.GetTerminateContract(dataSource, hcfList.get(v).getHcfcode());
+//                    if (conResult.isSuccess()) {
+//                        Contract restA = utility.ObjectMapper().readValue(conResult.getResult(), Contract.class);
+//                        contractlist.add(restA);
+//                    }
+//                }
+//            }
+//            if (contractlist.isEmpty()) {
+//                result.setMessage("N/A ");
+//            } else {
+//                result.setMessage("OK");
+//                result.setSuccess(true);
+//                result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
+//            }
+//
+//        } catch (IOException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
     //GET END CONTRACT OF APEX FACILITY
-    public ACRGBWSResult GetRemainingBalanceForEndContractApex(final DataSource dataSource) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ArrayList<Contract> contractlist = new ArrayList<>();
-        try {
-            //GET FACILITY UNDER PRO LEVEL USING USERID ACCOUNT
-            ACRGBWSResult apexResult = this.GETAPEXFACILITY(dataSource);
-            if (apexResult.isSuccess()) {
-                List<HealthCareFacility> hcfList = Arrays.asList(utility.ObjectMapper().readValue(apexResult.getResult(), HealthCareFacility[].class));
-                for (int v = 0; v < hcfList.size(); v++) {
-                    ACRGBWSResult conResult = fm.GetEndContract(dataSource, hcfList.get(v).getHcfcode());
-                    if (conResult.isSuccess()) {
-                        Contract restA = utility.ObjectMapper().readValue(conResult.getResult(), Contract.class);
-                        contractlist.add(restA);
-                    }
-                }
-            }
-            if (contractlist.isEmpty()) {
-                result.setMessage("N/A");
-            } else {
-                result.setMessage("OK");
-                result.setSuccess(true);
-                result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
-            }
-
-        } catch (IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+//    public ACRGBWSResult GetRemainingBalanceForEndContractApex(final DataSource dataSource) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ArrayList<Contract> contractlist = new ArrayList<>();
+//        try {
+//            //GET FACILITY UNDER PRO LEVEL USING USERID ACCOUNT
+//            ACRGBWSResult apexResult = this.GETAPEXFACILITY(dataSource);
+//            if (apexResult.isSuccess()) {
+//                List<HealthCareFacility> hcfList = Arrays.asList(utility.ObjectMapper().readValue(apexResult.getResult(), HealthCareFacility[].class));
+//                for (int v = 0; v < hcfList.size(); v++) {
+//                    ACRGBWSResult conResult = fm.GetEndContract(dataSource, hcfList.get(v).getHcfcode());
+//                    if (conResult.isSuccess()) {
+//                        Contract restA = utility.ObjectMapper().readValue(conResult.getResult(), Contract.class);
+//                        contractlist.add(restA);
+//                    }
+//                }
+//            }
+//            if (contractlist.isEmpty()) {
+//                result.setMessage("N/A");
+//            } else {
+//                result.setMessage("OK");
+//                result.setSuccess(true);
+//                result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
+//            }
+//
+//        } catch (IOException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
     public ACRGBWSResult GetAmount(final DataSource dataSource, final String pan, final String datestart, final String dateend) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -3218,55 +3389,54 @@ public class Methods {
     }
 
     //GET COMPUTED REMAINING BALANCE FOR TERMINATED CONTRACT PER FACILITY
-    public ACRGBWSResult GetRemainingBalanceForEndContract(final DataSource dataSource,
-            final String userid, final String tags) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ArrayList<Contract> contractlist = new ArrayList<>();
-        try {
-            //GET FACILITY UNDER PRO LEVEL USING USERID ACCOUNT
-            ACRGBWSResult restA = this.GETROLE(dataSource, userid, tags);//GET PRO ID USING USER ID
-            if (restA.isSuccess()) {
-                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), tags);//GET MB UNDER PRO USING PRO ID
-                if (restB.isSuccess()) {
-                    List<String> restBList = Arrays.asList(restB.getResult().split(","));
-                    for (int x = 0; x < restBList.size(); x++) {
-                        ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, restBList.get(x), tags);//GET MB UNDER PRO USING PRO ID
-                        if (restC.isSuccess()) {
-                            List<String> restCList = Arrays.asList(restC.getResult().split(","));
-                            for (int y = 0; y < restCList.size(); y++) {
-                                ACRGBWSResult conResult = fm.GetEndContract(dataSource, restCList.get(y));
-                                if (conResult.isSuccess()) {
-                                    Contract restD = utility.ObjectMapper().readValue(conResult.getResult(), Contract.class);
-                                    contractlist.add(restD);
-                                }
-                            }
-                            if (contractlist.isEmpty()) {
-                                result.setMessage("N/A");
-                            } else {
-                                result.setMessage("OK");
-                                result.setSuccess(true);
-                                result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
-                            }
-                        } else {
-                            result.setMessage("N/A");
-                        }
-                    }
-                } else {
-                    result.setMessage("N/A");
-                }
-            } else {
-                result.setMessage("N/A");
-            }
-        } catch (IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+//    public ACRGBWSResult GetRemainingBalanceForEndContract(final DataSource dataSource,
+//            final String userid, final String tags) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ArrayList<Contract> contractlist = new ArrayList<>();
+//        try {
+//            //GET FACILITY UNDER PRO LEVEL USING USERID ACCOUNT
+//            ACRGBWSResult restA = this.GETROLE(dataSource, userid, tags);//GET PRO ID USING USER ID
+//            if (restA.isSuccess()) {
+//                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), tags);//GET MB UNDER PRO USING PRO ID
+//                if (restB.isSuccess()) {
+//                    List<String> restBList = Arrays.asList(restB.getResult().split(","));
+//                    for (int x = 0; x < restBList.size(); x++) {
+//                        ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, restBList.get(x), tags);//GET MB UNDER PRO USING PRO ID
+//                        if (restC.isSuccess()) {
+//                            List<String> restCList = Arrays.asList(restC.getResult().split(","));
+//                            for (int y = 0; y < restCList.size(); y++) {
+//                                ACRGBWSResult conResult = fm.GetEndContract(dataSource, restCList.get(y));
+//                                if (conResult.isSuccess()) {
+//                                    Contract restD = utility.ObjectMapper().readValue(conResult.getResult(), Contract.class);
+//                                    contractlist.add(restD);
+//                                }
+//                            }
+//                            if (contractlist.isEmpty()) {
+//                                result.setMessage("N/A");
+//                            } else {
+//                                result.setMessage("OK");
+//                                result.setSuccess(true);
+//                                result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
+//                            }
+//                        } else {
+//                            result.setMessage("N/A");
+//                        }
+//                    }
+//                } else {
+//                    result.setMessage("N/A");
+//                }
+//            } else {
+//                result.setMessage("N/A");
+//            }
+//        } catch (IOException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
     //GET ROLE INDEX FOR END CONTRACT AND ACCESS LEVEL
     public ACRGBWSResult GETROLEMULITPLEFORENDROLE(final DataSource dataSource,
             final String puserid,
@@ -3334,11 +3504,13 @@ public class Methods {
                         fca.setYearfrom(GetDateSettings.get(u).getDatefrom());
                         fca.setYearto(GetDateSettings.get(u).getDateto());
                         fca.setTotalclaims(resultset.getString("COUNTVAL"));
+
                         if (resultset.getString("C1_RVS_CODE") != null) {
                             fca.setC1rvcode(resultset.getString("C1_RVS_CODE"));
                         } else {
                             fca.setC1rvcode("");
                         }
+
                         if (resultset.getString("C2_RVS_CODE") != null) {
                             fca.setC2rvcode(resultset.getString("C2_RVS_CODE"));
                         } else {
@@ -3420,6 +3592,15 @@ public class Methods {
                     if (!endResult.isSuccess()) {
                         errorList.add(endResult.getMessage());
                     }
+                    //UPDATE CONTRACT DATE ID
+                    Appellate appellate = new Appellate();
+                    appellate.setAccesscode("0");
+                    appellate.setStatus("3");
+                    appellate.setConid(resultset.getString("CONDATEID").trim());
+                    ACRGBWSResult endAffiliate = um.UPDATEAPELLATE(dataSource, "OTHERS", appellate);
+                    if (!endAffiliate.isSuccess()) {
+                        errorList.add(endAffiliate.getMessage());
+                    }
                 }
             }
             if (errorList.size() > 0) {
@@ -3436,34 +3617,33 @@ public class Methods {
     }
 
     //GET AVERAGE AMOUNT AND VOLUME OF CLAIMS
-    public ACRGBWSResult ValidateExcludedCode(final DataSource dataSource, final String excode) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.VALIDATEEXCLUDEDCODE(:pcode); end;");
-            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("pcode", excode.trim().toUpperCase());
-            statement.execute();
-            ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            if (resultset.next()) {
-                ExcludedCode excludedCode = new ExcludedCode();
-                excludedCode.setCode(resultset.getString("CODE"));
-                excludedCode.setDescription(resultset.getString("DESCRIPTION"));
-                result.setResult(utility.ObjectMapper().writeValueAsString(excludedCode));
-                result.setSuccess(true);
-                result.setMessage("OK");
-            } else {
-                result.setMessage("N/A");
-            }
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.getLocalizedMessage());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+//    public ACRGBWSResult ValidateExcludedCode(final DataSource dataSource, final String excode) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        try (Connection connection = dataSource.getConnection()) {
+//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.VALIDATEEXCLUDEDCODE(:pcode); end;");
+//            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+//            statement.setString("pcode", excode.trim().toUpperCase());
+//            statement.execute();
+//            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+//            if (resultset.next()) {
+//                ExcludedCode excludedCode = new ExcludedCode();
+//                excludedCode.setCode(resultset.getString("CODE"));
+//                excludedCode.setDescription(resultset.getString("DESCRIPTION"));
+//                result.setResult(utility.ObjectMapper().writeValueAsString(excludedCode));
+//                result.setSuccess(true);
+//                result.setMessage("OK");
+//            } else {
+//                result.setMessage("N/A");
+//            }
+//        } catch (SQLException | IOException ex) {
+//            result.setMessage(ex.getLocalizedMessage());
+//            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
     public ACRGBWSResult VALIDATECONTRACTDATE(final DataSource dataSource, final String pdatefrom, final String pdateto) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -3578,6 +3758,8 @@ public class Methods {
                     if (!updateResult.isSuccess()) {
                         errorList.add(updateResult.getMessage());
                     }
+
+                    //END AFFILIATE USING CONTRACT DATE ID
                 }
             }
             if (errorList.size() > 0) {

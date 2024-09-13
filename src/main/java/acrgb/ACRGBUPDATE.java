@@ -264,7 +264,7 @@ public class ACRGBUPDATE {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             ACRGBWSResult insertresult = insertmethods.INACTIVEDATA(dataSource,
-                    arhived.getTags(), arhived.getDataid(), arhived.getCreatedby());
+                    arhived.getTags(), arhived.getDataid(), arhived.getCreatedby(), "ACTIVE");
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -288,8 +288,11 @@ public class ACRGBUPDATE {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.ACTIVEDATA(dataSource, arhived.getTags(),
-                    arhived.getDataid(), arhived.getCreatedby());
+            ACRGBWSResult insertresult = insertmethods.ACTIVEDATA(dataSource,
+                    arhived.getTags(),
+                    arhived.getDataid(),
+                    arhived.getCreatedby(),
+                    "INACTIVE");
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -562,29 +565,29 @@ public class ACRGBUPDATE {
         return result;
     }
 
-    @DELETE
-    @Path("DELETEDATA")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult DELETEDATA(@HeaderParam("token") String token,
-            final Archived arhived) {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            ACRGBWSResult insertresult = updatemethods.DELETEDATA(dataSource, arhived.getTags(),
-                    arhived.getDataid(), arhived.getCreatedby());
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
-        }
-        return result;
-    }
+//    @DELETE
+//    @Path("DELETEDATA")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult DELETEDATA(@HeaderParam("token") String token,
+//            final Archived arhived) {
+//        //TODO return proper representation object
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+//        if (!GetPayLoad.isSuccess()) {
+//            result.setMessage(GetPayLoad.getMessage());
+//        } else {
+//            ACRGBWSResult insertresult = updatemethods.DELETEDATA(dataSource, arhived.getTags(),
+//                    arhived.getDataid(), arhived.getCreatedby());
+//            result.setMessage(insertresult.getMessage());
+//            result.setSuccess(insertresult.isSuccess());
+//            result.setResult(insertresult.getResult());
+//        }
+//        return result;
+//    }
 
     @PUT
     @Path("UPDATEACCREDITATION")

@@ -263,46 +263,56 @@ public class LedgerMethod {
         try {
             double remaining = 0.00;
             double begin = 0.00;
-//            ACRGBWSResult beginning = cm.GETPREVIOUSBALANCE(dataSource, hcpncode, conid);
-//            if (beginning.isSuccess()) {
-//                ConBalance conbal = utility.ObjectMapper().readValue(beginning.getResult(), ConBalance.class);
-//                Ledger ledgersss = new Ledger();
-//                ledgersss.setDatetime(conbal.getCondateid());
-//                ledgersss.setParticular("Beginning Balance");
-//                ledgersss.setCredit(conbal.getConbalance());
-//                begin = Double.parseDouble(conbal.getConbalance());
-//                ledgersss.setBalance(String.valueOf(begin));
-//                ledgerlist.add(ledgersss);
-//            }
             ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, hcpncode, conid, utags);
             if (restA.isSuccess()) {
                 List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
                 for (int y = 0; y < assetlist.size(); y++) {
                     if (assetlist.get(y).getPreviousbalance() != null) {
-                        begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
+                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(y).getTranchid(), Tranch.class);
+                        switch (tranch.getTranchtype()) {
+                            case "1ST": {
+                                begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
+                                break;
+                            }
+                            case "1STFINAL": {
+                                begin -= Double.parseDouble(assetlist.get(y).getAmount());
+                                break;
+                            }
+                        }
                     }
                 }
-                //  if (begin > 0.00) {
+
                 Ledger ledgersss = new Ledger();
                 ledgersss.setDatetime(assetlist.get(0).getDatecreated());
                 ledgersss.setParticular("Beginning Balance");
                 ledgersss.setCredit(String.valueOf(begin));
                 ledgersss.setBalance(String.valueOf(begin));
                 ledgerlist.add(ledgersss);
-                //  }
                 //------------------------------------------------------------
                 for (int x = 0; x < assetlist.size(); x++) {
                     Ledger ledger = new Ledger();
                     ledger.setDatetime(assetlist.get(x).getDatereleased());
                     if (!assetlist.get(x).getTranchid().isEmpty()) {
                         Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(x).getTranchid(), Tranch.class);
-                        ledger.setParticular("Front Loading Of " + tranch.getTranchtype() + " Tranche");
-                        if (tranch.getTranchtype().equals("1ST")) {
-                            ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount()) - begin));
-                            remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
-                        } else {
-                            ledger.setCredit(assetlist.get(x).getAmount());
-                            remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                        switch (tranch.getTranchtype()) {
+                            case "1ST": {
+                                ledger.setParticular("Payment of 1ST Tranche running balance from previous contract");
+                                ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount()) - begin));
+                                remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                                break;
+                            }
+                            case "1STFINAL": {
+                                ledger.setParticular("Payment of 1ST Tranche from fully recon contract balance");
+                                ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount())));
+                                remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                                break;
+                            }
+                            default: {
+                                ledger.setParticular("Front Loading Of " + tranch.getTranchtype() + " Tranche");
+                                ledger.setCredit(assetlist.get(x).getAmount());
+                                remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                                break;
+                            }
                         }
                     }
                     ledger.setBalance(String.valueOf(remaining));
@@ -342,7 +352,7 @@ public class LedgerMethod {
                                         SubledgerA.setAccount("Liabilities");
                                     } else {
                                         SubledgerA.setBalance(String.valueOf(remaining));
-                                        SubledgerA.setAccount("Payabales");
+                                        SubledgerA.setAccount("Payables");
                                     }
                                     SubledgerA.setLiquidation(hcfA.get(u).getTotalamount());
                                     ledgerlist.add(SubledgerA);
@@ -386,28 +396,54 @@ public class LedgerMethod {
                 List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
                 for (int y = 0; y < assetlist.size(); y++) {
                     if (assetlist.get(y).getPreviousbalance() != null) {
-                        begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
+                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(y).getTranchid(), Tranch.class);
+                        switch (tranch.getTranchtype()) {
+                            case "1ST": {
+                                begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
+                                break;
+                            }
+                            case "1STFINAL": {
+                                begin -= Double.parseDouble(assetlist.get(y).getAmount());
+                                break;
+                            }
+                        }
+
                     }
                 }
-                Ledger ledgersss = new Ledger();
-                ledgersss.setDatetime(assetlist.get(0).getDatecreated());
-                ledgersss.setParticular("Beginning Balance");
-                ledgersss.setCredit(String.valueOf(begin));
-                ledgersss.setBalance(String.valueOf(begin));
-                ledgerlist.add(ledgersss);
+                if (begin > 0.00) {
+                    Ledger ledgersss = new Ledger();
+                    ledgersss.setDatetime(assetlist.get(0).getDatecreated());
+                    ledgersss.setParticular("Beginning Balance");
+                    ledgersss.setCredit(String.valueOf(begin));
+                    ledgersss.setBalance(String.valueOf(begin));
+                    ledgerlist.add(ledgersss);
+                }
+
                 //------------------------------------------------------------
                 for (int x = 0; x < assetlist.size(); x++) {
                     Ledger ledger = new Ledger();
                     ledger.setDatetime(assetlist.get(x).getDatereleased());
                     if (!assetlist.get(x).getTranchid().isEmpty()) {
                         Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(x).getTranchid(), Tranch.class);
-                        ledger.setParticular("Payment of " + tranch.getTranchtype() + " tranche");
-                        if (tranch.getTranchtype().equals("1ST")) {
-                            ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount()) - begin));
-                            remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
-                        } else {
-                            ledger.setCredit(assetlist.get(x).getAmount());
-                            remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                        switch (tranch.getTranchtype()) {
+                            case "1STFINAL": {
+                                ledger.setParticular("Payment of 1ST Tranche from fully recon contract balance");
+                                ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount())));
+                                remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                                break;
+                            }
+                            case "1ST": {
+                                ledger.setParticular("Payment of 1ST Tranche running balance from previous contract");
+                                ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount()) - begin));
+                                remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                                break;
+                            }
+                            default: {
+                                ledger.setParticular("Payment of " + tranch.getTranchtype() + " tranche");
+                                ledger.setCredit(assetlist.get(x).getAmount());
+                                remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                                break;
+                            }
                         }
                     }
                     ledger.setBalance(String.valueOf(remaining));
@@ -445,7 +481,7 @@ public class LedgerMethod {
                                     SubledgerA.setBalance(String.valueOf(remaining));
                                     if (remaining > 0) {
                                         SubledgerA.setBalance(String.valueOf(remaining));
-                                        SubledgerA.setAccount("Liability");
+                                        SubledgerA.setAccount("Liabilities");
                                     } else {
                                         SubledgerA.setBalance(String.valueOf(remaining));
                                         SubledgerA.setAccount("Payables");
@@ -473,7 +509,8 @@ public class LedgerMethod {
     }
 
     //PROCESS LEDGER PER CONTRACT OF SELECTED APEX FACILITY ACTIVE
-    public ACRGBWSResult GETLedgerAllContractAPEXActive(final DataSource dataSource,
+    public ACRGBWSResult GETLedgerAllContractAPEXActive(
+            final DataSource dataSource,
             final String upmmc_no,
             final String contractid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -490,28 +527,52 @@ public class LedgerMethod {
                 //GETTING PREVIOUS BALANCE
                 for (int y = 0; y < assetlist.size(); y++) {
                     if (assetlist.get(y).getPreviousbalance() != null) {
-                        begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
+                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(y).getTranchid(), Tranch.class);
+                        switch (tranch.getTranchtype()) {
+                            case "1ST": {
+                                begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
+                                break;
+                            }
+                            case "1STFINAL": {
+                                begin -= Double.parseDouble(assetlist.get(y).getAmount());
+                                break;
+                            }
+                        }
                     }
                 }
-                Ledger ledgersss = new Ledger();
-                ledgersss.setDatetime(assetlist.get(0).getDatecreated());
-                ledgersss.setParticular("Beginning Balance");
-                ledgersss.setCredit(String.valueOf(begin));
-                ledgersss.setBalance(String.valueOf(begin));
-                ledgerlist.add(ledgersss);
+                if (begin > 0.00) {
+                    Ledger ledgersss = new Ledger();
+                    ledgersss.setDatetime(assetlist.get(0).getDatecreated());
+                    ledgersss.setParticular("Beginning Balance");
+                    ledgersss.setCredit(String.valueOf(begin));
+                    ledgersss.setBalance(String.valueOf(begin));
+                    ledgerlist.add(ledgersss);
+                }
                 //GETTING PREVIOUS BALANCE
                 for (int x = 0; x < assetlist.size(); x++) {
                     Ledger ledger = new Ledger();
                     ledger.setDatetime(assetlist.get(x).getDatereleased());
                     if (!assetlist.get(x).getTranchid().isEmpty()) {
                         Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(x).getTranchid(), Tranch.class);
-                        ledger.setParticular("Payment of " + tranch.getTranchtype() + " Tranche");
-                        if (tranch.getTranchtype().equals("1ST")) {
-                            ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount()) - begin));
-                            remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
-                        } else {
-                            ledger.setCredit(assetlist.get(x).getAmount());
-                            remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                        switch (tranch.getTranchtype()) {
+                            case "1STFINAL": {
+                                ledger.setParticular("Payment of 1ST Tranche from fully recon contract balance");
+                                ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount())));
+                                remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                                break;
+                            }
+                            case "1ST": {
+                                ledger.setParticular("Payment of 1ST Tranche running balance from previous contract");
+                                ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount()) - begin));
+                                remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                                break;
+                            }
+                            default: {
+                                ledger.setParticular("Payment of " + tranch.getTranchtype() + " tranche");
+                                ledger.setCredit(assetlist.get(x).getAmount());
+                                remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                                break;
+                            }
                         }
                     }
                     ledger.setBalance(String.valueOf(remaining));
@@ -546,7 +607,7 @@ public class LedgerMethod {
                             SubledgerA.setBalance(String.valueOf(remaining));
                             if (remaining > 0) {
                                 SubledgerA.setBalance(String.valueOf(remaining));
-                                SubledgerA.setAccount("Liability");
+                                SubledgerA.setAccount("Liabilities");
                             } else {
                                 SubledgerA.setBalance(String.valueOf(remaining));
                                 SubledgerA.setAccount("Payables");
@@ -574,7 +635,8 @@ public class LedgerMethod {
     }
 
     //PROCESS LEDGER PER CONTRACT OF SELECTED APEX FACILITY ACTIVE
-    public ACRGBWSResult GETLedgerAllContractAPEXInactive(final DataSource dataSource,
+    public ACRGBWSResult GETLedgerAllContractAPEXInactive(
+            final DataSource dataSource,
             final String upmmc_no,
             final String contractid,
             final String utags) {
@@ -593,28 +655,52 @@ public class LedgerMethod {
                 //GETTING PREVIOUS BALANCE
                 for (int y = 0; y < assetlist.size(); y++) {
                     if (assetlist.get(y).getPreviousbalance() != null) {
-                        begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
+                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(y).getTranchid(), Tranch.class);
+                        switch (tranch.getTranchtype()) {
+                            case "1ST": {
+                                begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
+                                break;
+                            }
+                            case "1STFINAL": {
+                                begin -= Double.parseDouble(assetlist.get(y).getAmount());
+                                break;
+                            }
+                        }
                     }
                 }
-                Ledger ledgersss = new Ledger();
-                ledgersss.setDatetime(assetlist.get(0).getDatecreated());
-                ledgersss.setParticular("Beginning Balance");
-                ledgersss.setCredit(String.valueOf(begin));
-                ledgersss.setBalance(String.valueOf(begin));
-                ledgerlist.add(ledgersss);
+                if (begin > 0.00) {
+                    Ledger ledgersss = new Ledger();
+                    ledgersss.setDatetime(assetlist.get(0).getDatecreated());
+                    ledgersss.setParticular("Beginning Balance");
+                    ledgersss.setCredit(String.valueOf(begin));
+                    ledgersss.setBalance(String.valueOf(begin));
+                    ledgerlist.add(ledgersss);
+                }
                 //GETTING PREVIOUS BALANCE
                 for (int x = 0; x < assetlist.size(); x++) {
                     Ledger ledger = new Ledger();
                     ledger.setDatetime(assetlist.get(x).getDatereleased());
                     if (!assetlist.get(x).getTranchid().isEmpty()) {
                         Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(x).getTranchid(), Tranch.class);
-                        ledger.setParticular("Payment of " + tranch.getTranchtype() + " Tranche");
-                        if (tranch.getTranchtype().equals("1ST")) {
-                            ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount()) - begin));
-                            remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
-                        } else {
-                            ledger.setCredit(assetlist.get(x).getAmount());
-                            remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                        switch (tranch.getTranchtype()) {
+                            case "1STFINAL": {
+                                ledger.setParticular("Payment of 1ST Tranche from fully recon contract balance");
+                                ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount())));
+                                remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                                break;
+                            }
+                            case "1ST": {
+                                ledger.setParticular("Payment of 1ST Tranche running balance from previous contract");
+                                ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount()) - begin));
+                                remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                                break;
+                            }
+                            default: {
+                                ledger.setParticular("Payment of " + tranch.getTranchtype() + " tranche");
+                                ledger.setCredit(assetlist.get(x).getAmount());
+                                remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
+                                break;
+                            }
                         }
                     }
                     ledger.setBalance(String.valueOf(remaining));
@@ -650,7 +736,7 @@ public class LedgerMethod {
                             SubledgerA.setBalance(String.valueOf(remaining));
                             if (remaining > 0) {
                                 SubledgerA.setBalance(String.valueOf(remaining));
-                                SubledgerA.setAccount("Liability");
+                                SubledgerA.setAccount("Liabilities");
                             } else {
                                 SubledgerA.setBalance(String.valueOf(remaining));
                                 SubledgerA.setAccount("Payables");
