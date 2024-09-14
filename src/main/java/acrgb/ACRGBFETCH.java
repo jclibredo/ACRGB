@@ -614,7 +614,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetManagingBoardWithProID/{proid}/{levelname}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -657,7 +656,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetMBUsingMBID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -810,7 +808,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
-
     @GET
     @Path("GetContractDate/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -855,7 +852,6 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
     //GET RANDOM PASSWORD
     @GET
     @Path("GetRandomPasscode")
@@ -877,7 +873,6 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
     //GET PREVIOS ENDED CONTRACT
     @GET
     @Path("GetPreviousContract/{paccount}/{contractid}")
@@ -902,7 +897,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
-
     @GET
     @Path("GetClaims/{hcpncode}/{contractid}/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -971,7 +965,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
-
     @GET
     @Path("CONTRACTWITHQUARTER/{tags}/{uprocode}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1050,7 +1043,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
-
     @GET
     @Path("GetContractHistory/{userId}/{requestCode}/{targetData}")//PRO LEVEL AND PHIC LEVEL
     @Produces(MediaType.APPLICATION_JSON)
@@ -1076,7 +1068,6 @@ public class ACRGBFETCH {
         return result;
     }
 //-----------------------------------------------------------------------------
-
     @GET
     @Path("Validate2FA")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1096,8 +1087,6 @@ public class ACRGBFETCH {
                 } else if (code.isEmpty()) {
                     result.setMessage("2FA CODE IS REQUIRED");
                 } else if (user.getFa2code().trim().equals(code.trim())) {
-//                    java.util.Date d1 = new java.util.Date();
-//                    SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm a");
                     result.setMessage(GetResult.getMessage());
                     result.setResult(GetResult.getResult());
                     result.setSuccess(GetResult.isSuccess());
@@ -1357,7 +1346,6 @@ public class ACRGBFETCH {
                     break;
                 }
             }
-
         }
         return result;
     }

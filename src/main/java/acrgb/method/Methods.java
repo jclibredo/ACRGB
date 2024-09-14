@@ -565,7 +565,6 @@ public class Methods {
                                                                 break;
                                                             }
                                                         }
-
                                                         totalcomputeA.setHospital(getFacilityA.getResult());
                                                         totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
                                                         totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
@@ -582,7 +581,6 @@ public class Methods {
                                     }
                                 }
                             }
-
                             // SETTINGS OF FINAL COMPUTATION
                             FacilityComputedAmount totalcompute = new FacilityComputedAmount();
                             totalcompute.setThirty(String.valueOf(00));
@@ -703,7 +701,6 @@ public class Methods {
                                                                 totalcomputeA.setC1icdcode("");
                                                                 totalcomputeA.setC1rvcode("");
                                                             }
-
                                                             if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
                                                                 CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
                                                                 totalamount += Double.parseDouble(getCR.getAmount());
@@ -1261,7 +1258,6 @@ public class Methods {
                                                                     totalcomputeA.setC1icdcode("");
                                                                     totalcomputeA.setC1rvcode("");
                                                                 }
-
                                                                 if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).isSuccess()) {
                                                                     CaseRate getCR = utility.ObjectMapper().readValue(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode()).getResult(), CaseRate.class);
                                                                     totalamount += Double.parseDouble(getCR.getAmount());
@@ -1450,7 +1446,6 @@ public class Methods {
                     int claimCount = 0;
                     double claimsSb = 0.00;
                     double totalbaseamount = 0.00;
-
                     if (getHCPNUnder.isSuccess()) {
                         List<String> HCPNList = Arrays.asList(getHCPNUnder.getResult().split(","));
                         ArrayList<FacilityComputedAmount> computationList = new ArrayList<>();
@@ -1476,7 +1471,6 @@ public class Methods {
 //                                            totalbaseamount += Double.parseDouble(fcaA.get(f).getTotalamount());
 //                                            claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                             //------------------------------------------------     
-
                                             ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                                             if (getFacilityA.isSuccess()) {
                                                 double totalamount = 0.00;
@@ -1909,11 +1903,9 @@ public class Methods {
                         ArrayList<FacilityComputedAmount> totalcomputeHCPNList = new ArrayList<>();
                         List<String> hcflist = Arrays.asList(getFacilityUnder.getResult().split(","));
                         int claimCount = 0;
-
                         double claimsSb = 0.00;
                         double totalbaseamount = 0.00;
                         for (int y = 0; y < hcflist.size(); y++) {
-
                             ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, hcflist.get(y).trim(), datefrom.trim(), dateto.trim());
                             if (restC.isSuccess()) {
                                 //DATE SETTINGS
@@ -2218,84 +2210,94 @@ public class Methods {
     }
 
     //GET AMOUNT PER FACILITY
-    public ACRGBWSResult GetAmountPerFacility(
-            final DataSource dataSource,
-            final String uaccreno,
-            final String datefrom,
-            final String dateto) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = dataSource.getConnection()) {
-            ACRGBWSResult getdatesettings = utility.ProcessDateAmountComputation(datefrom, dateto);
-            //------------------------------------------------------------------
-            ArrayList<FacilityComputedAmount> listOfcomputedamount = new ArrayList<>();
-            if (getdatesettings.isSuccess()) {
-                List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class));
-                for (int u = 0; u < GetDateSettings.size(); u++) {
-                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:ulevel,:uaccreno,:utags,:udatefrom,:udateto); end;");
-                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                    statement.setString("ulevel", "TWO");
-                    statement.setString("uaccreno", uaccreno.trim());
-                    statement.setString("utags", "G");
-                    statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(GetDateSettings.get(u).getDatefrom()).getTime()));
-                    statement.setDate("udateto", (Date) new Date(utility.StringToDate(GetDateSettings.get(u).getDateto()).getTime()));
-                    statement.execute();
-                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                    while (resultset.next()) {
-                        FacilityComputedAmount fca = new FacilityComputedAmount();
-                        fca.setHospital(resultset.getString("PMCC_NO"));
-                        fca.setTotalamount(resultset.getString("CTOTAL"));
-                        fca.setYearfrom(GetDateSettings.get(u).getDatefrom());
-                        fca.setYearto(GetDateSettings.get(u).getDateto());
-                        fca.setTotalclaims(resultset.getString("COUNTVAL"));
-                        if (resultset.getString("C1_RVS_CODE") != null) {
-                            fca.setC1rvcode(resultset.getString("C1_RVS_CODE"));
-                        } else {
-                            fca.setC1rvcode("");
-                        }
-                        if (resultset.getString("C2_RVS_CODE") != null) {
-                            fca.setC2rvcode(resultset.getString("C2_RVS_CODE"));
-                        } else {
-                            fca.setC2rvcode("");
-                        }
-                        if (resultset.getString("C1_ICD_CODE") != null) {
-                            fca.setC1icdcode(resultset.getString("C1_ICD_CODE"));
-                        } else {
-                            fca.setC1icdcode("");
-                        }
-                        if (resultset.getString("C2_ICD_CODE") != null) {
-                            fca.setC2icdcode(resultset.getString("C2_ICD_CODE"));
-                        } else {
-                            fca.setC2icdcode("");
-                        }
-                        if (resultset.getString("DATESUB") != null) {
-                            fca.setDatefiled(dateformat.format(resultset.getDate("DATESUB")));
-                        } else {
-                            fca.setDatefiled("");
-                        }
-                        listOfcomputedamount.add(fca);
-                    }
-                }
-                if (listOfcomputedamount.size() > 0) {
-                    result.setMessage(getdatesettings.getResult());
-                    result.setResult(utility.ObjectMapper().writeValueAsString(listOfcomputedamount));
-                    result.setSuccess(true);
-                } else {
-                    result.setMessage("N/A");
-                }
-            } else {
-                result.setMessage("N/A");
-            }
-            //-------------------------------------------------------------------------------
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+//    public ACRGBWSResult GetAmountPerFacility(
+//            final DataSource dataSource,
+//            final String upmccno,
+//            final String datefrom,
+//            final String dateto) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        try (Connection connection = dataSource.getConnection()) {
+//            ACRGBWSResult getdatesettings = utility.ProcessDateAmountComputation(datefrom, dateto);
+//            //------------------------------------------------------------------
+//            ArrayList<FacilityComputedAmount> listOfcomputedamount = new ArrayList<>();
+//            if (getdatesettings.isSuccess()) {
+//                List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class));
+//                for (int u = 0; u < GetDateSettings.size(); u++) {
+//                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
+//                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+//                    statement.setString("upmccno", upmccno.trim());
+//                    statement.setString("utags", "G");
+//                    statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(GetDateSettings.get(u).getDatefrom()).getTime()));
+//                    statement.setDate("udateto", (Date) new Date(utility.StringToDate(GetDateSettings.get(u).getDateto()).getTime()));
+//                    statement.execute();
+//                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
+//                    while (resultset.next()) {
+//                        FacilityComputedAmount fca = new FacilityComputedAmount();
+//                        fca.setHospital(resultset.getString("PMCC_NO"));
+//                        fca.setTotalamount(resultset.getString("CTOTAL"));
+//                        fca.setYearfrom(GetDateSettings.get(u).getDatefrom());
+//                        fca.setYearto(GetDateSettings.get(u).getDateto());
+//                        fca.setTotalclaims(resultset.getString("COUNTVAL"));
+//                        if (resultset.getString("C1_RVS_CODE") != null) {
+//                            fca.setC1rvcode(resultset.getString("C1_RVS_CODE"));
+//                        } else {
+//                            fca.setC1rvcode("");
+//                        }
+//                        if (resultset.getString("C2_RVS_CODE") != null) {
+//                            fca.setC2rvcode(resultset.getString("C2_RVS_CODE"));
+//                        } else {
+//                            fca.setC2rvcode("");
+//                        }
+//                        if (resultset.getString("C1_ICD_CODE") != null) {
+//                            fca.setC1icdcode(resultset.getString("C1_ICD_CODE"));
+//                        } else {
+//                            fca.setC1icdcode("");
+//                        }
+//                        if (resultset.getString("C2_ICD_CODE") != null) {
+//                            fca.setC2icdcode(resultset.getString("C2_ICD_CODE"));
+//                        } else {
+//                            fca.setC2icdcode("");
+//                        }
+//                        if (resultset.getString("DATESUB") != null) {
+//                            fca.setDatefiled(dateformat.format(resultset.getDate("DATESUB")));
+//                        } else {
+//                            fca.setDatefiled("");
+//                        }
+//                        if (resultset.getString("DATEREFILE") != null) {
+//                            fca.setDaterefiled(dateformat.format(resultset.getDate("DATEREFILE")));
+//                        } else {
+//                            fca.setDaterefiled("");
+//                        }
+//
+//                        if (resultset.getString("DATEADM") != null) {
+//                            fca.setDateadmit(dateformat.format(resultset.getDate("DATEADM")));
+//                        } else {
+//                            fca.setDateadmit("");
+//                        }
+//
+//                        listOfcomputedamount.add(fca);
+//                    }
+//                }
+//                if (listOfcomputedamount.size() > 0) {
+//                    result.setMessage(getdatesettings.getResult());
+//                    result.setResult(utility.ObjectMapper().writeValueAsString(listOfcomputedamount));
+//                    result.setSuccess(true);
+//                } else {
+//                    result.setMessage("N/A");
+//                }
+//            } else {
+//                result.setMessage("N/A");
+//            }
+//            //-------------------------------------------------------------------------------
+//        } catch (SQLException | IOException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
     //INSERT MB REQUEST
     public ACRGBWSResult InsertMBRequest(
             final DataSource dataSource,
@@ -3351,43 +3353,59 @@ public class Methods {
 //        }
 //        return result;
 //    }
-    public ACRGBWSResult GetAmount(final DataSource dataSource, final String pan, final String datestart, final String dateend) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        String utags = "G";
-        try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:ulevel,:uaccreno,:utags,:udatefrom,:udateto); end;");
-            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("ulevel", "TWO".trim());
-            statement.setString("uaccreno", pan.trim());
-            statement.setString("utags", utags.trim());
-            statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(datestart).getTime()));
-            statement.setDate("udateto", (Date) new Date(utility.StringToDate(dateend).getTime()));
-            statement.execute();
-            ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            if (resultset.next()) {
-                FacilityComputedAmount fca = new FacilityComputedAmount();
-                fca.setHospital(resultset.getString("PMCC_NO"));
-                fca.setTotalamount(resultset.getString("CTOTAL"));
-                fca.setYearfrom(datestart);
-                fca.setYearto(dateend);
-                fca.setTotalclaims(resultset.getString("COUNTVAL"));
-                result.setResult(utility.ObjectMapper().writeValueAsString(fca));
-                result.setMessage("OK");
-                result.setSuccess(true);
-            } else {
-                result.setMessage("N/A");
-            }
-
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+//    public ACRGBWSResult GetAmount(
+//            final DataSource dataSource,
+//            final String upmccno,
+//            final String datestart,
+//            final String dateend) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        try (Connection connection = dataSource.getConnection()) {
+//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
+//            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+//            statement.setString("upmccno", upmccno.trim());
+//            statement.setString("utags", "G".trim());
+//            statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(datestart).getTime()));
+//            statement.setDate("udateto", (Date) new Date(utility.StringToDate(dateend).getTime()));
+//            statement.execute();
+//            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+//            if (resultset.next()) {
+//                FacilityComputedAmount fca = new FacilityComputedAmount();
+//                fca.setHospital(resultset.getString("PMCC_NO"));
+//                fca.setTotalamount(resultset.getString("CTOTAL"));
+//                fca.setYearfrom(datestart);
+//                fca.setYearto(dateend);
+//                fca.setTotalclaims(resultset.getString("COUNTVAL"));
+//                if (resultset.getString("DATESUB") != null) {
+//                    fca.setDatefiled(dateformat.format(resultset.getDate("DATESUB")));
+//                } else {
+//                    fca.setDatefiled("");
+//                }
+//                if (resultset.getString("DATEREFILE") != null) {
+//                    fca.setDaterefiled(dateformat.format(resultset.getDate("DATEREFILE")));
+//                } else {
+//                    fca.setDaterefiled("");
+//                }
+//                if (resultset.getString("DATEADM") != null) {
+//                    fca.setDateadmit(dateformat.format(resultset.getDate("DATEADM")));
+//                } else {
+//                    fca.setDateadmit("");
+//                }
+//                result.setResult(utility.ObjectMapper().writeValueAsString(fca));
+//                result.setMessage("OK");
+//                result.setSuccess(true);
+//            } else {
+//                result.setMessage("N/A");
+//            }
+//
+//        } catch (SQLException | IOException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
     //GET COMPUTED REMAINING BALANCE FOR TERMINATED CONTRACT PER FACILITY
 //    public ACRGBWSResult GetRemainingBalanceForEndContract(final DataSource dataSource,
 //            final String userid, final String tags) {
@@ -3474,7 +3492,7 @@ public class Methods {
 
     //GET AVERAGE AMOUNT AND VOLUME OF CLAIMS
     public ACRGBWSResult GETAVERAGECLAIMS(final DataSource dataSource,
-            final String uaccreno,
+            final String upmccno,
             final String datefrom,
             final String dateto) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -3488,11 +3506,10 @@ public class Methods {
             if (getdatesettings.isSuccess()) {
                 List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class));
                 for (int u = 0; u < GetDateSettings.size(); u++) {
-                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETAVERAGECLAIMS(:ulevel,:uaccreno,:utags,:udatefrom,:udateto); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETAVERAGECLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                    statement.setString("ulevel", "TWO".trim());
-                    statement.setString("uaccreno", uaccreno.trim());
-                    statement.setString("utags", "G");
+                    statement.setString("upmccno", upmccno.trim());
+                    statement.setString("utags", "G".trim());
                     statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(GetDateSettings.get(u).getDatefrom()).getTime()));
                     statement.setDate("udateto", (Date) new Date(utility.StringToDate(GetDateSettings.get(u).getDateto()).getTime()));
                     statement.execute();
@@ -3504,19 +3521,16 @@ public class Methods {
                         fca.setYearfrom(GetDateSettings.get(u).getDatefrom());
                         fca.setYearto(GetDateSettings.get(u).getDateto());
                         fca.setTotalclaims(resultset.getString("COUNTVAL"));
-
                         if (resultset.getString("C1_RVS_CODE") != null) {
                             fca.setC1rvcode(resultset.getString("C1_RVS_CODE"));
                         } else {
                             fca.setC1rvcode("");
                         }
-
                         if (resultset.getString("C2_RVS_CODE") != null) {
                             fca.setC2rvcode(resultset.getString("C2_RVS_CODE"));
                         } else {
                             fca.setC2rvcode("");
                         }
-
                         if (resultset.getString("C1_ICD_CODE") != null) {
                             fca.setC1icdcode(resultset.getString("C1_ICD_CODE"));
                         } else {
@@ -3527,11 +3541,20 @@ public class Methods {
                         } else {
                             fca.setC2icdcode("");
                         }
-
                         if (resultset.getString("DATESUB") != null) {
-                            fca.setDatefiled(dateformat.format(resultset.getDate("DATESUB")));
+                            fca.setDatefiled(dateformat.format(resultset.getTime("DATESUB")));
                         } else {
                             fca.setDatefiled("");
+                        }
+                        if (resultset.getString("DATEREFILE") != null) {
+                            fca.setDaterefiled(dateformat.format(resultset.getTime("DATEREFILE")));
+                        } else {
+                            fca.setDaterefiled("");
+                        }
+                        if (resultset.getString("DATEADM") != null) {
+                            fca.setDateadmit(dateformat.format(resultset.getTime("DATEADM")));
+                        } else {
+                            fca.setDateadmit("");
                         }
                         listOfcomputedamount.add(fca);
                     }

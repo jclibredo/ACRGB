@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,7 +75,7 @@ public class LedgerMethod {
                 } else {
                     assets.setHcfid(facilityresult.getMessage());
                 }
-                assets.setDatereleased(dateformat.format(resultset.getDate("DATERELEASED")));//resultset.getDate("DATERELEASED"));
+                assets.setDatereleased(dateformat.format(resultset.getTime("DATERELEASED")));//resultset.getDate("DATERELEASED"));
                 assets.setReceipt(resultset.getString("RECEIPT"));
                 assets.setAmount(resultset.getString("AMOUNT"));
                 ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
@@ -84,7 +85,7 @@ public class LedgerMethod {
                 } else {
                     assets.setCreatedby(creator.getMessage());
                 }
-                assets.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                assets.setDatecreated(dateformat.format(resultset.getTime("DATECREATED")));
                 ACRGBWSResult getcon = fm.GETCONTRACTCONID(dataSource, resultset.getString("CONID").trim(), "ACTIVE");
                 if (getcon.isSuccess()) {
                     assets.setConid(getcon.getResult());
@@ -108,7 +109,11 @@ public class LedgerMethod {
         return result;
     }
 
-    public ACRGBWSResult GETASSETSBYHCF(final DataSource dataSource, final String phcfid, final String pdatefrom, final String pdateto) {
+    public ACRGBWSResult GETASSETSBYHCF(
+            final DataSource dataSource,
+            final String phcfid,
+            final String pdatefrom,
+            final String pdateto) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -140,8 +145,8 @@ public class LedgerMethod {
                 } else {
                     assets.setCreatedby(creator.getMessage());
                 }
-                assets.setDatereleased(dateformat.format(resultset.getDate("DATERELEASED")));//resultset.getString("DATERELEASED"));
-                assets.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
+                assets.setDatereleased(dateformat.format(resultset.getTime("DATERELEASED")));//resultset.getString("DATERELEASED"));
+                assets.setDatecreated(dateformat.format(resultset.getTime("DATECREATED")));//resultset.getString("DATECREATED"));
                 assetslist.add(assets);
             }
             if (!assetslist.isEmpty()) {
@@ -160,18 +165,17 @@ public class LedgerMethod {
     }
 
     public ACRGBWSResult GETSUMAMOUNTCLAIMS(final DataSource dataSource,
-            final String uaccreno,
+            final String upmccno,
             final String udatefrom,
-            final String udateto, final String ulevel) {
+            final String udateto) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:ulevel,:uaccreno,:utags,:udatefrom,:udateto); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("ulevel", ulevel.toUpperCase().trim());
-            statement.setString("uaccreno", uaccreno.trim());
+            statement.setString("upmccno", upmccno.trim());
             statement.setString("utags", "G".trim());
             statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(udatefrom).getTime()));
             statement.setDate("udateto", (Date) new Date(utility.StringToDate(udateto).getTime()));
@@ -185,7 +189,22 @@ public class LedgerMethod {
                 fca.setYearfrom(udatefrom);
                 fca.setYearto(udateto);
                 fca.setTotalclaims(resultset.getString("COUNTVAL"));
-                fca.setDatefiled(dateformat.format(resultset.getDate("DATESUB")));
+                if (resultset.getString("DATESUB") != null) {
+                    fca.setDatefiled(dateformat.format(resultset.getTime("DATESUB")));
+                } else {
+                    fca.setDatefiled("");
+                }
+                if (resultset.getString("DATEREFILE") != null) {
+                    fca.setDaterefiled(dateformat.format(resultset.getTime("DATEREFILE")));
+                } else {
+                    fca.setDaterefiled("");
+                }
+                if (resultset.getString("DATEADM") != null) {
+                    fca.setDateadmit(dateformat.format(resultset.getTime("DATEADM")));
+                } else {
+                    fca.setDateadmit("");
+                }
+
                 fcalist.add(fca);
 
             }
@@ -274,20 +293,17 @@ public class LedgerMethod {
                                 begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
                                 break;
                             }
-                            case "1STFINAL": {
-                                begin -= Double.parseDouble(assetlist.get(y).getAmount());
-                                break;
-                            }
                         }
                     }
                 }
-
-                Ledger ledgersss = new Ledger();
-                ledgersss.setDatetime(assetlist.get(0).getDatecreated());
-                ledgersss.setParticular("Beginning Balance");
-                ledgersss.setCredit(String.valueOf(begin));
-                ledgersss.setBalance(String.valueOf(begin));
-                ledgerlist.add(ledgersss);
+                if (begin > 0.00) {
+                    Ledger ledgersss = new Ledger();
+                    ledgersss.setDatetime(assetlist.get(0).getDatecreated());
+                    ledgersss.setParticular("Beginning Balance");
+                    ledgersss.setCredit(String.valueOf(begin));
+                    ledgersss.setBalance(String.valueOf(begin));
+                    ledgerlist.add(ledgersss);
+                }
                 //------------------------------------------------------------
                 for (int x = 0; x < assetlist.size(); x++) {
                     Ledger ledger = new Ledger();
@@ -296,7 +312,11 @@ public class LedgerMethod {
                         Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(x).getTranchid(), Tranch.class);
                         switch (tranch.getTranchtype()) {
                             case "1ST": {
-                                ledger.setParticular("Payment of 1ST Tranche running balance from previous contract");
+                                if (begin > 0.00) {
+                                    ledger.setParticular("Payment of 1ST Tranche running balance from previous contract");
+                                } else {
+                                    ledger.setParticular("Payment of 1ST Tranche of new contract");
+                                }
                                 ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount()) - begin));
                                 remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
                                 break;
@@ -333,29 +353,55 @@ public class LedgerMethod {
                             ACRGBWSResult getAmountPayable = this.GETSUMAMOUNTCLAIMS(dataSource,
                                     hcfresult.get(b),
                                     contractdate.getDatefrom(),
-                                    contractdate.getDateto(), "TWO");
+                                    utility.AddMinusDaysDate(contractdate.getDateto(), "60"));
                             if (getAmountPayable.isSuccess()) {
                                 List<FacilityComputedAmount> hcfA = Arrays.asList(utility.ObjectMapper().readValue(getAmountPayable.getResult(), FacilityComputedAmount[].class));
                                 for (int u = 0; u < hcfA.size(); u++) {
-                                    Ledger SubledgerA = new Ledger();
-                                    SubledgerA.setDatetime(hcfA.get(u).getDatefiled());
-                                    ACRGBWSResult facility = fm.GETFACILITYID(dataSource, hcfresult.get(b));
-                                    HealthCareFacility hcf = utility.ObjectMapper().readValue(facility.getResult(), HealthCareFacility.class);
-                                    SubledgerA.setFacility(hcf.getHcfname());
-                                    SubledgerA.setParticular("Liquidation Of " + hcf.getHcfname());
-                                    SubledgerA.setDebit(hcfA.get(u).getTotalamount());
-                                    SubledgerA.setTotalclaims(hcfA.get(u).getTotalclaims());
-                                    remaining -= Double.parseDouble(hcfA.get(u).getTotalamount());
-                                    SubledgerA.setBalance(String.valueOf(remaining));
-                                    if (remaining > 0) {
-                                        SubledgerA.setBalance(String.valueOf(remaining));
-                                        SubledgerA.setAccount("Liabilities");
+                                    if (hcfA.get(u).getDaterefiled().isEmpty()) {
+                                        if (dateformat.parse(hcfA.get(u).getDatefiled()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                            Ledger SubledgerA = new Ledger();
+                                            SubledgerA.setDatetime(hcfA.get(u).getDatefiled());
+                                            ACRGBWSResult facility = fm.GETFACILITYID(dataSource, hcfresult.get(b));
+                                            HealthCareFacility hcf = utility.ObjectMapper().readValue(facility.getResult(), HealthCareFacility.class);
+                                            SubledgerA.setFacility(hcf.getHcfname());
+                                            SubledgerA.setParticular("Liquidation Of " + hcf.getHcfname());
+                                            SubledgerA.setDebit(hcfA.get(u).getTotalamount());
+                                            SubledgerA.setTotalclaims(hcfA.get(u).getTotalclaims());
+                                            remaining -= Double.parseDouble(hcfA.get(u).getTotalamount());
+                                            SubledgerA.setBalance(String.valueOf(remaining));
+                                            if (remaining > 0) {
+                                                SubledgerA.setBalance(String.valueOf(remaining));
+                                                SubledgerA.setAccount("Liabilities");
+                                            } else {
+                                                SubledgerA.setBalance(String.valueOf(remaining));
+                                                SubledgerA.setAccount("Payables");
+                                            }
+                                            SubledgerA.setLiquidation(hcfA.get(u).getTotalamount());
+                                            ledgerlist.add(SubledgerA);
+                                        }
                                     } else {
-                                        SubledgerA.setBalance(String.valueOf(remaining));
-                                        SubledgerA.setAccount("Payables");
+                                        if (dateformat.parse(hcfA.get(u).getDaterefiled()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                            Ledger SubledgerA = new Ledger();
+                                            SubledgerA.setDatetime(hcfA.get(u).getDatefiled());
+                                            ACRGBWSResult facility = fm.GETFACILITYID(dataSource, hcfresult.get(b));
+                                            HealthCareFacility hcf = utility.ObjectMapper().readValue(facility.getResult(), HealthCareFacility.class);
+                                            SubledgerA.setFacility(hcf.getHcfname());
+                                            SubledgerA.setParticular("Liquidation Of " + hcf.getHcfname());
+                                            SubledgerA.setDebit(hcfA.get(u).getTotalamount());
+                                            SubledgerA.setTotalclaims(hcfA.get(u).getTotalclaims());
+                                            remaining -= Double.parseDouble(hcfA.get(u).getTotalamount());
+                                            SubledgerA.setBalance(String.valueOf(remaining));
+                                            if (remaining > 0) {
+                                                SubledgerA.setBalance(String.valueOf(remaining));
+                                                SubledgerA.setAccount("Liabilities");
+                                            } else {
+                                                SubledgerA.setBalance(String.valueOf(remaining));
+                                                SubledgerA.setAccount("Payables");
+                                            }
+                                            SubledgerA.setLiquidation(hcfA.get(u).getTotalamount());
+                                            ledgerlist.add(SubledgerA);
+                                        }
                                     }
-                                    SubledgerA.setLiquidation(hcfA.get(u).getTotalamount());
-                                    ledgerlist.add(SubledgerA);
                                 }
                             }
                         }
@@ -369,7 +415,7 @@ public class LedgerMethod {
             } else {
                 result.setMessage("N/A");
             }
-        } catch (IOException ex) {
+        } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -402,10 +448,10 @@ public class LedgerMethod {
                                 begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
                                 break;
                             }
-                            case "1STFINAL": {
-                                begin -= Double.parseDouble(assetlist.get(y).getAmount());
-                                break;
-                            }
+//                            case "1STFINAL": {
+//                                begin -= Double.parseDouble(assetlist.get(y).getAmount());
+//                                break;
+//                            }
                         }
 
                     }
@@ -433,7 +479,11 @@ public class LedgerMethod {
                                 break;
                             }
                             case "1ST": {
-                                ledger.setParticular("Payment of 1ST Tranche running balance from previous contract");
+                                if (begin > 0.00) {
+                                    ledger.setParticular("Payment of 1ST Tranche running balance from previous contract");
+                                } else {
+                                    ledger.setParticular("Payment of 1ST Tranche of new contract");
+                                }
                                 ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount()) - begin));
                                 remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
                                 break;
@@ -533,10 +583,10 @@ public class LedgerMethod {
                                 begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
                                 break;
                             }
-                            case "1STFINAL": {
-                                begin -= Double.parseDouble(assetlist.get(y).getAmount());
-                                break;
-                            }
+//                            case "1STFINAL": {
+//                                begin -= Double.parseDouble(assetlist.get(y).getAmount());
+//                                break;
+//                            }
                         }
                     }
                 }
@@ -562,7 +612,11 @@ public class LedgerMethod {
                                 break;
                             }
                             case "1ST": {
-                                ledger.setParticular("Payment of 1ST Tranche running balance from previous contract");
+                                if (begin > 0.00) {
+                                    ledger.setParticular("Payment of 1ST Tranche running balance from previous contract");
+                                } else {
+                                    ledger.setParticular("Payment of 1ST Tranche of new contract");
+                                }
                                 ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getAmount()) - begin));
                                 remaining += Double.parseDouble(assetlist.get(x).getAmount());//INCREMENT ASSETS
                                 break;
@@ -591,29 +645,55 @@ public class LedgerMethod {
                     ACRGBWSResult getAmountPayable = this.GETSUMAMOUNTCLAIMS(dataSource,
                             upmmc_no,
                             contractdate.getDatefrom(),
-                            contractdate.getDateto(), "TWO");
+                            utility.AddMinusDaysDate(contractdate.getDateto(), "60"));
                     if (getAmountPayable.isSuccess()) {
                         List<FacilityComputedAmount> hcfA = Arrays.asList(utility.ObjectMapper().readValue(getAmountPayable.getResult(), FacilityComputedAmount[].class));
                         for (int u = 0; u < hcfA.size(); u++) {
-                            Ledger SubledgerA = new Ledger();
-                            SubledgerA.setDatetime(hcfA.get(u).getDatefiled());
-                            ACRGBWSResult facility = fm.GETFACILITYID(dataSource, upmmc_no);
-                            HealthCareFacility hcf = utility.ObjectMapper().readValue(facility.getResult(), HealthCareFacility.class);
-                            SubledgerA.setFacility(hcf.getHcfname());
-                            SubledgerA.setParticular("Liquidation of " + hcf.getHcfname());
-                            SubledgerA.setDebit(hcfA.get(u).getTotalamount());
-                            SubledgerA.setTotalclaims(hcfA.get(u).getTotalclaims());
-                            remaining -= Double.parseDouble(hcfA.get(u).getTotalamount());
-                            SubledgerA.setBalance(String.valueOf(remaining));
-                            if (remaining > 0) {
-                                SubledgerA.setBalance(String.valueOf(remaining));
-                                SubledgerA.setAccount("Liabilities");
+                            if (hcfA.get(u).getDaterefiled().isEmpty()) {
+                                if (dateformat.parse(hcfA.get(u).getDatefiled()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                    Ledger SubledgerA = new Ledger();
+                                    SubledgerA.setDatetime(hcfA.get(u).getDatefiled());
+                                    ACRGBWSResult facility = fm.GETFACILITYID(dataSource, upmmc_no);
+                                    HealthCareFacility hcf = utility.ObjectMapper().readValue(facility.getResult(), HealthCareFacility.class);
+                                    SubledgerA.setFacility(hcf.getHcfname());
+                                    SubledgerA.setParticular("Liquidation Of " + hcf.getHcfname());
+                                    SubledgerA.setDebit(hcfA.get(u).getTotalamount());
+                                    SubledgerA.setTotalclaims(hcfA.get(u).getTotalclaims());
+                                    remaining -= Double.parseDouble(hcfA.get(u).getTotalamount());
+                                    SubledgerA.setBalance(String.valueOf(remaining));
+                                    if (remaining > 0) {
+                                        SubledgerA.setBalance(String.valueOf(remaining));
+                                        SubledgerA.setAccount("Liabilities");
+                                    } else {
+                                        SubledgerA.setBalance(String.valueOf(remaining));
+                                        SubledgerA.setAccount("Payables");
+                                    }
+                                    SubledgerA.setLiquidation(hcfA.get(u).getTotalamount());
+                                    ledgerlist.add(SubledgerA);
+                                }
                             } else {
-                                SubledgerA.setBalance(String.valueOf(remaining));
-                                SubledgerA.setAccount("Payables");
+                                if (dateformat.parse(hcfA.get(u).getDaterefiled()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                    Ledger SubledgerA = new Ledger();
+                                    SubledgerA.setDatetime(hcfA.get(u).getDatefiled());
+                                    ACRGBWSResult facility = fm.GETFACILITYID(dataSource, upmmc_no);
+                                    HealthCareFacility hcf = utility.ObjectMapper().readValue(facility.getResult(), HealthCareFacility.class);
+                                    SubledgerA.setFacility(hcf.getHcfname());
+                                    SubledgerA.setParticular("Liquidation Of " + hcf.getHcfname());
+                                    SubledgerA.setDebit(hcfA.get(u).getTotalamount());
+                                    SubledgerA.setTotalclaims(hcfA.get(u).getTotalclaims());
+                                    remaining -= Double.parseDouble(hcfA.get(u).getTotalamount());
+                                    SubledgerA.setBalance(String.valueOf(remaining));
+                                    if (remaining > 0) {
+                                        SubledgerA.setBalance(String.valueOf(remaining));
+                                        SubledgerA.setAccount("Liabilities");
+                                    } else {
+                                        SubledgerA.setBalance(String.valueOf(remaining));
+                                        SubledgerA.setAccount("Payables");
+                                    }
+                                    SubledgerA.setLiquidation(hcfA.get(u).getTotalamount());
+                                    ledgerlist.add(SubledgerA);
+                                }
                             }
-                            SubledgerA.setLiquidation(hcfA.get(u).getTotalamount());
-                            ledgerlist.add(SubledgerA);
                         }
                     }
                 }
@@ -629,6 +709,8 @@ public class LedgerMethod {
 
         } catch (IOException ex) {
             result.setMessage(ex.toString());
+            Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ParseException ex) {
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -661,10 +743,10 @@ public class LedgerMethod {
                                 begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
                                 break;
                             }
-                            case "1STFINAL": {
-                                begin -= Double.parseDouble(assetlist.get(y).getAmount());
-                                break;
-                            }
+//                            case "1STFINAL": {
+//                                begin -= Double.parseDouble(assetlist.get(y).getAmount());
+//                                break;
+//                            }
                         }
                     }
                 }

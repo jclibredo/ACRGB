@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -117,11 +118,11 @@ public class BookingMethod {
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := "
                     + "ACR_GB.ACRGBPKG.GETALLCLAIMSFORBOOK("
-                    + ":u_accreno,"
+                    + ":upmccno,"
                     + ":u_tags,"
                     + ":u_from,:u_to); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("u_accreno", upmccno.trim());
+            statement.setString("upmccno", upmccno.trim());
             statement.setString("u_tags", "G".trim());
             statement.setDate("u_from", (Date) new Date(utility.StringToDate(datestart).getTime()));
             statement.setDate("u_to", (Date) new Date(utility.StringToDate(dateend).getTime()));
@@ -155,6 +156,12 @@ public class BookingMethod {
                     nclaims.setDateadmission(resultset.getString("DATE_ADM"));
                 } else {
                     nclaims.setDateadmission(dateformat.format(resultset.getDate("DATE_ADM")));
+                }
+                // nclaims.setDateadmission(resultset.getString("DATE_ADM"));
+                if (resultset.getString("REFILEDATE") == null) {
+                    nclaims.setRefiledate(resultset.getString("REFILEDATE"));
+                } else {
+                    nclaims.setRefiledate(dateformat.format(resultset.getDate("REFILEDATE")));
                 }
                 nclaims.setTrn(resultset.getString("TRN"));
                 nclaims.setTags(resultset.getString("TAGS"));
@@ -227,7 +234,7 @@ public class BookingMethod {
                                     contractdate.getDateto().trim(),
                                     book.getCreatedby());
                             if (!autoInsert.isSuccess()) {
-                                errorList.add(autoInsert.getMessage()); 
+                                errorList.add(autoInsert.getMessage());
                             }
                             //GET CLAIMS TOTAL AMOUNT UNDER FACILITY
                             ACRGBWSResult getClaimsAmount = this.CLAIMSAMOUNTBOOK(dataSource,
@@ -372,7 +379,15 @@ public class BookingMethod {
                             if (claimstList.isSuccess()) {
                                 List<NclaimsData> claimstListResult = Arrays.asList(utility.ObjectMapper().readValue(claimstList.getResult(), NclaimsData[].class));
                                 for (int conb = 0; conb < claimstListResult.size(); conb++) {
-                                    claimslist.add(claimstListResult.get(conb));
+                                    if (claimstListResult.get(conb).getRefiledate().isEmpty()) {
+                                        if (dateformat.parse(claimstListResult.get(conb).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                            claimslist.add(claimstListResult.get(conb));
+                                        }
+                                    } else {
+                                        if (dateformat.parse(claimstListResult.get(conb).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                            claimslist.add(claimstListResult.get(conb));
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -391,7 +406,15 @@ public class BookingMethod {
                                     if (claimstList.isSuccess()) {
                                         List<NclaimsData> claimstListResult = Arrays.asList(utility.ObjectMapper().readValue(claimstList.getResult(), NclaimsData[].class));
                                         for (int conb = 0; conb < claimstListResult.size(); conb++) {
-                                            claimslist.add(claimstListResult.get(conb));
+                                            if (claimstListResult.get(conb).getRefiledate().isEmpty()) {
+                                                if (dateformat.parse(claimstListResult.get(conb).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                                    claimslist.add(claimstListResult.get(conb));
+                                                }
+                                            } else {
+                                                if (dateformat.parse(claimstListResult.get(conb).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                                    claimslist.add(claimstListResult.get(conb));
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -415,6 +438,8 @@ public class BookingMethod {
 
         } catch (IOException ex) {
             result.setMessage(ex.toString());
+            Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ParseException ex) {
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

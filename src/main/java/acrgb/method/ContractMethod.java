@@ -23,6 +23,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -536,12 +537,21 @@ public class ContractMethod {
                             }
                         }
                         //======================================
-                        ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, MapContract.getHcfid().trim(), "G", condate.getDatefrom(), condate.getDateto(), "CURRENTSTATUS");
+                        ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, MapContract.getHcfid().trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
                         if (sumresult.isSuccess()) {
                             List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                             for (int i = 0; i < nclaimsdata.size(); i++) {
-                                numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
+                                    if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                        claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                    }
+                                } else {
+                                    if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                        claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                    }
+                                }
                             }
                         }
 
@@ -577,9 +587,9 @@ public class ContractMethod {
             } else {
                 result.setMessage(methods.GETROLE(dataSource, userid, tags).getMessage());
             }
-        } catch (IOException ex) {
+        } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -648,12 +658,21 @@ public class ContractMethod {
                                     }
                                 }
                                 //======================================
-                                ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, HCIList.get(x).trim(), "G", condate.getDatefrom(), condate.getDateto(), "CURRENTSTATUS");
+                                ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, HCIList.get(x).trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
                                 if (sumresult.isSuccess()) {
                                     List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                                     for (int i = 0; i < nclaimsdata.size(); i++) {
-                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                        claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                        if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
+                                            if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                            }
+                                        } else {
+                                            if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -690,9 +709,9 @@ public class ContractMethod {
             } else {
                 result.setMessage(methods.GETROLE(dataSource, userid, tags).getMessage());
             }
-        } catch (IOException ex) {
+        } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -786,12 +805,21 @@ public class ContractMethod {
                                     if (GetHCIList.isSuccess()) {
                                         List<String> HCIList = Arrays.asList(GetHCIList.getResult().split(","));
                                         for (int x = 0; x < HCIList.size(); x++) {
-                                            ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, HCIList.get(x).trim(), "G", condate.getDatefrom(), condate.getDateto(), "CURRENTSTATUS");
+                                            ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, HCIList.get(x).trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
                                             if (sumresult.isSuccess()) {
                                                 List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                                                 for (int i = 0; i < nclaimsdata.size(); i++) {
-                                                    numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                                    totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                    if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
+                                                        if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                            numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                            totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                        }
+                                                    } else {
+                                                        if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                            numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                            totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
@@ -847,7 +875,7 @@ public class ContractMethod {
             } else {
                 result.setMessage(methods.GETROLE(dataSource, userid, tags).getMessage());
             }
-        } catch (IOException ex) {
+        } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -986,6 +1014,5 @@ public class ContractMethod {
         return result;
     }
 //TAGS
-  
 
 }

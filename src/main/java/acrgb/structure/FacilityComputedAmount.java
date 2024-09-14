@@ -22,6 +22,8 @@ public class FacilityComputedAmount {
     private String totalamount;
     private String totalclaims;
     private String datefiled;
+    private String dateadmit;
+    private String daterefiled;
     private String sb;
     private String thirty;
     private String c1rvcode;
