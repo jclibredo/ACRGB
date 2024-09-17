@@ -64,7 +64,7 @@ public class InsertMethods {
         try (Connection connection = datasource.getConnection()) {
             UserActivity userlogs = utility.UserActivity();
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTASSETS(:Message,:Code,:p_hcfid,:p_tranchid ,:p_receipt,:p_amount"
-                    + ",:p_createdby,:p_datereleased,:p_datecreated,:p_conid,:p_releasedamount,:p_previousbal)");
+                    + ",:p_createdby,:p_datereleased,:p_datecreated,:p_conid,:p_releasedamount,:p_previousbal,:pclaimscount)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("p_hcfid", assets.getHcfid());
@@ -77,6 +77,7 @@ public class InsertMethods {
             getinsertresult.setString("p_conid", assets.getConid());
             getinsertresult.setString("p_releasedamount", assets.getReleasedamount());
             getinsertresult.setString("p_previousbal", assets.getPreviousbalance());
+            getinsertresult.setString("pclaimscount", assets.getClaimscount());
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 //INSERT TO ACTIVITY LOGS
@@ -464,7 +465,9 @@ public class InsertMethods {
     }
 
     //----------------------------------------------------------------------------------------------------------
-    public ACRGBWSResult INACTIVEDATA(final DataSource datasource, final String tags,
+    public ACRGBWSResult INACTIVEDATA(
+            final DataSource datasource,
+            final String tags,
             final String dataid,
             final String createdby,
             final String ustatus) {
@@ -486,7 +489,7 @@ public class InsertMethods {
                         getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                         getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                         getinsertresult.setString("tags", "USERDETAILS".trim().toUpperCase());
-                        getinsertresult.setInt("dataid", Integer.parseInt(userinfo.getDid()));
+                        getinsertresult.setString("dataid", userinfo.getDid());
                         getinsertresult.execute();
                         if (getinsertresult.getString("Message").equals("SUCC")) {
                             result.setSuccess(true);
@@ -502,7 +505,7 @@ public class InsertMethods {
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                     getinsertresult.setString("tags", "USER".trim().toUpperCase());
-                    getinsertresult.setInt("dataid", Integer.parseInt(dataid));
+                    getinsertresult.setString("dataid", dataid);
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
                         userLogs.setActstatus("SUCCESS");
@@ -517,7 +520,7 @@ public class InsertMethods {
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("tags", tags.trim().toUpperCase());
-                getinsertresult.setInt("dataid", Integer.parseInt(dataid));
+                getinsertresult.setString("dataid", dataid);
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     userLogs.setActstatus("SUCCESS");

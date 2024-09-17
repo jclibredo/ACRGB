@@ -257,9 +257,7 @@ public class ContractTagging {
                         }
                     }
                 }
-                
-                
-                
+
                 createdwho = contractList.get(0).getCreatedby();
             }
             //END MAPPED ROLE INDEX STATUS TO 3

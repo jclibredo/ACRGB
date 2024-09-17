@@ -1999,7 +1999,6 @@ public class Methods {
 //                                                        totalcomputeA.setThirty(String.valueOf(0.00));
 //                                                        totalcomputeA.setSb(String.valueOf(Percent10n30));
 //                                                    }
-
                                                     break;
                                                 }
                                                 default: {
@@ -2188,7 +2187,7 @@ public class Methods {
             while (resultset.next()) {
                 UserActivity logs = new UserActivity();
                 logs.setActby(resultset.getString("ACTBY"));
-                logs.setActdate(datetimeformat.format(resultset.getDate("ACTDATE")));
+                logs.setActdate(datetimeformat.format(resultset.getTimestamp("ACTDATE")));
                 logs.setActdetails(resultset.getString("ACTDETAILS"));
                 logs.setActid(resultset.getString("ACTID"));
                 logs.setActstatus(resultset.getString("ACTSTATS"));
@@ -2385,25 +2384,23 @@ public class Methods {
                 MBRequestSummary mbrequest = new MBRequestSummary();
                 mbrequest.setMbrid(resultset.getString("MBRID"));
                 mbrequest.setTotalamount(resultset.getString("AMOUNT"));
-                mbrequest.setDaterequest(dateformat.format(resultset.getDate("DATEREQUEST")));
-                mbrequest.setYearfrom(dateformat.format(resultset.getDate("DATEFROM")));
-                mbrequest.setYearto(dateformat.format(resultset.getDate("DATETO")));
+                mbrequest.setDaterequest(dateformat.format(resultset.getTimestamp("DATEREQUEST")));
+                mbrequest.setYearfrom(dateformat.format(resultset.getTimestamp("DATEFROM")));
+                mbrequest.setYearto(dateformat.format(resultset.getTimestamp("DATETO")));
                 mbrequest.setRequestor(resultset.getString("REQUESTOR"));
                 mbrequest.setTranscode(resultset.getString("TRANSCODE"));
                 mbrequest.setReqstatus(resultset.getString("STATUS"));
                 mbrequest.setRemarks(resultset.getString("REMARKS"));
-                mbrequest.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                mbrequest.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                 mbrequestlist.add(mbrequest);
             }
-
-            if (!mbrequestlist.isEmpty()) {
+            if (mbrequestlist.size() > 0) {
                 result.setResult(utility.ObjectMapper().writeValueAsString(mbrequestlist));
                 result.setMessage("OK");
                 result.setSuccess(true);
             } else {
                 result.setMessage("N/A");
             }
-
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2539,7 +2536,7 @@ public class Methods {
                 ManagingBoard mb = new ManagingBoard();
                 mb.setMbid(resultset.getString("MBID"));
                 mb.setMbname(resultset.getString("MBNAME"));
-                mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                 ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
                     UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
@@ -2642,7 +2639,7 @@ public class Methods {
                         ManagingBoard mb = new ManagingBoard();
                         mb.setMbid(resultset.getString("MBID"));
                         mb.setMbname(resultset.getString("MBNAME"));
-                        mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                        mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                         ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                         if (creator.isSuccess()) {
                             UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
@@ -2711,7 +2708,7 @@ public class Methods {
                         ManagingBoard mb = new ManagingBoard();
                         mb.setMbid(resultset.getString("MBID"));
                         mb.setMbname(resultset.getString("MBNAME"));
-                        mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                        mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                         ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                         if (creator.isSuccess()) {
                             UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
@@ -2778,7 +2775,7 @@ public class Methods {
                     ManagingBoard mb = new ManagingBoard();
                     mb.setMbid(resultset.getString("MBID"));
                     mb.setMbname(resultset.getString("MBNAME"));
-                    mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                    mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                     ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                     if (creator.isSuccess()) {
                         UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
@@ -3184,7 +3181,6 @@ public class Methods {
                         ManagingBoard mb = utility.ObjectMapper().readValue(conlist.get(x).getHcfid(), ManagingBoard.class);
                         ReportsHCPNSummary rmb = new ReportsHCPNSummary();
                         rmb.setHcpnname(mb.getMbname());
-
                         if (!conlist.get(x).getContractdate().isEmpty()) {
                             ContractDate condate = utility.ObjectMapper().readValue(conlist.get(x).getContractdate(), ContractDate.class);
                             rmb.setContractadateto(condate.getDateto());
@@ -3379,17 +3375,17 @@ public class Methods {
 //                fca.setYearto(dateend);
 //                fca.setTotalclaims(resultset.getString("COUNTVAL"));
 //                if (resultset.getString("DATESUB") != null) {
-//                    fca.setDatefiled(dateformat.format(resultset.getDate("DATESUB")));
+//                    fca.setDatefiled(dateformat.format(resultset.getTimestamp("DATESUB")));
 //                } else {
 //                    fca.setDatefiled("");
 //                }
 //                if (resultset.getString("DATEREFILE") != null) {
-//                    fca.setDaterefiled(dateformat.format(resultset.getDate("DATEREFILE")));
+//                    fca.setDaterefiled(dateformat.format(resultset.getTimestamp("DATEREFILE")));
 //                } else {
 //                    fca.setDaterefiled("");
 //                }
 //                if (resultset.getString("DATEADM") != null) {
-//                    fca.setDateadmit(dateformat.format(resultset.getDate("DATEADM")));
+//                    fca.setDateadmit(dateformat.format(resultset.getTimestamp("DATEADM")));
 //                } else {
 //                    fca.setDateadmit("");
 //                }
@@ -3541,18 +3537,18 @@ public class Methods {
                         } else {
                             fca.setC2icdcode("");
                         }
-                        if (resultset.getString("DATESUB") != null) {
-                            fca.setDatefiled(dateformat.format(resultset.getTime("DATESUB")));
+                        if (resultset.getTimestamp("DATESUB") != null) {
+                            fca.setDatefiled(dateformat.format(resultset.getTimestamp("DATESUB")));
                         } else {
                             fca.setDatefiled("");
                         }
-                        if (resultset.getString("DATEREFILE") != null) {
-                            fca.setDaterefiled(dateformat.format(resultset.getTime("DATEREFILE")));
+                        if (resultset.getTimestamp("DATEREFILE") != null) {
+                            fca.setDaterefiled(dateformat.format(resultset.getTimestamp("DATEREFILE")));
                         } else {
                             fca.setDaterefiled("");
                         }
-                        if (resultset.getString("DATEADM") != null) {
-                            fca.setDateadmit(dateformat.format(resultset.getTime("DATEADM")));
+                        if (resultset.getTimestamp("DATEADM") != null) {
+                            fca.setDateadmit(dateformat.format(resultset.getTimestamp("DATEADM")));
                         } else {
                             fca.setDateadmit("");
                         }
@@ -3596,14 +3592,14 @@ public class Methods {
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM-dd-yyyy");
                 LocalDateTime nowS = LocalDateTime.now();
                 java.util.Date dateNow = new SimpleDateFormat("MM-dd-yyyy").parse(dtf.format(nowS));
-                java.util.Date convertTo = new SimpleDateFormat("MM-dd-yyyy").parse(dateformat.format(resultset.getDate("DATETO")));
+                java.util.Date convertTo = new SimpleDateFormat("MM-dd-yyyy").parse(dateformat.format(resultset.getTimestamp("DATETO")));
                 ContractDate contractDate = new ContractDate();
                 contractDate.setCondateid(resultset.getString("CONDATEID"));
                 contractDate.setStatus(resultset.getString("STATUS"));
-                contractDate.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));
-                contractDate.setDateto(dateformat.format(resultset.getDate("DATETO")));
+                contractDate.setDatefrom(dateformat.format(resultset.getTimestamp("DATEFROM")));
+                contractDate.setDateto(dateformat.format(resultset.getTimestamp("DATETO")));
                 contractDate.setCreatedby(resultset.getString("CREATEDBY"));
-                contractDate.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                contractDate.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                 if (dateNow.compareTo(convertTo) > 0) {
                     //GET CONTRACT UNDER 
                     ACRGBWSResult endContract = ct.EndContractUsingDateid(dataSource, resultset.getString("CONDATEID").trim());
@@ -3689,28 +3685,6 @@ public class Methods {
         return result;
     }
 
-//     //GET ACTIVE CONTRACT DATE PERIOD
-//    public ACRGBWSResult TerminateAccreditation(final DataSource dataSource, final Accreditation accreditation) {
-//        ACRGBWSResult result = utility.ACRGBWSResult();
-//        result.setMessage("");
-//        result.setResult("");
-//        result.setSuccess(false);
-//        try (Connection connection = dataSource.getConnection()) {
-//           
-//            
-//            
-//            
-//            
-//            
-//            
-//            
-//        } catch (SQLException | IOException | ParseException ex) {
-//            result.setMessage(ex.toString());
-//            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        return result;
-//    }
-//    
     public ACRGBWSResult UpdateHCPNAccreditation(final DataSource datasource, final Accreditation accreditation) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -3767,7 +3741,7 @@ public class Methods {
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             while (resultset.next()) {
                 java.util.Date dateNow = new SimpleDateFormat("MM-dd-yyyy").parse(dtf.format(nowS));
-                java.util.Date convertTo = new SimpleDateFormat("MM-dd-yyyy").parse(dateformat.format(resultset.getDate("DATETO")));
+                java.util.Date convertTo = new SimpleDateFormat("MM-dd-yyyy").parse(dateformat.format(resultset.getTimestamp("DATETO")));
                 if (dateNow.compareTo(convertTo) > 0) {
                     Accreditation accre = new Accreditation();
                     accre.setAccreno(resultset.getString("ACCRENO"));
@@ -3775,8 +3749,8 @@ public class Methods {
                     accre.setCreatedby(resultset.getString("CREATEDBY"));
                     accre.setStatus("3");
                     accre.setTypes("NONRENEW");
-                    accre.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));
-                    accre.setDateto(dateformat.format(resultset.getDate("DATETO")));
+                    accre.setDatefrom(dateformat.format(resultset.getTimestamp("DATEFROM")));
+                    accre.setDateto(dateformat.format(resultset.getTimestamp("DATETO")));
                     ACRGBWSResult updateResult = this.UpdateHCPNAccreditation(dataSource, accre);
                     if (!updateResult.isSuccess()) {
                         errorList.add(updateResult.getMessage());
@@ -3816,7 +3790,7 @@ public class Methods {
                 ManagingBoard mb = new ManagingBoard();
                 mb.setMbid(resultset.getString("MBID"));
                 mb.setMbname(resultset.getString("MBNAME"));
-                mb.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                 ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
                     UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);

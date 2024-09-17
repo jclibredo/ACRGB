@@ -57,10 +57,6 @@ public class UserActivityLogs {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "CREATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " insert " + userActivity.getActdetails(), userActivity.getActstatus());
                 break;
             }
-            case "EDIT-CONTRACT-DATE": {
-
-                break;
-            }
             //TRANCHE CATEGORY
             case "ADD-TRANCHE": {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "ADD " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " insert " + userActivity.getActdetails(), userActivity.getActstatus());
@@ -79,10 +75,6 @@ public class UserActivityLogs {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " update user level data  " + userActivity.getActdetails(), userActivity.getActstatus());
                 break;
             }
-            case "DELETE-USER-LEVEL": {
-
-                break;
-            }
             //USER ACCOUNT ACTIVITY
             case "ADD-USERACCOUNT": {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "ADD " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " create " + GetSubjectData(dataSource, "USERINFO", objectid2) + " with Role " + GetSubjectData(dataSource, "USERLEVEL", objectid1) + " " + userActivity.getActdetails(), userActivity.getActstatus());
@@ -92,23 +84,10 @@ public class UserActivityLogs {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "ADD " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " create new account with " + userActivity.getActdetails() + " with Role " + GetSubjectData(dataSource, "USERLEVEL", objectid1), userActivity.getActstatus());
                 break;
             }
-            case "EDIT-USERACCOUNT": {
-
-                break;
-            }
-            case "DELETE-USERACCOUNT": {
-
-                break;
-            }
-            case "LOGIN-USERACCOUNT": {
-
-                break;
-            }
             case "EDIT-USERINFO-EMAIL": {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " edited " + userActivity.getActdetails(), userActivity.getActstatus());
                 break;
             }
-
             //USER INFO ACTIVITY
             case "ADD-USERINFO": {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "CREATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " insert " + userActivity.getActdetails(), userActivity.getActstatus());
@@ -120,10 +99,6 @@ public class UserActivityLogs {
             }
             case "EDIT-USERINFO": {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " edited " + GetSubjectData(dataSource, "USERINFO", objectid1) + " " + userActivity.getActdetails(), userActivity.getActstatus());
-                break;
-            }
-            case "DELETE-USERINFO": {
-
                 break;
             }
             //HCPN ACTIVITY
@@ -152,11 +127,6 @@ public class UserActivityLogs {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " edit " + objectid2 + "  to :" + userActivity.getActdetails(), userActivity.getActstatus());
                 break;
             }
-            case "DELETE-HCPN": {
-
-                break;
-            }
-
             //CONTRACT TAGGING
             case "TAGGING-CONTRACT": {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " tagg contract of " + GetAccount(dataSource, objectid1.trim()) + "  acction perform :" + userActivity.getActdetails(), userActivity.getActstatus());
@@ -209,11 +179,6 @@ public class UserActivityLogs {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "ADD " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " released " + GetSubjectData(dataSource, "TRANCHE", objectid2) + " tranche to " + GetSubjectData(dataSource, "HCI", objectid1) + " " + userActivity.getActdetails(), userActivity.getActstatus());
                 break;
             }
-            case "EDIT-TRANCHE-HCPN": {
-//                m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " update " + GetSubjectData(dataSource, "TRANCHE", objectid2) + " tranche from " + GetSubjectData(dataSource, "HCPN", objectid1), userActivity.getActstatus());
-//                break;
-//                 break;
-            }
             case "EDIT-TRANCHE-HCI": {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " edit " + GetSubjectData(dataSource, "TRANCHE", objectid2) + " tranche from " + GetSubjectData(dataSource, "HCI", objectid1), userActivity.getActstatus());
                 break;
@@ -224,65 +189,6 @@ public class UserActivityLogs {
             }
             case "DELETE-TRANCHE-HCI": {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "DELETE " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " removed " + GetSubjectData(dataSource, "TRANCHE", objectid2) + " tranche from " + GetSubjectData(dataSource, "HCI", objectid1), userActivity.getActstatus());
-                break;
-            }
-            //DATE CONTRACT PERIOD ACTIVITY
-            case "ADD-CONTRACT-PERIOD": {
-
-                break;
-            }
-            case "EDIT-CONTRACT-PERIOD": {
-
-                break;
-            }
-            case "DELETE-CONTRACT-PERIOD": {
-
-                break;
-            }
-            //MAP FACILITY TO HCPN
-            case "ADD-HCI-HCPN": {
-
-                break;
-            }
-            case "DELETE-HCI-HCPN": {
-
-                break;
-            }
-
-            //ACCOUNT ADD ACCESS
-            case "ADD-ACCOUNT-PRO": {
-
-                break;
-            }
-            case "DELETE-ACCOUNT-PRO": {
-
-                break;
-            }
-
-            case "ADD-ACCOUNT-HCPN": {
-
-                break;
-            }
-            case "DELETE-ACCOUNT-HCPN": {
-
-                break;
-            }
-            case "ADD-ACCOUNT-HCI": {
-
-                break;
-            }
-            case "DELETE-ACCOUNT-HCI": {
-
-                break;
-            }
-
-            //CONTRACT TAGGING ACTIVITY
-            case "END-CONTRACT-TAG": {
-
-                break;
-            }
-            case "TERMINATE-CONTRACT-TAG": {
-
                 break;
             }
             //CONTRACT TAGGING ACTIVITY
@@ -420,7 +326,6 @@ public class UserActivityLogs {
                         } else {
                             result = "false";
                         }
-
                     }
                     break;
                 }

@@ -64,4 +64,3 @@ acrgb\method\CurrentBalance.class
 acrgb\ApplicationConfig.class
 acrgb\structure\UserLevel.class
 acrgb\structure\UserRoleIndex.class
-acrgb\method\ValidateClaims.class

@@ -28,7 +28,6 @@ import javax.enterprise.context.RequestScoped;
 import javax.sql.DataSource;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;

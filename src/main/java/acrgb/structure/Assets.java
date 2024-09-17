@@ -26,5 +26,6 @@ public class Assets {
     private String status;
     private String releasedamount;
     private String previousbalance;
+    private String claimscount;
 
 }

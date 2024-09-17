@@ -16,7 +16,6 @@ import acrgb.method.GenerateRandomPassword;
 import acrgb.method.LedgerMethod;
 import acrgb.method.Methods;
 import acrgb.method.ProcessAffiliate;
-import acrgb.method.ValidateClaims;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Appellate;
 import acrgb.structure.Email;
@@ -1183,25 +1182,25 @@ public class ACRGBFETCH {
         return result;
     }
 
-    @GET
-    @Path("ValidateClaims/{useries}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult ValidateClaims(
-            @HeaderParam("token") String token,
-            @PathParam("useries") String useries) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            ValidateClaims vc = new ValidateClaims();
-            ACRGBWSResult vcResult = vc.ValidateClaims(dataSource, useries);
-            result.setMessage(vcResult.getMessage());
-            result.setSuccess(vcResult.isSuccess());
-            result.setResult(vcResult.getResult());
-        }
-        return result;
-    }
+//    @GET
+//    @Path("ValidateClaims/{useries}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult ValidateClaims(
+//            @HeaderParam("token") String token,
+//            @PathParam("useries") String useries) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+//        if (!GetPayLoad.isSuccess()) {
+//            result.setMessage(GetPayLoad.getMessage());
+//        } else {
+//            ValidateClaims vc = new ValidateClaims();
+//            ACRGBWSResult vcResult = vc.ValidateClaims(dataSource, useries);
+//            result.setMessage(vcResult.getMessage());
+//            result.setSuccess(vcResult.isSuccess());
+//            result.setResult(vcResult.getResult());
+//        }
+//        return result;
+//    }
 
     @GET
     @Path("GetUserAccount/{puserid}/{tags}")

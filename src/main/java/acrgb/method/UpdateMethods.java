@@ -14,7 +14,6 @@ import acrgb.structure.ContractDate;
 import acrgb.structure.LogStatus;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;
-import acrgb.structure.User;
 import acrgb.structure.UserActivity;
 import acrgb.structure.UserLevel;
 import acrgb.utility.Cryptor;

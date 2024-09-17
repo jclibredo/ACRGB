@@ -26,4 +26,5 @@ public class ConBalance {
     private String status;  //STATUS
     private String conid;  //CONTRACT ID
     private String createdby; //CREATED BY
+    private String claimscount;
 }

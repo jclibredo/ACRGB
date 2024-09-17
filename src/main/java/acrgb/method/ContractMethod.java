@@ -69,7 +69,7 @@ public class ContractMethod {
                         //END OF GET NETWORK FULL DETAILS
                         contract.setAmount(resultset.getString("AMOUNT"));
                         contract.setStats(resultset.getString("STATS"));
-                        contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
+                        contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
                         ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
                         if (getcondateA.isSuccess()) {
                             contract.setContractdate(getcondateA.getResult());
@@ -106,7 +106,7 @@ public class ContractMethod {
                         //END OF GET NETWORK FULL DETAILS
                         contracts.setAmount(resultsets.getString("AMOUNT"));
                         contracts.setStats(resultsets.getString("STATS"));
-                        contracts.setDatecreated(dateformat.format(resultsets.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
+                        contracts.setDatecreated(dateformat.format(resultsets.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
                         ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultsets.getString("CONTRACTDATE"));
                         if (getcondateA.isSuccess()) {
                             contracts.setContractdate(getcondateA.getResult());
@@ -166,7 +166,7 @@ public class ContractMethod {
                 } else {
                     contract.setCreatedby(creator.getMessage());
                 }
-                contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
+                contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
                 ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
                 if (getcondateA.isSuccess()) {
                     contract.setContractdate(getcondateA.getResult());
@@ -218,7 +218,7 @@ public class ContractMethod {
                 } else {
                     contract.setCreatedby(creator.getMessage());
                 }
-                contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
+                contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
                 ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
                 if (getcondateA.isSuccess()) {
                     contract.setContractdate(getcondateA.getResult());
@@ -269,9 +269,9 @@ public class ContractMethod {
                     } else {
                         contractdate.setCreatedby(creator.getMessage());
                     }
-                    contractdate.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                    contractdate.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
-                    contractdate.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
+                    contractdate.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
+                    contractdate.setDatefrom(dateformat.format(resultset.getTimestamp("DATEFROM")));//resultset.getString("DATECOVERED"));
+                    contractdate.setDateto(dateformat.format(resultset.getTimestamp("DATETO")));//resultset.getString("DATECOVERED"));
                     contractdate.setStatus(resultset.getString("STATUS"));
                     //GET CONTRACT USING CONID
                     ACRGBWSResult getAccountbyConid = this.GETCONTRACTBYCONDATEID(dataSource, resultset.getString("CONDATEID"));
@@ -301,9 +301,9 @@ public class ContractMethod {
                     } else {
                         contractdate.setCreatedby(creator.getMessage());
                     }
-                    contractdate.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                    contractdate.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
-                    contractdate.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
+                    contractdate.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
+                    contractdate.setDatefrom(dateformat.format(resultset.getTimestamp("DATEFROM")));//resultset.getString("DATECOVERED"));
+                    contractdate.setDateto(dateformat.format(resultset.getTimestamp("DATETO")));//resultset.getString("DATECOVERED"));
                     contractdate.setStatus(resultset.getString("STATUS"));
                     contractdatelist.add(contractdate);
                 }
@@ -340,9 +340,9 @@ public class ContractMethod {
                 ContractDate contractdate = new ContractDate();
                 contractdate.setCondateid(resultset.getString("CONDATEID"));
                 contractdate.setCreatedby(resultset.getString("CREATEDBY"));
-                contractdate.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
-                contractdate.setDatefrom(dateformat.format(resultset.getDate("DATEFROM")));//resultset.getString("DATECOVERED"));
-                contractdate.setDateto(dateformat.format(resultset.getDate("DATETO")));//resultset.getString("DATECOVERED"));
+                contractdate.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
+                contractdate.setDatefrom(dateformat.format(resultset.getTimestamp("DATEFROM")));//resultset.getString("DATECOVERED"));
+                contractdate.setDateto(dateformat.format(resultset.getTimestamp("DATETO")));//resultset.getString("DATECOVERED"));
                 contractdate.setStatus(resultset.getString("STATUS"));
                 result.setMessage("OK");
                 result.setSuccess(true);
@@ -384,11 +384,11 @@ public class ContractMethod {
                     contract.setContractdate(getcondateA.getResult());
                 }
                 contract.setCreatedby(resultset.getString("CREATEDBY"));
-                contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
-                if (resultset.getString("ENDDATE") == null) {
+                contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
+                if (resultset.getTimestamp("ENDDATE") == null) {
                     contract.setEnddate(resultset.getString("ENDDATE"));
                 } else {
-                    contract.setEnddate(dateformat.format(resultset.getDate("ENDDATE")));
+                    contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
                 }
                 //GET MANAGINGBOARD NAME
                 ACRGBWSResult GetMB = methods.GETMBWITHID(dataSource, resultset.getString("HCFID"));
@@ -457,10 +457,10 @@ public class ContractMethod {
                 }
                 conbal.setConid(resultset.getString("CONID"));
                 conbal.setConutilized(resultset.getString("CONUTILIZED"));
-                if (resultset.getString("DATECREATED") == null) {
+                if (resultset.getTimestamp("DATECREATED") == null) {
                     conbal.setDatecreated(resultset.getString("DATECREATED"));
                 } else {
-                    conbal.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                    conbal.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                 }
                 conbal.setStatus(resultset.getString("STATUS"));
                 //------------------  END OF OBJECT MAPPING ----------------------
@@ -765,19 +765,10 @@ public class ContractMethod {
                         contractList.add(contract);
                         //-----------------------------------------------------------------------------
                     }
-
                     ACRGBWSResult GetHCPNList = methods.GETROLEMULITPLE(dataSource, GetRole.getResult().trim(), tags.trim());
                     if (GetHCPNList.isSuccess()) {
                         List<String> HCPNList = Arrays.asList(GetHCPNList.getResult().split(","));
                         for (int y = 0; y < HCPNList.size(); y++) {
-                            //GET ALL FACILITY UNDER HCPN
-//                                ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, tags.trim(), HCPNList.get(y).trim(), "0", MapContract.get(w).getConid());
-//                                if (totalResult.isSuccess()) {
-//                                    Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
-//                                    tranches += Integer.parseInt(getResult.getCcount());
-//                                    tracnheamountreleased += Double.parseDouble(getResult.getCtotal());
-//                                }
-
                             //GET CONTRACT PER HCPN
                             ACRGBWSResult GetHCPNContract = this.GETCONTRACT(dataSource, tags.trim().toUpperCase(), HCPNList.get(y).trim());
                             if (GetHCPNContract.isSuccess()) {
@@ -909,7 +900,7 @@ public class ContractMethod {
                 } else {
                     con.setCreatedby(creator.getMessage());
                 }
-                con.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                con.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                 ACRGBWSResult getcondateA = contractmethod.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
                 if (getcondateA.isSuccess()) {
                     con.setContractdate(getcondateA.getResult());
@@ -922,10 +913,10 @@ public class ContractMethod {
                 con.setAddamount(resultset.getString("ADDAMOUNT"));
                 con.setQuarter(resultset.getString("QUARTER"));
                 con.setSb(resultset.getString("SB"));
-                if (resultset.getDate("ENDDATE") == null) {
+                if (resultset.getTimestamp("ENDDATE") == null) {
                     con.setEnddate("N/A");
                 } else {
-                    con.setEnddate(dateformat.format(resultset.getDate("ENDDATE")));
+                    con.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
                 }
                 conlist.add(con);
             }
@@ -964,7 +955,7 @@ public class ContractMethod {
                 roleindex.setCreatedby(resultset.getString("CREATEDBY"));
                 roleindex.setStatus(resultset.getString("STATUS"));
                 roleindex.setContractdate(resultset.getString("CONDATE"));
-                roleindex.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                roleindex.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                 roleindexList.add(roleindex);
             }
             if (roleindexList.size() > 0) {

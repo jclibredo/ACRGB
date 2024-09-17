@@ -79,7 +79,7 @@ public class BookingMethod {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONBALANCE(:Message,:Code,"
-                    + ":ubooknum,:ucondateid,:uaccount,:uconbalance,:uconamount,:uconutilized,:udatecreated,:ucreatedby,:uconid)");
+                    + ":ubooknum,:ucondateid,:uaccount,:uconbalance,:uconamount,:uconutilized,:udatecreated,:ucreatedby,:uconid,:uclaimscount)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("ubooknum", conBalance.getBooknum().trim());
@@ -91,6 +91,7 @@ public class BookingMethod {
             getinsertresult.setDate("udatecreated", (Date) new Date(utility.StringToDate(conBalance.getDatecreated()).getTime()));
             getinsertresult.setString("ucreatedby", conBalance.getCreatedby().trim());
             getinsertresult.setString("uconid", conBalance.getConid().trim());
+            getinsertresult.setString("uclaimscount", conBalance.getClaimscount().trim());
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
                 result.setSuccess(true);
@@ -145,23 +146,24 @@ public class BookingMethod {
                 nclaims.setAccreno(resultset.getString("ACCRENO"));
                 nclaims.setClaimamount(resultset.getString("CLAIMAMOUNT"));
                 // nclaims.setDatesubmitted(resultset.getString("DATESUBMITTED"));
-                if (resultset.getString("DATESUBMITTED") == null) {
+                if (resultset.getTimestamp("DATESUBMITTED") == null) {
                     nclaims.setDatesubmitted(resultset.getString("DATESUBMITTED"));
                 } else {
-                    nclaims.setDatesubmitted(dateformat.format(resultset.getDate("DATESUBMITTED")));
+                    nclaims.setDatesubmitted(dateformat.format(resultset.getTimestamp("DATESUBMITTED")));
                 }
                 nclaims.setSeries(resultset.getString("SERIES"));
                 // nclaims.setDateadmission(resultset.getString("DATE_ADM"));
-                if (resultset.getString("DATE_ADM") == null) {
+
+                if (resultset.getTimestamp("DATE_ADM") == null) {
                     nclaims.setDateadmission(resultset.getString("DATE_ADM"));
                 } else {
-                    nclaims.setDateadmission(dateformat.format(resultset.getDate("DATE_ADM")));
+                    nclaims.setDateadmission(dateformat.format(resultset.getTimestamp("DATE_ADM")));
                 }
                 // nclaims.setDateadmission(resultset.getString("DATE_ADM"));
-                if (resultset.getString("REFILEDATE") == null) {
+                if (resultset.getTimestamp("REFILEDATE") == null) {
                     nclaims.setRefiledate(resultset.getString("REFILEDATE"));
                 } else {
-                    nclaims.setRefiledate(dateformat.format(resultset.getDate("REFILEDATE")));
+                    nclaims.setRefiledate(dateformat.format(resultset.getTimestamp("REFILEDATE")));
                 }
                 nclaims.setTrn(resultset.getString("TRN"));
                 nclaims.setTags(resultset.getString("TAGS"));
@@ -199,7 +201,6 @@ public class BookingMethod {
             } else {
                 result.setMessage("N/A");
             }
-
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -208,13 +209,17 @@ public class BookingMethod {
     }
 
     //GET CONTRACT WHERE STATUS IS INACTIVE
-    public ACRGBWSResult PROCESSENDEDCONTRACT(final DataSource dataSource, final Book book, final String utags) {
+    public ACRGBWSResult PROCESSENDEDCONTRACT(
+            final DataSource dataSource,
+            final Book book,
+            final String utags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         FetchMethods fm = new FetchMethods();
         Methods methods = new Methods();
+        InsertMethods im = new InsertMethods();
         ArrayList<String> errorList = new ArrayList<>();
         try {
             ACRGBWSResult getConResult = fm.GETCONTRACTCONID(dataSource, book.getConid(), utags.trim().toUpperCase());
@@ -223,10 +228,12 @@ public class BookingMethod {
                     case "FACILITY": {
                         double totalClaimAmount = 0.00;
                         double totalClaimAssets = 0.00;
+                        double totalnumberofclaims = 0.00;
                         Contract HCIContract = utility.ObjectMapper().readValue(getConResult.getResult(), Contract.class);
                         //ACRGBWSResult get
                         if (HCIContract.getContractdate() != null) {
                             ContractDate contractdate = utility.ObjectMapper().readValue(HCIContract.getContractdate(), ContractDate.class);
+                            //------------------------------------------------------
                             ACRGBWSResult autoInsert = this.AUTOBOOKDATA(dataSource,
                                     book.getBooknum(),
                                     book.getHcpncode().trim(), "G",
@@ -236,11 +243,25 @@ public class BookingMethod {
                             if (!autoInsert.isSuccess()) {
                                 errorList.add(autoInsert.getMessage());
                             }
+                            //------------------------------------------------------
                             //GET CLAIMS TOTAL AMOUNT UNDER FACILITY
                             ACRGBWSResult getClaimsAmount = this.CLAIMSAMOUNTBOOK(dataSource,
-                                    book.getHcpncode().trim(), "G", contractdate.getDatefrom().trim(), contractdate.getDateto().trim());
+                                    book.getHcpncode().trim(), "G", contractdate.getDatefrom().trim(), utility.AddMinusDaysDate(contractdate.getDateto().trim(), "60"));
                             if (getClaimsAmount.isSuccess()) {
-                                totalClaimAmount += Double.parseDouble(getClaimsAmount.getResult());
+                                List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(getClaimsAmount.getResult(), NclaimsData[].class));
+                                for (int i = 0; i < nclaimsdata.size(); i++) {
+                                    if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
+                                        if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                            totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                            totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                        }
+                                    } else {
+                                        if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                            totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                            totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                        }
+                                    }
+                                }
                             }
                             //INSERT BOOKING REFERENCES
                             ACRGBWSResult bookReference = this.ACRBOOKING(dataSource, book);
@@ -252,7 +273,7 @@ public class BookingMethod {
                             if (GetAssetsByConID.isSuccess()) {
                                 List<Assets> listOfAssets = Arrays.asList(utility.ObjectMapper().readValue(GetAssetsByConID.getResult(), Assets[].class));
                                 for (int u = 0; u < listOfAssets.size(); u++) {
-                                    totalClaimAssets += Double.parseDouble(listOfAssets.get(u).getAmount());
+                                    totalClaimAssets += Double.parseDouble(listOfAssets.get(u).getReleasedamount());
                                 }
                                 //INSERT CON BALANCE 
                                 ConBalance conbal = new ConBalance();
@@ -265,17 +286,25 @@ public class BookingMethod {
                                 conbal.setDatecreated(book.getDatecreated());
                                 conbal.setCreatedby(book.getCreatedby());
                                 conbal.setConid(book.getConid());
+                                conbal.setClaimscount(String.valueOf(totalnumberofclaims));
                                 ACRGBWSResult InsertPreviousba = this.INSERTCONBALANCE(dataSource, conbal);
                                 if (!InsertPreviousba.isSuccess()) {
                                     errorList.add(InsertPreviousba.getMessage());
                                 }
                             }
+                            //CHANGE STATE THE CONTRACT
+                            ACRGBWSResult closeStateContract = im.INACTIVEDATA(dataSource, "CONSTATE", HCIContract.getConid(), book.getCreatedby(), "ACTIVE");
+                            if (!closeStateContract.isSuccess()) {
+                                errorList.add(closeStateContract.getMessage());
+                            }
+
                         }
                         break;
                     }
                     case "HCPN": {
                         double totalClaimAmount = 0.00;
                         double totalClaimAssets = 0.00;
+                        double totalnumberofclaims = 0.00;
                         Contract HCPNContract = utility.ObjectMapper().readValue(getConResult.getResult(), Contract.class);
                         if (HCPNContract.getContractdate() != null) {
                             ContractDate contractdate = utility.ObjectMapper().readValue(HCPNContract.getContractdate(), ContractDate.class);
@@ -294,9 +323,23 @@ public class BookingMethod {
                                     }
                                     //GET CLAIMS TOTAL AMOUNT UNDER FACILITY
                                     ACRGBWSResult getClaimsAmount = this.CLAIMSAMOUNTBOOK(dataSource,
-                                            hciCodeList.get(u).trim(), "G", contractdate.getDatefrom().trim(), contractdate.getDateto().trim());
+                                            hciCodeList.get(u).trim(), "G", contractdate.getDatefrom().trim(), utility.AddMinusDaysDate(contractdate.getDateto().trim(), "60"));
                                     if (getClaimsAmount.isSuccess()) {
-                                        totalClaimAmount += Double.parseDouble(getClaimsAmount.getResult());
+                                        List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(getClaimsAmount.getResult(), NclaimsData[].class));
+                                        for (int i = 0; i < nclaimsdata.size(); i++) {
+                                            if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
+                                                if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                                    totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                    totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                }
+                                            } else {
+                                                if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                                    totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                    totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                }
+                                            }
+                                        }
+
                                     }
                                 }
                                 //INSERT BOOKING REFERENCES
@@ -309,7 +352,7 @@ public class BookingMethod {
                                 if (GetAssetsByConID.isSuccess()) {
                                     List<Assets> listOfAssets = Arrays.asList(utility.ObjectMapper().readValue(GetAssetsByConID.getResult(), Assets[].class));
                                     for (int u = 0; u < listOfAssets.size(); u++) {
-                                        totalClaimAssets += Double.parseDouble(listOfAssets.get(u).getAmount());
+                                        totalClaimAssets += Double.parseDouble(listOfAssets.get(u).getReleasedamount());
                                     }
                                     //INSERT CON BALANCE 
                                     ConBalance conbal = new ConBalance();
@@ -322,10 +365,16 @@ public class BookingMethod {
                                     conbal.setDatecreated(book.getDatecreated());
                                     conbal.setCreatedby(book.getCreatedby());
                                     conbal.setConid(book.getConid());
+                                    conbal.setClaimscount(String.valueOf(totalnumberofclaims));
                                     ACRGBWSResult InsertPreviousba = this.INSERTCONBALANCE(dataSource, conbal);
                                     if (!InsertPreviousba.isSuccess()) {
                                         errorList.add(InsertPreviousba.getMessage());
                                     }
+                                }
+                                //CHANGE STATE THE CONTRACT
+                                ACRGBWSResult closeStateContract = im.INACTIVEDATA(dataSource, "CONSTATE", HCPNContract.getConid(), book.getCreatedby(), "ACTIVE");
+                                if (!closeStateContract.isSuccess()) {
+                                    errorList.add(closeStateContract.getMessage());
                                 }
                             } else {
                                 result.setMessage(hciList.getMessage());
@@ -345,7 +394,7 @@ public class BookingMethod {
                 result.setResult(utility.ObjectMapper().writeValueAsString(errorList));
             }
 
-        } catch (IOException ex) {
+        } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -436,10 +485,8 @@ public class BookingMethod {
                 result.setResult(utility.ObjectMapper().writeValueAsString(errorList));
             }
 
-        } catch (IOException ex) {
+        } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -463,15 +510,38 @@ public class BookingMethod {
             statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(udatefrom.trim().toUpperCase()).getTime()));
             statement.setDate("udateto", (Date) new Date(utility.StringToDate(udateto.trim().toUpperCase()).getTime()));
             statement.execute();
+            ArrayList<NclaimsData> nclaimsdataList = new ArrayList<>();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            if (resultset.next()) {
-                result.setMessage(resultset.getString("CLAIMSVOLUME"));
+            while (resultset.next()) {
+                NclaimsData nclaimsdata = new NclaimsData();
+                nclaimsdata.setClaimamount(resultset.getString("CLAIMSTOTAL"));
+                nclaimsdata.setTotalclaims(resultset.getString("CLAIMSVOLUME"));
+                // nclaims.setDatesubmitted(resultset.getString("DATESUBMITTED"));
+                if (resultset.getTimestamp("DATESUB") == null) {
+                    nclaimsdata.setDatesubmitted(resultset.getString("DATESUB"));
+                } else {
+                    nclaimsdata.setDatesubmitted(dateformat.format(resultset.getTimestamp("DATESUB")));
+                }
+                if (resultset.getTimestamp("DATEADM") == null) {
+                    nclaimsdata.setDateadmission(resultset.getString("DATEADM"));
+                } else {
+                    nclaimsdata.setDateadmission(dateformat.format(resultset.getTimestamp("DATEADM")));
+                }
+                // nclaims.setDateadmission(resultset.getString("DATE_ADM"));
+                if (resultset.getTimestamp("DATEREFILE") == null) {
+                    nclaimsdata.setRefiledate(resultset.getString("DATEREFILE"));
+                } else {
+                    nclaimsdata.setRefiledate(dateformat.format(resultset.getTimestamp("DATEREFILE")));
+                }
+                nclaimsdataList.add(nclaimsdata);
+            }
+            if (nclaimsdataList.size() > 0) {
                 result.setSuccess(true);
-                result.setResult(resultset.getString("CLAIMSTOTAL"));
+                result.setResult(utility.ObjectMapper().writeValueAsString(nclaimsdataList));
             } else {
                 result.setMessage("N/A");
             }
-        } catch (SQLException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }

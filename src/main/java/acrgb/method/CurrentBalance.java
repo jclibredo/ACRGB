@@ -38,7 +38,6 @@ public class CurrentBalance {
 
     private final Utility utility = new Utility();
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
-    //  private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm:ss a");
     private final FetchMethods fm = new FetchMethods();
     private final ContractMethod cm = new ContractMethod();
     private final Methods methods = new Methods();
@@ -80,7 +79,7 @@ public class CurrentBalance {
                     } else {
                         contract.setCreatedby(creator.getMessage());
                     }
-                    contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
+                    contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
                     contract.setTranscode(resultset.getString("TRANSCODE"));
                     contract.setBaseamount(resultset.getString("BASEAMOUNT"));
                     contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
@@ -118,12 +117,23 @@ public class CurrentBalance {
                         }
                         //GET CLAIMS SUMMARY OF FACILITY UNDER NETWORK
                         ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, uhcfcode.trim(), "G",
-                                condate.getDatefrom(), condate.getDateto(), "CURRENTSTATUS");
+                                condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
                         if (sumresult.isSuccess()) {
                             List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                             for (int i = 0; i < nclaimsdata.size(); i++) {
-                                numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
+                                    if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                        totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                    }
+                                } else {
+                                    if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                        totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                    }
+                                }
+//                                numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+//                                totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
                             }
                         }
                         double sumsA = (trancheamount / Double.parseDouble(resultset.getString("AMOUNT"))) * 100;
@@ -201,7 +211,7 @@ public class CurrentBalance {
                     } else {
                         contract.setCreatedby(creator.getMessage());
                     }
-                    contract.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));//resultset.getString("DATECREATED"));
+                    contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
                     contract.setTranscode(resultset.getString("TRANSCODE"));
                     contract.setBaseamount(resultset.getString("BASEAMOUNT"));
                     contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
@@ -228,14 +238,14 @@ public class CurrentBalance {
                                 Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
                                 tranches += Integer.parseInt(getResult.getCcount());
                                 trancheamount += Double.parseDouble(getResult.getCtotal());
-                            } 
+                            }
                             //GET TRANCHE AMOUNT
                             ACRGBWSResult getTranchid = cb.GET1STFINAL(dataSource, utags.trim().toUpperCase(), uhcfcode, tranch.getTranchid(), resultset.getString("CONID"));
                             if (getTranchid.isSuccess()) {
                                 Total getResult = utility.ObjectMapper().readValue(getTranchid.getResult(), Total.class);
                                 tranches -= Integer.parseInt(getResult.getCcount());
                                 trancheamount += Double.parseDouble(getResult.getCtotal());
-                            } 
+                            }
                         }
                         //GET CLAIMS SUMMARY OF FACILITY UNDER NETWORK
                         ACRGBWSResult conList = this.GETPREVIOUSMAP(dataSource, uhcfcode.trim(), condate.getCondateid());
@@ -245,13 +255,22 @@ public class CurrentBalance {
                                 ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource,
                                         userRoleList.get(x).getAccessid().trim(), "G",
                                         condate.getDatefrom(),
-                                        condate.getDateto(),
+                                        utility.AddMinusDaysDate(condate.getDateto().trim(), "60"),
                                         "CURRENTSTATUS");
                                 if (sumresult.isSuccess()) {
                                     List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                                     for (int i = 0; i < nclaimsdata.size(); i++) {
-                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                        totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                        if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
+                                            if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                            }
+                                        } else {
+                                            if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -356,6 +375,7 @@ public class CurrentBalance {
                 conBalance.setCondateid(resultset.getString("CONDATEID"));
                 conBalance.setAccount(resultset.getString("ACCOUNT"));
                 conBalance.setConid(resultset.getString("CONID"));
+                conBalance.setClaimscount(resultset.getString("CLAIMSCOUNT"));
                 //--------------------------------------------------------------
                 result.setResult(utility.ObjectMapper().writeValueAsString(conBalance));
                 result.setMessage("OK");
@@ -469,12 +489,13 @@ public class CurrentBalance {
                 }
                 conbal.setConid(resultset.getString("CONID"));
                 conbal.setConutilized(resultset.getString("CONUTILIZED"));
-                if (resultset.getString("DATECREATED") == null) {
+                if (resultset.getTimestamp("DATECREATED") == null) {
                     conbal.setDatecreated(resultset.getString("DATECREATED"));
                 } else {
-                    conbal.setDatecreated(dateformat.format(resultset.getDate("DATECREATED")));
+                    conbal.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                 }
                 conbal.setStatus(resultset.getString("STATUS"));
+                conbal.setClaimscount(resultset.getString("CLAIMSCOUNT"));
                 conBalanceList.add(conbal);
                 //------------------  END OF OBJECT MAPPING ----------------------
             }
