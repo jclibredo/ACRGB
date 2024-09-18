@@ -6,6 +6,7 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.Assets;
 import acrgb.structure.ConBalance;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
@@ -115,6 +116,26 @@ public class CurrentBalance {
                                 trancheamount += Double.parseDouble(getResult.getCtotal());
                             }
                         }
+                        ACRGBWSResult restAB = fm.GETASSETBYIDANDCONID(dataSource, uhcfcode, resultset.getString("CONID"), utags);
+                        if (restAB.isSuccess()) {
+                            List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
+                            for (int g = 0; g < assetlist.size(); g++) {
+                                if (assetlist.get(g).getPreviousbalance() != null) {
+                                    Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
+                                    switch (tranch.getTranchtype()) {
+                                        case "1ST": {
+                                            trancheamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                            break;
+                                        }
+                                        case "1STFINAL": {
+                                            trancheamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         //GET CLAIMS SUMMARY OF FACILITY UNDER NETWORK
                         ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, uhcfcode.trim(), "G",
                                 condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
@@ -247,6 +268,27 @@ public class CurrentBalance {
                                 trancheamount += Double.parseDouble(getResult.getCtotal());
                             }
                         }
+
+                        ACRGBWSResult restAB = fm.GETASSETBYIDANDCONID(dataSource, uhcfcode, resultset.getString("CONID"), utags);
+                        if (restAB.isSuccess()) {
+                            List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
+                            for (int g = 0; g < assetlist.size(); g++) {
+                                if (assetlist.get(g).getPreviousbalance() != null) {
+                                    Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
+                                    switch (tranch.getTranchtype()) {
+                                        case "1ST": {
+                                            trancheamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                            break;
+                                        }
+                                        case "1STFINAL": {
+                                            trancheamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         //GET CLAIMS SUMMARY OF FACILITY UNDER NETWORK
                         ACRGBWSResult conList = this.GETPREVIOUSMAP(dataSource, uhcfcode.trim(), condate.getCondateid());
                         if (conList.isSuccess()) {

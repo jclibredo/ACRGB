@@ -63,43 +63,49 @@ public class InsertMethods {
         String logsTags = "";
         try (Connection connection = datasource.getConnection()) {
             UserActivity userlogs = utility.UserActivity();
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTASSETS(:Message,:Code,:p_hcfid,:p_tranchid ,:p_receipt,:p_amount"
-                    + ",:p_createdby,:p_datereleased,:p_datecreated,:p_conid,:p_releasedamount,:p_previousbal,:pclaimscount)");
-            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("p_hcfid", assets.getHcfid());
-            getinsertresult.setString("p_tranchid", assets.getTranchid());
-            getinsertresult.setString("p_receipt", assets.getReceipt());
-            getinsertresult.setString("p_amount", assets.getAmount());
-            getinsertresult.setString("p_createdby", assets.getCreatedby());
-            getinsertresult.setDate("p_datereleased", (Date) new Date(utility.StringToDate(assets.getDatereleased()).getTime())); //assets.getDatereleased());
-            getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(assets.getDatecreated()).getTime()));//assets.getDatecreated());
-            getinsertresult.setString("p_conid", assets.getConid());
-            getinsertresult.setString("p_releasedamount", assets.getReleasedamount());
-            getinsertresult.setString("p_previousbal", assets.getPreviousbalance());
-            getinsertresult.setString("pclaimscount", assets.getClaimscount());
-            getinsertresult.execute();
-            if (getinsertresult.getString("Message").equals("SUCC")) {
-                //INSERT TO ACTIVITY LOGS
-                userlogs.setActstatus("SUCCESS");
-                ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, assets.getHcfid());
-                if (getSubject.isSuccess()) {
-                    logsTags = "ADD-TRANCHE-HCI";
-                    result.setMessage(getinsertresult.getString("Message"));
-                } else {
-                    ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, assets.getHcfid());
-                    if (getSubjectA.isSuccess()) {
-                        logsTags = "ADD-TRANCHE-HCPN";
+            if (fm.VALIDATERECIEPT(datasource, "ASSETS", assets.getReceipt()).isSuccess()) {
+                result.setMessage("PAYMENT REFERENCE NUMBER IS ALREADY EXIST");
+                userlogs.setActdetails("PAYMENT REFERENCE NUMBER IS ALREADY EXIST");
+                userlogs.setActstatus("FAILED");
+            } else {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTASSETS(:Message,:Code,:p_hcfid,:p_tranchid ,:p_receipt,:p_amount"
+                        + ",:p_createdby,:p_datereleased,:p_datecreated,:p_conid,:p_releasedamount,:p_previousbal,:pclaimscount)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("p_hcfid", assets.getHcfid());
+                getinsertresult.setString("p_tranchid", assets.getTranchid());
+                getinsertresult.setString("p_receipt", assets.getReceipt());
+                getinsertresult.setString("p_amount", assets.getAmount());
+                getinsertresult.setString("p_createdby", assets.getCreatedby());
+                getinsertresult.setDate("p_datereleased", (Date) new Date(utility.StringToDate(assets.getDatereleased()).getTime())); //assets.getDatereleased());
+                getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(assets.getDatecreated()).getTime()));//assets.getDatecreated());
+                getinsertresult.setString("p_conid", assets.getConid());
+                getinsertresult.setString("p_releasedamount", assets.getReleasedamount());
+                getinsertresult.setString("p_previousbal", assets.getPreviousbalance());
+                getinsertresult.setString("pclaimscount", assets.getClaimscount());
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    //INSERT TO ACTIVITY LOGS
+                    userlogs.setActstatus("SUCCESS");
+                    ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, assets.getHcfid());
+                    if (getSubject.isSuccess()) {
+                        logsTags = "ADD-TRANCHE-HCI";
+                        result.setMessage(getinsertresult.getString("Message"));
+                    } else {
+                        ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, assets.getHcfid());
+                        if (getSubjectA.isSuccess()) {
+                            logsTags = "ADD-TRANCHE-HCPN";
+                        }
+                        result.setMessage(getinsertresult.getString("Message"));
                     }
+                    updatemethods.UPDATECONBALANCESTATS(datasource, assets.getHcfid());
+                    result.setSuccess(true);
+                } else {
+                    userlogs.setActstatus("FAILED");
                     result.setMessage(getinsertresult.getString("Message"));
                 }
-                updatemethods.UPDATECONBALANCESTATS(datasource, assets.getHcfid());
-                result.setSuccess(true);
-            } else {
-                userlogs.setActstatus("FAILED");
-                result.setMessage(getinsertresult.getString("Message"));
+                userlogs.setActdetails(getinsertresult.getString("Message"));
             }
-            userlogs.setActdetails(getinsertresult.getString("Message"));
             userlogs.setActby(assets.getCreatedby());
             //ACTIVITY LOGS
             logs.UserLogsMethod(datasource, logsTags, userlogs, assets.getHcfid().trim(), assets.getTranchid().trim());
@@ -123,64 +129,69 @@ public class InsertMethods {
         try (Connection connection = datasource.getConnection()) {
             String logsTags = "";
             UserActivity userlogs = utility.UserActivity();
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONTRACT(:Message,:Code,:p_hcfid,:p_amount"
-                    + ",:p_createdby,:p_datecreated,:p_contractdate,:p_transcode,"
-                    + ":p_baseamount,:c_claimsvol,:t_claimsvol,:p_sb,:p_addamount,:p_quarter)");
-            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("p_hcfid", contract.getHcfid());//PAN Number or MB Accreditaion Number
-            getinsertresult.setString("p_amount", contract.getAmount());
-            getinsertresult.setString("p_createdby", contract.getCreatedby());
-            getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(contract.getDatecreated()).getTime()));//contract.getDatecreated());
-            getinsertresult.setString("p_contractdate", contract.getContractdate());
-            getinsertresult.setString("p_transcode", contract.getTranscode());
-            getinsertresult.setString("p_baseamount", contract.getBaseamount());
-            getinsertresult.setString("c_claimsvol", contract.getComittedClaimsVol());
-            getinsertresult.setString("t_claimsvol", contract.getComputedClaimsVol());
-            getinsertresult.setString("p_sb", contract.getSb());
-            getinsertresult.setString("p_addamount", contract.getAddamount());
-            getinsertresult.setString("p_quarter", contract.getQuarter());
-            getinsertresult.execute();
-            if (getinsertresult.getString("Message").equals("SUCC")) {
-                //INSERT TO ACTIVITY LOGS
-                int countpro = 0;
-                ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, contract.getHcfid());
-                if (getSubject.isSuccess()) {
-                    logsTags = "ADD-CONTRACT-HCI";
-                } else {
-                    ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, contract.getHcfid());
-                    if (getSubjectA.isSuccess()) {
-                        logsTags = "ADD-CONTRACT-HCPN";
-                    } else {
-                        logsTags = "ADD-CONTRACT-PRO";
-                        countpro++;
-                    }
-                }
-                if (countpro == 0) {
-                    ACRGBWSResult uaccessid = methods.GETROLE(datasource, contract.getCreatedby(), "ACTIVE");
-                    //INSERT CONTRACT ID TO ROLE INDEX TABLE
-                    um.UPDATEROLEINDEX(datasource, uaccessid.getResult().trim(), contract.getHcfid(), contract.getContractdate(), "HCIUPDATE");
-                    //END INSERT CONTRACT ID TO ROLE INDEX TABLE
-                    //INSERT CONTRACT ID TO APPELLATE TABLE
-                    Appellate appellate = new Appellate();
-                    appellate.setAccesscode(contract.getHcfid());
-                    appellate.setStatus("2");
-                    appellate.setConid(contract.getContractdate());
-                    //
-                    um.UPDATEAPELLATE(datasource, "UPDATE", appellate);
-                    //END INSERT CONTRACT ID TO APPELLATE TABLE
-                }
-                result.setMessage(getinsertresult.getString("Message"));
-                result.setSuccess(true);
-                userlogs.setActstatus("SUCCESS");
-            } else {
+            if (fm.VALIDATERECIEPT(datasource, "CONTRACT", contract.getTranscode()).isSuccess()) {
+                result.setMessage("TRANSACTION REFERENCE NUMBER IS ALREADY EXIST");
+                userlogs.setActdetails("PAYMENT REFERENCE NUMBER IS ALREADY EXIST");
                 userlogs.setActstatus("FAILED");
-                result.setMessage(getinsertresult.getString("Message"));
+            } else {
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONTRACT(:Message,:Code,:p_hcfid,:p_amount"
+                        + ",:p_createdby,:p_datecreated,:p_contractdate,:p_transcode,"
+                        + ":p_baseamount,:c_claimsvol,:t_claimsvol,:p_sb,:p_addamount,:p_quarter)");
+                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+                getinsertresult.setString("p_hcfid", contract.getHcfid());//PAN Number or MB Accreditaion Number
+                getinsertresult.setString("p_amount", contract.getAmount());
+                getinsertresult.setString("p_createdby", contract.getCreatedby());
+                getinsertresult.setDate("p_datecreated", (Date) new Date(utility.StringToDate(contract.getDatecreated()).getTime()));//contract.getDatecreated());
+                getinsertresult.setString("p_contractdate", contract.getContractdate());
+                getinsertresult.setString("p_transcode", contract.getTranscode());
+                getinsertresult.setString("p_baseamount", contract.getBaseamount());
+                getinsertresult.setString("c_claimsvol", contract.getComittedClaimsVol());
+                getinsertresult.setString("t_claimsvol", contract.getComputedClaimsVol());
+                getinsertresult.setString("p_sb", contract.getSb());
+                getinsertresult.setString("p_addamount", contract.getAddamount());
+                getinsertresult.setString("p_quarter", contract.getQuarter());
+                getinsertresult.execute();
+                if (getinsertresult.getString("Message").equals("SUCC")) {
+                    //INSERT TO ACTIVITY LOGS
+                    int countpro = 0;
+                    ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, contract.getHcfid());
+                    if (getSubject.isSuccess()) {
+                        logsTags = "ADD-CONTRACT-HCI";
+                    } else {
+                        ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, contract.getHcfid());
+                        if (getSubjectA.isSuccess()) {
+                            logsTags = "ADD-CONTRACT-HCPN";
+                        } else {
+                            logsTags = "ADD-CONTRACT-PRO";
+                            countpro++;
+                        }
+                    }
+                    if (countpro == 0) {
+                        ACRGBWSResult uaccessid = methods.GETROLE(datasource, contract.getCreatedby(), "ACTIVE");
+                        //INSERT CONTRACT ID TO ROLE INDEX TABLE
+                        um.UPDATEROLEINDEX(datasource, uaccessid.getResult().trim(), contract.getHcfid(), contract.getContractdate(), "HCIUPDATE");
+                        //END INSERT CONTRACT ID TO ROLE INDEX TABLE
+                        //INSERT CONTRACT ID TO APPELLATE TABLE
+                        Appellate appellate = new Appellate();
+                        appellate.setAccesscode(contract.getHcfid());
+                        appellate.setStatus("2");
+                        appellate.setConid(contract.getContractdate());
+                        //
+                        um.UPDATEAPELLATE(datasource, "UPDATE", appellate);
+                        //END INSERT CONTRACT ID TO APPELLATE TABLE
+                    }
+                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setSuccess(true);
+                    userlogs.setActstatus("SUCCESS");
+                } else {
+                    userlogs.setActstatus("FAILED");
+                    result.setMessage(getinsertresult.getString("Message"));
+                }
             }
             userlogs.setActby(contract.getCreatedby());
             userlogs.setActdetails("Amount :" + contract.getAmount() + "| SB :" + contract.getSb() + "| Comitted volume:" + contract.getComittedClaimsVol() + " " + contract.getQuarter());
             logs.UserLogsMethod(datasource, logsTags, userlogs, contract.getHcfid(), contract.getContractdate());
-
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);

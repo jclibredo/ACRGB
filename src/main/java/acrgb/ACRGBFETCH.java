@@ -986,7 +986,6 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
     //INSERT EMAIL CREDEDNTIALS
     @GET
     @Path("ValidateToken")
@@ -995,7 +994,6 @@ public class ACRGBFETCH {
         ACRGBWSResult result = utility.GetPayload(token);
         return result;
     }
-
     //GET ALL CONTRACT
     @GET
     @Path("GetAllContract/{tags}/{target}")    //BOOK    //NOTBOOK
@@ -1141,7 +1139,6 @@ public class ACRGBFETCH {
         result.setResult(utility.Create2FACode());
         return result;
     }
-
     @GET
     @Path("AutoProcessData")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1160,7 +1157,6 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
     @GET
     @Path("TestEmailSender/{recipient}/{newpass}")
     @Produces(MediaType.TEXT_PLAIN)
@@ -1181,7 +1177,6 @@ public class ACRGBFETCH {
         result.setResult(insertresult.getResult());
         return result;
     }
-
 //    @GET
 //    @Path("ValidateClaims/{useries}")
 //    @Produces(MediaType.APPLICATION_JSON)
@@ -1201,7 +1196,6 @@ public class ACRGBFETCH {
 //        }
 //        return result;
 //    }
-
     @GET
     @Path("GetUserAccount/{puserid}/{tags}")
     @Produces(MediaType.APPLICATION_JSON)

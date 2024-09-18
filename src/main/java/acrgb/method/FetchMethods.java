@@ -589,6 +589,27 @@ public class FetchMethods {
                                     trancheamount += Double.parseDouble(getResult.getCtotal());
                                 }
                             }
+
+                            ACRGBWSResult restAB = this.GETASSETBYIDANDCONID(dataSource, userlist.get(x).getHcfcode().trim(), resultset.getString("CONID"), tags);
+                            if (restAB.isSuccess()) {
+                                List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
+                                for (int g = 0; g < assetlist.size(); g++) {
+                                    if (assetlist.get(g).getPreviousbalance() != null) {
+                                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
+                                        switch (tranch.getTranchtype()) {
+                                            case "1ST": {
+                                                trancheamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                                break;
+                                            }
+                                            case "1STFINAL": {
+                                                trancheamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
                             //GET CLAIMS SUMMARY OF FACILITY UNDER NETWORK
                             ACRGBWSResult sumresult = this.GETNCLAIMS(dataSource, userlist.get(x).getHcfcode().trim(), "G",
                                     condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
@@ -805,6 +826,27 @@ public class FetchMethods {
                                     trancheamount += Double.parseDouble(getResult.getCtotal());
                                 }
                             }
+
+                            ACRGBWSResult restAB = this.GETASSETBYIDANDCONID(dataSource, hcflist.get(y).trim(), resultset.getString("CONID"), tags);
+                            if (restAB.isSuccess()) {
+                                List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
+                                for (int g = 0; g < assetlist.size(); g++) {
+                                    if (assetlist.get(g).getPreviousbalance() != null) {
+                                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
+                                        switch (tranch.getTranchtype()) {
+                                            case "1ST": {
+                                                trancheamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                                break;
+                                            }
+                                            case "1STFINAL": {
+                                                trancheamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
                             //GET CLAIMS AMOUNT OF FACILITY UNDER SELECTED NETWORK
                             if (getcondateA.isSuccess()) {
                                 ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class);
@@ -1004,6 +1046,27 @@ public class FetchMethods {
                                     trancheamount += Double.parseDouble(getResult.getCtotal());
                                 }
                             }
+
+                            ACRGBWSResult restAB = this.GETASSETBYIDANDCONID(dataSource, hcflist.get(y).trim(), resultset.getString("CONID"), tags);
+                            if (restAB.isSuccess()) {
+                                List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
+                                for (int g = 0; g < assetlist.size(); g++) {
+                                    if (assetlist.get(g).getPreviousbalance() != null) {
+                                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
+                                        switch (tranch.getTranchtype()) {
+                                            case "1ST": {
+                                                trancheamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                                break;
+                                            }
+                                            case "1STFINAL": {
+                                                trancheamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
                             ACRGBWSResult sumresult = this.GETNCLAIMS(dataSource, hcflist.get(y).trim(), "G",
                                     condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
                             if (sumresult.isSuccess()) {
@@ -1662,7 +1725,6 @@ public class FetchMethods {
                     } else {
                         nclaimsdata.setDateadmission("");
                     }
-
                     claimsList.add(nclaimsdata);
                 }
             } else if (reqtype.toUpperCase().trim().equals("HISTORICALSTATUS")) {
@@ -1929,6 +1991,27 @@ public class FetchMethods {
                             trancheamount += Double.parseDouble(getResult.getCtotal());
                         }
                     }
+
+                    ACRGBWSResult restAB = this.GETASSETBYIDANDCONID(dataSource, pcode, resultset.getString("CONID"), tags);
+                    if (restAB.isSuccess()) {
+                        List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
+                        for (int g = 0; g < assetlist.size(); g++) {
+                            if (assetlist.get(g).getPreviousbalance() != null) {
+                                Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
+                                switch (tranch.getTranchtype()) {
+                                    case "1ST": {
+                                        trancheamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                        break;
+                                    }
+                                    case "1STFINAL": {
+                                        trancheamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     //GET CLAIMS AMOUNT AND CLAIMS OF FACILITY UNDER HCPN SELECTED
                     ACRGBWSResult restA = methods.GETROLEMULITPLE(dataSource, resultset.getString("HCFID"), tags);
                     if (restA.isSuccess()) {
@@ -2602,6 +2685,26 @@ public class FetchMethods {
                                 trancheamount += Double.parseDouble(getResult.getCtotal());
                             }
                         }
+                        ACRGBWSResult restAB = this.GETASSETBYIDANDCONID(dataSource, hcflist.get(y).trim(), resultset.getString("CONID"), tags);
+                        if (restAB.isSuccess()) {
+                            List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
+                            for (int g = 0; g < assetlist.size(); g++) {
+                                if (assetlist.get(g).getPreviousbalance() != null) {
+                                    Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
+                                    switch (tranch.getTranchtype()) {
+                                        case "1ST": {
+                                            trancheamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                            break;
+                                        }
+                                        case "1STFINAL": {
+                                            trancheamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         ACRGBWSResult sumresult = this.GETNCLAIMS(dataSource, hcflist.get(y), "G",
                                 condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
                         if (sumresult.isSuccess()) {
@@ -3487,6 +3590,35 @@ public class FetchMethods {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET TRANCH USING TRANCHID
+    public ACRGBWSResult VALIDATERECIEPT(
+            final DataSource dataSource,
+            final String utags,
+            final String ureciept) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.VALIDATERECEIPTNUMBER(:utags,:ureciept); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("utags", utags.trim().toUpperCase());
+            statement.setString("ureciept", ureciept.trim());
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+            } else {
+                result.setMessage("N/A");
+            }
+        } catch (SQLException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }

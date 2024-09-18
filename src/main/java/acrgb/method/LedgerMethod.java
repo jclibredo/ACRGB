@@ -251,10 +251,10 @@ public class LedgerMethod {
             while (resultset.next()) {
                 FacilityComputedAmount fca = new FacilityComputedAmount();
                 fca.setHospital(resultset.getString("PMCC_NO"));
-                fca.setTotalamount(resultset.getString("CTOTAL"));
+                fca.setTotalamount(resultset.getString("CLAIMSTOTAL"));
                 fca.setYearfrom(udatefrom);
                 fca.setYearto(utility.AddMinusDaysDate(udateto, "60"));
-                fca.setTotalclaims(resultset.getString("COUNTVAL"));
+                fca.setTotalclaims(resultset.getString("CLAIMSVOLUME"));
                 if (resultset.getTimestamp("DATESUB") != null) {
                     fca.setDatefiled(dateformat.format(resultset.getTimestamp("DATESUB")));
                 } else {
@@ -300,8 +300,10 @@ public class LedgerMethod {
         result.setSuccess(false);
         ArrayList<Ledger> ledgerlist = new ArrayList<>();
         try {
+            int finalclaims = 0;
             double remaining = 0.00;
             double begin = 0.00;
+            //  double finalblance = 0.00;
             ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, hcpncode, conid, utags);
             if (restA.isSuccess()) {
                 List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
@@ -313,9 +315,19 @@ public class LedgerMethod {
                                 begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
                                 break;
                             }
+                            case "1STFINAL": {
+                                if (!assetlist.get(0).getPreviousbalance().isEmpty()) {
+                                    int from = Integer.parseInt(assetlist.get(0).getClaimscount());
+                                    int to = Integer.parseInt(assetlist.get(y).getClaimscount());
+                                    finalclaims = to - from;
+                                    // finalblance += Double.parseDouble(assetlist.get(y).getReleasedamount());
+                                }
+                                break;
+                            }
                         }
                     }
                 }
+
                 if (begin > 0.00) {
                     Ledger ledgersss = new Ledger();
                     ledgersss.setDatetime(assetlist.get(0).getDatecreated());
@@ -337,7 +349,7 @@ public class LedgerMethod {
                                 } else {
                                     ledger.setParticular("Payment of 1ST Tranche of new contract");
                                 }
-                                ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getReleasedamount()) + begin));
+                                ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getReleasedamount())));
                                 remaining += Double.parseDouble(assetlist.get(x).getReleasedamount());//INCREMENT ASSETS
                                 break;
                             }
@@ -354,6 +366,20 @@ public class LedgerMethod {
                                 break;
                             }
                         }
+                        switch (tranch.getTranchtype()) {
+                            case "1STFINAL": {
+                                Ledger ledgers = new Ledger();
+                                ledgers.setParticular("Unutilization fund from revious fully recon contract");
+                                ledgers.setDebit(String.valueOf(Double.parseDouble(assetlist.get(x).getReleasedamount())));
+                                ledgers.setDatetime(assetlist.get(x).getDatereleased());
+                                ledgers.setTotalclaims(String.valueOf(finalclaims));
+                                ledgers.setBalance(String.valueOf(remaining));
+                                ledgers.setVoucher("");
+                                ledgerlist.add(ledgers);
+                                break;
+                            }
+                        }
+
                     }
                     ledger.setTotalclaims(assetlist.get(x).getClaimscount());
                     ledger.setBalance(String.valueOf(remaining));
@@ -459,6 +485,7 @@ public class LedgerMethod {
         try {
             double remaining = 0.00;
             double begin = 0.00;
+            int finalclaims = 0;
             ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, hcpncode, conid, utags);
             if (restA.isSuccess()) {
                 List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
@@ -468,6 +495,15 @@ public class LedgerMethod {
                         switch (tranch.getTranchtype()) {
                             case "1ST": {
                                 begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
+                                break;
+                            }
+                            case "1STFINAL": {
+                                if (!assetlist.get(0).getPreviousbalance().isEmpty()) {
+                                    int from = Integer.parseInt(assetlist.get(0).getClaimscount());
+                                    int to = Integer.parseInt(assetlist.get(y).getClaimscount());
+                                    finalclaims = to - from;
+                                    // finalblance += Double.parseDouble(assetlist.get(y).getReleasedamount());
+                                }
                                 break;
                             }
                         }
@@ -512,6 +548,20 @@ public class LedgerMethod {
                                 break;
                             }
                         }
+                        switch (tranch.getTranchtype()) {
+                            case "1STFINAL": {
+                                Ledger ledgers = new Ledger();
+                                ledgers.setParticular("Unutilization fund from revious fully recon contract");
+                                ledgers.setDebit(String.valueOf(Double.parseDouble(assetlist.get(x).getReleasedamount())));
+                                ledgers.setDatetime(assetlist.get(x).getDatereleased());
+                                ledgers.setTotalclaims(String.valueOf(finalclaims));
+                                ledgers.setBalance(String.valueOf(remaining));
+                                ledgers.setVoucher("");
+                                ledgerlist.add(ledgers);
+                                break;
+                            }
+                        }
+
                     }
                     ledger.setTotalclaims(assetlist.get(x).getClaimscount());
                     ledger.setBalance(String.valueOf(remaining));
@@ -531,9 +581,9 @@ public class LedgerMethod {
                         List<String> hcfresult = Arrays.asList(hcflist.getResult().split(","));
                         for (int b = 0; b < hcfresult.size(); b++) {
                             ACRGBWSResult getAmountPayable = this.GETSUMAMOUNTCLAIMSBOOKDATA(dataSource,
-                                    hcfresult.get(b),
-                                    contractdate.getDatefrom(),
-                                    utility.AddMinusDaysDate(contractdate.getDateto().trim(), "60"));
+                                    hcfresult.get(b).trim(),
+                                    contractdate.getDatefrom().trim(),
+                                    utility.AddMinusDaysDate(contractdate.getDateto().trim(), "60").trim());
                             if (getAmountPayable.isSuccess()) {
                                 List<FacilityComputedAmount> hcfA = Arrays.asList(utility.ObjectMapper().readValue(getAmountPayable.getResult(), FacilityComputedAmount[].class));
                                 for (int u = 0; u < hcfA.size(); u++) {
@@ -617,6 +667,7 @@ public class LedgerMethod {
         try {
             double remaining = 0.00;
             double begin = 0.00;
+            int finalclaims = 0;
             ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, upmmc_no, contractid, "ACTIVE");
             if (restA.isSuccess()) {
                 List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
@@ -627,6 +678,15 @@ public class LedgerMethod {
                         switch (tranch.getTranchtype()) {
                             case "1ST": {
                                 begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
+                                break;
+                            }
+                            case "1STFINAL": {
+                                if (!assetlist.get(0).getPreviousbalance().isEmpty()) {
+                                    int from = Integer.parseInt(assetlist.get(0).getClaimscount());
+                                    int to = Integer.parseInt(assetlist.get(y).getClaimscount());
+                                    finalclaims = to - from;
+                                    // finalblance += Double.parseDouble(assetlist.get(y).getReleasedamount());
+                                }
                                 break;
                             }
                         }
@@ -659,7 +719,7 @@ public class LedgerMethod {
                                 } else {
                                     ledger.setParticular("Payment of 1ST Tranche of new contract");
                                 }
-                                ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getReleasedamount()) + begin));
+                                ledger.setCredit(String.valueOf(Double.parseDouble(assetlist.get(x).getReleasedamount())));
                                 remaining += Double.parseDouble(assetlist.get(x).getReleasedamount());//INCREMENT ASSETS
                                 break;
                             }
@@ -670,6 +730,21 @@ public class LedgerMethod {
                                 break;
                             }
                         }
+
+                        switch (tranch.getTranchtype()) {
+                            case "1STFINAL": {
+                                Ledger ledgers = new Ledger();
+                                ledgers.setParticular("Unutilization fund from revious fully recon contract");
+                                ledgers.setDebit(String.valueOf(Double.parseDouble(assetlist.get(x).getReleasedamount())));
+                                ledgers.setDatetime(assetlist.get(x).getDatereleased());
+                                ledgers.setTotalclaims(String.valueOf(finalclaims));
+                                ledgers.setBalance(String.valueOf(remaining));
+                                ledgers.setVoucher("");
+                                ledgerlist.add(ledgers);
+                                break;
+                            }
+                        }
+
                     }
                     ledger.setTotalclaims(assetlist.get(x).getClaimscount());
                     ledger.setBalance(String.valueOf(remaining));
@@ -768,6 +843,7 @@ public class LedgerMethod {
         try {
             double remaining = 0.00;
             double begin = 0.00;
+            int finalclaims = 0;
             ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, upmmc_no, contractid, utags);
             if (restA.isSuccess()) {
                 List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
@@ -778,6 +854,15 @@ public class LedgerMethod {
                         switch (tranch.getTranchtype()) {
                             case "1ST": {
                                 begin += Double.parseDouble(assetlist.get(y).getPreviousbalance());
+                                break;
+                            }
+                            case "1STFINAL": {
+                                if (!assetlist.get(0).getPreviousbalance().isEmpty()) {
+                                    int from = Integer.parseInt(assetlist.get(0).getClaimscount());
+                                    int to = Integer.parseInt(assetlist.get(y).getClaimscount());
+                                    finalclaims = to - from;
+                                    // finalblance += Double.parseDouble(assetlist.get(y).getReleasedamount());
+                                }
                                 break;
                             }
                         }
@@ -821,6 +906,20 @@ public class LedgerMethod {
                                 break;
                             }
                         }
+                        switch (tranch.getTranchtype()) {
+                            case "1STFINAL": {
+                                Ledger ledgers = new Ledger();
+                                ledgers.setParticular("Unutilization fund from revious fully recon contract");
+                                ledgers.setDebit(String.valueOf(Double.parseDouble(assetlist.get(x).getReleasedamount())));
+                                ledgers.setDatetime(assetlist.get(x).getDatereleased());
+                                ledgers.setTotalclaims(String.valueOf(finalclaims));
+                                ledgers.setBalance(String.valueOf(remaining));
+                                ledgers.setVoucher("");
+                                ledgerlist.add(ledgers);
+                                break;
+                            }
+                        }
+
                     }
                     ledger.setTotalclaims(assetlist.get(x).getClaimscount());
                     ledger.setBalance(String.valueOf(remaining));

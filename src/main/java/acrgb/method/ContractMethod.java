@@ -6,6 +6,7 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.Assets;
 import acrgb.structure.CaseRate;
 import acrgb.structure.ConBalance;
 import acrgb.structure.Contract;
@@ -536,6 +537,26 @@ public class ContractMethod {
                                 trancheamount += Double.parseDouble(getResult.getCtotal());
                             }
                         }
+
+                        ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, MapContract.getHcfid(), MapContract.getConid().trim(), tags);
+                        if (restA.isSuccess()) {
+                            List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
+                            for (int g = 0; g < assetlist.size(); g++) {
+                                if (assetlist.get(g).getPreviousbalance() != null) {
+                                    Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
+                                    switch (tranch.getTranchtype()) {
+                                        case "1ST": {
+                                            trancheamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                            break;
+                                        }
+                                        case "1STFINAL": {
+                                            trancheamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         //======================================
                         ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, MapContract.getHcfid().trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
                         if (sumresult.isSuccess()) {
@@ -657,6 +678,27 @@ public class ContractMethod {
                                         trancheamount += Double.parseDouble(getResult.getCtotal());
                                     }
                                 }
+
+                                ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, HCIList.get(x).trim(), MapContract.getConid().trim(), tags);
+                                if (restA.isSuccess()) {
+                                    List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
+                                    for (int g = 0; g < assetlist.size(); g++) {
+                                        if (assetlist.get(g).getPreviousbalance() != null) {
+                                            Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
+                                            switch (tranch.getTranchtype()) {
+                                                case "1ST": {
+                                                    trancheamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                                    break;
+                                                }
+                                                case "1STFINAL": {
+                                                    trancheamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
                                 //======================================
                                 ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, HCIList.get(x).trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
                                 if (sumresult.isSuccess()) {
@@ -739,10 +781,8 @@ public class ContractMethod {
                 ACRGBWSResult GetFacilityContract = this.GETCONTRACTList(dataSource, tags.trim().toUpperCase(), GetRole.getResult().trim());
                 if (GetFacilityContract.isSuccess()) {
                     List<Contract> MapContract = Arrays.asList(utility.ObjectMapper().readValue(GetFacilityContract.getResult(), Contract[].class));
-                    //--------------------------------------------------------
                     for (int w = 0; w < MapContract.size(); w++) {
                         Contract contract = new Contract();
-                        //--------------------------------------
                         ACRGBWSResult GetHCPN = methods.GetProWithPROID(dataSource, GetRole.getResult());
                         if (GetHCPN.isSuccess()) {
                             contract.setHcfid(GetHCPN.getResult());
@@ -773,6 +813,7 @@ public class ContractMethod {
                             ACRGBWSResult GetHCPNContract = this.GETCONTRACT(dataSource, tags.trim().toUpperCase(), HCPNList.get(y).trim());
                             if (GetHCPNContract.isSuccess()) {
                                 Contract MapHCPNContract = utility.ObjectMapper().readValue(GetHCPNContract.getResult(), Contract.class);
+                                //----------------------------------------------
                                 ACRGBWSResult getIdType = cb.GETTRANCHBYTYPE(dataSource, "1STFINAL");
                                 if (getIdType.isSuccess()) {
                                     Tranch tranch = utility.ObjectMapper().readValue(getIdType.getResult(), Tranch.class);
@@ -781,6 +822,7 @@ public class ContractMethod {
                                         Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
                                         tranches += Integer.parseInt(getResult.getCcount());
                                         tracnheamountreleased += Double.parseDouble(getResult.getCtotal());
+
                                     }
                                     //GET TRANCHE AMOUNT
                                     ACRGBWSResult getTranchid = cb.GET1STFINAL(dataSource, tags.trim().toUpperCase(), MapHCPNContract.getHcfid().trim(), tranch.getTranchid(), MapHCPNContract.getConid().trim());
@@ -790,6 +832,27 @@ public class ContractMethod {
                                         tracnheamountreleased += Double.parseDouble(getResult.getCtotal());
                                     }
                                 }
+                                ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, HCPNList.get(y).trim(), MapHCPNContract.getConid().trim(), tags);
+                                if (restA.isSuccess()) {
+                                    List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
+                                    for (int g = 0; g < assetlist.size(); g++) {
+                                        if (assetlist.get(g).getPreviousbalance() != null) {
+                                            Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
+                                            switch (tranch.getTranchtype()) {
+                                                case "1ST": {
+                                                    tracnheamountreleased += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                                    break;
+                                                }
+                                                case "1STFINAL": {
+                                                    tracnheamountreleased -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                //----------------------------------------------
                                 if (MapHCPNContract.getContractdate() != null) {
                                     ContractDate condate = utility.ObjectMapper().readValue(MapHCPNContract.getContractdate(), ContractDate.class);
                                     ACRGBWSResult GetHCIList = methods.GETROLEMULITPLE(dataSource, HCPNList.get(y).trim(), tags.trim());
@@ -816,10 +879,10 @@ public class ContractMethod {
                                         }
                                     }
                                 }
+                                //----------------------------------------------
 
                             }
                         }
-
                     }
 
                     Contract contractA = new Contract();

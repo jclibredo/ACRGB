@@ -12,6 +12,7 @@ import acrgb.structure.ConBalance;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.NclaimsData;
+import acrgb.structure.Tranch;
 import acrgb.structure.UserActivity;
 import acrgb.utility.Utility;
 import java.io.IOException;
@@ -263,6 +264,25 @@ public class BookingMethod {
                                     }
                                 }
                             }
+                            ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, book.getHcpncode().trim(), book.getConid().trim(), utags.trim().toUpperCase());
+                            if (restA.isSuccess()) {
+                                List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
+                                for (int g = 0; g < assetlist.size(); g++) {
+                                    if (assetlist.get(g).getPreviousbalance() != null) {
+                                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
+                                        switch (tranch.getTranchtype()) {
+                                            case "1ST": {
+                                                totalClaimAmount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                                break;
+                                            }
+                                            case "1STFINAL": {
+                                                totalClaimAmount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             //INSERT BOOKING REFERENCES
                             ACRGBWSResult bookReference = this.ACRBOOKING(dataSource, book);
                             if (!bookReference.isSuccess()) {
@@ -339,7 +359,25 @@ public class BookingMethod {
                                                 }
                                             }
                                         }
-
+                                    }
+                                    ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, book.getHcpncode().trim(), book.getConid().trim(), utags.trim().toUpperCase());
+                                    if (restA.isSuccess()) {
+                                        List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
+                                        for (int g = 0; g < assetlist.size(); g++) {
+                                            if (assetlist.get(g).getPreviousbalance() != null) {
+                                                Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
+                                                switch (tranch.getTranchtype()) {
+                                                    case "1ST": {
+                                                        totalClaimAmount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                                        break;
+                                                    }
+                                                    case "1STFINAL": {
+                                                        totalClaimAmount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                                 //INSERT BOOKING REFERENCES
@@ -475,7 +513,6 @@ public class BookingMethod {
             } else {
                 result.setMessage(getConResult.getMessage());
             }
-
             if (errorList.isEmpty()) {
                 result.setMessage("OK");
                 result.setSuccess(true);
