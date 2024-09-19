@@ -37,5 +37,6 @@ public class Contract {
     private String totalclaimsamount;
     private String totalclaimspercentage;
     private String quarter;
+    private String totalamountrecieved;
 
 }

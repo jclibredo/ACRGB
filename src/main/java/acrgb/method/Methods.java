@@ -722,7 +722,7 @@ public class Methods {
                                                     totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
                                                     totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
                                                     totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                                    totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));;
+                                                    totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
                                                     totalcomputeA.setTotalamount(String.valueOf(totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims())));
                                                     computationList.add(totalcomputeA);
                                                     totalbaseamount += totalamount * Integer.parseInt(fcaA.get(f).getTotalclaims());

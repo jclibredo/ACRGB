@@ -44,7 +44,6 @@ public class ContractTagging {
         Methods methods = new Methods();
         UpdateMethods updateMethod = new UpdateMethods();
         InsertMethods im = new InsertMethods();
-        BookingMethod bm = new BookingMethod();
         ProcessAffiliate pf = new ProcessAffiliate();
         ArrayList<String> error = new ArrayList<>();
         try {
@@ -80,17 +79,17 @@ public class ContractTagging {
                         }
                         result.setSuccess(true);
                         //AUTO BOOK CLAIMS UNDER CONTRACT OF SELECTED APEX FACILITY
-                        Book book = new Book();
-                        book.setBooknum("ACRGB" + utility.SimpleDateFormat("MMddyyyyHHmmss").format(new java.util.Date()));
-                        book.setConid(con.getConid());
-                        book.setHcpncode(contract.getHcfid());
-                        book.setCreatedby(con.getCreatedby());
-                        book.setDatecreated(utility.SimpleDateFormat("MM-dd-yyyy").format(new java.util.Date()));
-                        book.setTags("FACILITY");
-                        ACRGBWSResult bookingResult = bm.PROCESSENDEDCONTRACT(dataSource, book, "INACTIVE");
-                        if (!bookingResult.isSuccess()) {
-                            error.add(bookingResult.getMessage());
-                        }
+//                        Book book = new Book();
+//                        book.setBooknum("ACRGB" + utility.SimpleDateFormat("MMddyyyyHHmmss").format(new java.util.Date()));
+//                        book.setConid(con.getConid());
+//                        book.setHcpncode(contract.getHcfid());
+//                        book.setCreatedby(con.getCreatedby());
+//                        book.setDatecreated(utility.SimpleDateFormat("MM-dd-yyyy").format(new java.util.Date()));
+//                        book.setTags("FACILITY");
+//                        ACRGBWSResult bookingResult = bm.PROCESSENDEDCONTRACT(dataSource, book, "INACTIVE");
+//                        if (!bookingResult.isSuccess()) {
+//                            error.add(bookingResult.getMessage());
+//                        }
                     } else {
                         error.add("No Contract Found");
                     }
@@ -166,17 +165,17 @@ public class ContractTagging {
                         //END REMAP SELECTED HCPN TO PRO
                         result.setSuccess(true);
                         //AUTO BOOK CLAIMS DATA UNDER SELECTED HCPN
-                        Book book = new Book();
-                        book.setBooknum("ACRGB" + utility.SimpleDateFormat("MMddyyyyHHmmss").format(new java.util.Date()));
-                        book.setConid(con.getConid());
-                        book.setHcpncode(contract.getHcfid());
-                        book.setCreatedby(con.getCreatedby());
-                        book.setDatecreated(utility.SimpleDateFormat("MM-dd-yyyy").format(new java.util.Date()));
-                        book.setTags("HCPN");
-                        ACRGBWSResult bookingResult = bm.PROCESSENDEDCONTRACT(dataSource, book, "INACTIVE");
-                        if (!bookingResult.isSuccess()) {
-                            error.add(bookingResult.getMessage());
-                        }
+//                        Book book = new Book();
+//                        book.setBooknum("ACRGB" + utility.SimpleDateFormat("MMddyyyyHHmmss").format(new java.util.Date()));
+//                        book.setConid(con.getConid());
+//                        book.setHcpncode(contract.getHcfid());
+//                        book.setCreatedby(con.getCreatedby());
+//                        book.setDatecreated(utility.SimpleDateFormat("MM-dd-yyyy").format(new java.util.Date()));
+//                        book.setTags("HCPN");
+//                        ACRGBWSResult bookingResult = bm.PROCESSENDEDCONTRACT(dataSource, book, "INACTIVE");
+//                        if (!bookingResult.isSuccess()) {
+//                            error.add(bookingResult.getMessage());
+//                        }
                         ACRGBWSResult pfResult = pf.GETAFFILIATE(dataSource, "0", contract.getHcfid(), "0");
                         if (pfResult.isSuccess()) {
                             List<Appellate> pfList = Arrays.asList(utility.ObjectMapper().readValue(pfResult.getResult(), Appellate[].class));

@@ -183,12 +183,13 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
     //GET  ACR USER INDEX TBL
     @GET
     @Path("GetTranch/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetTranch(@HeaderParam("token") String token, @PathParam("tags") String tags) {
+    public ACRGBWSResult GetTranch(
+            @HeaderParam("token") String token, 
+            @PathParam("tags") String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -204,12 +205,12 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
     //GET  ACR USER TABLE
     @GET
     @Path("GetUserInfo/{tags}/{pdid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetUserInfo(@HeaderParam("token") String token,
+    public ACRGBWSResult GetUserInfo(
+            @HeaderParam("token") String token,
             @PathParam("tags") String tags,
             @PathParam("pdid") String pdid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -227,12 +228,13 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
     //GET  HCI FACILITY
     @GET
     @Path("GetUserLevel/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetUserLevel(@HeaderParam("token") String token, @PathParam("tags") String tags) {
+    public ACRGBWSResult GetUserLevel(
+            @HeaderParam("token") String token, 
+            @PathParam("tags") String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -248,7 +250,6 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
     //GET  HCI FACILITY
     @GET
     @Path("GetUser/{tags}/{id}")
@@ -272,7 +273,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+//
     @GET
     @Path("GetPro/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -363,7 +364,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetLevel/{levid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -388,7 +388,6 @@ public class ACRGBFETCH {
     }
 //------------------------------------------------------------
 //GET USER DETAILS
-
     @GET
     @Path("GETFULLDETAILS/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -458,7 +457,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetLogWithParam/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -482,7 +480,6 @@ public class ACRGBFETCH {
     }
 //------------------------------------------------------------
 //GET  REQUEST USING MB USER ID
-
     @GET
     @Path("GetMBRequest/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -505,8 +502,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-    //GET HCPN
-
     @GET
     @Path("GetManagingBoard/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -529,7 +524,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------    
-
     @GET
     @Path("GetFacilityUsingProAccountUserID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -550,9 +544,8 @@ public class ACRGBFETCH {
             result.setSuccess(getResult.isSuccess());
         }
         return result;
-    }
+    }   
 //------------------------------------------------------------
-
     @GET
     @Path("GETALLFACILITY/{tags}/{userid}")
     @Produces(MediaType.APPLICATION_JSON)

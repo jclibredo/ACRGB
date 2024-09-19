@@ -343,7 +343,9 @@ public class BookingMethod {
                                     }
                                     //GET CLAIMS TOTAL AMOUNT UNDER FACILITY
                                     ACRGBWSResult getClaimsAmount = this.CLAIMSAMOUNTBOOK(dataSource,
-                                            hciCodeList.get(u).trim(), "G", contractdate.getDatefrom().trim(), utility.AddMinusDaysDate(contractdate.getDateto().trim(), "60"));
+                                            hciCodeList.get(u).trim(), "G",
+                                            contractdate.getDatefrom().trim(),
+                                            utility.AddMinusDaysDate(contractdate.getDateto().trim(), "60"));
                                     if (getClaimsAmount.isSuccess()) {
                                         List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(getClaimsAmount.getResult(), NclaimsData[].class));
                                         for (int i = 0; i < nclaimsdata.size(); i++) {
@@ -360,6 +362,7 @@ public class BookingMethod {
                                             }
                                         }
                                     }
+
                                     ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, book.getHcpncode().trim(), book.getConid().trim(), utags.trim().toUpperCase());
                                     if (restA.isSuccess()) {
                                         List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));

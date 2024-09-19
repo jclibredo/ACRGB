@@ -130,7 +130,7 @@ public class InsertMethods {
             String logsTags = "";
             UserActivity userlogs = utility.UserActivity();
             if (fm.VALIDATERECIEPT(datasource, "CONTRACT", contract.getTranscode()).isSuccess()) {
-                result.setMessage("TRANSACTION REFERENCE NUMBER IS ALREADY EXIST");
+                result.setMessage("DUPLICATE REFERENCE NUMBER");
                 userlogs.setActdetails("PAYMENT REFERENCE NUMBER IS ALREADY EXIST");
                 userlogs.setActstatus("FAILED");
             } else {
@@ -193,7 +193,7 @@ public class InsertMethods {
             userlogs.setActdetails("Amount :" + contract.getAmount() + "| SB :" + contract.getSb() + "| Comitted volume:" + contract.getComittedClaimsVol() + " " + contract.getQuarter());
             logs.UserLogsMethod(datasource, logsTags, userlogs, contract.getHcfid(), contract.getContractdate());
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage(ex.getLocalizedMessage());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -577,7 +577,7 @@ public class InsertMethods {
                         getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                         getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                         getinsertresult.setString("tags", "USERDETAILS".trim().toUpperCase());
-                        getinsertresult.setInt("dataid", Integer.parseInt(userinfo.getDid()));
+                        getinsertresult.setString("dataid", userinfo.getDid());
                         getinsertresult.execute();
                         if (getinsertresult.getString("Message").equals("SUCC")) {
                             result.setSuccess(true);
@@ -590,7 +590,7 @@ public class InsertMethods {
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                     getinsertresult.setString("tags", "USER".trim().toUpperCase());
-                    getinsertresult.setInt("dataid", Integer.parseInt(dataid));
+                    getinsertresult.setString("dataid", dataid);
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
                         userLogs.setActstatus("SUCCESS");
@@ -609,7 +609,7 @@ public class InsertMethods {
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("tags", tags.trim().toUpperCase());
-                getinsertresult.setInt("dataid", Integer.parseInt(dataid));
+                getinsertresult.setString("dataid", dataid);
                 getinsertresult.execute();
                 UserActivity userlogs = utility.UserActivity();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
@@ -620,14 +620,11 @@ public class InsertMethods {
                     userlogs.setActstatus("FAILED");
                     result.setMessage(getinsertresult.getString("Message"));
                 }
-
             }
-
             //USER LOGS
             userLogs.setActby(createdby);
             userLogs.setActdetails(tags);
             logs.UserLogsMethod(datasource, "ACTIVE-DATA", userLogs, dataid, "0");
-
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);

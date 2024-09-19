@@ -63,6 +63,7 @@ public class CurrentBalance {
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             if (resultset.next()) {
                 if (!this.ValidateConBalance(dataSource, resultset.getString("CONTRACTDATE"), uhcfcode, resultset.getString("CONID")).isSuccess()) {
+                    System.out.println("SUCCESS FETCHING");
                     Contract contract = new Contract();
                     contract.setConid(resultset.getString("CONID"));
                     ACRGBWSResult facility = fm.GETFACILITYID(dataSource, resultset.getString("HCFID"));
@@ -93,42 +94,61 @@ public class CurrentBalance {
                     double percentageA = 0.00;
                     double percentageB = 0.00;
                     double trancheamount = 0.00;
+                    double totalrecievedamount = 0.00;
                     int tranches = 0;
                     ACRGBWSResult getcondateA = cm.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
                     if (getcondateA.isSuccess()) {
+                        System.out.println("SUCCESS CONTRACT DATE");
                         ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class);
                         contract.setContractdate(getcondateA.getResult());
                         //GET TRANCHE SUMMARY 
                         ACRGBWSResult getIdType = cb.GETTRANCHBYTYPE(dataSource, "1STFINAL");
                         if (getIdType.isSuccess()) {
                             Tranch tranch = utility.ObjectMapper().readValue(getIdType.getResult(), Tranch.class);
-                            ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, utags.trim(), uhcfcode.trim(), tranch.getTranchid(), resultset.getString("CONID"));
+                            ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, utags.trim(), resultset.getString("HCFID").trim(), tranch.getTranchid(), resultset.getString("CONID"));
                             if (totalResult.isSuccess()) {
                                 Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
                                 tranches += Integer.parseInt(getResult.getCcount());
                                 trancheamount += Double.parseDouble(getResult.getCtotal());
                             }
                             //GET TRANCHE AMOUNT
-                            ACRGBWSResult getTranchid = cb.GET1STFINAL(dataSource, utags.trim().toUpperCase(), uhcfcode.trim(), tranch.getTranchid(), resultset.getString("CONID").trim());
+                            ACRGBWSResult getTranchid = cb.GET1STFINAL(dataSource, utags.trim().toUpperCase(), resultset.getString("HCFID").trim(), tranch.getTranchid(), resultset.getString("CONID").trim());
                             if (getTranchid.isSuccess()) {
                                 Total getResult = utility.ObjectMapper().readValue(getTranchid.getResult(), Total.class);
                                 tranches -= Integer.parseInt(getResult.getCcount());
                                 trancheamount += Double.parseDouble(getResult.getCtotal());
                             }
                         }
-                        ACRGBWSResult restAB = fm.GETASSETBYIDANDCONID(dataSource, uhcfcode, resultset.getString("CONID"), utags);
+                        ACRGBWSResult restAB = fm.GETASSETBYIDANDCONID(dataSource, resultset.getString("HCFID").trim(), resultset.getString("CONID"), utags);
                         if (restAB.isSuccess()) {
+                            if (getIdType.isSuccess()) {
+                                Tranch tranch = utility.ObjectMapper().readValue(getIdType.getResult(), Tranch.class);
+                                ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, utags.trim(), resultset.getString("HCFID").trim(), tranch.getTranchid(), resultset.getString("CONID").trim());
+                                if (totalResult.isSuccess()) {
+                                    Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
+                                    totalrecievedamount += Double.parseDouble(getResult.getCtotal());
+                                }
+                                //GET TRANCHE AMOUNT
+                                ACRGBWSResult getTranchid = cb.GET1STFINAL(dataSource, utags.trim().toUpperCase(), resultset.getString("HCFID").trim(), tranch.getTranchid(), resultset.getString("CONID").trim());
+                                if (getTranchid.isSuccess()) {
+                                    Total getResult = utility.ObjectMapper().readValue(getTranchid.getResult(), Total.class);
+                                    totalrecievedamount += Double.parseDouble(getResult.getCtotal());
+                                }
+                            }
                             List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
                             for (int g = 0; g < assetlist.size(); g++) {
+
                                 if (assetlist.get(g).getPreviousbalance() != null) {
                                     Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
                                     switch (tranch.getTranchtype()) {
                                         case "1ST": {
                                             trancheamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                            totalrecievedamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
                                             break;
                                         }
                                         case "1STFINAL": {
                                             trancheamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                            totalrecievedamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
                                             break;
                                         }
                                     }
@@ -137,7 +157,7 @@ public class CurrentBalance {
                         }
 
                         //GET CLAIMS SUMMARY OF FACILITY UNDER NETWORK
-                        ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, uhcfcode.trim(), "G",
+                        ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, resultset.getString("HCFID").trim(), "G",
                                 condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
                         if (sumresult.isSuccess()) {
                             List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
@@ -153,8 +173,6 @@ public class CurrentBalance {
                                         totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
                                     }
                                 }
-//                                numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-//                                totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
                             }
                         }
                         double sumsA = (trancheamount / Double.parseDouble(resultset.getString("AMOUNT"))) * 100;
@@ -173,6 +191,7 @@ public class CurrentBalance {
                             percentageB += sumsB;
                         }
                     }
+                    contract.setRemainingbalance(String.valueOf(totalrecievedamount - totalclaimsamount));
                     contract.setTotalclaims(String.valueOf(numberofclaims));
                     contract.setTraches(String.valueOf(tranches));
                     contract.setTotaltrancheamount(String.valueOf(trancheamount));
@@ -217,11 +236,11 @@ public class CurrentBalance {
                 if (!this.ValidateConBalance(dataSource, resultset.getString("CONTRACTDATE"), uhcfcode, resultset.getString("CONID")).isSuccess()) {
                     Contract contract = new Contract();
                     contract.setConid(resultset.getString("CONID"));
-                    ACRGBWSResult facility = fm.GETFACILITYID(dataSource, resultset.getString("HCFID"));
-                    if (facility.isSuccess()) {
-                        contract.setHcfid(facility.getResult());
+                    ACRGBWSResult getHCPN = fm.GETMBCONTROL(dataSource, resultset.getString("HCFID"));
+                    if (getHCPN.isSuccess()) {
+                        contract.setHcfid(getHCPN.getResult());
                     } else {
-                        contract.setHcfid(facility.getMessage());
+                        contract.setHcfid(getHCPN.getMessage());
                     }
                     //END OF GET NETWORK FULL DETAILS
                     contract.setAmount(resultset.getString("AMOUNT"));
@@ -245,6 +264,7 @@ public class CurrentBalance {
                     double percentageA = 0.00;
                     double percentageB = 0.00;
                     double trancheamount = 0.00;
+                    double totalrecievedamount = 0.00;
                     int tranches = 0;
                     ACRGBWSResult getcondateA = cm.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
                     if (getcondateA.isSuccess()) {
@@ -271,6 +291,21 @@ public class CurrentBalance {
 
                         ACRGBWSResult restAB = fm.GETASSETBYIDANDCONID(dataSource, uhcfcode, resultset.getString("CONID"), utags);
                         if (restAB.isSuccess()) {
+                            if (getIdType.isSuccess()) {
+                                Tranch tranch = utility.ObjectMapper().readValue(getIdType.getResult(), Tranch.class);
+                                ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, utags.trim(), resultset.getString("HCFID").trim(), tranch.getTranchid(), resultset.getString("CONID").trim());
+                                if (totalResult.isSuccess()) {
+                                    Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
+                                    totalrecievedamount += Double.parseDouble(getResult.getCtotal());
+                                }
+                                //GET TRANCHE AMOUNT
+                                ACRGBWSResult getTranchid = cb.GET1STFINAL(dataSource, utags.trim().toUpperCase(), resultset.getString("HCFID").trim(), tranch.getTranchid(), resultset.getString("CONID").trim());
+                                if (getTranchid.isSuccess()) {
+                                    Total getResult = utility.ObjectMapper().readValue(getTranchid.getResult(), Total.class);
+                                    totalrecievedamount += Double.parseDouble(getResult.getCtotal());
+                                }
+                            }
+
                             List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
                             for (int g = 0; g < assetlist.size(); g++) {
                                 if (assetlist.get(g).getPreviousbalance() != null) {
@@ -278,10 +313,12 @@ public class CurrentBalance {
                                     switch (tranch.getTranchtype()) {
                                         case "1ST": {
                                             trancheamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                            totalrecievedamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
                                             break;
                                         }
                                         case "1STFINAL": {
                                             trancheamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                            totalrecievedamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
                                             break;
                                         }
                                     }
@@ -340,7 +377,7 @@ public class CurrentBalance {
                     contract.setTotalclaimsamount(String.valueOf(totalclaimsamount));
                     contract.setPercentage(String.valueOf(percentageA));
                     contract.setTotalclaimspercentage(String.valueOf(percentageB));
-                    contract.setRemainingbalance(String.valueOf(trancheamount - totalclaimsamount));
+                    contract.setRemainingbalance(String.valueOf(totalrecievedamount - totalclaimsamount));
                     result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                     result.setMessage("OK");
                     result.setSuccess(true);
