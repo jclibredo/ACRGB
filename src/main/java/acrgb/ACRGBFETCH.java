@@ -183,12 +183,13 @@ public class ACRGBFETCH {
         }
         return result;
     }
+
     //GET  ACR USER INDEX TBL
     @GET
     @Path("GetTranch/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetTranch(
-            @HeaderParam("token") String token, 
+            @HeaderParam("token") String token,
             @PathParam("tags") String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -205,6 +206,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
+
     //GET  ACR USER TABLE
     @GET
     @Path("GetUserInfo/{tags}/{pdid}")
@@ -228,12 +230,13 @@ public class ACRGBFETCH {
         }
         return result;
     }
+
     //GET  HCI FACILITY
     @GET
     @Path("GetUserLevel/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetUserLevel(
-            @HeaderParam("token") String token, 
+            @HeaderParam("token") String token,
             @PathParam("tags") String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -250,6 +253,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
+
     //GET  HCI FACILITY
     @GET
     @Path("GetUser/{tags}/{id}")
@@ -274,6 +278,7 @@ public class ACRGBFETCH {
         return result;
     }
 //
+
     @GET
     @Path("GetPro/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -364,6 +369,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetLevel/{levid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -388,6 +394,7 @@ public class ACRGBFETCH {
     }
 //------------------------------------------------------------
 //GET USER DETAILS
+
     @GET
     @Path("GETFULLDETAILS/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -457,6 +464,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetLogWithParam/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -480,6 +488,7 @@ public class ACRGBFETCH {
     }
 //------------------------------------------------------------
 //GET  REQUEST USING MB USER ID
+
     @GET
     @Path("GetMBRequest/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -502,6 +511,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetManagingBoard/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -524,6 +534,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------    
+
     @GET
     @Path("GetFacilityUsingProAccountUserID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -544,8 +555,9 @@ public class ACRGBFETCH {
             result.setSuccess(getResult.isSuccess());
         }
         return result;
-    }   
+    }
 //------------------------------------------------------------
+
     @GET
     @Path("GETALLFACILITY/{tags}/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -606,6 +618,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetManagingBoardWithProID/{proid}/{levelname}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -648,6 +661,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetMBUsingMBID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -800,6 +814,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
+
     @GET
     @Path("GetContractDate/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -844,6 +859,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
+
     //GET RANDOM PASSWORD
     @GET
     @Path("GetRandomPasscode")
@@ -865,6 +881,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
+
     //GET PREVIOS ENDED CONTRACT
     @GET
     @Path("GetPreviousContract/{paccount}/{contractid}")
@@ -889,6 +906,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
+
     @GET
     @Path("GetClaims/{hcpncode}/{contractid}/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -957,6 +975,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
+
     @GET
     @Path("CONTRACTWITHQUARTER/{tags}/{uprocode}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -979,6 +998,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
+
     //INSERT EMAIL CREDEDNTIALS
     @GET
     @Path("ValidateToken")
@@ -987,6 +1007,7 @@ public class ACRGBFETCH {
         ACRGBWSResult result = utility.GetPayload(token);
         return result;
     }
+
     //GET ALL CONTRACT
     @GET
     @Path("GetAllContract/{tags}/{target}")    //BOOK    //NOTBOOK
@@ -1033,6 +1054,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
+
     @GET
     @Path("GetContractHistory/{userId}/{requestCode}/{targetData}")//PRO LEVEL AND PHIC LEVEL
     @Produces(MediaType.APPLICATION_JSON)
@@ -1058,6 +1080,7 @@ public class ACRGBFETCH {
         return result;
     }
 //-----------------------------------------------------------------------------
+
     @GET
     @Path("Validate2FA")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1132,6 +1155,7 @@ public class ACRGBFETCH {
         result.setResult(utility.Create2FACode());
         return result;
     }
+
     @GET
     @Path("AutoProcessData")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1150,6 +1174,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
+
     @GET
     @Path("TestEmailSender/{recipient}/{newpass}")
     @Produces(MediaType.TEXT_PLAIN)
@@ -1189,6 +1214,7 @@ public class ACRGBFETCH {
 //        }
 //        return result;
 //    }
+
     @GET
     @Path("GetUserAccount/{puserid}/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
