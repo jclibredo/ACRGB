@@ -63,7 +63,6 @@ public class CurrentBalance {
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             if (resultset.next()) {
                 if (!this.ValidateConBalance(dataSource, resultset.getString("CONTRACTDATE"), uhcfcode, resultset.getString("CONID")).isSuccess()) {
-                    System.out.println("SUCCESS FETCHING");
                     Contract contract = new Contract();
                     contract.setConid(resultset.getString("CONID"));
                     ACRGBWSResult facility = fm.GETFACILITYID(dataSource, resultset.getString("HCFID"));
@@ -98,7 +97,6 @@ public class CurrentBalance {
                     int tranches = 0;
                     ACRGBWSResult getcondateA = cm.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
                     if (getcondateA.isSuccess()) {
-                        System.out.println("SUCCESS CONTRACT DATE");
                         ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class);
                         contract.setContractdate(getcondateA.getResult());
                         //GET TRANCHE SUMMARY 

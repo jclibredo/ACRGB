@@ -108,28 +108,28 @@ public class ACRGBFETCH {
         } else {
             switch (level.toUpperCase().trim()) {
                 case "PRO": {//puserid = prouseraccount ID
-                    ACRGBWSResult getResultA = fetchmethods.ACR_CONTRACTPROID(dataSource, tags.trim().toUpperCase(), puserid);//GET CONTRACT USING USERID OF PRO USER ACCOUNT
+                    ACRGBWSResult getResultA = fetchmethods.ACR_CONTRACTPROID(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT USING USERID OF PRO USER ACCOUNT
                     result.setMessage(getResultA.getMessage());
                     result.setResult(getResultA.getResult());
                     result.setSuccess(getResultA.isSuccess());
                     break;
                 }
                 case "MB": { //puserid = hcpnuseraccount ID
-                    ACRGBWSResult getResultB = fetchmethods.GETCONTRACTUNDERMB(dataSource, tags.trim().toUpperCase(), puserid);//GET CONTRACT USING USERID OF HCPN USER ACCOUNT
+                    ACRGBWSResult getResultB = fetchmethods.GETCONTRACTUNDERMB(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT USING USERID OF HCPN USER ACCOUNT
                     result.setMessage(getResultB.getMessage());
                     result.setResult(getResultB.getResult());
                     result.setSuccess(getResultB.isSuccess());
                     break;
                 }
                 case "PHICAPEX": {//puserid = 0
-                    ACRGBWSResult getResultC = fetchmethods.ACR_CONTRACT(dataSource, tags.trim().toUpperCase(), puserid);//GET CONTRACT OF ALL APEX FACILITY
+                    ACRGBWSResult getResultC = con.APEXFACILITYCONTRACT(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT OF ALL APEX FACILITY
                     result.setMessage(getResultC.getMessage());
                     result.setResult(getResultC.getResult());
                     result.setSuccess(getResultC.isSuccess());
                     break;
                 }
                 case "PHICHCPN": {//puserid = 0 
-                    ACRGBWSResult getResultD = fetchmethods.GETALLHCPNCONTRACT(dataSource, tags.trim().toUpperCase(), puserid);//GET CONTRACT OF ALL HCPN/NETWORK
+                    ACRGBWSResult getResultD = fetchmethods.GETALLHCPNCONTRACT(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT OF ALL HCPN/NETWORK
                     result.setMessage(getResultD.getMessage());
                     result.setResult(getResultD.getResult());
                     result.setSuccess(getResultD.isSuccess());
@@ -137,7 +137,7 @@ public class ACRGBFETCH {
                 }
                 //GetFacilityContractUsingHCPNCode  GET FACILITY CONTRACT USING MB ACCOUNT USERID
                 case "HCPN": {
-                    ACRGBWSResult getResultE = fetchmethods.GetFacilityContractUsingHCPNAccountUserID(dataSource, tags.trim().toUpperCase(), puserid);//GET CONTRACT OF ALL APEX FACILITY
+                    ACRGBWSResult getResultE = fetchmethods.GetFacilityContractUsingHCPNAccountUserID(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT OF ALL APEX FACILITY
                     result.setMessage(getResultE.getMessage());
                     result.setResult(getResultE.getResult());
                     result.setSuccess(getResultE.isSuccess());
@@ -145,7 +145,7 @@ public class ACRGBFETCH {
                 }
                 // GET ALL FACILITY CONTRACT USING HCPN CONTROL CODE   IN PRO LEVEL  
                 case "HCIHCPNCON": {
-                    ACRGBWSResult getResultF = fetchmethods.GetFacilityContractUsingHCPNCodeS(dataSource, tags.trim().toUpperCase(), puserid.toUpperCase());//GET CONTRACT OF ALL APEX FACILITY
+                    ACRGBWSResult getResultF = fetchmethods.GetFacilityContractUsingHCPNCodeS(dataSource, tags.trim().toUpperCase(), puserid.toUpperCase(), "OPEN");//GET CONTRACT OF ALL APEX FACILITY
                     result.setMessage(getResultF.getMessage());
                     result.setResult(getResultF.getResult());
                     result.setSuccess(getResultF.isSuccess());
@@ -153,7 +153,7 @@ public class ACRGBFETCH {
                 }
                 // GET FACILITY CONTRACT USING ACCOUNT USERID
                 case "FACILITYCONOWN": {
-                    ACRGBWSResult GetResult = con.GETCONTRACTOFFACILITY(dataSource, tags, puserid);
+                    ACRGBWSResult GetResult = con.GETCONTRACTOFFACILITY(dataSource, tags, puserid, "OPEN");
                     result.setMessage(GetResult.getMessage());
                     result.setResult(GetResult.getResult());
                     result.setSuccess(GetResult.isSuccess());
@@ -161,7 +161,7 @@ public class ACRGBFETCH {
                 }
                 // GET HCPN CONTRACT USING ACCOUNT USERID
                 case "HCPNCONOWN": {
-                    ACRGBWSResult GetResult = con.GETCONTRACTOFHCPN(dataSource, tags, puserid);
+                    ACRGBWSResult GetResult = con.GETCONTRACTOFHCPN(dataSource, tags, puserid, "OPEN");
                     result.setMessage(GetResult.getMessage());
                     result.setResult(GetResult.getResult());
                     result.setSuccess(GetResult.isSuccess());
@@ -169,7 +169,7 @@ public class ACRGBFETCH {
                 }
                 // GET PRO CONTRACT USING ACCOUNT USERID
                 case "PROCONOWN": {
-                    ACRGBWSResult GetResult = con.GETCONTRACTOFPRO(dataSource, tags, puserid);
+                    ACRGBWSResult GetResult = con.GETCONTRACTOFPRO(dataSource, tags, puserid, "OPEN");
                     result.setMessage(GetResult.getMessage());
                     result.setResult(GetResult.getResult());
                     result.setSuccess(GetResult.isSuccess());

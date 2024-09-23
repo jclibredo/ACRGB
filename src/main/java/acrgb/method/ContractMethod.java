@@ -54,19 +54,18 @@ public class ContractMethod {
         result.setSuccess(false);
         result.setResult("");
         try (Connection connection = dataSource.getConnection()) {
+            ArrayList<Contract> contractList = new ArrayList<>();
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("tags", "INACTIVE");
+            statement.setString("pfchid", phcfcode.trim());
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
             switch (tags.toUpperCase()) {
-                case "HCPNPRO":
-                    ArrayList<Contract> contractList = new ArrayList<>();
-                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
-                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                    statement.setString("tags", "INACTIVE");
-                    statement.setString("pfchid", phcfcode.trim());
-                    statement.execute();
-                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                case "HCPNPRO": {
                     while (resultset.next()) {
                         Contract contract = new Contract();
                         contract.setConid(resultset.getString("CONID"));
-                        //END OF GET NETWORK FULL DETAILS
                         contract.setAmount(resultset.getString("AMOUNT"));
                         contract.setStats(resultset.getString("STATS"));
                         contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
@@ -82,6 +81,11 @@ public class ContractMethod {
                         contract.setSb(resultset.getString("SB"));
                         contract.setAddamount(resultset.getString("ADDAMOUNT"));
                         contract.setQuarter(resultset.getString("QUARTER"));
+                        if (resultset.getTimestamp("ENDDATE") != null) {
+                            contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
+                        } else {
+                            contract.setEnddate("");
+                        }
                         contractList.add(contract);
                     }
                     if (contractList.isEmpty()) {
@@ -92,44 +96,43 @@ public class ContractMethod {
                         result.setMessage("N/A");
                     }
                     break;
-                case "HCPNPHIC":
-                    ArrayList<Contract> contractLists = new ArrayList<>();
-                    CallableStatement statements = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
-                    statements.registerOutParameter("v_result", OracleTypes.CURSOR);
-                    statements.setString("tags", "INACTIVE");
-                    statements.setString("pfchid", phcfcode.trim());
-                    statements.execute();
-                    ResultSet resultsets = (ResultSet) statements.getObject("v_result");
-                    while (resultsets.next()) {
-                        Contract contracts = new Contract();
-                        contracts.setConid(resultsets.getString("CONID"));
-                        //END OF GET NETWORK FULL DETAILS
-                        contracts.setAmount(resultsets.getString("AMOUNT"));
-                        contracts.setStats(resultsets.getString("STATS"));
-                        contracts.setDatecreated(dateformat.format(resultsets.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
-                        ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultsets.getString("CONTRACTDATE"));
+                }
+                case "HCPNPHIC": {
+                    while (resultset.next()) {
+                        Contract contract = new Contract();
+                        contract.setConid(resultset.getString("CONID"));
+                        contract.setAmount(resultset.getString("AMOUNT"));
+                        contract.setStats(resultset.getString("STATS"));
+                        contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
+                        ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
                         if (getcondateA.isSuccess()) {
-                            contracts.setContractdate(getcondateA.getResult());
+                            contract.setContractdate(getcondateA.getResult());
                         }
-                        contracts.setTranscode(resultsets.getString("TRANSCODE"));
-                        contracts.setBaseamount(resultsets.getString("BASEAMOUNT"));
-                        contracts.setHcfid(resultsets.getString("HCFID"));
-                        contracts.setComittedClaimsVol(resultsets.getString("C_CLAIMSVOL"));
-                        contracts.setComputedClaimsVol(resultsets.getString("T_CLAIMSVOL"));
-                        contracts.setSb(resultsets.getString("SB"));
-                        contracts.setAddamount(resultsets.getString("ADDAMOUNT"));
-                        contracts.setQuarter(resultsets.getString("QUARTER"));
-                        contractLists.add(contracts);
+                        contract.setTranscode(resultset.getString("TRANSCODE"));
+                        contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                        contract.setHcfid(resultset.getString("HCFID"));
+                        contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+                        contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
+                        contract.setSb(resultset.getString("SB"));
+                        contract.setAddamount(resultset.getString("ADDAMOUNT"));
+                        contract.setQuarter(resultset.getString("QUARTER"));
+                        if (resultset.getTimestamp("ENDDATE") != null) {
+                            contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
+                        } else {
+                            contract.setEnddate("");
+                        }
+                        contractList.add(contract);
                     }
 
-                    if (contractLists.isEmpty()) {
+                    if (contractList.isEmpty()) {
                         result.setSuccess(true);
                         result.setMessage("OK");
-                        result.setResult(utility.ObjectMapper().writeValueAsString(contractLists));
+                        result.setResult(utility.ObjectMapper().writeValueAsString(contractList));
                     } else {
                         result.setMessage("N/A");
                     }
                     break;
+                }
             }
 
         } catch (SQLException | IOException ex) {
@@ -181,6 +184,11 @@ public class ContractMethod {
                 contract.setSb(resultset.getString("SB"));
                 contract.setAddamount(resultset.getString("ADDAMOUNT"));
                 contract.setQuarter(resultset.getString("QUARTER"));
+                if (resultset.getTimestamp("ENDDATE") != null) {
+                    contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
+                } else {
+                    contract.setEnddate("");
+                }
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
@@ -233,6 +241,12 @@ public class ContractMethod {
                 contract.setSb(resultset.getString("SB"));
                 contract.setAddamount(resultset.getString("ADDAMOUNT"));
                 contract.setQuarter(resultset.getString("QUARTER"));
+                contract.setQuarter(resultset.getString("QUARTER"));
+                if (resultset.getTimestamp("ENDDATE") != null) {
+                    contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
+                } else {
+                    contract.setEnddate("");
+                }
                 contractList.add(contract);
             }
             if (contractList.size() > 0) {
@@ -481,7 +495,7 @@ public class ContractMethod {
     }
 
     //GET CONTRACT OF FACILITY USING ACCOUNT USERID
-    public ACRGBWSResult GETCONTRACTOFFACILITY(final DataSource dataSource, final String tags, final String userid) {
+    public ACRGBWSResult GETCONTRACTOFFACILITY(final DataSource dataSource, final String tags, final String userid, final String ustate) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -492,7 +506,8 @@ public class ContractMethod {
             ACRGBWSResult GetRole = methods.GETROLE(dataSource, userid, "ACTIVE");
             if (GetRole.isSuccess()) {
                 //GETCONTRACT
-                ACRGBWSResult GetFacilityContract = this.GETCONTRACT(dataSource, tags, GetRole.getResult().trim());
+                ACRGBWSResult GetFacilityContract = this.GETCONTRACTWITHOPENSTATE(dataSource, tags.trim().toUpperCase(), GetRole.getResult().trim(), ustate.trim().toUpperCase());
+//                ACRGBWSResult GetFacilityContract = this.GETCONTRACT(dataSource, tags, GetRole.getResult().trim());
                 if (GetFacilityContract.isSuccess()) {
                     Contract con = utility.ObjectMapper().readValue(GetFacilityContract.getResult(), Contract.class);
                     if (con.getContractdate() != null) {
@@ -522,24 +537,6 @@ public class ContractMethod {
                         double percentageA = 0.00;
                         double percentageB = 0.00;
                         double claimsamount = 0.00;
-//                        ACRGBWSResult getIdType = cb.GETTRANCHBYTYPE(dataSource, "1STFINAL");
-//                        if (getIdType.isSuccess()) {
-//                            Tranch tranch = utility.ObjectMapper().readValue(getIdType.getResult(), Tranch.class);
-//                            ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, tags.trim().toUpperCase(), MapContract.getHcfid().trim(), tranch.getTranchid(), MapContract.getConid());
-//                            if (totalResult.isSuccess()) {
-//                                Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
-//                                tranches += Integer.parseInt(getResult.getCcount());
-//                                trancheamount += Double.parseDouble(getResult.getCtotal());
-//                            }
-//                            //GET TRANCHE AMOUNT
-//                            ACRGBWSResult getTranchid = cb.GET1STFINAL(dataSource, tags.trim().toUpperCase(), MapContract.getHcfid().trim(), tranch.getTranchid(), MapContract.getConid().trim());
-//                            if (getTranchid.isSuccess()) {
-//                                Total getResult = utility.ObjectMapper().readValue(getTranchid.getResult(), Total.class);
-//                                tranches -= Integer.parseInt(getResult.getCcount());
-//                                trancheamount += Double.parseDouble(getResult.getCtotal());
-//                            }
-//                        }
-
                         ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, con.getHcfid(), con.getConid().trim(), tags);
                         if (restA.isSuccess()) {
                             List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
@@ -554,8 +551,8 @@ public class ContractMethod {
                                             break;
                                         }
                                         case "1STFINAL": {
-                                            trancheamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
-                                            tranches--;
+//                                            trancheamount += Double.parseDouble(assetlist.get(g).getReleasedamount());
+//                                            tranches--;
                                             break;
                                         }
                                         default: {
@@ -576,15 +573,30 @@ public class ContractMethod {
                             List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                             for (int i = 0; i < nclaimsdata.size(); i++) {
                                 if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                    if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
-                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                        claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                    if (con.getEnddate().isEmpty()) {
+                                        if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                            numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                            claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                        }
+                                    } else {
+                                        if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(con.getEnddate().trim())) <= 0) {
+                                            numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                            claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                        }
                                     }
                                 } else {
-                                    if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
-                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                        claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                    if (con.getEnddate().isEmpty()) {
+                                        if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                            numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                            claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                        }
+                                    } else {
+                                        if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(con.getEnddate().trim())) <= 0) {
+                                            numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                            claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                        }
                                     }
+
                                 }
                             }
                         }
@@ -629,18 +641,18 @@ public class ContractMethod {
     }
 
     //GET CONTRACT OF HCPN USING ACCOUNT USERID
-    public ACRGBWSResult GETCONTRACTOFHCPN(final DataSource dataSource, final String tags, final String userid) {
+    public ACRGBWSResult GETCONTRACTOFHCPN(final DataSource dataSource, final String tags, final String userid, final String ustate) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
-        CurrentBalance cb = new CurrentBalance();
         try {
             ACRGBWSResult GetRole = methods.GETROLE(dataSource, userid, "ACTIVE");
             if (GetRole.isSuccess()) {
                 //GETCONTRACT
-                ACRGBWSResult getHCPNContract = this.GETCONTRACT(dataSource, tags, GetRole.getResult().trim());
+                ACRGBWSResult getHCPNContract = this.GETCONTRACTWITHOPENSTATE(dataSource, tags.trim().toUpperCase(), GetRole.getResult().trim(), ustate.trim().toUpperCase());
+//                ACRGBWSResult getHCPNContract = this.GETCONTRACT(dataSource, tags.trim(), GetRole.getResult().trim());
                 if (getHCPNContract.isSuccess()) {
                     Contract con = utility.ObjectMapper().readValue(getHCPNContract.getResult(), Contract.class);
                     if (con.getContractdate() != null) {
@@ -678,24 +690,6 @@ public class ContractMethod {
                                 ACRGBWSResult getHCIContract = this.GETCONTRACT(dataSource, tags, HciList.get(x).trim());
                                 if (getHCIContract.isSuccess()) {
                                     Contract hcinCon = utility.ObjectMapper().readValue(getHCIContract.getResult(), Contract.class);
-                                    //GET FACILITY CONTRACT   UNDER HCPN
-//                                    ACRGBWSResult getIdType = cb.GETTRANCHBYTYPE(dataSource, "1STFINAL");
-//                                    if (getIdType.isSuccess()) {
-//                                        Tranch tranch = utility.ObjectMapper().readValue(getIdType.getResult(), Tranch.class);
-//                                        ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, tags.trim(), HciList.get(x).trim(), tranch.getTranchid(), hcinCon.getConid());
-//                                        if (totalResult.isSuccess()) {
-//                                            Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
-//                                            tranches += Integer.parseInt(getResult.getCcount());
-//                                            trancheamount += Double.parseDouble(getResult.getCtotal());
-//                                        }
-//                                        //GET TRANCHE AMOUNT
-//                                        ACRGBWSResult getTranchid = cb.GET1STFINAL(dataSource, tags.trim().toUpperCase(), HciList.get(x).trim(), tranch.getTranchid(), hcinCon.getConid().trim());
-//                                        if (getTranchid.isSuccess()) {
-//                                            Total getResult = utility.ObjectMapper().readValue(getTranchid.getResult(), Total.class);
-//                                            tranches -= Integer.parseInt(getResult.getCcount());
-//                                            trancheamount += Double.parseDouble(getResult.getCtotal());
-//                                        }
-//                                    }
                                     ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, HciList.get(x).trim(), hcinCon.getConid().trim(), tags);
                                     if (restA.isSuccess()) {
                                         List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
@@ -710,8 +704,8 @@ public class ContractMethod {
                                                         break;
                                                     }
                                                     case "1STFINAL": {
-                                                        trancheamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
-                                                        tranches--;
+//                                                        trancheamount += Double.parseDouble(assetlist.get(g).getReleasedamount());
+//                                                        tranches--;
                                                         break;
                                                     }
                                                     default: {
@@ -726,65 +720,40 @@ public class ContractMethod {
                                             }
                                         }
                                     }
-                                }
-
-                                //======================================
-                                ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, HciList.get(x).trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
-                                if (sumresult.isSuccess()) {
-                                    List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
-                                    for (int i = 0; i < nclaimsdata.size(); i++) {
-                                        if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                            if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
-                                                numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                                claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
-                                            }
-                                        } else {
-                                            if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
-                                                numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                                claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                    //======================================
+                                    ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, HciList.get(x).trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
+                                    if (sumresult.isSuccess()) {
+                                        List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
+                                        for (int i = 0; i < nclaimsdata.size(); i++) {
+                                            if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
+                                                if (hcinCon.getEnddate().isEmpty()) {
+                                                    if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                        claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                    }
+                                                } else {
+                                                    if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(hcinCon.getEnddate())) <= 0) {
+                                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                        claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                    }
+                                                }
+                                            } else {
+                                                if (hcinCon.getEnddate().isEmpty()) {
+                                                    if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                        claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                    }
+                                                } else {
+                                                    if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(hcinCon.getEnddate())) <= 0) {
+                                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                        claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                    }
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-
-                            //GET ALL TOTAL RECIEVED AMOUNT
-//                            ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, con.getHcfid(), con.getConid().trim(), tags);
-//                            if (restA.isSuccess()) {
-//                                ACRGBWSResult getIdType = cb.GETTRANCHBYTYPE(dataSource, "1STFINAL");
-//                                if (getIdType.isSuccess()) {
-//                                    Tranch tranch = utility.ObjectMapper().readValue(getIdType.getResult(), Tranch.class);
-//                                    ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, tags.trim(), con.getHcfid().trim(), tranch.getTranchid(), con.getConid());
-//                                    if (totalResult.isSuccess()) {
-//                                        Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
-//                                        //   tranches += Integer.parseInt(getResult.getCcount());
-//                                        totalrecievedamount += Double.parseDouble(getResult.getCtotal());
-//                                    }
-//                                    //GET TRANCHE AMOUNT
-//                                    ACRGBWSResult getTranchid = cb.GET1STFINAL(dataSource, tags.trim().toUpperCase(), con.getHcfid().trim(), tranch.getTranchid(), con.getConid().trim());
-//                                    if (getTranchid.isSuccess()) {
-//                                        Total getResult = utility.ObjectMapper().readValue(getTranchid.getResult(), Total.class);
-//                                        // tranches -= Integer.parseInt(getResult.getCcount());
-//                                        totalrecievedamount += Double.parseDouble(getResult.getCtotal());
-//                                    }
-//                                }
-//                                List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
-//                                for (int g = 0; g < assetlist.size(); g++) {
-//                                    if (assetlist.get(g).getPreviousbalance() != null) {
-//                                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
-//                                        switch (tranch.getTranchtype()) {
-//                                            case "1ST": {
-//                                                totalrecievedamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
-//                                                break;
-//                                            }
-//                                            case "1STFINAL": {
-//                                                totalrecievedamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
-//                                                break;
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
                         }
 
                         ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, con.getHcfid().trim(), con.getConid().trim(), tags);
@@ -855,7 +824,10 @@ public class ContractMethod {
     }
 
     //GET CONTRACT OF PRO USING ACCOUNT USERID
-    public ACRGBWSResult GETCONTRACTOFPRO(final DataSource dataSource, final String tags, final String userid) {
+    public ACRGBWSResult GETCONTRACTOFPRO(final DataSource dataSource,
+            final String tags,
+            final String userid,
+            final String ustate) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -874,7 +846,8 @@ public class ContractMethod {
                 double percentageB = 0.00;
                 ArrayList<Contract> contractList = new ArrayList<>();
                 //GETCONTRACT
-                ACRGBWSResult GetFacilityContract = this.GETCONTRACTList(dataSource, tags.trim().toUpperCase(), GetRole.getResult().trim());
+//                ACRGBWSResult GetFacilityContract = this.GETCONTRACTList(dataSource, tags.trim().toUpperCase(), GetRole.getResult().trim());
+                ACRGBWSResult GetFacilityContract = this.GETCONTRACTWITHOPENSTATEOFPRO(dataSource, tags.trim().toUpperCase(), GetRole.getResult().trim(), ustate.trim().toUpperCase());
                 if (GetFacilityContract.isSuccess()) {
                     List<Contract> MapContract = Arrays.asList(utility.ObjectMapper().readValue(GetFacilityContract.getResult(), Contract[].class));
                     for (int w = 0; w < MapContract.size(); w++) {
@@ -883,7 +856,6 @@ public class ContractMethod {
                         if (GetHCPN.isSuccess()) {
                             contract.setHcfid(GetHCPN.getResult());
                         }
-                        //END OF GET NETWORK FULL DETAILS
                         contract.setAmount(MapContract.get(w).getAmount());
                         contract.setStats(MapContract.get(w).getStats());
                         contract.setCreatedby(MapContract.get(w).getCreatedby());
@@ -906,28 +878,11 @@ public class ContractMethod {
                         List<String> HCPNList = Arrays.asList(GetHCPNList.getResult().split(","));
                         for (int y = 0; y < HCPNList.size(); y++) {
                             //GET CONTRACT PER HCPN
-                            ACRGBWSResult GetHCPNContract = this.GETCONTRACT(dataSource, tags.trim().toUpperCase(), HCPNList.get(y).trim());
+//                            ACRGBWSResult GetHCPNContract = this.GETCONTRACT(dataSource, tags.trim().toUpperCase(), HCPNList.get(y).trim());
+                            ACRGBWSResult GetHCPNContract = this.GETCONTRACTWITHOPENSTATE(dataSource, tags.trim().toUpperCase(), HCPNList.get(y).trim(), ustate);
                             if (GetHCPNContract.isSuccess()) {
                                 Contract MapHCPNContract = utility.ObjectMapper().readValue(GetHCPNContract.getResult(), Contract.class);
                                 //----------------------------------------------
-//                                ACRGBWSResult getIdType = cb.GETTRANCHBYTYPE(dataSource, "1STFINAL");
-//                                if (getIdType.isSuccess()) {
-//                                    Tranch tranch = utility.ObjectMapper().readValue(getIdType.getResult(), Tranch.class);
-//                                    ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, tags.trim().toUpperCase(), MapHCPNContract.getHcfid().trim(), tranch.getTranchid(), MapHCPNContract.getConid());
-//                                    if (totalResult.isSuccess()) {
-//                                        Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
-//                                        tranches += Integer.parseInt(getResult.getCcount());
-//                                        tracnheamountreleased += Double.parseDouble(getResult.getCtotal());
-//
-//                                    }
-//                                    //GET TRANCHE AMOUNT
-//                                    ACRGBWSResult getTranchid = cb.GET1STFINAL(dataSource, tags.trim().toUpperCase(), MapHCPNContract.getHcfid().trim(), tranch.getTranchid(), MapHCPNContract.getConid().trim());
-//                                    if (getTranchid.isSuccess()) {
-//                                        Total getResult = utility.ObjectMapper().readValue(getTranchid.getResult(), Total.class);
-//                                        tranches -= Integer.parseInt(getResult.getCcount());
-//                                        tracnheamountreleased += Double.parseDouble(getResult.getCtotal());
-//                                    }
-//                                }
                                 ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, HCPNList.get(y).trim(), MapHCPNContract.getConid().trim(), tags);
                                 if (restA.isSuccess()) {
                                     List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
@@ -942,8 +897,8 @@ public class ContractMethod {
                                                     break;
                                                 }
                                                 case "1STFINAL": {
-                                                    tracnheamountreleased -= Double.parseDouble(assetlist.get(g).getReleasedamount());
-                                                    tranches--;
+//                                                    tracnheamountreleased += Double.parseDouble(assetlist.get(g).getReleasedamount());
+//                                                    tranches--;
                                                     break;
                                                 }
                                                 default: {
@@ -966,22 +921,43 @@ public class ContractMethod {
                                     if (GetHCIList.isSuccess()) {
                                         List<String> HCIList = Arrays.asList(GetHCIList.getResult().split(","));
                                         for (int x = 0; x < HCIList.size(); x++) {
-                                            ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, HCIList.get(x).trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
-                                            if (sumresult.isSuccess()) {
-                                                List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
-                                                for (int i = 0; i < nclaimsdata.size(); i++) {
-                                                    if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                                        if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
-                                                            numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                                            totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
-                                                        }
-                                                    } else {
-                                                        if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
-                                                            numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                                            totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+//                                            ACRGBWSResult GetHCIContract = this.GETCONTRACT(dataSource, tags.trim().toUpperCase(), HCIList.get(x).trim());
+                                            ACRGBWSResult GetHCIContract = this.GETCONTRACTWITHOPENSTATE(dataSource, tags.trim().toUpperCase(), HCPNList.get(x).trim(), ustate);
+                                            if (GetHCIContract.isSuccess()) {
+                                                Contract hciCon = utility.ObjectMapper().readValue(GetHCIContract.getResult(), Contract.class);
+                                                ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, HCIList.get(x).trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
+                                                if (sumresult.isSuccess()) {
+                                                    List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
+                                                    for (int i = 0; i < nclaimsdata.size(); i++) {
+                                                        if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
+                                                            if (hciCon.getEnddate().isEmpty()) {
+                                                                if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                                    numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                                    totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                                }
+                                                            } else {
+                                                                if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(hciCon.getEnddate().trim())) <= 0) {
+                                                                    numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                                    totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                                }
+                                                            }
+                                                        } else {
+                                                            if (hciCon.getEnddate().isEmpty()) {
+                                                                if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                                    numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                                    totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                                }
+                                                            } else {
+                                                                if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(hciCon.getEnddate().trim())) <= 0) {
+                                                                    numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                                    totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                                }
+                                                            }
+
                                                         }
                                                     }
                                                 }
+
                                             }
                                         }
                                     }
@@ -990,46 +966,6 @@ public class ContractMethod {
                             }
                         }
                     }
-
-//                      //GET ALL TOTAL RECIEVED AMOUNT
-//                            ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, hcpnCon.getHcfid(), hcpnCon.getConid().trim(), tags);
-//                            if (restA.isSuccess()) {
-//                                ACRGBWSResult getIdType = cb.GETTRANCHBYTYPE(dataSource, "1STFINAL");
-//                                if (getIdType.isSuccess()) {
-//                                    Tranch tranch = utility.ObjectMapper().readValue(getIdType.getResult(), Tranch.class);
-//                                    ACRGBWSResult totalResult = methods.GETSUMMARY(dataSource, tags.trim(), hcpnCon.getHcfid().trim(), tranch.getTranchid(), hcpnCon.getConid());
-//                                    if (totalResult.isSuccess()) {
-//                                        Total getResult = utility.ObjectMapper().readValue(totalResult.getResult(), Total.class);
-//                                        //   tranches += Integer.parseInt(getResult.getCcount());
-//                                        totalrecievedamount += Double.parseDouble(getResult.getCtotal());
-//                                    }
-//                                    //GET TRANCHE AMOUNT
-//                                    ACRGBWSResult getTranchid = cb.GET1STFINAL(dataSource, tags.trim().toUpperCase(), hcpnCon.getHcfid().trim(), tranch.getTranchid(), hcpnCon.getConid().trim());
-//                                    if (getTranchid.isSuccess()) {
-//                                        Total getResult = utility.ObjectMapper().readValue(getTranchid.getResult(), Total.class);
-//                                        // tranches -= Integer.parseInt(getResult.getCcount());
-//                                        totalrecievedamount += Double.parseDouble(getResult.getCtotal());
-//                                    }
-//                                }
-//                                List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
-//                                for (int g = 0; g < assetlist.size(); g++) {
-//                                    if (assetlist.get(g).getPreviousbalance() != null) {
-//                                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
-//                                        switch (tranch.getTranchtype()) {
-//                                            case "1ST": {
-//                                                totalrecievedamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
-//                                                break;
-//                                            }
-//                                            case "1STFINAL": {
-//                                                totalrecievedamount -= Double.parseDouble(assetlist.get(g).getReleasedamount());
-//                                                break;
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                    
-//                    
                     Contract contractA = new Contract();
                     double sumA = (tracnheamountreleased / recievedamount) * 100;
                     if (sumA > 100) {
@@ -1053,7 +989,7 @@ public class ContractMethod {
                         contractA.setHcfid(GetHCPN.getResult());
                     }
                     contractA.setAmount(String.valueOf(recievedamount));
-                    contractA.setTotalamountrecieved(String.valueOf(tracnheamountreleased));
+                    contractA.setTotalamountrecieved(String.valueOf(recievedamount));
                     contractA.setTotalclaims(String.valueOf(numberofclaims));
                     contractA.setTraches(String.valueOf(tranches));
                     contractA.setPercentage(String.valueOf(percentageA));
@@ -1214,5 +1150,298 @@ public class ContractMethod {
         return result;
     }
 //TAGS
+
+    public ACRGBWSResult GETCONTRACTWITHOPENSTATE(
+            final DataSource dataSource,
+            final String utags,
+            final String uhcfcode,
+            final String ustate) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETENDCONOPENCONSTATE(:utags,:uhcfcode,:ustate); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("utags", utags.toUpperCase());
+            statement.setString("uhcfcode", uhcfcode.trim());
+            statement.setString("ustate", ustate.trim());
+            statement.execute();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            if (resultset.next()) {
+                Contract contract = new Contract();
+                contract.setConid(resultset.getString("CONID"));
+                contract.setHcfid(resultset.getString("HCFID"));
+                //END OF GET NETWORK FULL DETAILS
+                contract.setAmount(resultset.getString("AMOUNT"));
+                contract.setStats(resultset.getString("STATS"));
+                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    contract.setCreatedby(creator.getResult());
+                } else {
+                    contract.setCreatedby(creator.getMessage());
+                }
+                contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
+                ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+                if (getcondateA.isSuccess()) {
+                    contract.setContractdate(getcondateA.getResult());
+                }
+                contract.setTranscode(resultset.getString("TRANSCODE"));
+                contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+                contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
+                contract.setSb(resultset.getString("SB"));
+                contract.setAddamount(resultset.getString("ADDAMOUNT"));
+                contract.setQuarter(resultset.getString("QUARTER"));
+                if (resultset.getTimestamp("ENDDATE") != null) {
+                    contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
+                } else {
+                    contract.setEnddate("");
+                }
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(contract));
+            } else {
+                result.setMessage("N/A");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+//
+
+    public ACRGBWSResult GETCONTRACTWITHOPENSTATEOFPRO(
+            final DataSource dataSource,
+            final String utags,
+            final String uhcfcode,
+            final String ustate) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETENDCONOPENCONSTATE(:utags,:uhcfcode,:ustate); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("utags", utags.toUpperCase());
+            statement.setString("uhcfcode", uhcfcode.trim());
+            statement.setString("ustate", ustate.trim());
+            statement.execute();
+            ArrayList<Contract> contractList = new ArrayList<>();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                Contract contract = new Contract();
+                contract.setConid(resultset.getString("CONID"));
+                contract.setHcfid(resultset.getString("HCFID"));
+                //END OF GET NETWORK FULL DETAILS
+                contract.setAmount(resultset.getString("AMOUNT"));
+                contract.setStats(resultset.getString("STATS"));
+                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                if (creator.isSuccess()) {
+                    contract.setCreatedby(creator.getResult());
+                } else {
+                    contract.setCreatedby(creator.getMessage());
+                }
+                contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
+                ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+                if (getcondateA.isSuccess()) {
+                    contract.setContractdate(getcondateA.getResult());
+                }
+                contract.setTranscode(resultset.getString("TRANSCODE"));
+                contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+                contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
+                contract.setSb(resultset.getString("SB"));
+                contract.setAddamount(resultset.getString("ADDAMOUNT"));
+                contract.setQuarter(resultset.getString("QUARTER"));
+                if (resultset.getTimestamp("ENDDATE") != null) {
+                    contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
+                } else {
+                    contract.setEnddate("");
+                }
+                contractList.add(contract);
+            }
+            if (contractList.size() > 0) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(contractList));
+            } else {
+                result.setMessage("N/A");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET CONTRACT OF APEX FACILITY
+    public ACRGBWSResult APEXFACILITYCONTRACT(final DataSource dataSource, final String utags, final String uhcfcode, final String ustate) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        Methods methods = new Methods();
+        try (Connection connection = dataSource.getConnection()) {
+            ArrayList<Contract> contractlist = new ArrayList<>();
+            //-------------- GET APEX FACILITY
+            ACRGBWSResult resultfm = methods.GETAPEXFACILITY(dataSource);
+            if (resultfm.isSuccess()) {
+                List<HealthCareFacility> userlist = Arrays.asList(utility.ObjectMapper().readValue(resultfm.getResult(), HealthCareFacility[].class));
+                for (int x = 0; x < userlist.size(); x++) {
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETENDCONOPENCONSTATE(:utags,:uhcfcode,:ustate); end;");
+                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+                    statement.setString("utags", utags);
+                    statement.setString("uhcfcode", userlist.get(x).getHcfcode().trim());
+                    statement.setString("ustate", ustate);
+                    statement.execute();
+                    ResultSet resultset = (ResultSet) statement.getObject("v_result");
+                    if (resultset.next()) {
+                        Contract contract = new Contract();
+                        contract.setConid(resultset.getString("CONID"));
+                        ACRGBWSResult facility = fm.GETFACILITYID(dataSource, resultset.getString("HCFID"));
+                        if (facility.isSuccess()) {
+                            contract.setHcfid(facility.getResult());
+                        } else {
+                            contract.setHcfid(facility.getMessage());
+                        }
+                        //END OF GET NETWORK FULL DETAILS
+                        contract.setAmount(resultset.getString("AMOUNT"));
+                        contract.setStats(resultset.getString("STATS"));
+                        ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                        if (creator.isSuccess()) {
+                            contract.setCreatedby(creator.getResult());
+                        } else {
+                            contract.setCreatedby(creator.getMessage());
+                        }
+                        contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
+                        ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+                        contract.setTranscode(resultset.getString("TRANSCODE"));
+                        contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+                        contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+                        contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
+                        contract.setSb(resultset.getString("SB"));
+                        contract.setAddamount(resultset.getString("ADDAMOUNT"));
+                        contract.setQuarter(resultset.getString("QUARTER"));
+                        //=============================================
+                        int numberofclaims = 0;
+                        double totalclaimsamount = 0.00;
+                        double percentageA = 0.00;
+                        double percentageB = 0.00;
+                        double trancheamount = 0.00;
+                        int tranches = 0;
+                        if (getcondateA.isSuccess()) {
+                            contract.setContractdate(getcondateA.getResult());
+                            ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class);
+                            ACRGBWSResult restAB = fm.GETASSETBYIDANDCONID(dataSource, resultset.getString("HCFID").trim(), resultset.getString("CONID"), utags);
+                            if (restAB.isSuccess()) {
+                                List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
+                                for (int g = 0; g < assetlist.size(); g++) {
+                                    if (assetlist.get(g).getPreviousbalance() != null) {
+                                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
+                                        switch (tranch.getTranchtype()) {
+                                            case "1ST": {
+                                                trancheamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
+                                                trancheamount += Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                                tranches++;
+                                                break;
+                                            }
+                                            case "1STFINAL": {
+//                                                trancheamount += Double.parseDouble(assetlist.get(g).getReleasedamount());
+//                                                tranches--;
+                                                break;
+                                            }
+                                            default: {
+                                                trancheamount += Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                                tranches++;
+                                                break;
+                                            }
+                                        }
+                                    } else {
+                                        trancheamount += Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                        tranches++;
+                                    }
+                                }
+                            }
+                            //GET CLAIMS SUMMARY OF FACILITY UNDER NETWORK
+//                            ACRGBWSResult GetFacilityContract = this.GETCONTRACT(dataSource, utags, userlist.get(x).getHcfcode().trim());
+                            ACRGBWSResult GetHCPNContract = this.GETCONTRACTWITHOPENSTATE(dataSource, utags.trim().toUpperCase(), userlist.get(x).getHcfcode().trim(), ustate.trim().toUpperCase());
+                            if (GetHCPNContract.isSuccess()) {
+                                ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, userlist.get(x).getHcfcode().trim(), "G",
+                                        condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
+                                if (sumresult.isSuccess()) {
+                                    Contract conHci = utility.ObjectMapper().readValue(GetHCPNContract.getResult(), Contract.class);
+                                    List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
+                                    for (int i = 0; i < nclaimsdata.size(); i++) {
+                                        if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
+                                            if (conHci.getEnddate().isEmpty()) {
+                                                if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                    numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                    totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                }
+                                            } else {
+                                                if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(conHci.getEnddate().trim())) <= 0) {
+                                                    numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                    totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                }
+                                            }
+                                        } else {
+                                            if (conHci.getEnddate().isEmpty()) {
+                                                if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                    numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                    totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                }
+                                            } else {
+                                                if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(conHci.getEnddate().trim())) <= 0) {
+                                                    numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                    totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            double sumsA = (trancheamount / Double.parseDouble(resultset.getString("AMOUNT"))) * 100;
+                            if (sumsA > 100) {
+                                double negvalue = 100 - sumsA;
+                                percentageA += negvalue;
+                            } else {
+                                percentageA += sumsA;
+                            }
+                            //----------------
+                            double sumsB = (totalclaimsamount / trancheamount) * 100;
+                            if (sumsB > 100) {
+                                double negvalue = 100 - sumsB;
+                                percentageB += negvalue;
+                            } else {
+                                percentageB += sumsB;
+                            }
+                        }
+                        contract.setTotalamountrecieved(String.valueOf(trancheamount));
+                        contract.setTotalclaims(String.valueOf(numberofclaims));
+                        contract.setTraches(String.valueOf(tranches));
+                        contract.setTotaltrancheamount(String.valueOf(trancheamount));
+                        contract.setTotalclaimsamount(String.valueOf(totalclaimsamount));
+                        contract.setPercentage(String.valueOf(percentageA));
+                        contract.setTotalclaimspercentage(String.valueOf(percentageB));
+                        contractlist.add(contract);
+                    }
+                }
+            }
+            if (!contractlist.isEmpty()) {
+                result.setMessage("OK");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
+            } else {
+                result.setMessage("N/A");
+            }
+
+        } catch (SQLException | IOException | ParseException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
 
 }

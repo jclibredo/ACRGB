@@ -320,7 +320,6 @@ public class LedgerMethod {
                                     int from = Integer.parseInt(assetlist.get(0).getClaimscount());
                                     int to = Integer.parseInt(assetlist.get(y).getClaimscount());
                                     finalclaims = to - from;
-                                    // finalblance += Double.parseDouble(assetlist.get(y).getReleasedamount());
                                 }
                                 break;
                             }
@@ -426,6 +425,7 @@ public class LedgerMethod {
                                             SubledgerA.setLiquidation(hcfA.get(u).getTotalamount());
                                             ledgerlist.add(SubledgerA);
                                         }
+
                                     } else {
                                         if (dateformat.parse(hcfA.get(u).getDaterefiled()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
                                             Ledger SubledgerA = new Ledger();

@@ -3099,137 +3099,137 @@ public class Methods {
     }
 
     //GET REPORTS FOR LIST OF SELECTED NETWORK
-    public ACRGBWSResult GetReportsOfSelectedAPEXFacility(final DataSource dataSource, final String tags, final String puserid) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ArrayList<ReportsHCPNSummary> rmblist = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection()) {
-            ACRGBWSResult resultreports = fm.ACR_CONTRACTPROID(dataSource, tags, puserid);//GET CONTRACT USING USERID OF PRO USER ACCOUNT
-            if (resultreports.isSuccess()) {
-                if (!resultreports.getResult().isEmpty()) {
-                    List<Contract> conlist = Arrays.asList(utility.ObjectMapper().readValue(resultreports.getResult(), Contract[].class));
-                    for (int x = 0; x < conlist.size(); x++) {
-                        ManagingBoard mb = utility.ObjectMapper().readValue(conlist.get(x).getHcfid(), ManagingBoard.class);
-                        ReportsHCPNSummary rmb = new ReportsHCPNSummary();
-                        rmb.setHcpnname(mb.getMbname());
-                        if (!conlist.get(x).getContractdate().isEmpty()) {
-                            ContractDate condate = utility.ObjectMapper().readValue(conlist.get(x).getContractdate(), ContractDate.class);
-                            rmb.setContractadateto(condate.getDateto());
-                            rmb.setContractadatefrom(condate.getDatefrom());
-                        } else {
-                            rmb.setContractadateto(conlist.get(x).getContractdate());
-                            rmb.setContractadatefrom(conlist.get(x).getContractdate());
-                        }
-                        rmb.setConctractamount(conlist.get(x).getAmount());
-                        rmb.setContractnumber(conlist.get(x).getTranscode());
-                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
-                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                        statement.setString("tags", tags.trim());
-                        statement.setString("pconid", conlist.get(x).getConid().trim());
-                        statement.execute();
-                        ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                        if (resultset.next()) {
-                            rmb.setAmountrelease(resultset.getString("CAMOUNT"));
-                            rmb.setTotalnumberofreleased(resultset.getString("TCONID"));
-                            Double totalclaimsamount = Double.parseDouble(resultset.getString("CAMOUNT"));
-                            Double contractamount = Double.parseDouble(conlist.get(x).getAmount());
-                            Double bal = contractamount - totalclaimsamount;
-                            rmb.setRemainingbal(String.valueOf(bal));
-                        } else {
-                            rmb.setAmountrelease("NO AMOUNT");
-                            rmb.setTotalnumberofreleased("NO RELEASED");
-                            rmb.setRemainingbal(conlist.get(x).getAmount());
-                        }
-                        rmblist.add(rmb);
-                    }
-                } else {
-                    result.setMessage("N/A");
-                }
-            } else {
-                result.setMessage(resultreports.getMessage());
-            }
-
-            if (rmblist.size() > 0) {
-                result.setMessage("OK");
-                result.setResult(utility.ObjectMapper().writeValueAsString(rmblist));
-                result.setSuccess(true);
-            } else {
-                result.setMessage("N/A");
-            }
-        } catch (IOException | SQLException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
+//    public ACRGBWSResult GetReportsOfSelectedAPEXFacility(final DataSource dataSource, final String tags, final String puserid) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ArrayList<ReportsHCPNSummary> rmblist = new ArrayList<>();
+//        try (Connection connection = dataSource.getConnection()) {
+//            ACRGBWSResult resultreports = fm.ACR_CONTRACTPROID(dataSource, tags, puserid);//GET CONTRACT USING USERID OF PRO USER ACCOUNT
+//            if (resultreports.isSuccess()) {
+//                if (!resultreports.getResult().isEmpty()) {
+//                    List<Contract> conlist = Arrays.asList(utility.ObjectMapper().readValue(resultreports.getResult(), Contract[].class));
+//                    for (int x = 0; x < conlist.size(); x++) {
+//                        ManagingBoard mb = utility.ObjectMapper().readValue(conlist.get(x).getHcfid(), ManagingBoard.class);
+//                        ReportsHCPNSummary rmb = new ReportsHCPNSummary();
+//                        rmb.setHcpnname(mb.getMbname());
+//                        if (!conlist.get(x).getContractdate().isEmpty()) {
+//                            ContractDate condate = utility.ObjectMapper().readValue(conlist.get(x).getContractdate(), ContractDate.class);
+//                            rmb.setContractadateto(condate.getDateto());
+//                            rmb.setContractadatefrom(condate.getDatefrom());
+//                        } else {
+//                            rmb.setContractadateto(conlist.get(x).getContractdate());
+//                            rmb.setContractadatefrom(conlist.get(x).getContractdate());
+//                        }
+//                        rmb.setConctractamount(conlist.get(x).getAmount());
+//                        rmb.setContractnumber(conlist.get(x).getTranscode());
+//                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
+//                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+//                        statement.setString("tags", tags.trim());
+//                        statement.setString("pconid", conlist.get(x).getConid().trim());
+//                        statement.execute();
+//                        ResultSet resultset = (ResultSet) statement.getObject("v_result");
+//                        if (resultset.next()) {
+//                            rmb.setAmountrelease(resultset.getString("CAMOUNT"));
+//                            rmb.setTotalnumberofreleased(resultset.getString("TCONID"));
+//                            Double totalclaimsamount = Double.parseDouble(resultset.getString("CAMOUNT"));
+//                            Double contractamount = Double.parseDouble(conlist.get(x).getAmount());
+//                            Double bal = contractamount - totalclaimsamount;
+//                            rmb.setRemainingbal(String.valueOf(bal));
+//                        } else {
+//                            rmb.setAmountrelease("NO AMOUNT");
+//                            rmb.setTotalnumberofreleased("NO RELEASED");
+//                            rmb.setRemainingbal(conlist.get(x).getAmount());
+//                        }
+//                        rmblist.add(rmb);
+//                    }
+//                } else {
+//                    result.setMessage("N/A");
+//                }
+//            } else {
+//                result.setMessage(resultreports.getMessage());
+//            }
+//
+//            if (rmblist.size() > 0) {
+//                result.setMessage("OK");
+//                result.setResult(utility.ObjectMapper().writeValueAsString(rmblist));
+//                result.setSuccess(true);
+//            } else {
+//                result.setMessage("N/A");
+//            }
+//        } catch (IOException | SQLException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
 
     //GET REPORTS EVERY FACILITY USING MB ID
-    public ACRGBWSResult GetReportsOfSelectedFacilityUnderHCPN(final DataSource dataSource, final String tags, final String puserid) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ArrayList<ReportsHCPNSummary> rmblist = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection()) {
-            ACRGBWSResult resultreports = fm.ACR_CONTRACTPROID(dataSource, tags, puserid);//GET CONTRACT USING USERID OF PRO USER ACCOUNT
-            if (resultreports.isSuccess()) {
-                if (!resultreports.getResult().isEmpty()) {
-                    List<Contract> conlist = Arrays.asList(utility.ObjectMapper().readValue(resultreports.getResult(), Contract[].class));
-                    for (int x = 0; x < conlist.size(); x++) {
-                        ManagingBoard mb = utility.ObjectMapper().readValue(conlist.get(x).getHcfid(), ManagingBoard.class);
-                        ReportsHCPNSummary rmb = new ReportsHCPNSummary();
-                        rmb.setHcpnname(mb.getMbname());
-                        if (!conlist.get(x).getContractdate().isEmpty()) {
-                            ContractDate condate = utility.ObjectMapper().readValue(conlist.get(x).getContractdate(), ContractDate.class);
-                            rmb.setContractadateto(condate.getDateto());
-                            rmb.setContractadatefrom(condate.getDatefrom());
-                        } else {
-                            rmb.setContractadateto(conlist.get(x).getContractdate());
-                            rmb.setContractadatefrom(conlist.get(x).getContractdate());
-                        }
-                        rmb.setConctractamount(conlist.get(x).getAmount());
-                        rmb.setContractnumber(conlist.get(x).getTranscode());
-                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
-                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-                        statement.setString("tags", tags.trim());
-                        statement.setString("pconid", conlist.get(x).getConid().trim());
-                        statement.execute();
-                        ResultSet resultset = (ResultSet) statement.getObject("v_result");
-                        if (resultset.next()) {
-                            rmb.setAmountrelease(resultset.getString("CAMOUNT"));
-                            rmb.setTotalnumberofreleased(resultset.getString("TCONID"));
-                            Double totalclaimsamount = Double.parseDouble(resultset.getString("CAMOUNT"));
-                            Double contractamount = Double.parseDouble(conlist.get(x).getAmount());
-                            Double bal = contractamount - totalclaimsamount;
-                            rmb.setRemainingbal(String.valueOf(bal));
-                        } else {
-                            rmb.setAmountrelease("NO AMOUNT");
-                            rmb.setTotalnumberofreleased("NO RELEASED");
-                            rmb.setRemainingbal(conlist.get(x).getAmount());
-                        }
-                        rmblist.add(rmb);
-                    }
-                } else {
-                    result.setMessage("N/A");
-                }
-            } else {
-                result.setMessage(resultreports.getMessage());
-            }
-            if (rmblist.size() > 0) {
-                result.setMessage("OK");
-                result.setResult(utility.ObjectMapper().writeValueAsString(rmblist));
-                result.setSuccess(true);
-            } else {
-                result.setMessage("NO DATA FOUND");
-            }
-        } catch (IOException | SQLException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
+//    public ACRGBWSResult GetReportsOfSelectedFacilityUnderHCPN(final DataSource dataSource, final String tags, final String puserid) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ArrayList<ReportsHCPNSummary> rmblist = new ArrayList<>();
+//        try (Connection connection = dataSource.getConnection()) {
+//            ACRGBWSResult resultreports = fm.ACR_CONTRACTPROID(dataSource, tags, puserid);//GET CONTRACT USING USERID OF PRO USER ACCOUNT
+//            if (resultreports.isSuccess()) {
+//                if (!resultreports.getResult().isEmpty()) {
+//                    List<Contract> conlist = Arrays.asList(utility.ObjectMapper().readValue(resultreports.getResult(), Contract[].class));
+//                    for (int x = 0; x < conlist.size(); x++) {
+//                        ManagingBoard mb = utility.ObjectMapper().readValue(conlist.get(x).getHcfid(), ManagingBoard.class);
+//                        ReportsHCPNSummary rmb = new ReportsHCPNSummary();
+//                        rmb.setHcpnname(mb.getMbname());
+//                        if (!conlist.get(x).getContractdate().isEmpty()) {
+//                            ContractDate condate = utility.ObjectMapper().readValue(conlist.get(x).getContractdate(), ContractDate.class);
+//                            rmb.setContractadateto(condate.getDateto());
+//                            rmb.setContractadatefrom(condate.getDatefrom());
+//                        } else {
+//                            rmb.setContractadateto(conlist.get(x).getContractdate());
+//                            rmb.setContractadatefrom(conlist.get(x).getContractdate());
+//                        }
+//                        rmb.setConctractamount(conlist.get(x).getAmount());
+//                        rmb.setContractnumber(conlist.get(x).getTranscode());
+//                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
+//                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+//                        statement.setString("tags", tags.trim());
+//                        statement.setString("pconid", conlist.get(x).getConid().trim());
+//                        statement.execute();
+//                        ResultSet resultset = (ResultSet) statement.getObject("v_result");
+//                        if (resultset.next()) {
+//                            rmb.setAmountrelease(resultset.getString("CAMOUNT"));
+//                            rmb.setTotalnumberofreleased(resultset.getString("TCONID"));
+//                            Double totalclaimsamount = Double.parseDouble(resultset.getString("CAMOUNT"));
+//                            Double contractamount = Double.parseDouble(conlist.get(x).getAmount());
+//                            Double bal = contractamount - totalclaimsamount;
+//                            rmb.setRemainingbal(String.valueOf(bal));
+//                        } else {
+//                            rmb.setAmountrelease("NO AMOUNT");
+//                            rmb.setTotalnumberofreleased("NO RELEASED");
+//                            rmb.setRemainingbal(conlist.get(x).getAmount());
+//                        }
+//                        rmblist.add(rmb);
+//                    }
+//                } else {
+//                    result.setMessage("N/A");
+//                }
+//            } else {
+//                result.setMessage(resultreports.getMessage());
+//            }
+//            if (rmblist.size() > 0) {
+//                result.setMessage("OK");
+//                result.setResult(utility.ObjectMapper().writeValueAsString(rmblist));
+//                result.setSuccess(true);
+//            } else {
+//                result.setMessage("NO DATA FOUND");
+//            }
+//        } catch (IOException | SQLException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
 
     //GET COMPUTED REMAINING BALANCE FOR TERMINATED CONTRACT PER FACILITY
 //    public ACRGBWSResult GetRemainingBalanceForTerminatedContract(final DataSource dataSource, final String userid,

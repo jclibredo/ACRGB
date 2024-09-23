@@ -7,7 +7,6 @@ package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Appellate;
-import acrgb.structure.Book;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.UserRoleIndex;
@@ -239,7 +238,6 @@ public class ContractTagging {
                         error.add(insertRole.getMessage());
                     }
                 }
-
             }
             //GET LIST OF CONTRACT USING CONTRACT DATE ID
             ACRGBWSResult getContractList = methods.GETCONTRACTBYCONDATEID(dataSource, dateid.trim());
