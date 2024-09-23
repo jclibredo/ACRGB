@@ -765,11 +765,11 @@ public class ACRGBFETCH {
                             ACRGBWSResult getResultHCPN = lm.GETLedgerPerContractHCPN(dataSource, hcpncode, contract, type);
                             result.setMessage(getResultHCPN.getMessage());
                             result.setResult(getResultHCPN.getResult());
-                            result.setSuccess(getResultHCPN.isSuccess());
+                            result.setSuccess(getResultHCPN.isSuccess())
                             break;
                         }
                         case "INACTIVE": {
-                            ACRGBWSResult getResultHCPN = lm.GETLedgerPerContractHCPNLedger(dataSource, hcpncode, contract, type);
+                            ACRGBWSResult getResultHCPN = lm.GETLedgerPerContractHCPNLedger(dataSource, hcpncode, contract, type, "CLOSED");
                             result.setMessage(getResultHCPN.getMessage());
                             result.setResult(getResultHCPN.getResult());
                             result.setSuccess(getResultHCPN.isSuccess());

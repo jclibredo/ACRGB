@@ -224,6 +224,7 @@ public class BookingMethod {
         try {
             ACRGBWSResult getConResult = fm.GETCONTRACTCONID(dataSource, book.getConid(), utags.trim().toUpperCase());
             if (getConResult.isSuccess()) {
+
                 switch (book.getTags().toUpperCase()) {
                     case "FACILITY": {
                         double totalClaimAmount = 0.00;
@@ -251,14 +252,28 @@ public class BookingMethod {
                                 List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(getClaimsAmount.getResult(), NclaimsData[].class));
                                 for (int i = 0; i < nclaimsdata.size(); i++) {
                                     if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                        if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
-                                            totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                            totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                        if (HCIContract.getEnddate().isEmpty()) {
+                                            if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                                totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                            }
+                                        } else {
+                                            if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(HCIContract.getEnddate().trim())) <= 0) {
+                                                totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                            }
                                         }
                                     } else {
-                                        if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
-                                            totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                            totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                        if (HCIContract.getEnddate().isEmpty()) {
+                                            if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                                totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                            }
+                                        } else {
+                                            if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(HCIContract.getEnddate().trim())) <= 0) {
+                                                totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                            }
                                         }
                                     }
                                 }
@@ -337,8 +352,9 @@ public class BookingMethod {
                         double totalnumberofclaims = 0.00;
                         Contract HCPNContract = utility.ObjectMapper().readValue(getConResult.getResult(), Contract.class);
                         if (HCPNContract.getContractdate() != null) {
-                            ContractDate contractdate = utility.ObjectMapper().readValue(HCPNContract.getContractdate(), ContractDate.class);
-                            ACRGBWSResult hciList = methods.GETROLEMULITPLE(dataSource, book.getHcpncode().trim(), utags.trim().toUpperCase());
+                            ContractDate contractdate = utility.ObjectMapper().readValue(HCPNContract.getContractdate(), ContractDate.class);   //GETROLEMULITPLEFORENDROLE
+//                            ACRGBWSResult hciList = methods.GETROLEMULITPLE(dataSource, book.getHcpncode().trim(), utags.trim().toUpperCase());
+                            ACRGBWSResult hciList = methods.GETROLEMULITPLEFORENDROLE(dataSource, utags.trim().toUpperCase(), book.getHcpncode().trim(), contractdate.getCondateid());
                             if (hciList.isSuccess()) {
                                 List<String> hciCodeList = Arrays.asList(hciList.getResult().split(","));
                                 for (int u = 0; u < hciCodeList.size(); u++) {
@@ -356,19 +372,35 @@ public class BookingMethod {
                                                 contractdate.getDatefrom().trim(),
                                                 utility.AddMinusDaysDate(contractdate.getDateto().trim(), "60"));
                                         if (getClaimsAmount.isSuccess()) {
+                                            Contract hcicon = utility.ObjectMapper().readValue(getHCIContract.getResult(), Contract.class);
                                             List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(getClaimsAmount.getResult(), NclaimsData[].class));
                                             for (int i = 0; i < nclaimsdata.size(); i++) {
                                                 if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                                    if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
-                                                        totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                                        totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                    if (hcicon.getEnddate().isEmpty()) {
+                                                        if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                                            totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                            totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                        }
+                                                    } else {
+                                                        if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(hcicon.getEnddate().trim())) <= 0) {
+                                                            totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                            totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                        }
                                                     }
                                                 } else {
-                                                    if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
-                                                        totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                                        totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                    if (hcicon.getEnddate().isEmpty()) {
+                                                        if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                                            totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                            totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                        }
+                                                    } else {
+                                                        if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(hcicon.getEnddate().trim())) <= 0) {
+                                                            totalnumberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                            totalClaimAmount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                        }
                                                     }
                                                 }
+
                                             }
                                         }
                                     }
@@ -686,7 +718,8 @@ public class BookingMethod {
         result.setSuccess(false);
         try {
             //MANAGE FINAL BALANCE OF FACILITY CONTRACT 
-            ACRGBWSResult getHCIContract = cm.GETCONTRACT(dataSource, utags, upmmcno.trim());
+            // ACRGBWSResult getHCIContract = cm.GETCONTRACT(dataSource, utags, upmmcno.trim());
+            ACRGBWSResult getHCIContract = cm.GETCONTRACTWITHOPENSTATE(dataSource, utags.trim().toUpperCase(), upmmcno.trim().toUpperCase(), "OPEN".trim().toUpperCase());
             if (getHCIContract.isSuccess()) {
                 double totalnumberofclaims = 0.00;
                 int totalClaimAmount = 0;

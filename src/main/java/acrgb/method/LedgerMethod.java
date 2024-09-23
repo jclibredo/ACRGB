@@ -476,11 +476,13 @@ public class LedgerMethod {
             final DataSource dataSource,
             final String hcpncode,
             final String conid,
-            final String utags) {
+            final String utags,
+            final String ustate) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        ContractMethod cm = new ContractMethod();
         ArrayList<Ledger> ledgerlist = new ArrayList<>();
         try {
             double remaining = 0.00;
@@ -580,15 +582,39 @@ public class LedgerMethod {
                     if (hcflist.isSuccess()) {
                         List<String> hcfresult = Arrays.asList(hcflist.getResult().split(","));
                         for (int b = 0; b < hcfresult.size(); b++) {
-                            ACRGBWSResult getAmountPayable = this.GETSUMAMOUNTCLAIMSBOOKDATA(dataSource,
-                                    hcfresult.get(b).trim(),
-                                    contractdate.getDatefrom().trim(),
-                                    utility.AddMinusDaysDate(contractdate.getDateto().trim(), "60").trim());
-                            if (getAmountPayable.isSuccess()) {
-                                List<FacilityComputedAmount> hcfA = Arrays.asList(utility.ObjectMapper().readValue(getAmountPayable.getResult(), FacilityComputedAmount[].class));
-                                for (int u = 0; u < hcfA.size(); u++) {
-                                    if (hcfA.get(u).getDaterefiled().isEmpty()) {
-                                        if (dateformat.parse(hcfA.get(u).getDatefiled()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                            ACRGBWSResult GetHCIContract = cm.GETCONTRACTWITHOPENSTATE(dataSource, utags.trim().toUpperCase(), hcfresult.get(b).trim(), ustate);
+                            if (GetHCIContract.isSuccess()) {
+                                Contract conshci = utility.ObjectMapper().readValue(GetHCIContract.getResult(), Contract.class);
+                                ACRGBWSResult getAmountPayable = this.GETSUMAMOUNTCLAIMSBOOKDATA(dataSource,
+                                        hcfresult.get(b).trim(),
+                                        contractdate.getDatefrom().trim(),
+                                        utility.AddMinusDaysDate(contractdate.getDateto().trim(), "60").trim());
+                                if (getAmountPayable.isSuccess()) {
+                                    List<FacilityComputedAmount> hcfA = Arrays.asList(utility.ObjectMapper().readValue(getAmountPayable.getResult(), FacilityComputedAmount[].class));
+                                    for (int u = 0; u < hcfA.size(); u++) {
+                                        int addledger = 0;
+                                        if (hcfA.get(u).getDaterefiled().isEmpty()) {
+                                            if (conshci.getEnddate().isEmpty()) {
+                                                if (dateformat.parse(hcfA.get(u).getDatefiled()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                                    addledger++;
+                                                }
+                                            } else {
+                                                if (dateformat.parse(hcfA.get(u).getDatefiled()).compareTo(dateformat.parse(conshci.getEnddate())) <= 0) {
+                                                    addledger++;
+                                                }
+                                            }
+                                        } else {
+                                            if (conshci.getEnddate().isEmpty()) {
+                                                if (dateformat.parse(hcfA.get(u).getDaterefiled()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
+                                                    addledger++;
+                                                }
+                                            } else {
+                                                if (dateformat.parse(hcfA.get(u).getDaterefiled()).compareTo(dateformat.parse(conshci.getEnddate().trim())) <= 0) {
+                                                    addledger++;
+                                                }
+                                            }
+                                        }
+                                        if (addledger > 0) {
                                             Ledger SubledgerA = new Ledger();
                                             SubledgerA.setDatetime(hcfA.get(u).getDatefiled());
                                             ACRGBWSResult facility = fm.GETFACILITYID(dataSource, hcfresult.get(b));
@@ -609,30 +635,8 @@ public class LedgerMethod {
                                             SubledgerA.setLiquidation(hcfA.get(u).getTotalamount());
                                             ledgerlist.add(SubledgerA);
                                         }
-                                    } else {
-                                        if (dateformat.parse(hcfA.get(u).getDaterefiled()).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractdate.getDateto(), "60"))) <= 0) {
-                                            Ledger SubledgerA = new Ledger();
-                                            SubledgerA.setDatetime(hcfA.get(u).getDatefiled());
-                                            ACRGBWSResult facility = fm.GETFACILITYID(dataSource, hcfresult.get(b));
-                                            HealthCareFacility hcf = utility.ObjectMapper().readValue(facility.getResult(), HealthCareFacility.class);
-                                            SubledgerA.setFacility(hcf.getHcfname());
-                                            SubledgerA.setParticular("Liquidation Of " + hcf.getHcfname());
-                                            SubledgerA.setDebit(hcfA.get(u).getTotalamount());
-                                            SubledgerA.setTotalclaims(hcfA.get(u).getTotalclaims());
-                                            remaining -= Double.parseDouble(hcfA.get(u).getTotalamount());
-                                            SubledgerA.setBalance(String.valueOf(remaining));
-                                            if (remaining > 0) {
-                                                SubledgerA.setBalance(String.valueOf(remaining));
-                                                SubledgerA.setAccount("Liabilities");
-                                            } else {
-                                                SubledgerA.setBalance(String.valueOf(remaining));
-                                                SubledgerA.setAccount("Payables");
-                                            }
-                                            SubledgerA.setLiquidation(hcfA.get(u).getTotalamount());
-                                            ledgerlist.add(SubledgerA);
-                                        }
+                                        //--------------------------------------
                                     }
-
                                 }
 
                             }

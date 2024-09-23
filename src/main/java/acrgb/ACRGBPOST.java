@@ -566,7 +566,6 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            
            // CHECK PROCESS ALL ENDED CONTRACT             
             ACRGBWSResult BookingResult = bm.PROCESSENDEDCONTRACT(dataSource, book, "INACTIVE");
             result.setMessage(BookingResult.getMessage());
