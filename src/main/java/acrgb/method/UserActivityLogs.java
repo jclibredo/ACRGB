@@ -259,7 +259,6 @@ public class UserActivityLogs {
                     break;
                 }
                 case "HCPN": { //HCPN CODE
-
                     if (m.GETMBWITHID(dataSource, id).isSuccess()) {
                         ManagingBoard mb = utility.ObjectMapper().readValue(m.GETMBWITHID(dataSource, id).getResult(), ManagingBoard.class);
                         result = mb.getMbname();

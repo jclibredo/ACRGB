@@ -30,10 +30,10 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class ContractHistory {
-
+    
     public ContractHistory() {
     }
-
+    
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
     private final Methods m = new Methods();
@@ -89,7 +89,7 @@ public class ContractHistory {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
@@ -119,7 +119,7 @@ public class ContractHistory {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
@@ -226,7 +226,7 @@ public class ContractHistory {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
@@ -269,7 +269,7 @@ public class ContractHistory {
         }
         return result;
     }
-
+    
     public ACRGBWSResult GetHCIContractUnderHCPN(final DataSource dataSource, final String hcpncode, final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -288,10 +288,9 @@ public class ContractHistory {
                         for (int y = 0; y < mapContractList.size(); y++) {
                             contractList.add(mapContractList.get(y));
                         }
-                        break;
                     }
                 }
-            }
+            } 
             if (contractList.size() > 0) {
                 result.setMessage("OK");
                 result.setSuccess(true);
@@ -353,7 +352,7 @@ public class ContractHistory {
         }
         return result;
     }
-
+    
     public ACRGBWSResult GetAPEXContract(final DataSource dataSource, final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -382,12 +381,12 @@ public class ContractHistory {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-
+    
 }

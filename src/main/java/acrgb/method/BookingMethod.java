@@ -222,9 +222,8 @@ public class BookingMethod {
         Methods methods = new Methods();
         ArrayList<String> errorList = new ArrayList<>();
         try {
-            ACRGBWSResult getConResult = fm.GETCONTRACTCONID(dataSource, book.getConid(), utags.trim().toUpperCase());
+            ACRGBWSResult getConResult = fm.GETCONTRACTCONID(dataSource, book.getConid().trim(), utags.trim().toUpperCase());
             if (getConResult.isSuccess()) {
-
                 switch (book.getTags().toUpperCase()) {
                     case "FACILITY": {
                         double totalClaimAmount = 0.00;
@@ -291,24 +290,19 @@ public class BookingMethod {
                                                 break;
                                             }
                                             case "1STFINAL": {
-                                                totalAssets -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                                totalAssets += Double.parseDouble(assetlist.get(g).getReleasedamount());
                                                 break;
                                             }
                                             default: {
                                                 totalAssets += Double.parseDouble(assetlist.get(g).getReleasedamount());
                                                 break;
                                             }
-
                                         }
                                     } else {
                                         totalAssets += Double.parseDouble(assetlist.get(g).getReleasedamount());
                                     }
                                 }
                             }
-
-//                            System.out.println("CLAIMS AMOUNT " + totalClaimAmount);
-//                            System.out.println("ASSETS AMOUNT " + totalAssets);
-                            //INSERT BOOKING REFERENCES
                             ACRGBWSResult bookReference = this.ACRBOOKING(dataSource, book);
                             if (!bookReference.isSuccess()) {
                                 errorList.add(bookReference.getMessage());
@@ -353,7 +347,6 @@ public class BookingMethod {
                         Contract HCPNContract = utility.ObjectMapper().readValue(getConResult.getResult(), Contract.class);
                         if (HCPNContract.getContractdate() != null) {
                             ContractDate contractdate = utility.ObjectMapper().readValue(HCPNContract.getContractdate(), ContractDate.class);   //GETROLEMULITPLEFORENDROLE
-//                            ACRGBWSResult hciList = methods.GETROLEMULITPLE(dataSource, book.getHcpncode().trim(), utags.trim().toUpperCase());
                             ACRGBWSResult hciList = methods.GETROLEMULITPLEFORENDROLE(dataSource, utags.trim().toUpperCase(), book.getHcpncode().trim(), contractdate.getCondateid());
                             if (hciList.isSuccess()) {
                                 List<String> hciCodeList = Arrays.asList(hciList.getResult().split(","));
@@ -400,10 +393,9 @@ public class BookingMethod {
                                                         }
                                                     }
                                                 }
-
                                             }
                                         }
-                                    }
+                                    } 
                                 }
                                 ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, book.getHcpncode().trim(), book.getConid().trim(), utags.trim().toUpperCase());
                                 if (restA.isSuccess()) {
@@ -418,7 +410,7 @@ public class BookingMethod {
                                                     break;
                                                 }
                                                 case "1STFINAL": {
-                                                    totalAssets -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                                    totalAssets += Double.parseDouble(assetlist.get(g).getReleasedamount());
                                                     break;
                                                 }
                                                 default: {
@@ -436,17 +428,6 @@ public class BookingMethod {
                                 if (!bookReference.isSuccess()) {
                                     errorList.add(bookReference.getMessage());
                                 }
-                                //INSERT PREVIOUS BALANCE
-//                                ACRGBWSResult GetAssetsByConID = fm.GETASSETSBYCONID(dataSource, HCPNContract.getConid());
-//                                if (GetAssetsByConID.isSuccess()) {
-//                                    List<Assets> listOfAssets = Arrays.asList(utility.ObjectMapper().readValue(GetAssetsByConID.getResult(), Assets[].class));
-//                                    for (int u = 0; u < listOfAssets.size(); u++) {
-//                                        totalClaimAssets += Double.parseDouble(listOfAssets.get(u).getReleasedamount());
-//                                    }
-
-//                                System.out.println("CLAIMS AMOUNT " + totalClaimAmount);
-//                                System.out.println("ASSETS AMOUNT " + totalAssets);
-                                //INSERT CON BALANCE 
                                 ConBalance conbal = new ConBalance();
                                 conbal.setBooknum(book.getBooknum());
                                 conbal.setCondateid(contractdate.getCondateid());
@@ -462,12 +443,6 @@ public class BookingMethod {
                                 if (!InsertPreviousba.isSuccess()) {
                                     errorList.add(InsertPreviousba.getMessage());
                                 }
-//                                }
-                                //CHANGE STATE THE CONTRACT
-//                                ACRGBWSResult closeStateContract = im.INACTIVEDATA(dataSource, "CONSTATE", HCPNContract.getConid(), book.getCreatedby(), "ACTIVE");
-//                                if (!closeStateContract.isSuccess()) {
-//                                    errorList.add(closeStateContract.getMessage());
-//                                }
                             } else {
                                 result.setMessage(hciList.getMessage());
                             }
@@ -785,7 +760,7 @@ public class BookingMethod {
                                         break;
                                     }
                                     case "1STFINAL": {
-                                        totalAssets -= Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                        totalAssets += Double.parseDouble(assetlist.get(g).getReleasedamount());
                                         break;
                                     }
                                     default: {

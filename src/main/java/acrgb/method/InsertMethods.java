@@ -98,7 +98,18 @@ public class InsertMethods {
                         }
                         result.setMessage(getinsertresult.getString("Message"));
                     }
-                    updatemethods.UPDATECONBALANCESTATS(datasource, assets.getHcfid());
+
+                    ACRGBWSResult tranchresult = fm.ACR_TRANCHWITHID(datasource, assets.getTranchid().trim());
+                    if (tranchresult.isSuccess()) {
+                        Tranch tranch = utility.ObjectMapper().readValue(tranchresult.getResult(), Tranch.class);
+                        if (tranch.getTranchtype().trim().toUpperCase().equals("2ND")) {
+                            updatemethods.UPDATECONBALANCESTATS(datasource, assets.getHcfid());
+                            this.INACTIVEDATA(datasource, "CONSTATE", assets.getHcfid(), assets.getCreatedby(), "ACTIVE");
+                        } else if (tranch.getTranchtype().trim().toUpperCase().equals("1STFINAL")) {
+                            this.INACTIVEDATA(datasource, "CONSTATE", assets.getHcfid(), assets.getCreatedby(), "ACTIVE");
+                            updatemethods.UPDATECONBALANCESTATS(datasource, assets.getHcfid());
+                        }
+                    }
                     result.setSuccess(true);
                 } else {
                     userlogs.setActstatus("FAILED");
@@ -110,7 +121,7 @@ public class InsertMethods {
             //ACTIVITY LOGS
             logs.UserLogsMethod(datasource, logsTags, userlogs, assets.getHcfid().trim(), assets.getTranchid().trim());
             //END ACTIVITY LOGS
-        } catch (SQLException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -511,7 +522,6 @@ public class InsertMethods {
                             result.setMessage(getinsertresult.getString("Message"));
                         }
                     }
-
                     //----------------------------------------------------------
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);

@@ -10,7 +10,6 @@ import acrgb.method.ContractHistoryService;
 import acrgb.method.ContractMethod;
 import acrgb.method.ContractTagging;
 import acrgb.method.CurrentBalance;
-import acrgb.method.EmailSender;
 import acrgb.method.FetchMethods;
 import acrgb.method.GenerateRandomPassword;
 import acrgb.method.LedgerMethod;
@@ -18,7 +17,6 @@ import acrgb.method.Methods;
 import acrgb.method.ProcessAffiliate;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Appellate;
-import acrgb.structure.Email;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.User;
@@ -277,8 +275,8 @@ public class ACRGBFETCH {
         }
         return result;
     }
-//
 
+//
     @GET
     @Path("GetPro/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -489,29 +487,28 @@ public class ACRGBFETCH {
 //------------------------------------------------------------
 //GET  REQUEST USING MB USER ID
 
-    @GET
-    @Path("GetMBRequest/{userid}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetMBRequest(
-            @HeaderParam("token") String token,
-            @PathParam("userid") String userid) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            ACRGBWSResult getResult = methods.FetchMBRequest(dataSource, userid);
-            result.setMessage(getResult.getMessage());
-            result.setResult(getResult.getResult());
-            result.setSuccess(getResult.isSuccess());
-        }
-        return result;
-    }
+//    @GET
+//    @Path("GetMBRequest/{userid}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult GetMBRequest(
+//            @HeaderParam("token") String token,
+//            @PathParam("userid") String userid) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+//        if (!GetPayLoad.isSuccess()) {
+//            result.setMessage(GetPayLoad.getMessage());
+//        } else {
+//            ACRGBWSResult getResult = methods.FetchMBRequest(dataSource, userid);
+//            result.setMessage(getResult.getMessage());
+//            result.setResult(getResult.getResult());
+//            result.setSuccess(getResult.isSuccess());
+//        }
+//        return result;
+//    }
 //------------------------------------------------------------
-
     @GET
     @Path("GetManagingBoard/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -534,7 +531,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------    
-
     @GET
     @Path("GetFacilityUsingProAccountUserID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -557,7 +553,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GETALLFACILITY/{tags}/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -661,7 +656,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetMBUsingMBID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -765,7 +759,7 @@ public class ACRGBFETCH {
                             ACRGBWSResult getResultHCPN = lm.GETLedgerPerContractHCPN(dataSource, hcpncode, contract, type);
                             result.setMessage(getResultHCPN.getMessage());
                             result.setResult(getResultHCPN.getResult());
-                            result.setSuccess(getResultHCPN.isSuccess())
+                            result.setSuccess(getResultHCPN.isSuccess());
                             break;
                         }
                         case "INACTIVE": {
@@ -1054,7 +1048,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
-
     @GET
     @Path("GetContractHistory/{userId}/{requestCode}/{targetData}")//PRO LEVEL AND PHIC LEVEL
     @Produces(MediaType.APPLICATION_JSON)
@@ -1081,41 +1074,40 @@ public class ACRGBFETCH {
     }
 //-----------------------------------------------------------------------------
 
-    @GET
-    @Path("Validate2FA")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult Validate2FA(
-            @HeaderParam("userid") String userid,
-            @HeaderParam("code") String code) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try {
-            ACRGBWSResult GetResult = fetchmethods.GETUSERBYUSERID(dataSource, userid, "ACTIVE");
-            if (GetResult.isSuccess()) {
-                User user = utility.ObjectMapper().readValue(GetResult.getResult(), User.class);
-                if (user.getFa2code() == null) {
-                    result.setMessage("NO EXISTING 2FA CODE FOR SELECTED USER");
-                } else if (code.isEmpty()) {
-                    result.setMessage("2FA CODE IS REQUIRED");
-                } else if (user.getFa2code().trim().equals(code.trim())) {
-                    result.setMessage(GetResult.getMessage());
-                    result.setResult(GetResult.getResult());
-                    result.setSuccess(GetResult.isSuccess());
-                } else {
-                    result.setMessage(code + " Code is invalid");
-                }
-            } else {
-                result.setMessage(GetResult.getMessage());
-            }
-        } catch (IOException ex) {
-            result.setMessage(ex.getLocalizedMessage());
-            Logger.getLogger(ACRGBFETCH.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+//    @GET
+//    @Path("Validate2FA")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult Validate2FA(
+//            @HeaderParam("userid") String userid,
+//            @HeaderParam("code") String code) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        try {
+//            ACRGBWSResult GetResult = fetchmethods.GETUSERBYUSERID(dataSource, userid, "ACTIVE");
+//            if (GetResult.isSuccess()) {
+//                User user = utility.ObjectMapper().readValue(GetResult.getResult(), User.class);
+//                if (user.getFa2code() == null) {
+//                    result.setMessage("NO EXISTING 2FA CODE FOR SELECTED USER");
+//                } else if (code.isEmpty()) {
+//                    result.setMessage("2FA CODE IS REQUIRED");
+//                } else if (user.getFa2code().trim().equals(code.trim())) {
+//                    result.setMessage(GetResult.getMessage());
+//                    result.setResult(GetResult.getResult());
+//                    result.setSuccess(GetResult.isSuccess());
+//                } else {
+//                    result.setMessage(code + " Code is invalid");
+//                }
+//            } else {
+//                result.setMessage(GetResult.getMessage());
+//            }
+//        } catch (IOException ex) {
+//            result.setMessage(ex.getLocalizedMessage());
+//            Logger.getLogger(ACRGBFETCH.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
 //    @GET
 //    @Path("Create2FA")
 //    @Produces(MediaType.APPLICATION_JSON)
@@ -1132,6 +1124,8 @@ public class ACRGBFETCH {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        ForgetPassword forgetPassword = new ForgetPassword();
+//        UpdateMethods um = new UpdateMethods();
+//              
 //        forgetPassword.setAppuser(mailuser.trim());
 //        forgetPassword.setApppass(mailapikey);
 //        forgetPassword.setMailfrom(mailfrom.trim());
@@ -1168,33 +1162,34 @@ public class ACRGBFETCH {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             //CHECKING OF ENDED ACCREDITATION
-            methods.GETACTIVEACCREDITATION(dataSource, "ACTIVE");
+//            methods.GETACTIVEACCREDITATION(dataSource, "ACTIVE");
             //CHECKING OF ENDED CONTRACT PERIOD
+
             methods.PROCESSENDPERIODDATE(dataSource, "ACTIVE");
         }
         return result;
     }
 
-    @GET
-    @Path("TestEmailSender/{recipient}/{newpass}")
-    @Produces(MediaType.TEXT_PLAIN)
-    public ACRGBWSResult TestEmailSender(
-            @PathParam("recipient") String recipient,
-            @PathParam("newpass") String newpass) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        //--------------------------------
-        EmailSender pass = new EmailSender();
-        //--------------------------------
-        Email email = new Email();
-        email.setRecipient(recipient);
-        email.setSubject("ACR-GB");
-        //---------------------------------
-        ACRGBWSResult insertresult = pass.EmailSender(dataSource, email, newpass);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
-        return result;
-    }
+//    @GET
+//    @Path("TestEmailSender/{recipient}/{newpass}")
+//    @Produces(MediaType.TEXT_PLAIN)
+//    public ACRGBWSResult TestEmailSender(
+//            @PathParam("recipient") String recipient,
+//            @PathParam("newpass") String newpass) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        //--------------------------------
+//        EmailSender pass = new EmailSender();
+//        //--------------------------------
+//        Email email = new Email();
+//        email.setRecipient(recipient);
+//        email.setSubject("ACR-GB");
+//        //---------------------------------
+//        ACRGBWSResult insertresult = pass.EmailSender(dataSource, email, newpass);
+//        result.setMessage(insertresult.getMessage());
+//        result.setSuccess(insertresult.isSuccess());
+//        result.setResult(insertresult.getResult());
+//        return result;
+//    }
 //    @GET
 //    @Path("ValidateClaims/{useries}")
 //    @Produces(MediaType.APPLICATION_JSON)
@@ -1214,7 +1209,6 @@ public class ACRGBFETCH {
 //        }
 //        return result;
 //    }
-
     @GET
     @Path("GetUserAccount/{puserid}/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
