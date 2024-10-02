@@ -3349,7 +3349,7 @@ public class Methods {
                         FacilityComputedAmount fca = new FacilityComputedAmount();
                         fca.setHospital(resultset.getString("PMCC_NO"));
                         fca.setTotalamount(resultset.getString("CTOTAL"));
-                        fca.setYearfrom(GetDateSettings.get(u).getDatefrom());
+//                        fca.setYearfrom(GetDateSettings.get(u).getDatefrom())
                         fca.setYearto(GetDateSettings.get(u).getDateto());
                         fca.setTotalclaims(resultset.getString("COUNTVAL"));
                         //-----------------------------------------------
@@ -3377,21 +3377,21 @@ public class Methods {
                             fca.setC2icdcode("");
                         }
                         //----------------------------------------------
-                        if (resultset.getTimestamp("DATESUB") != null) {
-                            fca.setDatefiled(dateformat.format(resultset.getTimestamp("DATESUB")));
-                        } else {
-                            fca.setDatefiled("");
-                        }
-                        if (resultset.getTimestamp("DATEREFILE") != null) {
-                            fca.setDaterefiled(dateformat.format(resultset.getTimestamp("DATEREFILE")));
-                        } else {
-                            fca.setDaterefiled("");
-                        }
-                        if (resultset.getTimestamp("DATEADM") != null) {
-                            fca.setDateadmit(dateformat.format(resultset.getTimestamp("DATEADM")));
-                        } else {
-                            fca.setDateadmit("");
-                        }
+//                        if (resultset.getTimestamp("DATESUB") != null) {
+//                            fca.setDatefiled(dateformat.format(resultset.getTimestamp("DATESUB")));
+//                        } else {
+//                            fca.setDatefiled("");
+//                        }
+//                        if (resultset.getTimestamp("DATEREFILE") != null) {
+//                            fca.setDaterefiled(dateformat.format(resultset.getTimestamp("DATEREFILE")));
+//                        } else {
+//                            fca.setDaterefiled("");
+//                        }
+//                        if (resultset.getTimestamp("DATEADM") != null) {
+//                            fca.setDateadmit(dateformat.format(resultset.getTimestamp("DATEADM")));
+//                        } else {
+//                            fca.setDateadmit("");
+//                        }
                         listOfcomputedamount.add(fca);
                     }
                 }
@@ -3412,7 +3412,6 @@ public class Methods {
         }
         return result;
     }
-
     //GET ACTIVE CONTRACT DATE PERIOD
     public ACRGBWSResult PROCESSENDPERIODDATE(final DataSource dataSource, final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
