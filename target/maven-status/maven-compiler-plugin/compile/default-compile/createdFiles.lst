@@ -4,6 +4,7 @@ acrgb\ACRGBUPDATE.class
 acrgb\method\BookingMethod.class
 acrgb\ACRGBPOST.class
 acrgb\structure\NclaimsData.class
+acrgb\method\EmailSender$1.class
 acrgb\method\UpdateMethods.class
 acrgb\method\Methods$UserPassword.class
 acrgb\structure\Summary.class

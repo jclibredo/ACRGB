@@ -224,7 +224,9 @@ public class Methods {
 
     //--------------------------------------------------------
     // ACR GB USER CREDENTIALS
-    public ACRGBWSResult UPDATEUSERCREDENTIALS(final DataSource dataSource,
+    public ACRGBWSResult UPDATEUSERCREDENTIALS(
+            final DataSource dataSource,
+            final Email email,
             final String userid,
             final String p_username,
             final String p_password,
@@ -256,14 +258,20 @@ public class Methods {
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     ACRGBWSResult GetDID = fm.GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
                     if (GetDID.isSuccess()) {
-                        result.setSuccess(true);
                         User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
-                        ACRGBWSResult updateInfo = um.UPDATEUSERINFOBYDID(dataSource, p_username.trim(), getUser.getDid().trim(), createdby.trim());
-                        result.setMessage(getinsertresult.getString("Message") + " " + updateInfo.getMessage());
-                        //EMAIL SENDER
-                        Email email = new Email();
-                        email.setRecipient(p_username);
-                        emailSender.EmailSender(dataSource, email, p_password.trim());
+                        if (getUser.getDid() != null) {
+                            UserInfo userInfo = utility.ObjectMapper().readValue(getUser.getDid(), UserInfo.class);
+                            ACRGBWSResult updateInfo = um.UPDATEUSERINFOBYDID(dataSource, p_username.trim(), userInfo.getDid().trim(), createdby.trim());
+                            if (updateInfo.isSuccess()) {
+                                result.setMessage(getinsertresult.getString("Message"));
+                                //EMAIL SENDER
+                                email.setRecipient(p_username);
+                                emailSender.EmailSender(dataSource, email, p_password.trim());
+                                result.setSuccess(true);
+                            } else {
+                                result.setMessage(updateInfo.getMessage());
+                            }
+                        }
                     } else {
                         result.setMessage(GetDID.getMessage());
                     }
@@ -304,10 +312,19 @@ public class Methods {
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     ACRGBWSResult GetDID = fm.GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
                     if (GetDID.isSuccess()) {
-                        result.setSuccess(true);
                         User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
-                        ACRGBWSResult updateInfo = um.UPDATEUSERINFOBYDID(dataSource, p_username.trim(), getUser.getDid().trim(), createdby.trim());
-                        result.setMessage(getinsertresult.getString("Message"));
+                        if (getUser.getDid() != null) {
+                            UserInfo userinfo = utility.ObjectMapper().readValue(getUser.getDid(), UserInfo.class);
+                            ACRGBWSResult updateInfo = um.UPDATEUSERINFOBYDID(dataSource, p_username.trim(), userinfo.getDid().trim(), createdby.trim());
+                            if (updateInfo.isSuccess()) {
+                                result.setSuccess(true);
+                                result.setMessage(getinsertresult.getString("Message"));
+                            } else {
+                                result.setMessage(updateInfo.getMessage());
+                            }
+                        }
+                    } else {
+                        result.setMessage(GetDID.getMessage());
                     }
                 } else {
                     result.setMessage(getinsertresult.getString("Message"));
@@ -320,34 +337,33 @@ public class Methods {
         return result;
     }
 
-    public ACRGBWSResult RESETPASSWORD(final DataSource dataSource, final String userid, final String p_password) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
-            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-            getinsertresult.setString("p_userid", userid.trim());
-            getinsertresult.setString("p_password", p_password);
-            getinsertresult.setString("p_stats", "1");
-            getinsertresult.execute();
-            if (getinsertresult.getString("Message").equals("SUCC")) {
-                result.setSuccess(true);
-                result.setMessage(getinsertresult.getString("Message"));
-            } else {
-                result.setMessage(getinsertresult.getString("Message"));
-            }
-        } catch (SQLException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+//    public ACRGBWSResult RESETPASSWORD(final DataSource dataSource, final String userid, final String p_password) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        try (Connection connection = dataSource.getConnection()) {
+//            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
+//            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+//            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+//            getinsertresult.setString("p_userid", userid.trim());
+//            getinsertresult.setString("p_password", p_password);
+//            getinsertresult.setString("p_stats", "1");
+//            getinsertresult.execute();
+//            if (getinsertresult.getString("Message").equals("SUCC")) {
+//                result.setSuccess(true);
+//                result.setMessage(getinsertresult.getString("Message"));
+//            } else {
+//                result.setMessage(getinsertresult.getString("Message"));
+//            }
+//        } catch (SQLException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
     //CHANGE PASSWORD
-    public ACRGBWSResult CHANGEPASSWORD(final DataSource dataSource, final ForgetPassword forgetPassword, final String userid, final String p_password) {
+    public ACRGBWSResult CHANGEPASSWORD(final DataSource dataSource, final Email email, final String userid, final String p_password) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -369,7 +385,12 @@ public class Methods {
                     result.setSuccess(true);
                     result.setMessage(getinsertresult.getString("Message"));
                     //-----------------------------------------
-                    Email email = new Email();
+//                    Email newemail = new Email();
+//                    newemail.setRecipient(user.getUsername());
+//                    newemail.setApppass(mailapikey);
+//                    newemail.setAppuser(mailuser);
+//                    newemail.setPort(mailport);
+//                    newemail.setHost(mailhost);
                     email.setRecipient(user.getUsername());
                     ACRGBWSResult GetResult = emailSender.EmailSender(dataSource, email, p_password);
                 } else {
@@ -1237,7 +1258,6 @@ public class Methods {
 //                                            sexcludedfinal += sexcluded;
 //                                            ctotalfinal += ctotal;
 //                                            exsctotalfinal += exsctotal;
-
                                         }
                                     }
                                 }
@@ -3349,7 +3369,7 @@ public class Methods {
                         FacilityComputedAmount fca = new FacilityComputedAmount();
                         fca.setHospital(resultset.getString("PMCC_NO"));
                         fca.setTotalamount(resultset.getString("CTOTAL"));
-//                        fca.setYearfrom(GetDateSettings.get(u).getDatefrom())
+                        fca.setYearfrom(GetDateSettings.get(u).getDatefrom());
                         fca.setYearto(GetDateSettings.get(u).getDateto());
                         fca.setTotalclaims(resultset.getString("COUNTVAL"));
                         //-----------------------------------------------
@@ -3377,21 +3397,22 @@ public class Methods {
                             fca.setC2icdcode("");
                         }
                         //----------------------------------------------
-//                        if (resultset.getTimestamp("DATESUB") != null) {
-//                            fca.setDatefiled(dateformat.format(resultset.getTimestamp("DATESUB")));
-//                        } else {
-//                            fca.setDatefiled("");
-//                        }
-//                        if (resultset.getTimestamp("DATEREFILE") != null) {
-//                            fca.setDaterefiled(dateformat.format(resultset.getTimestamp("DATEREFILE")));
-//                        } else {
-//                            fca.setDaterefiled("");
-//                        }
-//                        if (resultset.getTimestamp("DATEADM") != null) {
-//                            fca.setDateadmit(dateformat.format(resultset.getTimestamp("DATEADM")));
-//                        } else {
-//                            fca.setDateadmit("");
-//                        }
+                        if (resultset.getTimestamp("DATESUB") != null) {
+                            fca.setDatefiled(dateformat.format(resultset.getTimestamp("DATESUB")));
+                        } else {
+                            fca.setDatefiled("");
+                        }
+
+                        if (resultset.getTimestamp("DATEREFILE") != null) {
+                            fca.setDaterefiled(dateformat.format(resultset.getTimestamp("DATEREFILE")));
+                        } else {
+                            fca.setDaterefiled("");
+                        }
+                        if (resultset.getTimestamp("DATEADM") != null) {
+                            fca.setDateadmit(dateformat.format(resultset.getTimestamp("DATEADM")));
+                        } else {
+                            fca.setDateadmit("");
+                        }
                         listOfcomputedamount.add(fca);
                     }
                 }
@@ -3412,6 +3433,7 @@ public class Methods {
         }
         return result;
     }
+
     //GET ACTIVE CONTRACT DATE PERIOD
     public ACRGBWSResult PROCESSENDPERIODDATE(final DataSource dataSource, final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();

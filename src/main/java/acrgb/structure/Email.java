@@ -20,5 +20,9 @@ public class Email {
     private String recipient;
     private String subject;
     private String content;
+    private String appuser;
+    private String apppass;
+    private String port;
+    private String host;
 
 }

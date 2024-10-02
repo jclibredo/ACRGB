@@ -15,6 +15,7 @@ import acrgb.structure.Archived;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
+import acrgb.structure.Email;
 import acrgb.structure.ForgetPassword;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;
@@ -162,25 +163,24 @@ public class ACRGBUPDATE {
             @HeaderParam("mailapikey") String mailapikey,
             @HeaderParam("mailhost") String mailhost,
             @HeaderParam("mailport") String mailport,
-            @HeaderParam("mailfrom") String mailfrom,
             final User user) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ForgetPassword forgetPassword = new ForgetPassword();
-        forgetPassword.setAppuser(mailuser.trim());
-        forgetPassword.setApppass(mailapikey);
-        forgetPassword.setMailfrom(mailfrom.trim());
-        forgetPassword.setMailhost(mailhost.trim());
-        forgetPassword.setMailport(mailport.trim());
+        Email email = new Email();
+//        email.setRecipient(emailto.getEmailto());
+        email.setApppass(mailapikey);
+        email.setAppuser(mailuser);
+        email.setPort(mailport);
+        email.setHost(mailhost);
         ACRGBWSResult GetPayLoad = utility.GetPayload(token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             if (user.getUsername().isEmpty() && !user.getUserpassword().isEmpty()) {
-                ACRGBWSResult insertresult = methods.CHANGEPASSWORD(dataSource, forgetPassword, user.getUserid(), user.getUserpassword());
+                ACRGBWSResult insertresult = methods.CHANGEPASSWORD(dataSource, email, user.getUserid(), user.getUserpassword());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
@@ -190,7 +190,7 @@ public class ACRGBUPDATE {
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
             } else {
-                ACRGBWSResult insertresult = methods.UPDATEUSERCREDENTIALS(dataSource, user.getUserid(), user.getUsername(), user.getUserpassword(), user.getCreatedby());
+                ACRGBWSResult insertresult = methods.UPDATEUSERCREDENTIALS(dataSource, email, user.getUserid(), user.getUsername(), user.getUserpassword(), user.getCreatedby());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
@@ -223,29 +223,28 @@ public class ACRGBUPDATE {
     }
 
     //RESET PASSWORD
-    @PUT
-    @Path("RESETPASSWORD")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult RESETPASSWORD(@HeaderParam("token") String token,
-            final User user) {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            ACRGBWSResult insertresult = methods.RESETPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
-        }
-        return result;
-    }
-
+//    @PUT
+//    @Path("RESETPASSWORD")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult RESETPASSWORD(@HeaderParam("token") String token,
+//            final User user) {
+//        //TODO return proper representation object
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+//        if (!GetPayLoad.isSuccess()) {
+//            result.setMessage(GetPayLoad.getMessage());
+//        } else {
+//            ACRGBWSResult insertresult = methods.RESETPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
+//            result.setMessage(insertresult.getMessage());
+//            result.setSuccess(insertresult.isSuccess());
+//            result.setResult(insertresult.getResult());
+//        }
+//        return result;
+//    }
     //SET INACTIVE DATA
     @PUT
     @Path("INACTIVE")
@@ -587,7 +586,6 @@ public class ACRGBUPDATE {
 //        }
 //        return result;
 //    }
-
     @PUT
     @Path("UPDATEACCREDITATION")
     @Consumes(MediaType.APPLICATION_JSON)

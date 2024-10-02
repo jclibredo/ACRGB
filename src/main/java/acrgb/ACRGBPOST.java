@@ -387,13 +387,16 @@ public class ACRGBPOST {
             @HeaderParam("mailapikey") String mailapikey,
             @HeaderParam("mailhost") String mailhost,
             @HeaderParam("mailport") String mailport,
-            @HeaderParam("mailfrom") String mailfrom,
             final ForgetPassword emailto) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         EmailSender pass = new EmailSender();
         //-------------------------------------
         Email email = new Email();
         email.setRecipient(emailto.getEmailto());
+        email.setApppass(mailapikey);
+        email.setAppuser(mailuser);
+        email.setPort(mailport);
+        email.setHost(mailhost);
         ACRGBWSResult insertresult = pass.EmailSender(dataSource, email, "");
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
