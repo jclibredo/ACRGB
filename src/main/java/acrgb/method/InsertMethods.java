@@ -337,7 +337,7 @@ public class InsertMethods {
     }
 
 //---------------------------------------------------------------------------------------------------
-    public ACRGBWSResult INSERTUSER(final DataSource datasource, final User user) {
+    public ACRGBWSResult INSERTUSER(final DataSource datasource, final User user, final Email email) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -369,7 +369,6 @@ public class InsertMethods {
                             userlogs.setActstatus("SUCCESS");
                             result.setSuccess(true);
                             //SEND PASSCODE TO EMAIL IF SUCCESS
-                            Email email = new Email();
                             email.setRecipient(user.getUsername());
                             emailsender.EmailSender(datasource, email, user.getUserpassword().trim());
                             result.setMessage(getinsertresult.getString("Message"));
@@ -1012,7 +1011,7 @@ public class InsertMethods {
     }
 
     //INSERT USER ACCOUNT BATCH UPLOAD
-    public ACRGBWSResult INSERTUSERACCOUNTBATCHUPLOAD(final DataSource datasource, final UserInfo userinfo) {
+    public ACRGBWSResult INSERTUSERACCOUNTBATCHUPLOAD(final DataSource datasource, final UserInfo userinfo, final Email email) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -1051,7 +1050,8 @@ public class InsertMethods {
                     user.setDatecreated(userinfo.getDatecreated());
                     user.setLeveid(userinfo.getRole());
                     //-----------------------------
-                    ACRGBWSResult insertNewAccount = this.INSERTUSER(datasource, user);
+                    email.setRecipient(userinfo.getEmail());
+                    ACRGBWSResult insertNewAccount = this.INSERTUSER(datasource, user , email);
                     if (insertNewAccount.isSuccess()) {
                         //INSERT USER ROLE
                         ACRGBWSResult getUserUsingEmail = fm.GETACCOUNTUSINGEMAIL(datasource, userinfo.getEmail());

@@ -48,100 +48,100 @@ public class ContractMethod {
     private final FetchMethods fm = new FetchMethods();
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
 
-    public ACRGBWSResult GetAllContract(final DataSource dataSource, final String phcfcode, final String tags) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setSuccess(false);
-        result.setResult("");
-        try (Connection connection = dataSource.getConnection()) {
-            ArrayList<Contract> contractList = new ArrayList<>();
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
-            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", "INACTIVE");
-            statement.setString("pfchid", phcfcode.trim());
-            statement.execute();
-            ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            switch (tags.toUpperCase()) {
-                case "HCPNPRO": {
-                    while (resultset.next()) {
-                        Contract contract = new Contract();
-                        contract.setConid(resultset.getString("CONID"));
-                        contract.setAmount(resultset.getString("AMOUNT"));
-                        contract.setStats(resultset.getString("STATS"));
-                        contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
-                        ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
-                        if (getcondateA.isSuccess()) {
-                            contract.setContractdate(getcondateA.getResult());
-                        }
-                        contract.setTranscode(resultset.getString("TRANSCODE"));
-                        contract.setBaseamount(resultset.getString("BASEAMOUNT"));
-                        contract.setHcfid(resultset.getString("HCFID"));
-                        contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
-                        contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
-                        contract.setSb(resultset.getString("SB"));
-                        contract.setAddamount(resultset.getString("ADDAMOUNT"));
-                        contract.setQuarter(resultset.getString("QUARTER"));
-                        if (resultset.getTimestamp("ENDDATE") != null) {
-                            contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
-                        } else {
-                            contract.setEnddate("");
-                        }
-                        contractList.add(contract);
-                    }
-                    if (contractList.isEmpty()) {
-                        result.setSuccess(true);
-                        result.setMessage("OK");
-                        result.setResult(utility.ObjectMapper().writeValueAsString(contractList));
-                    } else {
-                        result.setMessage("N/A");
-                    }
-                    break;
-                }
-                case "HCPNPHIC": {
-                    while (resultset.next()) {
-                        Contract contract = new Contract();
-                        contract.setConid(resultset.getString("CONID"));
-                        contract.setAmount(resultset.getString("AMOUNT"));
-                        contract.setStats(resultset.getString("STATS"));
-                        contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
-                        ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
-                        if (getcondateA.isSuccess()) {
-                            contract.setContractdate(getcondateA.getResult());
-                        }
-                        contract.setTranscode(resultset.getString("TRANSCODE"));
-                        contract.setBaseamount(resultset.getString("BASEAMOUNT"));
-                        contract.setHcfid(resultset.getString("HCFID"));
-                        contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
-                        contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
-                        contract.setSb(resultset.getString("SB"));
-                        contract.setAddamount(resultset.getString("ADDAMOUNT"));
-                        contract.setQuarter(resultset.getString("QUARTER"));
-                        if (resultset.getTimestamp("ENDDATE") != null) {
-                            contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
-                        } else {
-                            contract.setEnddate("");
-                        }
-                        contractList.add(contract);
-                    }
-
-                    if (contractList.isEmpty()) {
-                        result.setSuccess(true);
-                        result.setMessage("OK");
-                        result.setResult(utility.ObjectMapper().writeValueAsString(contractList));
-                    } else {
-                        result.setMessage("N/A");
-                    }
-                    break;
-                }
-            }
-
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-
-    }
+//    public ACRGBWSResult GetAllContract(final DataSource dataSource, final String phcfcode, final String tags) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setSuccess(false);
+//        result.setResult("");
+//        try (Connection connection = dataSource.getConnection()) {
+//            ArrayList<Contract> contractList = new ArrayList<>();
+//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
+//            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+//            statement.setString("tags", "INACTIVE");
+//            statement.setString("pfchid", phcfcode.trim());
+//            statement.execute();
+//            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+//            switch (tags.toUpperCase()) {
+//                case "HCPNPRO": {
+//                    while (resultset.next()) {
+//                        Contract contract = new Contract();
+//                        contract.setConid(resultset.getString("CONID"));
+//                        contract.setAmount(resultset.getString("AMOUNT"));
+//                        contract.setStats(resultset.getString("STATS"));
+//                        contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
+//                        ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+//                        if (getcondateA.isSuccess()) {
+//                            contract.setContractdate(getcondateA.getResult());
+//                        }
+//                        contract.setTranscode(resultset.getString("TRANSCODE"));
+//                        contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+//                        contract.setHcfid(resultset.getString("HCFID"));
+//                        contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+//                        contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
+//                        contract.setSb(resultset.getString("SB"));
+//                        contract.setAddamount(resultset.getString("ADDAMOUNT"));
+//                        contract.setQuarter(resultset.getString("QUARTER"));
+//                        if (resultset.getTimestamp("ENDDATE") != null) {
+//                            contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
+//                        } else {
+//                            contract.setEnddate("");
+//                        }
+//                        contractList.add(contract);
+//                    }
+//                    if (contractList.isEmpty()) {
+//                        result.setSuccess(true);
+//                        result.setMessage("OK");
+//                        result.setResult(utility.ObjectMapper().writeValueAsString(contractList));
+//                    } else {
+//                        result.setMessage("N/A");
+//                    }
+//                    break;
+//                }
+//                case "HCPNPHIC": {
+//                    while (resultset.next()) {
+//                        Contract contract = new Contract();
+//                        contract.setConid(resultset.getString("CONID"));
+//                        contract.setAmount(resultset.getString("AMOUNT"));
+//                        contract.setStats(resultset.getString("STATS"));
+//                        contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
+//                        ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+//                        if (getcondateA.isSuccess()) {
+//                            contract.setContractdate(getcondateA.getResult());
+//                        }
+//                        contract.setTranscode(resultset.getString("TRANSCODE"));
+//                        contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+//                        contract.setHcfid(resultset.getString("HCFID"));
+//                        contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+//                        contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
+//                        contract.setSb(resultset.getString("SB"));
+//                        contract.setAddamount(resultset.getString("ADDAMOUNT"));
+//                        contract.setQuarter(resultset.getString("QUARTER"));
+//                        if (resultset.getTimestamp("ENDDATE") != null) {
+//                            contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
+//                        } else {
+//                            contract.setEnddate("");
+//                        }
+//                        contractList.add(contract);
+//                    }
+//
+//                    if (contractList.isEmpty()) {
+//                        result.setSuccess(true);
+//                        result.setMessage("OK");
+//                        result.setResult(utility.ObjectMapper().writeValueAsString(contractList));
+//                    } else {
+//                        result.setMessage("N/A");
+//                    }
+//                    break;
+//                }
+//            }
+//
+//        } catch (SQLException | IOException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//
+//    }
 
     //GET APPELLATE CONTROL
     public ACRGBWSResult GETCONTRACT(
@@ -203,65 +203,65 @@ public class ContractMethod {
     }
 
     //GET APPELLATE CONTROL
-    public ACRGBWSResult GETCONTRACTList(final DataSource dataSource, final String tags, final String hcfid) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ArrayList<Contract> contractList = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
-            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("tags", tags.toUpperCase().trim());
-            statement.setString("pfchid", hcfid.trim());
-            statement.execute();
-            ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            while (resultset.next()) {
-                Contract contract = new Contract();
-                contract.setConid(resultset.getString("CONID"));
-                contract.setHcfid(resultset.getString("HCFID"));
-                //END OF GET NETWORK FULL DETAILS
-                contract.setAmount(resultset.getString("AMOUNT"));
-                contract.setStats(resultset.getString("STATS"));
-                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-                if (creator.isSuccess()) {
-                    contract.setCreatedby(creator.getResult());
-                } else {
-                    contract.setCreatedby(creator.getMessage());
-                }
-                contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
-                ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
-                if (getcondateA.isSuccess()) {
-                    contract.setContractdate(getcondateA.getResult());
-                }
-                contract.setTranscode(resultset.getString("TRANSCODE"));
-                contract.setBaseamount(resultset.getString("BASEAMOUNT"));
-                contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
-                contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
-                contract.setSb(resultset.getString("SB"));
-                contract.setAddamount(resultset.getString("ADDAMOUNT"));
-                contract.setQuarter(resultset.getString("QUARTER"));
-                contract.setQuarter(resultset.getString("QUARTER"));
-                if (resultset.getTimestamp("ENDDATE") != null) {
-                    contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
-                } else {
-                    contract.setEnddate("");
-                }
-                contractList.add(contract);
-            }
-            if (contractList.size() > 0) {
-                result.setMessage("OK");
-                result.setSuccess(true);
-                result.setResult(utility.ObjectMapper().writeValueAsString(contractList));
-            } else {
-                result.setMessage("N/A");
-            }
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
+//    public ACRGBWSResult GETCONTRACTList(final DataSource dataSource, final String tags, final String hcfid) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ArrayList<Contract> contractList = new ArrayList<>();
+//        try (Connection connection = dataSource.getConnection()) {
+//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
+//            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+//            statement.setString("tags", tags.toUpperCase().trim());
+//            statement.setString("pfchid", hcfid.trim());
+//            statement.execute();
+//            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+//            while (resultset.next()) {
+//                Contract contract = new Contract();
+//                contract.setConid(resultset.getString("CONID"));
+//                contract.setHcfid(resultset.getString("HCFID"));
+//                //END OF GET NETWORK FULL DETAILS
+//                contract.setAmount(resultset.getString("AMOUNT"));
+//                contract.setStats(resultset.getString("STATS"));
+//                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+//                if (creator.isSuccess()) {
+//                    contract.setCreatedby(creator.getResult());
+//                } else {
+//                    contract.setCreatedby(creator.getMessage());
+//                }
+//                contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
+//                ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
+//                if (getcondateA.isSuccess()) {
+//                    contract.setContractdate(getcondateA.getResult());
+//                }
+//                contract.setTranscode(resultset.getString("TRANSCODE"));
+//                contract.setBaseamount(resultset.getString("BASEAMOUNT"));
+//                contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
+//                contract.setComputedClaimsVol(resultset.getString("T_CLAIMSVOL"));
+//                contract.setSb(resultset.getString("SB"));
+//                contract.setAddamount(resultset.getString("ADDAMOUNT"));
+//                contract.setQuarter(resultset.getString("QUARTER"));
+//                contract.setQuarter(resultset.getString("QUARTER"));
+//                if (resultset.getTimestamp("ENDDATE") != null) {
+//                    contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
+//                } else {
+//                    contract.setEnddate("");
+//                }
+//                contractList.add(contract);
+//            }
+//            if (contractList.size() > 0) {
+//                result.setMessage("OK");
+//                result.setSuccess(true);
+//                result.setResult(utility.ObjectMapper().writeValueAsString(contractList));
+//            } else {
+//                result.setMessage("N/A");
+//            }
+//        } catch (SQLException | IOException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
 
     //GET APPELLATE CONTROL
     public ACRGBWSResult GETCONDATE(final DataSource dataSource, final String tags) {
@@ -923,7 +923,7 @@ public class ContractMethod {
                                         List<String> HCIList = Arrays.asList(GetHCIList.getResult().split(","));
                                         for (int x = 0; x < HCIList.size(); x++) {
 //                                            ACRGBWSResult GetHCIContract = this.GETCONTRACT(dataSource, tags.trim().toUpperCase(), HCIList.get(x).trim());
-                                            ACRGBWSResult GetHCIContract = this.GETCONTRACTWITHOPENSTATE(dataSource, tags.trim().toUpperCase(), HCPNList.get(x).trim(), ustate);
+                                            ACRGBWSResult GetHCIContract = this.GETCONTRACTWITHOPENSTATE(dataSource, tags.trim().toUpperCase(), HCIList.get(x).trim(), ustate);
                                             if (GetHCIContract.isSuccess()) {
                                                 Contract hciCon = utility.ObjectMapper().readValue(GetHCIContract.getResult(), Contract.class);
                                                 ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, HCIList.get(x).trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
@@ -951,7 +951,6 @@ public class ContractMethod {
                                                                     countLedger++;
                                                                 }
                                                             }
-
                                                         }
 
                                                         if (countLedger > 0) {//utility.AddMinusDaysDate(hciCon.getEnddate().trim(), "60")
@@ -960,7 +959,6 @@ public class ContractMethod {
                                                         }
                                                     }
                                                 }
-
                                             }
                                         }
                                     }

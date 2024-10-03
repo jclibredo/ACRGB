@@ -2758,7 +2758,6 @@ public class FetchMethods {
                 statement.setString("utags", utags.trim());
                 statement.setString("uhcfcode", hcflist.get(y).trim());
                 statement.setString("ustate", ustate.trim());
-
                 statement.execute();
                 ResultSet resultset = (ResultSet) statement.getObject("v_result");
                 if (resultset.next()) {

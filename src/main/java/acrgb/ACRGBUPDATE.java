@@ -16,7 +16,6 @@ import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.Email;
-import acrgb.structure.ForgetPassword;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;

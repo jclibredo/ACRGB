@@ -229,18 +229,23 @@ public class ACRGBPOST {
             @HeaderParam("mailapikey") String mailapikey,
             @HeaderParam("mailhost") String mailhost,
             @HeaderParam("mailport") String mailport,
-            @HeaderParam("mailfrom") String mailfrom,
             final User user) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Email email = new Email();
+        email.setRecipient(user.getUsername());
+        email.setApppass(mailapikey);
+        email.setAppuser(mailuser);
+        email.setPort(mailport);
+        email.setHost(mailhost);
         ACRGBWSResult GetPayLoad = utility.GetPayload(token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.INSERTUSER(dataSource, user);
+            ACRGBWSResult insertresult = insertmethods.INSERTUSER(dataSource, user, email);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -416,13 +421,18 @@ public class ACRGBPOST {
             @HeaderParam("mailapikey") String mailapikey,
             @HeaderParam("mailhost") String mailhost,
             @HeaderParam("mailport") String mailport,
-            @HeaderParam("mailfrom") String mailfrom,
             final List<UserInfo> userinfo) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        Email email = new Email();
+//        email.setRecipient(emailto.getEmailto());
+        email.setApppass(mailapikey);
+        email.setAppuser(mailuser);
+        email.setPort(mailport);
+        email.setHost(mailhost);
         Collection errorList = new ArrayList<>();
         try {
             ACRGBWSResult GetPayLoad = utility.GetPayload(token);
@@ -460,7 +470,7 @@ public class ACRGBPOST {
                         error.add("| LASTNAME IS REQUIRED");
                     }
                     //CHECK ROLE
-                    if (userinfo.get(x).getRole().trim().isEmpty()) {
+                    if (userinfo.get(x).getRole().toUpperCase().trim().isEmpty()) {
                         error.add("| ROLE IS REQUIRED");
                     }
                     //CHECK DESIGNATION
@@ -468,25 +478,25 @@ public class ACRGBPOST {
                         error.add("| DESIGNATION IS REQUIRED");
                     }
                     //VALIDATE USER LEVEL
-                    if (!fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).isSuccess()) {
+                    if (!fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().toUpperCase().trim()).isSuccess()) {
                         error.add("| ROLE NOT VALID");
                     } else {
-                        UserLevel level = utility.ObjectMapper().readValue(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).getResult(), UserLevel.class);
+                        UserLevel level = utility.ObjectMapper().readValue(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().toUpperCase().trim()).getResult(), UserLevel.class);
                         switch (level.getLevname().toLowerCase().trim()) {
                             case "PRO": {
-                                if (!methods.GetProWithPROID(dataSource, userinfo.get(x).getDesignation().trim()).isSuccess()) {
+                                if (!methods.GetProWithPROID(dataSource, userinfo.get(x).getDesignation().toUpperCase().trim()).isSuccess()) {
                                     error.add("| PRO CODE " + userinfo.get(x).getDesignation() + " NOT VALID");
                                 }
                                 break;
                             }
                             case "HCPN": {
-                                if (!methods.GETMBWITHID(dataSource, userinfo.get(x).getDesignation()).isSuccess()) {
+                                if (!methods.GETMBWITHID(dataSource, userinfo.get(x).getDesignation().trim().toUpperCase()).isSuccess()) {
                                     error.add("| HCPN CODE " + userinfo.get(x).getDesignation() + " NOT VALID");
                                 }
                                 break;
                             }
                             case "HCF": {
-                                if (!fm.GETFACILITYID(dataSource, userinfo.get(x).getDesignation()).isSuccess()) {
+                                if (!fm.GETFACILITYID(dataSource, userinfo.get(x).getDesignation().toUpperCase().trim()).isSuccess()) {
                                     error.add("| HCF CODE NOT " + userinfo.get(x).getDesignation() + " VALID");
                                 }
                                 break;
@@ -508,15 +518,15 @@ public class ACRGBPOST {
                         userInfo.setLastname(userinfo.get(x).getLastname());
                         switch (userinfo.get(x).getRole().trim().toLowerCase()) {
                             case "HCI": {
-                                userInfo.setRole(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).getMessage());
+                                userInfo.setRole(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().trim().toUpperCase()).getMessage());
                                 break;
                             }
                             case "HCPN": {
-                                userInfo.setRole(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).getMessage());
+                                userInfo.setRole(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().trim().toUpperCase()).getMessage());
                                 break;
                             }
                             case "PRO": {
-                                userInfo.setRole(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).getMessage());
+                                userInfo.setRole(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().trim().toUpperCase()).getMessage());
                                 break;
                             }
                             default: {
@@ -524,15 +534,15 @@ public class ACRGBPOST {
                             }
                         }
                         if (fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).isSuccess()) {
-                            UserLevel level = utility.ObjectMapper().readValue(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).getResult(), UserLevel.class);
+                            UserLevel level = utility.ObjectMapper().readValue(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().trim().toUpperCase()).getResult(), UserLevel.class);
                             if (level.getLevname().toUpperCase().equals("PRO")) {
-                                userInfo.setDesignation("2024" + userinfo.get(x).getDesignation());
+                                userInfo.setDesignation("2024" + userinfo.get(x).getDesignation().trim().toUpperCase());
                             } else {
-                                userInfo.setDesignation(userinfo.get(x).getDesignation());
+                                userInfo.setDesignation(userinfo.get(x).getDesignation().trim().toUpperCase());
                             }
                         }
-
-                        ACRGBWSResult InsertCleanData = insertmethods.INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo);
+                        email.setRecipient(userinfo.get(x).getEmail());
+                        ACRGBWSResult InsertCleanData = insertmethods.INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo, email);
                         if (!InsertCleanData.isSuccess()) {
                             error.add("| LINE NUMBER[" + userinfo.get(x).getId() + "]");
                             error.add(InsertCleanData.getMessage());
@@ -569,7 +579,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-           // CHECK PROCESS ALL ENDED CONTRACT             
+            // CHECK PROCESS ALL ENDED CONTRACT             
             ACRGBWSResult BookingResult = bm.PROCESSENDEDCONTRACT(dataSource, book, "INACTIVE");
             result.setMessage(BookingResult.getMessage());
             result.setResult(BookingResult.getResult());
