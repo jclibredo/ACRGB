@@ -516,7 +516,7 @@ public class ACRGBPOST {
                         userInfo.setEmail(userinfo.get(x).getEmail());
                         userInfo.setMiddlename(userinfo.get(x).getMiddlename());
                         userInfo.setLastname(userinfo.get(x).getLastname());
-                        switch (userinfo.get(x).getRole().trim().toLowerCase()) {
+                        switch (userinfo.get(x).getRole().trim().toUpperCase()) {
                             case "HCI": {
                                 userInfo.setRole(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().trim().toUpperCase()).getMessage());
                                 break;

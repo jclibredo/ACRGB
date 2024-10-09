@@ -1051,7 +1051,7 @@ public class InsertMethods {
                     user.setLeveid(userinfo.getRole());
                     //-----------------------------
                     email.setRecipient(userinfo.getEmail());
-                    ACRGBWSResult insertNewAccount = this.INSERTUSER(datasource, user , email);
+                    ACRGBWSResult insertNewAccount = this.INSERTUSER(datasource, user, email);
                     if (insertNewAccount.isSuccess()) {
                         //INSERT USER ROLE
                         ACRGBWSResult getUserUsingEmail = fm.GETACCOUNTUSINGEMAIL(datasource, userinfo.getEmail());

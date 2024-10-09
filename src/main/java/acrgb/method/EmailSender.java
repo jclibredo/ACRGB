@@ -157,7 +157,6 @@ public class EmailSender {
             Logger.getLogger(EmailSender.class.getName()).log(Level.SEVERE, null, ex);
         } catch (UnsupportedEncodingException ex) {
             result.setMessage(ex.toString());
-            result.setMessage(ex.toString());
             Logger.getLogger(EmailSender.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
