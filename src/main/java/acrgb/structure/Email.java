@@ -17,7 +17,7 @@ public class Email {
     public Email() {
     }
     private String sender;
-    private String recipient;
+    private String emailto;
     private String subject;
     private String content;
     private String appuser;

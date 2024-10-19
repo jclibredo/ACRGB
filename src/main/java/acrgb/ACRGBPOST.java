@@ -16,7 +16,6 @@ import acrgb.structure.Book;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.Email;
-import acrgb.structure.ForgetPassword;
 import acrgb.structure.MBRequestSummary;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.NclaimsData;
@@ -38,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
+import javax.mail.Session;
 import javax.sql.DataSource;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
@@ -47,8 +47,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import oracle.jdbc.OracleTypes;
 
-//--------------------------------------
-//---------------------------------------
 /**
  * REST Web Service
  *
@@ -63,6 +61,11 @@ public class ACRGBPOST {
     /**
      * Creates a new instance of ACRGB
      */
+
+    @Resource(lookup = "mail/acrgbmail")
+    private Session session;
+
+    //------------------------------------
     @Resource(lookup = "jdbc/acrgb")
     private DataSource dataSource;
 
@@ -225,27 +228,17 @@ public class ACRGBPOST {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult INSERTUSER(
             @HeaderParam("token") String token,
-            @HeaderParam("mailuser") String mailuser,
-            @HeaderParam("mailapikey") String mailapikey,
-            @HeaderParam("mailhost") String mailhost,
-            @HeaderParam("mailport") String mailport,
             final User user) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        Email email = new Email();
-        email.setRecipient(user.getUsername());
-        email.setApppass(mailapikey);
-        email.setAppuser(mailuser);
-        email.setPort(mailport);
-        email.setHost(mailhost);
         ACRGBWSResult GetPayLoad = utility.GetPayload(token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.INSERTUSER(dataSource, user, email);
+            ACRGBWSResult insertresult = insertmethods.INSERTUSER(dataSource, user, session);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -388,21 +381,9 @@ public class ACRGBPOST {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult FORGETPASSWORD(
-            @HeaderParam("mailuser") String mailuser,
-            @HeaderParam("mailapikey") String mailapikey,
-            @HeaderParam("mailhost") String mailhost,
-            @HeaderParam("mailport") String mailport,
-            final ForgetPassword emailto) {
+            final Email email) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        EmailSender pass = new EmailSender();
-        //-------------------------------------
-        Email email = new Email();
-        email.setRecipient(emailto.getEmailto());
-        email.setApppass(mailapikey);
-        email.setAppuser(mailuser);
-        email.setPort(mailport);
-        email.setHost(mailhost);
-        ACRGBWSResult insertresult = pass.EmailSender(dataSource, email, "");
+        ACRGBWSResult insertresult = new EmailSender().EmailSender(dataSource, email.getEmailto(), "", session);
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());
@@ -417,22 +398,12 @@ public class ACRGBPOST {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult USERACCOUNTBATCH(
             @HeaderParam("token") String token,
-            @HeaderParam("mailuser") String mailuser,
-            @HeaderParam("mailapikey") String mailapikey,
-            @HeaderParam("mailhost") String mailhost,
-            @HeaderParam("mailport") String mailport,
             final List<UserInfo> userinfo) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        Email email = new Email();
-//        email.setRecipient(emailto.getEmailto());
-        email.setApppass(mailapikey);
-        email.setAppuser(mailuser);
-        email.setPort(mailport);
-        email.setHost(mailhost);
         Collection errorList = new ArrayList<>();
         try {
             ACRGBWSResult GetPayLoad = utility.GetPayload(token);
@@ -541,8 +512,8 @@ public class ACRGBPOST {
                                 userInfo.setDesignation(userinfo.get(x).getDesignation().trim().toUpperCase());
                             }
                         }
-                        email.setRecipient(userinfo.get(x).getEmail());
-                        ACRGBWSResult InsertCleanData = insertmethods.INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo, email);
+//                        email.setEmailto(userinfo.get(x).getEmail());
+                        ACRGBWSResult InsertCleanData = insertmethods.INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo, session);
                         if (!InsertCleanData.isSuccess()) {
                             error.add("| LINE NUMBER[" + userinfo.get(x).getId() + "]");
                             error.add(InsertCleanData.getMessage());

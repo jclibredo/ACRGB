@@ -19,6 +19,7 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Total.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Email.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\DateSettings.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\ContractTagging.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Tagging.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\utility\NamedParameterStatement.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\UserActivityLogs.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\BookingMethod.java
@@ -26,6 +27,7 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\ACRGBUPDATE.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\FacilityComputedAmount.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ManagingBoard.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ACRGBPayload.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\method\job\TestMailProperties.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Archived.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\utility\Cryptor.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Ledger.java
@@ -54,6 +56,7 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Contract.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\NclaimsData.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserInfo.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserActivity.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\method\FacilityTagging.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\UserLevel.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ProcessAmountBadget.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\EmailSender.java

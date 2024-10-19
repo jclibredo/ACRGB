@@ -4,7 +4,6 @@ acrgb\ACRGBUPDATE.class
 acrgb\method\BookingMethod.class
 acrgb\ACRGBPOST.class
 acrgb\structure\NclaimsData.class
-acrgb\method\EmailSender$1.class
 acrgb\method\UpdateMethods.class
 acrgb\method\Methods$UserPassword.class
 acrgb\structure\Summary.class
@@ -20,11 +19,13 @@ acrgb\method\resourcefile\ConfigReader.class
 acrgb\structure\ACRGBPayload.class
 acrgb\utility\Utility.class
 acrgb\structure\ExcludedCode.class
+acrgb\method\job\TestMailProperties.class
 acrgb\structure\ACRGBWSResult.class
 acrgb\structure\Contract.class
 acrgb\structure\Ledger.class
 acrgb\structure\ReportsParam.class
 acrgb\structure\Accreditation.class
+acrgb\method\FacilityTagging.class
 acrgb\method\ContractHistory.class
 acrgb\method\ContractHistoryService.class
 acrgb\method\GenerateRandomPassword.class
@@ -36,6 +37,7 @@ acrgb\structure\ConBalance.class
 acrgb\structure\Pro.class
 acrgb\structure\HealthCareFacility.class
 acrgb\structure\Email.class
+acrgb\structure\Tagging.class
 acrgb\structure\MBFacilityUnderRequest.class
 acrgb\structure\ReportsFacilityUnderHCPNSummary.class
 acrgb\method\FetchMethods.class

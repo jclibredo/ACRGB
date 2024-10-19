@@ -15,7 +15,6 @@ import acrgb.structure.Archived;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
-import acrgb.structure.Email;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
@@ -25,6 +24,7 @@ import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
 import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
+import javax.mail.Session;
 import javax.sql.DataSource;
 import javax.ws.rs.Produces;
 import javax.ws.rs.Consumes;
@@ -42,6 +42,9 @@ import javax.ws.rs.core.MediaType;
 @RequestScoped
 public class ACRGBUPDATE {
 
+    @Resource(lookup = "mail/acrgbmail")
+    private Session session;
+    //-----------------------------------
     @Resource(lookup = "jdbc/acrgb")
     private DataSource dataSource;
 
@@ -158,28 +161,18 @@ public class ACRGBUPDATE {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UPDATEUSERCREDENTIALS(
             @HeaderParam("token") String token,
-            @HeaderParam("mailuser") String mailuser,
-            @HeaderParam("mailapikey") String mailapikey,
-            @HeaderParam("mailhost") String mailhost,
-            @HeaderParam("mailport") String mailport,
             final User user) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        Email email = new Email();
-//        email.setRecipient(emailto.getEmailto());
-        email.setApppass(mailapikey);
-        email.setAppuser(mailuser);
-        email.setPort(mailport);
-        email.setHost(mailhost);
         ACRGBWSResult GetPayLoad = utility.GetPayload(token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             if (user.getUsername().isEmpty() && !user.getUserpassword().isEmpty()) {
-                ACRGBWSResult insertresult = methods.CHANGEPASSWORD(dataSource, email, user.getUserid(), user.getUserpassword());
+                ACRGBWSResult insertresult = methods.CHANGEPASSWORD(dataSource, user.getUserid(), user.getUserpassword(), session);
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
@@ -189,7 +182,7 @@ public class ACRGBUPDATE {
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
             } else {
-                ACRGBWSResult insertresult = methods.UPDATEUSERCREDENTIALS(dataSource, email, user.getUserid(), user.getUsername(), user.getUserpassword(), user.getCreatedby());
+                ACRGBWSResult insertresult = methods.UPDATEUSERCREDENTIALS(dataSource, user.getUserid(), user.getUsername(), user.getUserpassword(), user.getCreatedby(), session);
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
@@ -221,7 +214,7 @@ public class ACRGBUPDATE {
         return result;
     }
 
-    //RESET PASSWORD
+ //RESET PASSWORD
 //    @PUT
 //    @Path("RESETPASSWORD")
 //    @Consumes(MediaType.APPLICATION_JSON)

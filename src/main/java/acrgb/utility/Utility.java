@@ -75,7 +75,7 @@ public class Utility {
     private static final String DIGITS = "0123456789";
     private static final String SPECIAL_CHARS = "!@#$";
     private static final String ALL_CHARS = UPPER + LOWER + DIGITS + SPECIAL_CHARS;
-    private static final SecureRandom random = new SecureRandom();
+    private static final SecureRandom RANDOM = new SecureRandom();
 
 //represents starting character of the string.
 //represents a digit must occur at least once.
@@ -88,23 +88,27 @@ public class Utility {
     public String GenerateRandomPassword(int length) {
         StringBuilder password = new StringBuilder(length);
         // At least one uppercase letter
-        password.append(UPPER.charAt(random.nextInt(UPPER.length())));
+        password.append(UPPER.charAt(RANDOM.nextInt(UPPER.length())));
         // At least one lowercase letter
-        password.append(LOWER.charAt(random.nextInt(LOWER.length())));
+        password.append(LOWER.charAt(RANDOM.nextInt(LOWER.length())));
         // At least one digit
-        password.append(DIGITS.charAt(random.nextInt(DIGITS.length())));
+        password.append(DIGITS.charAt(RANDOM.nextInt(DIGITS.length())));
         // At least one special character
-        password.append(SPECIAL_CHARS.charAt(random.nextInt(SPECIAL_CHARS.length())));
+        password.append(SPECIAL_CHARS.charAt(RANDOM.nextInt(SPECIAL_CHARS.length())));
 
         // Remaining characters randomly selected from all characters
         for (int i = 4; i < length; i++) {
-            password.append(ALL_CHARS.charAt(random.nextInt(ALL_CHARS.length())));
+            password.append(ALL_CHARS.charAt(RANDOM.nextInt(ALL_CHARS.length())));
         }
         return password.toString();
     }
 
     public ACRGBWSResult ACRGBWSResult() {
         return new ACRGBWSResult();
+    }
+    
+    public Date GetCurrentDate(){
+      return new java.util.Date();
     }
 
     public OkHttpClient OkHttpClient() {
@@ -515,7 +519,7 @@ public class Utility {
     }
 
     public String EmailSenderContent(String useremail, String passcode) {
-        String result = "<body style=\"padding-top: 30px; font-family: sans-serif; border: groove 10px; max-width: 30%; margin-top: 10px; display: grid; align-items:center ;\">\n"
+        String result = "<body style=\"padding-top: 30px; font-family: sans-serif; border: groove 10px; max-width: 80%; margin-top: 10px; display: grid; align-items:center ;\">\n"
                 + "    <div style=\"display:grid; place-items: center; padding:5px; width: 80%; margin:auto\">\n"
                 + "       <div style=\"font-family:impact; color:#7bb241; font-size:3rem; margin-top: -3rem;\">\n"
                 + "        <center>\n"

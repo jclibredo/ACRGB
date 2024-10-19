@@ -12,10 +12,10 @@ import acrgb.structure.Assets;
 import acrgb.structure.Book;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
-import acrgb.structure.Email;
 import acrgb.structure.LogStatus;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Pro;
+import acrgb.structure.Tagging;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserActivity;
@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.context.RequestScoped;
+import javax.mail.Session;
 import javax.sql.DataSource;
 import oracle.jdbc.OracleTypes;
 
@@ -134,9 +135,6 @@ public class InsertMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        Methods methods = new Methods();
-        UpdateMethods um = new UpdateMethods();
-        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             String logsTags = "";
             UserActivity userlogs = utility.UserActivity();
@@ -166,22 +164,26 @@ public class InsertMethods {
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     //INSERT TO ACTIVITY LOGS
                     int countpro = 0;
+                    int hcicounter = 0;
+                    int hcpncounter = 0;
                     ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, contract.getHcfid());
                     if (getSubject.isSuccess()) {
                         logsTags = "ADD-CONTRACT-HCI";
+                        hcicounter++;
                     } else {
-                        ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, contract.getHcfid());
+                        ACRGBWSResult getSubjectA = new Methods().GETMBWITHID(datasource, contract.getHcfid());
                         if (getSubjectA.isSuccess()) {
                             logsTags = "ADD-CONTRACT-HCPN";
+                            hcpncounter++;
                         } else {
                             logsTags = "ADD-CONTRACT-PRO";
                             countpro++;
                         }
                     }
                     if (countpro == 0) {
-                        ACRGBWSResult uaccessid = methods.GETROLE(datasource, contract.getCreatedby(), "ACTIVE");
+                        ACRGBWSResult uaccessid = new Methods().GETROLE(datasource, contract.getCreatedby(), "ACTIVE");
                         //INSERT CONTRACT ID TO ROLE INDEX TABLE
-                        um.UPDATEROLEINDEX(datasource, uaccessid.getResult().trim(), contract.getHcfid(), contract.getContractdate(), "HCIUPDATE");
+                        new UpdateMethods().UPDATEROLEINDEX(datasource, uaccessid.getResult().trim(), contract.getHcfid(), contract.getContractdate(), "HCIUPDATE");
                         //END INSERT CONTRACT ID TO ROLE INDEX TABLE
                         //INSERT CONTRACT ID TO APPELLATE TABLE
                         Appellate appellate = new Appellate();
@@ -189,9 +191,48 @@ public class InsertMethods {
                         appellate.setStatus("2");
                         appellate.setConid(contract.getContractdate());
                         //
-                        um.UPDATEAPELLATE(datasource, "UPDATE", appellate);
+                        new UpdateMethods().UPDATEAPELLATE(datasource, "UPDATE", appellate);
                         //END INSERT CONTRACT ID TO APPELLATE TABLE
                     }
+                    //GETLEVEL
+                    if (fm.GETFULLDETAILS(datasource, contract.getCreatedby()).isSuccess()) {
+                        UserInfo userInfo = utility.ObjectMapper().readValue(fm.GETFULLDETAILS(datasource, contract.getCreatedby()).getResult(), UserInfo.class);
+                        if (userInfo.getRole().toUpperCase().trim().equals("PRO")) {
+                            //TAGGING OF FACILITY UNDER SELECTED HPCN
+                            if (hcpncounter > 0) {
+                                for (int i = 0; i < Arrays.asList(new Methods().GETROLEMULITPLE(datasource, contract.getHcfid(), "ACTIVE").getResult().split(",")).size(); i++) {
+                                    if (new ContractMethod().GETCONDATEBYID(datasource, contract.getContractdate()).isSuccess()) {
+                                        ContractDate condate = utility.ObjectMapper().readValue(new ContractMethod().GETCONDATEBYID(datasource, contract.getContractdate()).getResult(), ContractDate.class);
+                                        Tagging tagging = new Tagging();
+                                        tagging.setHcino(Arrays.asList(new Methods().GETROLEMULITPLE(datasource, contract.getHcfid(), "ACTIVE").getResult().split(",")).get(i));
+                                        tagging.setStartdate(condate.getDatefrom());
+                                        tagging.setExpireddate(condate.getDateto());
+                                        tagging.setUsername("ACRGBUSER" + contract.getCreatedby());
+                                        tagging.setEntrydate(contract.getDatecreated());
+                                        tagging.setIssuedate(condate.getDatefrom());
+                                        tagging.setEffdate(condate.getDatefrom());
+                                        new FacilityTagging().TaggFacility(datasource, tagging, "AG");
+                                    }
+                                }
+                            }
+                            //TAGGING OF FACILITY INDIVIDUAL
+                            if (hcicounter > 0) {
+                                if (new ContractMethod().GETCONDATEBYID(datasource, contract.getContractdate()).isSuccess()) {
+                                    ContractDate condate = utility.ObjectMapper().readValue(new ContractMethod().GETCONDATEBYID(datasource, contract.getContractdate()).getResult(), ContractDate.class);
+                                    Tagging tagging = new Tagging();
+                                    tagging.setHcino(contract.getHcfid());
+                                    tagging.setStartdate(condate.getDatefrom());
+                                    tagging.setExpireddate(condate.getDateto());
+                                    tagging.setUsername("ACRGBUSER" + contract.getCreatedby());
+                                    tagging.setEntrydate(contract.getDatecreated());
+                                    tagging.setIssuedate(condate.getDatefrom());
+                                    tagging.setEffdate(condate.getDatefrom());
+                                    new FacilityTagging().TaggFacility(datasource, tagging, "AH,AG");
+                                }
+                            }
+                        }
+                    }
+
                     result.setMessage(getinsertresult.getString("Message"));
                     result.setSuccess(true);
                     userlogs.setActstatus("SUCCESS");
@@ -202,8 +243,8 @@ public class InsertMethods {
             }
             userlogs.setActby(contract.getCreatedby());
             userlogs.setActdetails("Amount :" + contract.getAmount() + "| SB :" + contract.getSb() + "| Comitted volume:" + contract.getComittedClaimsVol() + " " + contract.getQuarter());
-            logs.UserLogsMethod(datasource, logsTags, userlogs, contract.getHcfid(), contract.getContractdate());
-        } catch (SQLException ex) {
+            new UserActivityLogs().UserLogsMethod(datasource, logsTags, userlogs, contract.getHcfid(), contract.getContractdate());
+        } catch (SQLException | IOException ex) {
             result.setMessage(ex.getLocalizedMessage());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -337,13 +378,14 @@ public class InsertMethods {
     }
 
 //---------------------------------------------------------------------------------------------------
-    public ACRGBWSResult INSERTUSER(final DataSource datasource, final User user, final Email email) {
+    public ACRGBWSResult INSERTUSER(
+            final DataSource datasource,
+            final User user,
+            final Session session) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        EmailSender emailsender = new EmailSender();
-        Methods methods = new Methods();
         UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userlogs = utility.UserActivity();
@@ -351,7 +393,7 @@ public class InsertMethods {
                 result.setMessage("USER INFO ID NOT FOUND");
             } else {
                 // ACRGBWSResult validateUsername = methods.ACRUSERNAME(datasource, user.getUsername());
-                if (methods.ACRUSERNAME(datasource, user.getUsername()).isSuccess()) {
+                if (new Methods().ACRUSERNAME(datasource, user.getUsername()).isSuccess()) {
                     if (fm.GETUSERLEVEL(datasource, user.getLeveid()).isSuccess()) {
                         String encryptpword = cryptor.encrypt(user.getUserpassword(), user.getUserpassword(), "ACRGB");
                         CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTUSER(:Message,:Code,:p_levelid,:p_username,:p_userpassword,:p_datecreated,:p_createdby,:p_stats,:p_did)");
@@ -369,8 +411,8 @@ public class InsertMethods {
                             userlogs.setActstatus("SUCCESS");
                             result.setSuccess(true);
                             //SEND PASSCODE TO EMAIL IF SUCCESS
-                            email.setRecipient(user.getUsername());
-                            emailsender.EmailSender(datasource, email, user.getUserpassword().trim());
+//                            email.setRecipient(user.getUsername());
+                            new EmailSender().EmailSender(datasource, user.getUsername(), user.getUserpassword().trim(), session);
                             result.setMessage(getinsertresult.getString("Message"));
                         } else {
                             userlogs.setActstatus("FAILED");
@@ -382,7 +424,7 @@ public class InsertMethods {
                     }
                 } else {
                     userlogs.setActstatus("FAILED");
-                    result.setMessage(methods.ACRUSERNAME(datasource, user.getUsername()).getMessage());
+                    result.setMessage(new Methods().ACRUSERNAME(datasource, user.getUsername()).getMessage());
                 }
             }
             //USER LOGS
@@ -1011,7 +1053,10 @@ public class InsertMethods {
     }
 
     //INSERT USER ACCOUNT BATCH UPLOAD
-    public ACRGBWSResult INSERTUSERACCOUNTBATCHUPLOAD(final DataSource datasource, final UserInfo userinfo, final Email email) {
+    public ACRGBWSResult INSERTUSERACCOUNTBATCHUPLOAD(
+            final DataSource datasource,
+            final UserInfo userinfo,
+            final Session session) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -1050,8 +1095,8 @@ public class InsertMethods {
                     user.setDatecreated(userinfo.getDatecreated());
                     user.setLeveid(userinfo.getRole());
                     //-----------------------------
-                    email.setRecipient(userinfo.getEmail());
-                    ACRGBWSResult insertNewAccount = this.INSERTUSER(datasource, user, email);
+//                    email.setRecipient(userinfo.getEmail());
+                    ACRGBWSResult insertNewAccount = this.INSERTUSER(datasource, user, session);
                     if (insertNewAccount.isSuccess()) {
                         //INSERT USER ROLE
                         ACRGBWSResult getUserUsingEmail = fm.GETACCOUNTUSINGEMAIL(datasource, userinfo.getEmail());

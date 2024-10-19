@@ -276,7 +276,6 @@ public class ACRGBFETCH {
         return result;
     }
 
-//
     @GET
     @Path("GetPro/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -531,6 +530,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------    
+
     @GET
     @Path("GetFacilityUsingProAccountUserID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -553,6 +553,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GETALLFACILITY/{tags}/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -595,6 +596,7 @@ public class ACRGBFETCH {
                                 mblist.add(mb);
                             }
                         }
+
                         if (mblist.size() > 0) {
                             result.setMessage("OK");
                             result.setSuccess(true);
@@ -656,6 +658,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetMBUsingMBID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1048,6 +1051,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
+
     @GET
     @Path("GetContractHistory/{userId}/{requestCode}/{targetData}")//PRO LEVEL AND PHIC LEVEL
     @Produces(MediaType.APPLICATION_JSON)
@@ -1060,12 +1064,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ContractHistoryService ch = new ContractHistoryService();
         ACRGBWSResult GetPayLoad = utility.GetPayload(token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = ch.GetHistoryResult(dataSource, userId, "INACTIVE", requestCode, targetData);
+            ACRGBWSResult getResult = new ContractHistoryService().GetHistoryResult(dataSource, userId, "INACTIVE", requestCode, targetData);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -1267,12 +1270,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ProcessAffiliate pa = new ProcessAffiliate();
         try {
             ACRGBWSResult getResult = methods.GETROLE(dataSource, puserid.trim(), "ACTIVE");
             if (getResult.isSuccess()) {
                 ArrayList<HealthCareFacility> hciList = new ArrayList<>();
-                ACRGBWSResult getRestA = pa.GETAFFILIATE(dataSource, "0", getResult.getResult(), "0");
+                ACRGBWSResult getRestA = new ProcessAffiliate().GETAFFILIATE(dataSource, "0", getResult.getResult(), "0");
                 if (getRestA.isSuccess()) {
                     List<Appellate> affiliateList = Arrays.asList(utility.ObjectMapper().readValue(getRestA.getResult(), Appellate[].class));
                     for (int x = 0; x < affiliateList.size(); x++) {
@@ -1352,6 +1354,27 @@ public class ACRGBFETCH {
                     break;
                 }
             }
+        }
+        return result;
+    }
+
+    @GET
+    @Path("GetApexFacility")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetAllApexFacility(
+            @HeaderParam("token") String token) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult getResult = fetchmethods.ACR_HCF(dataSource);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
         }
         return result;
     }
