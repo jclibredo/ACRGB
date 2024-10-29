@@ -807,7 +807,6 @@ public class Methods {
                         computationList.add(totalcompute);
                         //----------------------------------------------------------
                         //END OF SETTINGS OF FINAL COMPUTATION
-
                         if (computationList.size() > 0) {
                             result.setMessage("OK");
                             result.setResult(utility.ObjectMapper().writeValueAsString(computationList));

@@ -43,7 +43,6 @@ public class ContractMethod {
 
     public ContractMethod() {
     }
-
     private final Utility utility = new Utility();
     private final FetchMethods fm = new FetchMethods();
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");

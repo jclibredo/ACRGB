@@ -15,7 +15,6 @@ import acrgb.structure.ContractDate;
 import acrgb.structure.LogStatus;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Pro;
-import acrgb.structure.Tagging;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserActivity;
@@ -183,55 +182,57 @@ public class InsertMethods {
                     if (countpro == 0) {
                         ACRGBWSResult uaccessid = new Methods().GETROLE(datasource, contract.getCreatedby(), "ACTIVE");
                         //INSERT CONTRACT ID TO ROLE INDEX TABLE
-                        new UpdateMethods().UPDATEROLEINDEX(datasource, uaccessid.getResult().trim(), contract.getHcfid(), contract.getContractdate(), "HCIUPDATE");
-                        //END INSERT CONTRACT ID TO ROLE INDEX TABLE
-                        //INSERT CONTRACT ID TO APPELLATE TABLE
-                        Appellate appellate = new Appellate();
-                        appellate.setAccesscode(contract.getHcfid());
-                        appellate.setStatus("2");
-                        appellate.setConid(contract.getContractdate());
-                        //
-                        new UpdateMethods().UPDATEAPELLATE(datasource, "UPDATE", appellate);
-                        //END INSERT CONTRACT ID TO APPELLATE TABLE
-                    }
-                    //GETLEVEL
-                    if (fm.GETFULLDETAILS(datasource, contract.getCreatedby()).isSuccess()) {
-                        UserInfo userInfo = utility.ObjectMapper().readValue(fm.GETFULLDETAILS(datasource, contract.getCreatedby()).getResult(), UserInfo.class);
-                        if (userInfo.getRole().toUpperCase().trim().equals("PRO")) {
-                            //TAGGING OF FACILITY UNDER SELECTED HPCN
-                            if (hcpncounter > 0) {
-                                for (int i = 0; i < Arrays.asList(new Methods().GETROLEMULITPLE(datasource, contract.getHcfid(), "ACTIVE").getResult().split(",")).size(); i++) {
-                                    if (new ContractMethod().GETCONDATEBYID(datasource, contract.getContractdate()).isSuccess()) {
-                                        ContractDate condate = utility.ObjectMapper().readValue(new ContractMethod().GETCONDATEBYID(datasource, contract.getContractdate()).getResult(), ContractDate.class);
-                                        Tagging tagging = new Tagging();
-                                        tagging.setHcino(Arrays.asList(new Methods().GETROLEMULITPLE(datasource, contract.getHcfid(), "ACTIVE").getResult().split(",")).get(i));
-                                        tagging.setStartdate(condate.getDatefrom());
-                                        tagging.setExpireddate(condate.getDateto());
-                                        tagging.setUsername("ACRGBUSER" + contract.getCreatedby());
-                                        tagging.setEntrydate(contract.getDatecreated());
-                                        tagging.setIssuedate(condate.getDatefrom());
-                                        tagging.setEffdate(condate.getDatefrom());
-                                        new FacilityTagging().TaggFacility(datasource, tagging, "AG");
-                                    }
-                                }
-                            }
-                            //TAGGING OF FACILITY INDIVIDUAL
-                            if (hcicounter > 0) {
-                                if (new ContractMethod().GETCONDATEBYID(datasource, contract.getContractdate()).isSuccess()) {
-                                    ContractDate condate = utility.ObjectMapper().readValue(new ContractMethod().GETCONDATEBYID(datasource, contract.getContractdate()).getResult(), ContractDate.class);
-                                    Tagging tagging = new Tagging();
-                                    tagging.setHcino(contract.getHcfid());
-                                    tagging.setStartdate(condate.getDatefrom());
-                                    tagging.setExpireddate(condate.getDateto());
-                                    tagging.setUsername("ACRGBUSER" + contract.getCreatedby());
-                                    tagging.setEntrydate(contract.getDatecreated());
-                                    tagging.setIssuedate(condate.getDatefrom());
-                                    tagging.setEffdate(condate.getDatefrom());
-                                    new FacilityTagging().TaggFacility(datasource, tagging, "AH,AG");
-                                }
-                            }
+                        if (uaccessid.isSuccess()) {
+                            new UpdateMethods().UPDATEROLEINDEX(datasource, uaccessid.getResult().trim(), contract.getHcfid(), contract.getContractdate(), "HCIUPDATE");
+                            //END INSERT CONTRACT ID TO ROLE INDEX TABLE
+                            //INSERT CONTRACT ID TO APPELLATE TABLE
+                            Appellate appellate = new Appellate();
+                            appellate.setAccesscode(contract.getHcfid());
+                            appellate.setStatus("2");
+                            appellate.setConid(contract.getContractdate());
+                            //
+                            new UpdateMethods().UPDATEAPELLATE(datasource, "UPDATE", appellate);
+                            //END INSERT CONTRACT ID TO APPELLATE TABLE
                         }
                     }
+                    //GETLEVEL
+//                    if (fm.GETFULLDETAILS(datasource, contract.getCreatedby()).isSuccess()) {
+//                        UserInfo userInfo = utility.ObjectMapper().readValue(fm.GETFULLDETAILS(datasource, contract.getCreatedby()).getResult(), UserInfo.class);
+//                        if (userInfo.getRole().toUpperCase().trim().equals("PRO")) {
+//                            //TAGGING OF FACILITY UNDER SELECTED HPCN
+//                            if (hcpncounter > 0) {
+//                                for (int i = 0; i < Arrays.asList(new Methods().GETROLEMULITPLE(datasource, contract.getHcfid(), "ACTIVE").getResult().split(",")).size(); i++) {
+//                                    if (new ContractMethod().GETCONDATEBYID(datasource, contract.getContractdate()).isSuccess()) {
+//                                        ContractDate condate = utility.ObjectMapper().readValue(new ContractMethod().GETCONDATEBYID(datasource, contract.getContractdate()).getResult(), ContractDate.class);
+//                                        Tagging tagging = new Tagging();
+//                                        tagging.setHcino(Arrays.asList(new Methods().GETROLEMULITPLE(datasource, contract.getHcfid(), "ACTIVE").getResult().split(",")).get(i));
+//                                        tagging.setStartdate(condate.getDatefrom());
+//                                        tagging.setExpireddate(condate.getDateto());
+//                                        tagging.setUsername("ACRGBUSER" + contract.getCreatedby());
+//                                        tagging.setEntrydate(contract.getDatecreated());
+//                                        tagging.setIssuedate(condate.getDatefrom());
+//                                        tagging.setEffdate(condate.getDatefrom());
+//                                        new FacilityTagging().TaggFacility(datasource, tagging, "AG");
+//                                    }
+//                                }
+//                            }
+//                            //TAGGING OF FACILITY INDIVIDUAL
+//                            if (hcicounter > 0) {
+//                                if (new ContractMethod().GETCONDATEBYID(datasource, contract.getContractdate()).isSuccess()) {
+//                                    ContractDate condate = utility.ObjectMapper().readValue(new ContractMethod().GETCONDATEBYID(datasource, contract.getContractdate()).getResult(), ContractDate.class);
+//                                    Tagging tagging = new Tagging();
+//                                    tagging.setHcino(contract.getHcfid());
+//                                    tagging.setStartdate(condate.getDatefrom());
+//                                    tagging.setExpireddate(condate.getDateto());
+//                                    tagging.setUsername("ACRGBUSER" + contract.getCreatedby());
+//                                    tagging.setEntrydate(contract.getDatecreated());
+//                                    tagging.setIssuedate(condate.getDatefrom());
+//                                    tagging.setEffdate(condate.getDatefrom());
+//                                    new FacilityTagging().TaggFacility(datasource, tagging, "AH,AG");
+//                                }
+//                            }
+//                        }
+//                    }
 
                     result.setMessage(getinsertresult.getString("Message"));
                     result.setSuccess(true);
@@ -244,7 +245,7 @@ public class InsertMethods {
             userlogs.setActby(contract.getCreatedby());
             userlogs.setActdetails("Amount :" + contract.getAmount() + "| SB :" + contract.getSb() + "| Comitted volume:" + contract.getComittedClaimsVol() + " " + contract.getQuarter());
             new UserActivityLogs().UserLogsMethod(datasource, logsTags, userlogs, contract.getHcfid(), contract.getContractdate());
-        } catch (SQLException | IOException ex) {
+        } catch (SQLException ex) {
             result.setMessage(ex.getLocalizedMessage());
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }

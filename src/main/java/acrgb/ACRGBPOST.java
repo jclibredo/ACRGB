@@ -94,7 +94,7 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -119,7 +119,7 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -136,12 +136,14 @@ public class ACRGBPOST {
     @Path("INSERTCONTRACT")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTCONTRACT(@HeaderParam("token") String token, final Contract contract) {
+    public ACRGBWSResult INSERTCONTRACT(
+            @HeaderParam("token") String token,
+            final Contract contract) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -164,7 +166,7 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -187,7 +189,7 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -210,7 +212,7 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -234,7 +236,7 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -293,7 +295,7 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -315,7 +317,7 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -337,7 +339,7 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -363,7 +365,7 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -406,7 +408,7 @@ public class ACRGBPOST {
         result.setSuccess(false);
         Collection errorList = new ArrayList<>();
         try {
-            ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+            ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
             if (!GetPayLoad.isSuccess()) {
                 result.setMessage(GetPayLoad.getMessage());
             } else {
@@ -546,7 +548,7 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -624,7 +626,7 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {

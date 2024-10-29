@@ -75,7 +75,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -100,7 +100,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token.trim());
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -193,7 +193,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -217,7 +217,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -240,7 +240,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -264,7 +264,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -286,7 +286,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setSuccess(false);
         result.setResult("");
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -308,7 +308,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -336,7 +336,7 @@ public class ACRGBFETCH {
         result.setResult("");
         result.setSuccess(false);
         if (utility.IsValidDate(datefrom) && utility.IsValidDate(dateto)) {
-            ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+            ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
             if (!GetPayLoad.isSuccess()) {
                 result.setMessage(GetPayLoad.getMessage());
             } else {
@@ -377,7 +377,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -402,7 +402,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -427,7 +427,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -449,7 +449,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -472,7 +472,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -518,7 +518,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -541,7 +541,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -566,7 +566,7 @@ public class ACRGBFETCH {
         result.setResult("");
         result.setSuccess(false);
         try {
-            ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+            ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
             if (!GetPayLoad.isSuccess()) {
                 result.setMessage(GetPayLoad.getMessage());
             } else {
@@ -627,7 +627,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -669,7 +669,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -748,7 +748,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -822,7 +822,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -845,7 +845,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -867,7 +867,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -891,7 +891,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -916,7 +916,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -960,7 +960,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -984,7 +984,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -1001,7 +1001,7 @@ public class ACRGBFETCH {
     @Path("ValidateToken")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult PostEmailCredentials(@HeaderParam("token") String token) {
-        ACRGBWSResult result = utility.GetPayload(token);
+        ACRGBWSResult result = utility.GetPayload(dataSource,token);
         return result;
     }
 
@@ -1017,7 +1017,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -1064,7 +1064,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -1160,7 +1160,7 @@ public class ACRGBFETCH {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("OK");
         result.setSuccess(true);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -1223,7 +1223,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         try {
             if (!GetPayLoad.isSuccess()) {
                 result.setMessage(GetPayLoad.getMessage());
@@ -1321,7 +1321,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -1367,7 +1367,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {

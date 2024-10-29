@@ -220,7 +220,6 @@ public class UserActivityLogs {
     }
 
     public String GetSubjectData(final DataSource dataSource, final String tags, final String id) {
-        Methods m = new Methods();
         String result = "";
         try {
             switch (tags.toUpperCase().trim()) {
@@ -250,8 +249,8 @@ public class UserActivityLogs {
                     break;
                 }
                 case "PRO": { //PRO CODE
-                    if (m.GetProWithPROID(dataSource, id.trim()).isSuccess()) {
-                        Pro pro = utility.ObjectMapper().readValue(m.GetProWithPROID(dataSource, id.trim()).getResult(), Pro.class);
+                    if (new Methods().GetProWithPROID(dataSource, id.trim()).isSuccess()) {
+                        Pro pro = utility.ObjectMapper().readValue(new Methods().GetProWithPROID(dataSource, id.trim()).getResult(), Pro.class);
                         result = pro.getProname();
                     } else {
                         result = "false";
@@ -259,8 +258,8 @@ public class UserActivityLogs {
                     break;
                 }
                 case "HCPN": { //HCPN CODE
-                    if (m.GETMBWITHID(dataSource, id).isSuccess()) {
-                        ManagingBoard mb = utility.ObjectMapper().readValue(m.GETMBWITHID(dataSource, id).getResult(), ManagingBoard.class);
+                    if (new Methods().GETMBWITHID(dataSource, id).isSuccess()) {
+                        ManagingBoard mb = utility.ObjectMapper().readValue(new Methods().GETMBWITHID(dataSource, id).getResult(), ManagingBoard.class);
                         result = mb.getMbname();
                     } else {
                         result = "false";

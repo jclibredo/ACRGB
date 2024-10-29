@@ -56,7 +56,7 @@ public class EmailSender {
                     result.setMessage(uemail + " User email not found");
                 } else {
                     String newPass = utility.GenerateRandomPassword(10);
-                    //message.setContent(utility.EmailSenderContent(uemail.trim(), newPass), "text/html");
+                    message.setContent(utility.EmailSenderContent(uemail.trim(), newPass), "text/html");
                     Transport.send(message);
                     ACRGBWSResult updatepassword = new UpdateMethods().UPDATEPASSCODE(dataSource, uemail.trim(), newPass);
                     if (updatepassword.isSuccess()) {

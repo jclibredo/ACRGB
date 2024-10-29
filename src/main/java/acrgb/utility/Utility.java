@@ -5,6 +5,7 @@
  */
 package acrgb.utility;
 
+import acrgb.method.Methods;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Contract;
 import acrgb.structure.DateSettings;
@@ -51,6 +52,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.sql.DataSource;
 import okhttp3.OkHttpClient;
 
 /**
@@ -106,9 +108,9 @@ public class Utility {
     public ACRGBWSResult ACRGBWSResult() {
         return new ACRGBWSResult();
     }
-    
-    public Date GetCurrentDate(){
-      return new java.util.Date();
+
+    public Date GetCurrentDate() {
+        return new java.util.Date();
     }
 
     public OkHttpClient OkHttpClient() {
@@ -394,7 +396,6 @@ public class Utility {
 //
 //        return EmailSentTemplate;
 //    }
-
     //GENERATE TOKEN METHODS
     public String GenerateToken(String username, String password) {
         SignatureAlgorithm algorithm = SignatureAlgorithm.HS256;
@@ -460,7 +461,9 @@ public class Utility {
         return result;
     }
 
-    public ACRGBWSResult GetPayload(String token) {
+    public ACRGBWSResult GetPayload(
+            final DataSource dataSource,
+            final String token) {
         ACRGBWSResult result = this.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -471,12 +474,21 @@ public class Utility {
             } else {
                 if (this.ValidateToken(token) == true) {
                     Claims claims = Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(CIPHERKEY)).parseClaimsJws(token).getBody();
-                    ACRGBPayload payload = this.ACRGBPayload();
-                    payload.setCode1(this.DecryptString((String) claims.get("Code1")));
-                    payload.setCode2(this.DecryptString((String) claims.get("Code2")));
-                    result.setSuccess(true);
+                    if (!this.isJWTExpired(claims)) {
+                        ACRGBPayload payload = this.ACRGBPayload();
+                        payload.setCode1(this.DecryptString((String) claims.get("Code1")));
+                        payload.setCode2(this.DecryptString((String) claims.get("Code2")));
+                        payload.setExp(claims.getExpiration());
+                        if (new Methods().ACRUSERLOGIN(dataSource, this.DecryptString((String) claims.get("Code1")).trim(), this.DecryptString((String) claims.get("Code2")).trim()).isSuccess()) {
+                            result.setSuccess(true);
+                        } else {
+                            result.setMessage("Unrecognized User");
+                        }
+                    } else {
+                        result.setMessage("Token is expired");
+                    }
                 } else {
-                    result.setMessage("Invalid Token or Token Is Expired");
+                    result.setMessage("Invalid Token");
                 }
             }
         } catch (ExpiredJwtException | MalformedJwtException | SignatureException | UnsupportedJwtException | IllegalArgumentException ex) {
@@ -487,15 +499,16 @@ public class Utility {
         return result;
     }
 
-//    public boolean isJWTExpired(Claims claims) {
-//        if (claims.getExpiration() == null) {
-//            return true;
-//        } else {
-//            Date expiresAt = claims.getExpiration();
-//            return expiresAt.before(new Date());
-//        }
-//    }
+    public boolean isJWTExpired(Claims claims) {
+        if (claims.getExpiration() == null) {
+            return true;
+        } else {
+            Date expiresAt = claims.getExpiration();
+            return expiresAt.before(new Date());
+        }
+    }
 //CREATE 2FA CODE
+
     public String Create2FACode() {
         int randnums = 0;
         for (int i = 0; i < 1; i++) {

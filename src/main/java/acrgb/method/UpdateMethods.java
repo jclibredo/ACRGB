@@ -201,7 +201,6 @@ public class UpdateMethods {
         }
         return result;
     }
-
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEUSERLEVEL(final DataSource datasource, UserLevel userlevel) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -243,7 +242,6 @@ public class UpdateMethods {
         }
         return result;
     }
-
     //----------------------------------------------------------------------------------------------------------
 //    public ACRGBWSResult FACILITYTAGGING(final DataSource datasource, HealthCareFacility hcf) {
 //        ACRGBWSResult result = utility.ACRGBWSResult();
