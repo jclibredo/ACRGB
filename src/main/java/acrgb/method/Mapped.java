@@ -26,14 +26,13 @@ public class Mapped {
 
     private final Utility utility = new Utility();
 
-    public ACRGBWSResult GetHistoryResult(final DataSource dataSource) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setSuccess(false);
-        result.setResult("");
-
-        return result;
-    }
+//    public ACRGBWSResult GetHistoryResult(final DataSource dataSource) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setSuccess(false);
+//        result.setResult("");
+//        return result;
+//    }
 
     public ACRGBWSResult GETMAXCONDATE(final DataSource dataSource, final String puserid) {
         ACRGBWSResult result = utility.ACRGBWSResult();

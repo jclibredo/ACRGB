@@ -42,8 +42,6 @@ public class UpdateMethods {
     public UpdateMethods() {
     }
     private final Utility utility = new Utility();
-    private final FetchMethods fm = new FetchMethods();
-    private final InsertMethods im = new InsertMethods();
 
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEASSETS(final DataSource datasource, Assets assets) {
@@ -54,7 +52,7 @@ public class UpdateMethods {
         try (Connection connection = datasource.getConnection()) {
             UserActivity userLogs = utility.UserActivity();
 //             String oldData = "";
-//            if (fm.ge) {
+//            if (new FetchMethods().ge) {
 //                Assets assets = utility.ObjectMapper().readValue(src, Assets.class);
 //
 //            }
@@ -92,15 +90,13 @@ public class UpdateMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        UserActivityLogs logs = new UserActivityLogs();
-        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
             String oldData = "";
-            if (fm.GETCONTRACTCONID(datasource, contract.getConid(), "ACTIVE").isSuccess()) {
-                Contract con = utility.ObjectMapper().readValue(fm.GETCONTRACTCONID(datasource, contract.getConid(), "ACTIVE").getResult(), Contract.class);
+            if (new FetchMethods().GETCONTRACTCONID(datasource, contract.getConid(), "ACTIVE").isSuccess()) {
+                Contract con = utility.ObjectMapper().readValue(new FetchMethods().GETCONTRACTCONID(datasource, contract.getConid(), "ACTIVE").getResult(), Contract.class);
                 oldData = " Amount: " + con.getAmount() + " Volume :" + con.getComittedClaimsVol() + " Reference :" + con.getTranscode();
             } else {
-                oldData = fm.GETCONTRACTCONID(datasource, contract.getConid(), "ACTIVE").getMessage();
+                oldData = new FetchMethods().GETCONTRACTCONID(datasource, contract.getConid(), "ACTIVE").getMessage();
             }
             String logsTags = "";
             UserActivity userlogs = utility.UserActivity();
@@ -120,11 +116,11 @@ public class UpdateMethods {
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
                 result.setSuccess(true);
                 result.setMessage("OK");
-                ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, contract.getHcfid());
+                ACRGBWSResult getSubject = new FetchMethods().GETFACILITYID(datasource, contract.getHcfid());
                 if (getSubject.isSuccess()) {
                     logsTags = "EDIT-CONTRACT-HCI";
                 } else {
-                    ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, contract.getHcfid());
+                    ACRGBWSResult getSubjectA = new Methods().GETMBWITHID(datasource, contract.getHcfid());
                     if (getSubjectA.isSuccess()) {
                         logsTags = "EDIT-CONTRACT-HCPN";
                     } else {
@@ -134,11 +130,11 @@ public class UpdateMethods {
                 userlogs.setActstatus("SUCCESS");
             } else {
                 userlogs.setActstatus("FAILED");
-                ACRGBWSResult getSubject = fm.GETFACILITYID(datasource, contract.getHcfid());
+                ACRGBWSResult getSubject = new FetchMethods().GETFACILITYID(datasource, contract.getHcfid());
                 if (getSubject.isSuccess()) {
                     logsTags = "EDIT-CONTRACT-HCI";
                 } else {
-                    ACRGBWSResult getSubjectA = methods.GETMBWITHID(datasource, contract.getHcfid());
+                    ACRGBWSResult getSubjectA = new Methods().GETMBWITHID(datasource, contract.getHcfid());
                     if (getSubjectA.isSuccess()) {
                         logsTags = "EDIT-CONTRACT-HCPN";
                     } else {
@@ -151,7 +147,7 @@ public class UpdateMethods {
             userlogs.setActdetails("Old " + oldData + " New Data Amount :" + contract.getAmount() + "| SB :"
                     + contract.getSb() + "| Comitted volume:" + contract.getComittedClaimsVol()
                     + " " + contract.getQuarter() + " " + getinsertresult.getString("Message").equals("SUCC"));
-            logs.UserLogsMethod(datasource, logsTags, userlogs, contract.getHcfid(), contract.getContractdate());
+            new UserActivityLogs().UserLogsMethod(datasource, logsTags, userlogs, contract.getHcfid(), contract.getContractdate());
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -165,15 +161,14 @@ public class UpdateMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             String oldData = "";
             UserActivity userlogs = utility.UserActivity();
-            if (fm.ACR_TRANCHWITHID(datasource, tranch.getTranchid()).isSuccess()) {
-                Tranch tranche = utility.ObjectMapper().readValue(fm.GETUSERLEVEL(datasource, tranch.getTranchid()).getResult(), Tranch.class);
+            if (new FetchMethods().ACR_TRANCHWITHID(datasource, tranch.getTranchid()).isSuccess()) {
+                Tranch tranche = utility.ObjectMapper().readValue(new FetchMethods().GETUSERLEVEL(datasource, tranch.getTranchid()).getResult(), Tranch.class);
                 oldData = " Value:" + tranche.getPercentage() + " Type: " + tranche.getTranchtype();
             } else {
-                oldData = fm.ACR_TRANCHWITHID(datasource, tranch.getTranchid()).getMessage();
+                oldData = new FetchMethods().ACR_TRANCHWITHID(datasource, tranch.getTranchid()).getMessage();
             }
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATETRANCH(:Message,:Code,:p_tranchid,:p_tranchtype,:p_percentage)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -194,28 +189,28 @@ public class UpdateMethods {
             }
             userlogs.setActby(tranch.getCreatedby());
             userlogs.setActdetails(" Data before :" + oldData + " Data after Type: " + tranch.getTranchtype() + " Value: " + tranch.getPercentage() + " | " + getinsertresult.getString("Message"));
-            logs.UserLogsMethod(datasource, "EDIT-TRANCHE", userlogs, "0", "0");
+            new UserActivityLogs().UserLogsMethod(datasource, "EDIT-TRANCHE", userlogs, "0", "0");
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
+
     //----------------------------------------------------------------------------------------------------------
     public ACRGBWSResult UPDATEUSERLEVEL(final DataSource datasource, UserLevel userlevel) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        UserActivityLogs logs = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             String oldData = "";
             UserActivity userlogs = utility.UserActivity();
-            if (fm.GETUSERLEVEL(datasource, userlevel.getLevelid()).isSuccess()) {
-                UserLevel userlev = utility.ObjectMapper().readValue(fm.GETUSERLEVEL(datasource, userlevel.getLevelid()).getResult(), UserLevel.class);
+            if (new FetchMethods().GETUSERLEVEL(datasource, userlevel.getLevelid()).isSuccess()) {
+                UserLevel userlev = utility.ObjectMapper().readValue(new FetchMethods().GETUSERLEVEL(datasource, userlevel.getLevelid()).getResult(), UserLevel.class);
                 oldData = "Level name :" + userlev.getLevname() + " Details :" + userlev.getLevdetails();
             } else {
-                oldData = fm.GETUSERLEVEL(datasource, userlevel.getLevelid()).getMessage();
+                oldData = new FetchMethods().GETUSERLEVEL(datasource, userlevel.getLevelid()).getMessage();
             }
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERLEVEL(:Message,:Code,:p_levelid,"
                     + ":p_levdetails)");
@@ -235,7 +230,7 @@ public class UpdateMethods {
             }
             userlogs.setActby(userlevel.getCreatedby());
             userlogs.setActdetails(" Data before :" + oldData + " Data after Name: " + userlevel.getLevname() + " Details: " + userlevel.getLevdetails() + " | " + getinsertresult.getString("Message"));
-            logs.UserLogsMethod(datasource, "EDIT-USER-LEVEL", userlogs, "0", "0");
+            new UserActivityLogs().UserLogsMethod(datasource, "EDIT-USER-LEVEL", userlogs, "0", "0");
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -299,7 +294,7 @@ public class UpdateMethods {
                         contract.getRemarks(),
                         contract.getEnddate());
                 if (rest.isSuccess()) {
-                    ACRGBWSResult getCon = fm.GETCONTRACTCONID(datasource, contract.getConid(), "INACTIVE");
+                    ACRGBWSResult getCon = new FetchMethods().GETCONTRACTCONID(datasource, contract.getConid(), "INACTIVE");
                     if (getCon.isSuccess()) {
                         Contract updatecontract = utility.ObjectMapper().readValue(getCon.getResult(), Contract.class);
                         contractHolder = updatecontract.getHcfid();
@@ -309,7 +304,7 @@ public class UpdateMethods {
                                 //--------------------------------------------------
                                 List<String> hciList = Arrays.asList(restA.getResult().split(","));
                                 for (int x = 0; x < hciList.size(); x++) {
-                                    ACRGBWSResult getConA = fm.GETCONTRACTCONID(datasource, hciList.get(x), "ACTIVE");
+                                    ACRGBWSResult getConA = new FetchMethods().GETCONTRACTCONID(datasource, hciList.get(x), "ACTIVE");
                                     if (getConA.isSuccess()) {
                                         Contract updatecontracts = utility.ObjectMapper().readValue(getCon.getResult(), Contract.class);
                                         //-------------------------------------------
@@ -441,10 +436,8 @@ public class UpdateMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        UserActivityLogs logs = new UserActivityLogs();
-        Methods methods = new Methods();
         try (Connection connection = datasource.getConnection()) {
-            ACRGBWSResult getOldMBData = methods.GETMBUSINGMBID(datasource, mb.getMbid());
+            ACRGBWSResult getOldMBData = new Methods().GETMBUSINGMBID(datasource, mb.getMbid());
             if (getOldMBData.isSuccess()) {
                 ManagingBoard mbOld = utility.ObjectMapper().readValue(getOldMBData.getResult(), ManagingBoard.class);
                 String oldData = mbOld.getAddress() + "|" + mbOld.getMbname() + "|" + mbOld.getBankaccount() + "|" + mbOld.getBankname() + "|" + mbOld.getControlnumber();
@@ -471,7 +464,7 @@ public class UpdateMethods {
                 }
                 userlogs.setActdetails("NEW DATA BANK:" + mb.getBankname() + " ACCOUNT:" + mb.getBankaccount() + " NAME:" + mb.getMbname() + " ADDRESS:" + mb.getAddress() + " CONTROL NUMBER:" + mb.getControlnumber() + " - " + getinsertresult.getString("Message"));
                 userlogs.setActby(mb.getCreatedby());
-                logs.UserLogsMethod(datasource, logsTags, userlogs, mb.getMbid(), oldData);
+                new UserActivityLogs().UserLogsMethod(datasource, logsTags, userlogs, mb.getMbid(), oldData);
             } else {
                 result.setMessage(getOldMBData.getMessage());
             }
@@ -497,7 +490,7 @@ public class UpdateMethods {
             getinsertresult.setString("ustats", "3");
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
-                ACRGBWSResult insertLogsStatus = im.INSERTSTATSLOG(datasource, logstats);
+                ACRGBWSResult insertLogsStatus = new InsertMethods().INSERTSTATSLOG(datasource, logstats);
                 if (insertLogsStatus.isSuccess()) {
                     result.setMessage(insertLogsStatus.getMessage());
                     result.setSuccess(true);
@@ -541,14 +534,14 @@ public class UpdateMethods {
                     acree.setDatecreated(mb.getDatecreated());
                     acree.setDatefrom(mb.getLicensedatefrom());
                     acree.setDateto(mb.getLicensedateto());
-                    ACRGBWSResult accreResult = im.INSERTACCREDITAION(datasource, acree);
+                    ACRGBWSResult accreResult = new InsertMethods().INSERTACCREDITAION(datasource, acree);
                     //MAPPING LOGSTATUS VALUE
                     LogStatus logstats = new LogStatus();
                     logstats.setAccount(mb.getControlnumber());
                     logstats.setActby(mb.getCreatedby());
                     logstats.setDatechange(mb.getDatecreated());
                     logstats.setStatus("2");
-                    ACRGBWSResult logsResult = im.INSERTSTATSLOG(datasource, logstats);
+                    ACRGBWSResult logsResult = new InsertMethods().INSERTSTATSLOG(datasource, logstats);
                     if (logsResult.isSuccess() && accreResult.isSuccess()) {
                         result.setMessage(logsResult.getMessage() + " , " + accreResult.getMessage());
                         result.setSuccess(true);
@@ -674,9 +667,8 @@ public class UpdateMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        Cryptor cryptor = new Cryptor();
         try (Connection connection = datasource.getConnection()) {
-            String encryptpword = cryptor.encrypt(ppasscode, ppasscode, "ACRGB");
+            String encryptpword = new Cryptor().encrypt(ppasscode, ppasscode, "ACRGB");
             CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSCODES(:Message,:Code,:pusername,:ppasscode)");
             statement.registerOutParameter("Message", OracleTypes.VARCHAR);
             statement.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -778,7 +770,6 @@ public class UpdateMethods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        UserActivityLogs logs = new UserActivityLogs();
         UserActivity userLogs = utility.UserActivity();
         try (Connection connection = datasource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERINFOBYDID(:Message,:Code,"
@@ -799,7 +790,7 @@ public class UpdateMethods {
             userLogs.setActdetails(uemail + " Change Email " + getinsertresult.getString("Message"));
             //USER LOGS
             userLogs.setActby(createdby);
-            logs.UserLogsMethod(datasource, "EDIT-USERINFO-EMAIL", userLogs, udid, "0");
+            new UserActivityLogs().UserLogsMethod(datasource, "EDIT-USERINFO-EMAIL", userLogs, udid, "0");
             //USER LOGS
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
@@ -911,8 +902,8 @@ public class UpdateMethods {
 //            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.DELETEDATA(:Message,:Code,"
 //                    + ":p_tags,:p_dataid)");
 //            if (tags.toUpperCase().trim().equals("USER")) {
-//                if (fm.GETUSERBYUSERID(datasource, dataid).isSuccess()) {
-//                    User user = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(datasource, dataid,"").getResult(), User.class);
+//                if (new FetchMethods().GETUSERBYUSERID(datasource, dataid).isSuccess()) {
+//                    User user = utility.ObjectMapper().readValue(new FetchMethods().GETUSERBYUSERID(datasource, dataid,"").getResult(), User.class);
 //                    statement.registerOutParameter("Message", OracleTypes.VARCHAR);
 //                    statement.registerOutParameter("Code", OracleTypes.INTEGER);
 //                    statement.setString("p_tags", "USERDETAILS".trim().toUpperCase());
@@ -964,7 +955,6 @@ public class UpdateMethods {
 //        }
 //        return result;
 //    }
-
     // UPDATE USER FOR 2FA CREDENTIALS
     public ACRGBWSResult UPDATEMAPEDCONTAGGING(final DataSource datasource,
             final String createdby,

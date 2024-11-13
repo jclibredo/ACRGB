@@ -14,6 +14,8 @@ import lombok.Data;
 @Data
 public class HealthCareFacility {
 
+    public HealthCareFacility() {
+    }
     private String hcfid;
     private String hcfname;
     private String hcfaddress;
@@ -29,4 +31,5 @@ public class HealthCareFacility {
     private String baseamount;
     private String remainingbalance;
     private String hcilevel;
+    private String street;
 }

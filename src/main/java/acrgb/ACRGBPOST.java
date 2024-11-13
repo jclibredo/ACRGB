@@ -70,10 +70,6 @@ public class ACRGBPOST {
     private DataSource dataSource;
 
     private final Utility utility = new Utility();
-    private final InsertMethods insertmethods = new InsertMethods();
-    private final Methods methods = new Methods();
-    private final FetchMethods fm = new FetchMethods();
-    private final BookingMethod bm = new BookingMethod();
 
     /**
      * Retrieves representation of an instance of acrgb.ACRGB
@@ -98,7 +94,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.INSERTASSETS(dataSource, assets);
+            ACRGBWSResult insertresult = new InsertMethods().INSERTASSETS(dataSource, assets);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -123,7 +119,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.INSERTHCPN(dataSource, mb);
+            ACRGBWSResult insertresult = new InsertMethods().INSERTHCPN(dataSource, mb);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -147,7 +143,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.INSERTCONTRACT(dataSource, contract);
+            ACRGBWSResult insertresult = new InsertMethods().INSERTCONTRACT(dataSource, contract);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -170,7 +166,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.INSERTTRANCH(dataSource, tranch);
+            ACRGBWSResult insertresult = new InsertMethods().INSERTTRANCH(dataSource, tranch);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -193,7 +189,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.INSERTUSERDETAILS(dataSource, userinfo);
+            ACRGBWSResult insertresult = new InsertMethods().INSERTUSERDETAILS(dataSource, userinfo);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -216,7 +212,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.INSERTUSERLEVEL(dataSource, userlevel);
+            ACRGBWSResult insertresult = new InsertMethods().INSERTUSERLEVEL(dataSource, userlevel);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -240,7 +236,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.INSERTUSER(dataSource, user, session);
+            ACRGBWSResult insertresult = new InsertMethods().INSERTUSER(dataSource, user, session);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -255,7 +251,7 @@ public class ACRGBPOST {
     public ACRGBWSResult UserLogin(final User user) {
         //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = methods.ACRUSERLOGIN(dataSource,
+        ACRGBWSResult insertresult = new Methods().ACRUSERLOGIN(dataSource,
                 user.getUsername(),
                 user.getUserpassword());
         result.setMessage(insertresult.getMessage());
@@ -299,7 +295,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = methods.InsertMBRequest(dataSource, mbrequestsummry);
+            ACRGBWSResult insertresult = new Methods().InsertMBRequest(dataSource, mbrequestsummry);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -321,7 +317,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.INSEROLEINDEX(dataSource, userroleindex);
+            ACRGBWSResult insertresult = new InsertMethods().INSEROLEINDEX(dataSource, userroleindex);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -343,7 +339,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.INSERTAPPELLATE(dataSource,
+            ACRGBWSResult insertresult = new InsertMethods().INSERTAPPELLATE(dataSource,
                     userroleindex.getUserid(), //SONGLE
                     userroleindex.getAccessid(),//MULTIPLE
                     userroleindex.getCreatedby(),
@@ -369,7 +365,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.INSERTCONDATE(dataSource, contractdate);
+            ACRGBWSResult insertresult = new InsertMethods().INSERTCONDATE(dataSource, contractdate);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -423,7 +419,7 @@ public class ACRGBPOST {
                     //CHECK USERNAME
                     if (!utility.isValidEmail(userinfo.get(x).getEmail().trim())) {
                         error.add("| EMAIL IS INVALID");
-                    } else if (!methods.ACRUSERNAME(dataSource, userinfo.get(x).getEmail().trim()).isSuccess()) {
+                    } else if (!new Methods().ACRUSERNAME(dataSource, userinfo.get(x).getEmail().trim()).isSuccess()) {
                         error.add(userinfo.get(x).getEmail().trim() + " DUPLICATE");
                     } else if (userinfo.get(x).getContact().trim().isEmpty()) {
                         error.add("| EMAIL IS REQUIRED");
@@ -451,25 +447,25 @@ public class ACRGBPOST {
                         error.add("| DESIGNATION IS REQUIRED");
                     }
                     //VALIDATE USER LEVEL
-                    if (!fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().toUpperCase().trim()).isSuccess()) {
+                    if (!new FetchMethods().GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().toUpperCase().trim()).isSuccess()) {
                         error.add("| ROLE NOT VALID");
                     } else {
-                        UserLevel level = utility.ObjectMapper().readValue(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().toUpperCase().trim()).getResult(), UserLevel.class);
+                        UserLevel level = utility.ObjectMapper().readValue(new FetchMethods().GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().toUpperCase().trim()).getResult(), UserLevel.class);
                         switch (level.getLevname().toLowerCase().trim()) {
                             case "PRO": {
-                                if (!methods.GetProWithPROID(dataSource, userinfo.get(x).getDesignation().toUpperCase().trim()).isSuccess()) {
+                                if (!new Methods().GetProWithPROID(dataSource, userinfo.get(x).getDesignation().toUpperCase().trim()).isSuccess()) {
                                     error.add("| PRO CODE " + userinfo.get(x).getDesignation() + " NOT VALID");
                                 }
                                 break;
                             }
                             case "HCPN": {
-                                if (!methods.GETMBWITHID(dataSource, userinfo.get(x).getDesignation().trim().toUpperCase()).isSuccess()) {
+                                if (!new Methods().GETMBWITHID(dataSource, userinfo.get(x).getDesignation().trim().toUpperCase()).isSuccess()) {
                                     error.add("| HCPN CODE " + userinfo.get(x).getDesignation() + " NOT VALID");
                                 }
                                 break;
                             }
                             case "HCF": {
-                                if (!fm.GETFACILITYID(dataSource, userinfo.get(x).getDesignation().toUpperCase().trim()).isSuccess()) {
+                                if (!new FetchMethods().GETFACILITYID(dataSource, userinfo.get(x).getDesignation().toUpperCase().trim()).isSuccess()) {
                                     error.add("| HCF CODE NOT " + userinfo.get(x).getDesignation() + " VALID");
                                 }
                                 break;
@@ -491,23 +487,23 @@ public class ACRGBPOST {
                         userInfo.setLastname(userinfo.get(x).getLastname());
                         switch (userinfo.get(x).getRole().trim().toUpperCase()) {
                             case "HCI": {
-                                userInfo.setRole(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().trim().toUpperCase()).getMessage());
+                                userInfo.setRole(new FetchMethods().GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().trim().toUpperCase()).getMessage());
                                 break;
                             }
                             case "HCPN": {
-                                userInfo.setRole(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().trim().toUpperCase()).getMessage());
+                                userInfo.setRole(new FetchMethods().GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().trim().toUpperCase()).getMessage());
                                 break;
                             }
                             case "PRO": {
-                                userInfo.setRole(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().trim().toUpperCase()).getMessage());
+                                userInfo.setRole(new FetchMethods().GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().trim().toUpperCase()).getMessage());
                                 break;
                             }
                             default: {
                                 break;
                             }
                         }
-                        if (fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).isSuccess()) {
-                            UserLevel level = utility.ObjectMapper().readValue(fm.GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().trim().toUpperCase()).getResult(), UserLevel.class);
+                        if (new FetchMethods().GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole()).isSuccess()) {
+                            UserLevel level = utility.ObjectMapper().readValue(new FetchMethods().GETLEVELBYLEVNAME(dataSource, userinfo.get(x).getRole().trim().toUpperCase()).getResult(), UserLevel.class);
                             if (level.getLevname().toUpperCase().equals("PRO")) {
                                 userInfo.setDesignation("2024" + userinfo.get(x).getDesignation().trim().toUpperCase());
                             } else {
@@ -515,7 +511,7 @@ public class ACRGBPOST {
                             }
                         }
 //                        email.setEmailto(userinfo.get(x).getEmail());
-                        ACRGBWSResult InsertCleanData = insertmethods.INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo, session);
+                        ACRGBWSResult InsertCleanData = new InsertMethods().INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo, session);
                         if (!InsertCleanData.isSuccess()) {
                             error.add("| LINE NUMBER[" + userinfo.get(x).getId() + "]");
                             error.add(InsertCleanData.getMessage());
@@ -553,7 +549,7 @@ public class ACRGBPOST {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             // CHECK PROCESS ALL ENDED CONTRACT             
-            ACRGBWSResult BookingResult = bm.PROCESSENDEDCONTRACT(dataSource, book, "INACTIVE");
+            ACRGBWSResult BookingResult = new BookingMethod().PROCESSENDEDCONTRACT(dataSource, book, "INACTIVE");
             result.setMessage(BookingResult.getMessage());
             result.setResult(BookingResult.getResult());
             result.setSuccess(BookingResult.isSuccess());
@@ -630,12 +626,61 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult remapRsult = insertmethods.INSEROLEINDEX(dataSource, roleIndex);
+            ACRGBWSResult remapRsult = new InsertMethods().INSEROLEINDEX(dataSource, roleIndex);
             result.setMessage(remapRsult.getMessage());
             result.setResult(remapRsult.getResult());
             result.setSuccess(remapRsult.isSuccess());
         }
         return result;
     }
+
+    //ACCOUNTING TOKEN AREA
+//    @POST
+//    @Path("AccountingToken")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult AccountingToken(
+//            @HeaderParam("phicusername") String phicusername,
+//            @HeaderParam("phicpassword") String phicpassword) {
+//        //TODO return proper representation object
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        String token = utility.GenerateToken(phicusername, phicpassword);
+//        result.setResult(token);
+//        result.setSuccess(true);
+//        return result;
+//    }
+    //ACCOUNTING LGOIN AREA
+//    @POST
+//    @Path("AccountingUserLogin")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult AccountingUserLogin(final User user) {
+//        //TODO return proper representation object
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        try {
+//            ACRGBWSResult insertresult = new Methods().ACRUSERLOGIN(dataSource,
+//                    user.getUsername(),
+//                    user.getUserpassword());
+//            if (insertresult.isSuccess()) {
+//                ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, insertresult.getMessage());
+//                if (!GetPayLoad.isSuccess()) {
+//                    result.setMessage(GetPayLoad.getMessage());
+//                } else {
+//                    result.setMessage("OK");
+//                    result.setSuccess(true);
+//                }
+//            } else {
+//                result.setMessage(insertresult.getMessage());
+//                result.setSuccess(insertresult.isSuccess());
+//                result.setResult(insertresult.getResult());
+//            }
+//        } catch (Exception ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(ACRGBPOST.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//
+//        return null;
+//    }
+    
 
 }

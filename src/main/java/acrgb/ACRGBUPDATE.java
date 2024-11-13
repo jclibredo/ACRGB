@@ -49,9 +49,6 @@ public class ACRGBUPDATE {
     private DataSource dataSource;
 
     private final Utility utility = new Utility();
-    private final UpdateMethods updatemethods = new UpdateMethods();
-    private final Methods methods = new Methods();
-    private final InsertMethods insertmethods = new InsertMethods();
 
     /**
      * Retrieves representation of an instance of ACRGB
@@ -71,11 +68,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = updatemethods.UPDATEASSETS(dataSource, assets);
+            ACRGBWSResult insertresult = new UpdateMethods().UPDATEASSETS(dataSource, assets);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -94,11 +91,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = updatemethods.UPDATECONTRACT(dataSource, contract);
+            ACRGBWSResult insertresult = new UpdateMethods().UPDATECONTRACT(dataSource, contract);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -117,11 +114,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = updatemethods.UPDATETRANCH(dataSource, tranch);
+            ACRGBWSResult insertresult = new UpdateMethods().UPDATETRANCH(dataSource, tranch);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -142,11 +139,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = updatemethods.UPDATEUSERLEVEL(dataSource, userlevel);
+            ACRGBWSResult insertresult = new UpdateMethods().UPDATEUSERLEVEL(dataSource, userlevel);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -167,22 +164,22 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             if (user.getUsername().isEmpty() && !user.getUserpassword().isEmpty()) {
-                ACRGBWSResult insertresult = methods.CHANGEPASSWORD(dataSource, user.getUserid(), user.getUserpassword(), session);
+                ACRGBWSResult insertresult = new Methods().CHANGEPASSWORD(dataSource, user.getUserid(), user.getUserpassword(), session);
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
             } else if (user.getUserpassword().isEmpty() && !user.getUsername().isEmpty()) {
-                ACRGBWSResult insertresult = methods.CHANGEUSERNAME(dataSource, user.getUserid(), user.getUsername(), user.getCreatedby());
+                ACRGBWSResult insertresult = new Methods().CHANGEUSERNAME(dataSource, user.getUserid(), user.getUsername(), user.getCreatedby());
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
             } else {
-                ACRGBWSResult insertresult = methods.UPDATEUSERCREDENTIALS(dataSource, user.getUserid(), user.getUsername(), user.getUserpassword(), user.getCreatedby(), session);
+                ACRGBWSResult insertresult = new Methods().UPDATEUSERCREDENTIALS(dataSource, user.getUserid(), user.getUsername(), user.getUserpassword(), user.getCreatedby(), session);
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
@@ -202,11 +199,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = methods.CHANGEUSELEVELID(dataSource, user.getUserid(), user.getLeveid());
+            ACRGBWSResult insertresult = new Methods().CHANGEUSELEVELID(dataSource, user.getUserid(), user.getLeveid());
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -214,7 +211,7 @@ public class ACRGBUPDATE {
         return result;
     }
 
- //RESET PASSWORD
+    //RESET PASSWORD
 //    @PUT
 //    @Path("RESETPASSWORD")
 //    @Consumes(MediaType.APPLICATION_JSON)
@@ -230,7 +227,7 @@ public class ACRGBUPDATE {
 //        if (!GetPayLoad.isSuccess()) {
 //            result.setMessage(GetPayLoad.getMessage());
 //        } else {
-//            ACRGBWSResult insertresult = methods.RESETPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
+//            ACRGBWSResult insertresult = new Methods().RESETPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
 //            result.setMessage(insertresult.getMessage());
 //            result.setSuccess(insertresult.isSuccess());
 //            result.setResult(insertresult.getResult());
@@ -249,11 +246,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.INACTIVEDATA(dataSource,
+            ACRGBWSResult insertresult = new InsertMethods().INACTIVEDATA(dataSource,
                     arhived.getTags(), arhived.getDataid(), arhived.getCreatedby(), "ACTIVE");
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
@@ -274,11 +271,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = insertmethods.ACTIVEDATA(dataSource,
+            ACRGBWSResult insertresult = new InsertMethods().ACTIVEDATA(dataSource,
                     arhived.getTags(),
                     arhived.getDataid(),
                     arhived.getCreatedby(),
@@ -302,11 +299,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = methods.REMOVEDROLEINDEX(dataSource, userroleindex.getUserid(), userroleindex.getAccessid(), userroleindex.getCreatedby());
+            ACRGBWSResult insertresult = new Methods().REMOVEDROLEINDEX(dataSource, userroleindex.getUserid(), userroleindex.getAccessid(), userroleindex.getCreatedby());
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -330,7 +327,7 @@ public class ACRGBUPDATE {
 //        if (!GetPayLoad.isSuccess()) {
 //            result.setMessage(GetPayLoad.getMessage());
 //        } else {
-//            ACRGBWSResult taggingresult = updatemethods.FACILITYTAGGING(dataSource, hcf);
+//            ACRGBWSResult taggingresult = new UpdateMethods().FACILITYTAGGING(dataSource, hcf);
 //            result.setMessage(taggingresult.getMessage());
 //            result.setSuccess(taggingresult.isSuccess());
 //            result.setResult(taggingresult.getResult());
@@ -351,7 +348,7 @@ public class ACRGBUPDATE {
         result.setResult("");
         result.setSuccess(false);
         ContractTagging contractTagging = new ContractTagging();
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -394,11 +391,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = updatemethods.RemoveAppellate(dataSource, userroleindex.getUserid(), userroleindex.getAccessid());
+            ACRGBWSResult insertresult = new UpdateMethods().RemoveAppellate(dataSource, userroleindex.getUserid(), userroleindex.getAccessid());
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -418,11 +415,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = methods.UPDATEUSERDETAILS(dataSource, userinfo);
+            ACRGBWSResult insertresult = new Methods().UPDATEUSERDETAILS(dataSource, userinfo);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -443,11 +440,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = updatemethods.APPROVEDHCPN(dataSource, mb);
+            ACRGBWSResult insertresult = new UpdateMethods().APPROVEDHCPN(dataSource, mb);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -467,11 +464,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = updatemethods.UPDATECONDATE(dataSource, contractdate);
+            ACRGBWSResult insertresult = new UpdateMethods().UPDATECONDATE(dataSource, contractdate);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -491,11 +488,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = updatemethods.UPDATEHCPN(dataSource, mb);
+            ACRGBWSResult insertresult = new UpdateMethods().UPDATEHCPN(dataSource, mb);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -518,7 +515,7 @@ public class ACRGBUPDATE {
 //        if (!GetPayLoad.isSuccess()) {
 //            result.setMessage(GetPayLoad.getMessage());
 //        } else {
-//            ACRGBWSResult insertresult = updatemethods.UPDATEAPELLATE(dataSource, "UPDATE", appellate);
+//            ACRGBWSResult insertresult = new UpdateMethods().UPDATEAPELLATE(dataSource, "UPDATE", appellate);
 //            result.setMessage(insertresult.getMessage());
 //            result.setSuccess(insertresult.isSuccess());
 //            result.setResult(insertresult.getResult());
@@ -539,11 +536,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = updatemethods.UPDATEUSEROLE(dataSource,
+            ACRGBWSResult insertresult = new UpdateMethods().UPDATEUSEROLE(dataSource,
                     user.getCreatedby(),
                     user.getDatecreated(),
                     user.getLeveid(),
@@ -570,7 +567,7 @@ public class ACRGBUPDATE {
 //        if (!GetPayLoad.isSuccess()) {
 //            result.setMessage(GetPayLoad.getMessage());
 //        } else {
-//            ACRGBWSResult insertresult = updatemethods.DELETEDATA(dataSource, arhived.getTags(),
+//            ACRGBWSResult insertresult = new UpdateMethods().DELETEDATA(dataSource, arhived.getTags(),
 //                    arhived.getDataid(), arhived.getCreatedby());
 //            result.setMessage(insertresult.getMessage());
 //            result.setSuccess(insertresult.isSuccess());
@@ -590,11 +587,11 @@ public class ACRGBUPDATE {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult updateResult = methods.UpdateHCPNAccreditation(dataSource, accreditation);
+            ACRGBWSResult updateResult = new Methods().UpdateHCPNAccreditation(dataSource, accreditation);
             result.setMessage(updateResult.getMessage());
             result.setSuccess(updateResult.isSuccess());
             result.setResult(updateResult.getResult());

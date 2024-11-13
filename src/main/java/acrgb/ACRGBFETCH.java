@@ -15,6 +15,7 @@ import acrgb.method.GenerateRandomPassword;
 import acrgb.method.LedgerMethod;
 import acrgb.method.Methods;
 import acrgb.method.ProcessAffiliate;
+import acrgb.method.cf5.CF5Data;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Appellate;
 import acrgb.structure.HealthCareFacility;
@@ -56,12 +57,6 @@ public class ACRGBFETCH {
     private DataSource dataSource;
 
     private final Utility utility = new Utility();
-    private final FetchMethods fetchmethods = new FetchMethods();
-    private final Methods methods = new Methods();
-    private final LedgerMethod lm = new LedgerMethod();
-    private final ContractMethod con = new ContractMethod();
-    private final BookingMethod bm = new BookingMethod();
-    private final ContractTagging ct = new ContractTagging();
 
     //GET ASSETS TYPE TBL
     @GET
@@ -75,11 +70,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_ASSETS(dataSource, tags, phcfid);
+            ACRGBWSResult getResult = new FetchMethods().ACR_ASSETS(dataSource, tags, phcfid);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -100,34 +95,34 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             switch (level.toUpperCase().trim()) {
                 case "PRO": {//puserid = prouseraccount ID
-                    ACRGBWSResult getResultA = fetchmethods.ACR_CONTRACTPROID(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT USING USERID OF PRO USER ACCOUNT
+                    ACRGBWSResult getResultA = new FetchMethods().ACR_CONTRACTPROID(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT USING USERID OF PRO USER ACCOUNT
                     result.setMessage(getResultA.getMessage());
                     result.setResult(getResultA.getResult());
                     result.setSuccess(getResultA.isSuccess());
                     break;
                 }
                 case "MB": { //puserid = hcpnuseraccount ID
-                    ACRGBWSResult getResultB = fetchmethods.GETCONTRACTUNDERMB(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT USING USERID OF HCPN USER ACCOUNT
+                    ACRGBWSResult getResultB = new FetchMethods().GETCONTRACTUNDERMB(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT USING USERID OF HCPN USER ACCOUNT
                     result.setMessage(getResultB.getMessage());
                     result.setResult(getResultB.getResult());
                     result.setSuccess(getResultB.isSuccess());
                     break;
                 }
                 case "PHICAPEX": {//puserid = 0
-                    ACRGBWSResult getResultC = con.APEXFACILITYCONTRACT(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT OF ALL APEX FACILITY
+                    ACRGBWSResult getResultC = new ContractMethod().APEXFACILITYCONTRACT(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT OF ALL APEX FACILITY
                     result.setMessage(getResultC.getMessage());
                     result.setResult(getResultC.getResult());
                     result.setSuccess(getResultC.isSuccess());
                     break;
                 }
                 case "PHICHCPN": {//puserid = 0 
-                    ACRGBWSResult getResultD = fetchmethods.GETALLHCPNCONTRACT(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT OF ALL HCPN/NETWORK
+                    ACRGBWSResult getResultD = new FetchMethods().GETALLHCPNCONTRACT(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT OF ALL HCPN/NETWORK
                     result.setMessage(getResultD.getMessage());
                     result.setResult(getResultD.getResult());
                     result.setSuccess(getResultD.isSuccess());
@@ -135,7 +130,7 @@ public class ACRGBFETCH {
                 }
                 //GetFacilityContractUsingHCPNCode  GET FACILITY CONTRACT USING MB ACCOUNT USERID
                 case "HCPN": {
-                    ACRGBWSResult getResultE = fetchmethods.GetFacilityContractUsingHCPNAccountUserID(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT OF ALL APEX FACILITY
+                    ACRGBWSResult getResultE = new FetchMethods().GetFacilityContractUsingHCPNAccountUserID(dataSource, tags.trim().toUpperCase(), puserid, "OPEN");//GET CONTRACT OF ALL APEX FACILITY
                     result.setMessage(getResultE.getMessage());
                     result.setResult(getResultE.getResult());
                     result.setSuccess(getResultE.isSuccess());
@@ -143,7 +138,7 @@ public class ACRGBFETCH {
                 }
                 // GET ALL FACILITY CONTRACT USING HCPN CONTROL CODE   IN PRO LEVEL  
                 case "HCIHCPNCON": {
-                    ACRGBWSResult getResultF = fetchmethods.GetFacilityContractUsingHCPNCodeS(dataSource, tags.trim().toUpperCase(), puserid.toUpperCase(), "OPEN");//GET CONTRACT OF ALL APEX FACILITY
+                    ACRGBWSResult getResultF = new FetchMethods().GetFacilityContractUsingHCPNCodeS(dataSource, tags.trim().toUpperCase(), puserid.toUpperCase(), "OPEN");//GET CONTRACT OF ALL APEX FACILITY
                     result.setMessage(getResultF.getMessage());
                     result.setResult(getResultF.getResult());
                     result.setSuccess(getResultF.isSuccess());
@@ -151,7 +146,7 @@ public class ACRGBFETCH {
                 }
                 // GET FACILITY CONTRACT USING ACCOUNT USERID
                 case "FACILITYCONOWN": {
-                    ACRGBWSResult GetResult = con.GETCONTRACTOFFACILITY(dataSource, tags, puserid, "OPEN");
+                    ACRGBWSResult GetResult = new ContractMethod().GETCONTRACTOFFACILITY(dataSource, tags, puserid, "OPEN");
                     result.setMessage(GetResult.getMessage());
                     result.setResult(GetResult.getResult());
                     result.setSuccess(GetResult.isSuccess());
@@ -159,7 +154,7 @@ public class ACRGBFETCH {
                 }
                 // GET HCPN CONTRACT USING ACCOUNT USERID
                 case "HCPNCONOWN": {
-                    ACRGBWSResult GetResult = con.GETCONTRACTOFHCPN(dataSource, tags, puserid, "OPEN");
+                    ACRGBWSResult GetResult = new ContractMethod().GETCONTRACTOFHCPN(dataSource, tags, puserid, "OPEN");
                     result.setMessage(GetResult.getMessage());
                     result.setResult(GetResult.getResult());
                     result.setSuccess(GetResult.isSuccess());
@@ -167,7 +162,7 @@ public class ACRGBFETCH {
                 }
                 // GET PRO CONTRACT USING ACCOUNT USERID
                 case "PROCONOWN": {
-                    ACRGBWSResult GetResult = con.GETCONTRACTOFPRO(dataSource, tags, puserid, "OPEN");
+                    ACRGBWSResult GetResult = new ContractMethod().GETCONTRACTOFPRO(dataSource, tags, puserid, "OPEN");
                     result.setMessage(GetResult.getMessage());
                     result.setResult(GetResult.getResult());
                     result.setSuccess(GetResult.isSuccess());
@@ -193,11 +188,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_TRANCH(dataSource, tags);
+            ACRGBWSResult getResult = new FetchMethods().ACR_TRANCH(dataSource, tags);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -217,11 +212,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_USER_DETAILS(dataSource, tags, pdid);
+            ACRGBWSResult getResult = new FetchMethods().ACR_USER_DETAILS(dataSource, tags, pdid);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -240,11 +235,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_USER_LEVEL(dataSource, tags);
+            ACRGBWSResult getResult = new FetchMethods().ACR_USER_LEVEL(dataSource, tags);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -264,11 +259,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_USER(dataSource, tags, id);
+            ACRGBWSResult getResult = new FetchMethods().ACR_USER(dataSource, tags, id);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -286,11 +281,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setSuccess(false);
         result.setResult("");
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_PRO(dataSource, tags.trim());
+            ACRGBWSResult getResult = new FetchMethods().ACR_PRO(dataSource, tags.trim());
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -308,11 +303,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.GETUSERROLEINDEX(dataSource, puserid);
+            ACRGBWSResult getResult = new FetchMethods().GETUSERROLEINDEX(dataSource, puserid);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -336,20 +331,20 @@ public class ACRGBFETCH {
         result.setResult("");
         result.setSuccess(false);
         if (utility.IsValidDate(datefrom) && utility.IsValidDate(dateto)) {
-            ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+            ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
             if (!GetPayLoad.isSuccess()) {
                 result.setMessage(GetPayLoad.getMessage());
             } else {
                 switch (type.toUpperCase().trim()) {
                     case "SUMMARY": {
-                        ACRGBWSResult getResult = methods.GetBaseAmountForSummary(dataSource, tags, userid, datefrom, dateto, "ACTIVE".toUpperCase().trim(), hcilist);
+                        ACRGBWSResult getResult = new Methods().GetBaseAmountForSummary(dataSource, tags, userid, datefrom, dateto, "ACTIVE".toUpperCase().trim(), hcilist);
                         result.setMessage(getResult.getMessage());
                         result.setResult(getResult.getResult());
                         result.setSuccess(getResult.isSuccess());
                         break;
                     }
                     case "CONTRACT": {
-                        ACRGBWSResult getResult = methods.GetBaseAmountForContract(dataSource, tags, userid, datefrom, dateto, "ACTIVE".toUpperCase().trim());
+                        ACRGBWSResult getResult = new Methods().GetBaseAmountForContract(dataSource, tags, userid, datefrom, dateto, "ACTIVE".toUpperCase().trim());
                         result.setMessage(getResult.getMessage());
                         result.setResult(getResult.getResult());
                         result.setSuccess(getResult.isSuccess());
@@ -377,11 +372,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.GETUSERLEVEL(dataSource, levid);
+            ACRGBWSResult getResult = new FetchMethods().GETUSERLEVEL(dataSource, levid);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -402,11 +397,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.GETFULLDETAILS(dataSource, userid);
+            ACRGBWSResult getResult = new FetchMethods().GETFULLDETAILS(dataSource, userid);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -427,11 +422,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.GETASSETSWITHPARAM(dataSource, phcfid, conid);
+            ACRGBWSResult getResult = new FetchMethods().GETASSETSWITHPARAM(dataSource, phcfid, conid);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -449,11 +444,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.ACRACTIVTYLOGS(dataSource);
+            ACRGBWSResult getResult = new FetchMethods().ACRACTIVTYLOGS(dataSource);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -472,11 +467,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = methods.GetLogsWithID(dataSource, userid);
+            ACRGBWSResult getResult = new Methods().GetLogsWithID(dataSource, userid);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -500,7 +495,7 @@ public class ACRGBFETCH {
 //        if (!GetPayLoad.isSuccess()) {
 //            result.setMessage(GetPayLoad.getMessage());
 //        } else {
-//            ACRGBWSResult getResult = methods.FetchMBRequest(dataSource, userid);
+//            ACRGBWSResult getResult = new Methods().FetchMBRequest(dataSource, userid);
 //            result.setMessage(getResult.getMessage());
 //            result.setResult(getResult.getResult());
 //            result.setSuccess(getResult.isSuccess());
@@ -518,11 +513,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.GetManagingBoard(dataSource, tags);
+            ACRGBWSResult getResult = new FetchMethods().GetManagingBoard(dataSource, tags);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -541,11 +536,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = methods.GETROLEWITHID(dataSource, pid, "ACTIVE");
+            ACRGBWSResult getResult = new Methods().GETROLEWITHID(dataSource, pid.trim(), "ACTIVE");
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -566,31 +561,31 @@ public class ACRGBFETCH {
         result.setResult("");
         result.setSuccess(false);
         try {
-            ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+            ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
             if (!GetPayLoad.isSuccess()) {
                 result.setMessage(GetPayLoad.getMessage());
             } else {
                 switch (tags.toUpperCase()) {
                     case "ALL": {
-                        ACRGBWSResult resultAll = fetchmethods.GETALLFACILITY(dataSource, "ACTIVE");
+                        ACRGBWSResult resultAll = new FetchMethods().GETALLFACILITY(dataSource, "ACTIVE");
                         result.setMessage(resultAll.getMessage());
                         result.setSuccess(resultAll.isSuccess());
                         result.setResult(resultAll.getResult());
                         break;
                     }
                     case "HCPN": {//GET FACILITY USINNG HCPN ACCOUNT USERID
-                        ACRGBWSResult resultHCPN = fetchmethods.GETFACILITYUNDERMB(dataSource, userid, "ACTIVE");
+                        ACRGBWSResult resultHCPN = new FetchMethods().GETFACILITYUNDERMB(dataSource, userid, "ACTIVE");
                         result.setMessage(resultHCPN.getMessage());
                         result.setSuccess(resultHCPN.isSuccess());
                         result.setResult(resultHCPN.getResult());
                         break;
                     }
                     case "APEX": {// TAGS = APEX  USERID  = HOSPITAL CODE
-                        ACRGBWSResult restA = fetchmethods.GetAffiliate(dataSource, userid, "ACTIVE");
+                        ACRGBWSResult restA = new FetchMethods().GetAffiliate(dataSource, userid, "ACTIVE");
                         List<String> hcpnlist = Arrays.asList(restA.getResult().split(","));
                         ArrayList<ManagingBoard> mblist = new ArrayList<>();
                         for (int h = 0; h < hcpnlist.size(); h++) {
-                            ACRGBWSResult mgresult = methods.GETMBWITHID(dataSource, hcpnlist.get(h).trim());
+                            ACRGBWSResult mgresult = new Methods().GETMBWITHID(dataSource, hcpnlist.get(h).trim());
                             if (mgresult.isSuccess()) {
                                 ManagingBoard mb = utility.ObjectMapper().readValue(mgresult.getResult(), ManagingBoard.class);
                                 mblist.add(mb);
@@ -627,25 +622,25 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             switch (levelname.toUpperCase().trim()) {
                 case "PRO":
-                    ACRGBWSResult getResult = methods.GETALLMBWITHPROID(dataSource, proid);
+                    ACRGBWSResult getResult = new Methods().GETALLMBWITHPROID(dataSource, proid);
                     result.setMessage(getResult.getMessage());
                     result.setResult(getResult.getResult());
                     result.setSuccess(getResult.isSuccess());
                     break;
                 case "PROLEDGER":
-                    ACRGBWSResult getResultLedger = methods.GETALLMBWITHPROIDFORLEDGER(dataSource, proid);
+                    ACRGBWSResult getResultLedger = new Methods().GETALLMBWITHPROIDFORLEDGER(dataSource, proid);
                     result.setMessage(getResultLedger.getMessage());
                     result.setResult(getResultLedger.getResult());
                     result.setSuccess(getResultLedger.isSuccess());
                     break;
                 case "PHIC":
-                    ACRGBWSResult getphicResult = methods.GETALLMBWITHPROCODE(dataSource, proid, "ACTIVE");
+                    ACRGBWSResult getphicResult = new Methods().GETALLMBWITHPROCODE(dataSource, proid, "ACTIVE");
                     result.setMessage(getphicResult.getMessage());
                     result.setResult(getphicResult.getResult());
                     result.setSuccess(getphicResult.isSuccess());
@@ -669,11 +664,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = methods.GETALLFACILITYWITHMBID(dataSource, pid, "ACTIVE");
+            ACRGBWSResult getResult = new Methods().GETALLFACILITYWITHMBID(dataSource, pid, "ACTIVE");
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -700,28 +695,28 @@ public class ACRGBFETCH {
 //            switch (levelname.toUpperCase().trim()) {
 //                case "PRO":
 //                    //GET TERMINATED CONTRACT OF FACILITY UNDER HCPN UNDER PRO USING PRO ACCOUNT USERID
-//                    ACRGBWSResult getResult = methods.GetRemainingBalanceForTerminatedContract(dataSource, userid, tags);
+//                    ACRGBWSResult getResult = new Methods().GetRemainingBalanceForTerminatedContract(dataSource, userid, tags);
 //                    result.setMessage(getResult.getMessage());
 //                    result.setResult(getResult.getResult());
 //                    result.setSuccess(getResult.isSuccess());
 //                    break;
 //                case "TERMINATEAPEX":
 //                    //GET TERMINATED CONTRACT OF APEX
-//                    ACRGBWSResult getResultTerminateApex = methods.GetRemainingBalanceForTerminatedContractApex(dataSource);
+//                    ACRGBWSResult getResultTerminateApex = new Methods().GetRemainingBalanceForTerminatedContractApex(dataSource);
 //                    result.setMessage(getResultTerminateApex.getMessage());
 //                    result.setResult(getResultTerminateApex.getResult());
 //                    result.setSuccess(getResultTerminateApex.isSuccess());
 //                    break;
 //                case "ENDCONAPEX":
 //                    //GET END CONTRACT OF APEX
-//                    ACRGBWSResult getResultEndApex = methods.GetRemainingBalanceForEndContractApex(dataSource);
+//                    ACRGBWSResult getResultEndApex = new Methods().GetRemainingBalanceForEndContractApex(dataSource);
 //                    result.setMessage(getResultEndApex.getMessage());
 //                    result.setResult(getResultEndApex.getResult());
 //                    result.setSuccess(getResultEndApex.isSuccess());
 //                    break;
 //                case "NONRENEW":
 //                    //GET END CONTRACT OF FACILITY UNDER HCPN UNDER PRO USING PRO ACCOUNT USERID
-//                    ACRGBWSResult getResultnNonRenew = methods.GetRemainingBalanceForEndContract(dataSource, userid, tags);
+//                    ACRGBWSResult getResultnNonRenew = new Methods().GetRemainingBalanceForEndContract(dataSource, userid, tags);
 //                    result.setMessage(getResultnNonRenew.getMessage());
 //                    result.setResult(getResultnNonRenew.getResult());
 //                    result.setSuccess(getResultnNonRenew.isSuccess());
@@ -748,7 +743,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -759,14 +754,14 @@ public class ACRGBFETCH {
                     //TAGS MUST BE HCPN
                     switch (type.toUpperCase()) {
                         case "ACTIVE": {
-                            ACRGBWSResult getResultHCPN = lm.GETLedgerPerContractHCPN(dataSource, hcpncode, contract, type);
+                            ACRGBWSResult getResultHCPN = new LedgerMethod().GETLedgerPerContractHCPN(dataSource, hcpncode, contract, type);
                             result.setMessage(getResultHCPN.getMessage());
                             result.setResult(getResultHCPN.getResult());
                             result.setSuccess(getResultHCPN.isSuccess());
                             break;
                         }
                         case "INACTIVE": {
-                            ACRGBWSResult getResultHCPN = lm.GETLedgerPerContractHCPNLedger(dataSource, hcpncode, contract, type, "CLOSED");
+                            ACRGBWSResult getResultHCPN = new LedgerMethod().GETLedgerPerContractHCPNLedger(dataSource, hcpncode, contract, type, "CLOSED");
                             result.setMessage(getResultHCPN.getMessage());
                             result.setResult(getResultHCPN.getResult());
                             result.setSuccess(getResultHCPN.isSuccess());
@@ -784,14 +779,14 @@ public class ACRGBFETCH {
                     //TAGS MUST BE HCPNALL
                     switch (type.toUpperCase()) {
                         case "ACTIVE": {
-                            ACRGBWSResult getResultAllHCPN = lm.GETLedgerAllContractAPEXActive(dataSource, hcpncode, contract);//hcpncode  user ID of account of PROUSER
+                            ACRGBWSResult getResultAllHCPN = new LedgerMethod().GETLedgerAllContractAPEXActive(dataSource, hcpncode, contract);//hcpncode  user ID of account of PROUSER
                             result.setMessage(getResultAllHCPN.getMessage());
                             result.setResult(getResultAllHCPN.getResult());
                             result.setSuccess(getResultAllHCPN.isSuccess());
                             break;
                         }
                         case "INACTIVE": {
-                            ACRGBWSResult getResultAllHCPN = lm.GETLedgerAllContractAPEXInactive(dataSource, hcpncode, contract, type);//hcpncode  user ID of account of PROUSER
+                            ACRGBWSResult getResultAllHCPN = new LedgerMethod().GETLedgerAllContractAPEXInactive(dataSource, hcpncode, contract, type);//hcpncode  user ID of account of PROUSER
                             result.setMessage(getResultAllHCPN.getMessage());
                             result.setResult(getResultAllHCPN.getResult());
                             result.setSuccess(getResultAllHCPN.isSuccess());
@@ -822,11 +817,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getConDateResult = con.GETCONDATE(dataSource, tags);
+            ACRGBWSResult getConDateResult = new ContractMethod().GETCONDATE(dataSource, tags);
             result.setMessage(getConDateResult.getMessage());
             result.setResult(getConDateResult.getResult());
             result.setSuccess(getConDateResult.isSuccess());
@@ -845,11 +840,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult updatecondate = ct.EndContractUsingDateid(dataSource, ucondateid);
+            ACRGBWSResult updatecondate = new ContractTagging().EndContractUsingDateid(dataSource, ucondateid);
             result.setMessage(updatecondate.getMessage());
             result.setResult(updatecondate.getResult());
             result.setSuccess(updatecondate.isSuccess());
@@ -867,7 +862,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -891,11 +886,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = con.GETPREVIOUSBALANCE(dataSource, paccount, contractid);
+            ACRGBWSResult getResult = new ContractMethod().GETPREVIOUSBALANCE(dataSource, paccount, contractid);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -916,11 +911,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult BookingResult = bm.GETALLCLAIMS(dataSource, hcpncode, contractid, tags.trim().toUpperCase(), "INACTIVE");
+            ACRGBWSResult BookingResult = new BookingMethod().GETALLCLAIMS(dataSource, hcpncode, contractid, tags.trim().toUpperCase(), "INACTIVE");
             result.setMessage(BookingResult.getMessage());
             result.setResult(BookingResult.getResult());
             result.setSuccess(BookingResult.isSuccess());
@@ -960,11 +955,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult BookingResult = fetchmethods.GETOLDPASSCODE(dataSource, userid, passcode);
+            ACRGBWSResult BookingResult = new FetchMethods().GETOLDPASSCODE(dataSource, userid, passcode);
             result.setMessage(BookingResult.getMessage());
             result.setResult(BookingResult.getResult());
             result.setSuccess(BookingResult.isSuccess());
@@ -984,11 +979,11 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.CONTRACTWITHQUARTER(dataSource, tags.toUpperCase().trim(), uprocode.trim());
+            ACRGBWSResult getResult = new FetchMethods().CONTRACTWITHQUARTER(dataSource, tags.toUpperCase().trim(), uprocode.trim());
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
@@ -1001,7 +996,7 @@ public class ACRGBFETCH {
     @Path("ValidateToken")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult PostEmailCredentials(@HeaderParam("token") String token) {
-        ACRGBWSResult result = utility.GetPayload(dataSource,token);
+        ACRGBWSResult result = utility.GetPayload(dataSource, token);
         return result;
     }
 
@@ -1017,27 +1012,27 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             switch (target.toUpperCase().trim()) {
                 case "NOTBOOK": {
-                    ACRGBWSResult GetAllContract = fetchmethods.GETALLCONTRACTNOTBBOK(dataSource, tags, "0");
+                    ACRGBWSResult GetAllContract = new FetchMethods().GETALLCONTRACTNOTBBOK(dataSource, tags, "0");
                     result.setMessage(GetAllContract.getMessage());
                     result.setResult(GetAllContract.getResult());
                     result.setSuccess(GetAllContract.isSuccess());
                     break;
                 }
                 case "BOOK": {
-                    ACRGBWSResult GetAllContract = fetchmethods.GETBOOKCONTRACT(dataSource, tags, "0");
+                    ACRGBWSResult GetAllContract = new FetchMethods().GETBOOKCONTRACT(dataSource, tags, "0");
                     result.setMessage(GetAllContract.getMessage());
                     result.setResult(GetAllContract.getResult());
                     result.setSuccess(GetAllContract.isSuccess());
                     break;
                 }
                 case "ALL": {
-                    ACRGBWSResult GetAllContract = fetchmethods.GETALLCONTRACT(dataSource, tags, "0");
+                    ACRGBWSResult GetAllContract = new FetchMethods().GETALLCONTRACT(dataSource, tags, "0");
                     result.setMessage(GetAllContract.getMessage());
                     result.setResult(GetAllContract.getResult());
                     result.setSuccess(GetAllContract.isSuccess());
@@ -1064,7 +1059,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -1088,7 +1083,7 @@ public class ACRGBFETCH {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try {
-//            ACRGBWSResult GetResult = fetchmethods.GETUSERBYUSERID(dataSource, userid, "ACTIVE");
+//            ACRGBWSResult GetResult = new FetchMethods().GETUSERBYUSERID(dataSource, userid, "ACTIVE");
 //            if (GetResult.isSuccess()) {
 //                User user = utility.ObjectMapper().readValue(GetResult.getResult(), User.class);
 //                if (user.getFa2code() == null) {
@@ -1160,15 +1155,15 @@ public class ACRGBFETCH {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("OK");
         result.setSuccess(true);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             //CHECKING OF ENDED ACCREDITATION
-//            methods.GETACTIVEACCREDITATION(dataSource, "ACTIVE");
+//            new Methods().GETACTIVEACCREDITATION(dataSource, "ACTIVE");
             //CHECKING OF ENDED CONTRACT PERIOD
 
-            methods.PROCESSENDPERIODDATE(dataSource, "ACTIVE");
+            new Methods().PROCESSENDPERIODDATE(dataSource, "ACTIVE");
         }
         return result;
     }
@@ -1223,19 +1218,19 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         try {
             if (!GetPayLoad.isSuccess()) {
                 result.setMessage(GetPayLoad.getMessage());
             } else {
                 ArrayList<User> userList = new ArrayList<>();
-                ACRGBWSResult getResult = methods.GETROLE(dataSource, puserid.trim(), "ACTIVE");
+                ACRGBWSResult getResult = new Methods().GETROLE(dataSource, puserid.trim(), "ACTIVE");
                 if (getResult.isSuccess()) {
-                    ACRGBWSResult getMultiResult = methods.GETROLEREVERESEMULTIPLE(dataSource, getResult.getResult().trim(), tags.toUpperCase().trim());
+                    ACRGBWSResult getMultiResult = new Methods().GETROLEREVERESEMULTIPLE(dataSource, getResult.getResult().trim(), tags.toUpperCase().trim());
                     if (getMultiResult.isSuccess()) {
                         List<String> restBList = Arrays.asList(getMultiResult.getResult().split(","));
                         for (int i = 0; i < restBList.size(); i++) {
-                            ACRGBWSResult getUser = fetchmethods.ACR_USER(dataSource, tags.toUpperCase().trim(), restBList.get(i));
+                            ACRGBWSResult getUser = new FetchMethods().ACR_USER(dataSource, tags.toUpperCase().trim(), restBList.get(i));
                             if (getUser.isSuccess()) {
                                 List<User> mapUserList = Arrays.asList(utility.ObjectMapper().readValue(getUser.getResult(), User[].class));
                                 for (int x = 0; x < mapUserList.size(); x++) {
@@ -1271,14 +1266,14 @@ public class ACRGBFETCH {
         result.setResult("");
         result.setSuccess(false);
         try {
-            ACRGBWSResult getResult = methods.GETROLE(dataSource, puserid.trim(), "ACTIVE");
+            ACRGBWSResult getResult = new Methods().GETROLE(dataSource, puserid.trim(), "ACTIVE");
             if (getResult.isSuccess()) {
                 ArrayList<HealthCareFacility> hciList = new ArrayList<>();
                 ACRGBWSResult getRestA = new ProcessAffiliate().GETAFFILIATE(dataSource, "0", getResult.getResult(), "0");
                 if (getRestA.isSuccess()) {
                     List<Appellate> affiliateList = Arrays.asList(utility.ObjectMapper().readValue(getRestA.getResult(), Appellate[].class));
                     for (int x = 0; x < affiliateList.size(); x++) {
-                        ACRGBWSResult getFacility = fetchmethods.GETFACILITYID(dataSource, affiliateList.get(x).getAccesscode());
+                        ACRGBWSResult getFacility = new FetchMethods().GETFACILITYID(dataSource, affiliateList.get(x).getAccesscode());
                         if (getFacility.isSuccess()) {
                             HealthCareFacility facility = utility.ObjectMapper().readValue(getFacility.getResult(), HealthCareFacility.class);
                             hciList.add(facility);
@@ -1321,7 +1316,7 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
@@ -1367,11 +1362,34 @@ public class ACRGBFETCH {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource,token);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult getResult = fetchmethods.ACR_HCF(dataSource);
+            ACRGBWSResult getResult = new FetchMethods().ACR_HCF(dataSource);
+            result.setMessage(getResult.getMessage());
+            result.setResult(getResult.getResult());
+            result.setSuccess(getResult.isSuccess());
+        }
+        return result;
+    }
+
+    //GET ASSETS TYPE TBL
+    @GET
+    @Path("GetCF5Data")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetCF5Data(
+            @HeaderParam("token") String token,
+            @HeaderParam("series") String series) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
+        if (!GetPayLoad.isSuccess()) {
+            result.setMessage(GetPayLoad.getMessage());
+        } else {
+            ACRGBWSResult getResult = new CF5Data().INFO(dataSource, series);
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());

@@ -53,8 +53,6 @@ public class Methods {
     }
 
     private final Utility utility = new Utility();
-    private final FetchMethods fm = new FetchMethods();
-    private final Cryptor cryptor = new Cryptor();
     private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm a");
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
 
@@ -68,15 +66,15 @@ public class Methods {
         ArrayList<String> message = new ArrayList<>();
         try {
             int resultcounter = 0;
-            ACRGBWSResult resultfm = fm.ACR_USER(datasource, "ACTIVE", "0");
+            ACRGBWSResult resultfm = new FetchMethods().ACR_USER(datasource, "ACTIVE", "0");
             if (resultfm.isSuccess()) {
                 List<User> userlist = Arrays.asList(utility.ObjectMapper().readValue(resultfm.getResult(), User[].class));
                 for (int x = 0; x < userlist.size(); x++) {
                     UserPassword userPassword = new UserPassword();
-                    userPassword.setDbpass(cryptor.decrypt(userlist.get(x).getUserpassword(), p_password, "ACRGB"));
+                    userPassword.setDbpass(new Cryptor().decrypt(userlist.get(x).getUserpassword(), p_password, "ACRGB"));
                     if (userlist.get(x).getUsername().equals(p_username) && userPassword.getDbpass().equals(p_password)) {
-                        if (fm.GETLEVELBYLEVNAME(datasource, userlist.get(x).getLeveid()).isSuccess()) {
-                            UserLevel userLevel = utility.ObjectMapper().readValue(fm.GETLEVELBYLEVNAME(datasource, userlist.get(x).getLeveid()).getResult(), UserLevel.class);
+                        if (new FetchMethods().GETLEVELBYLEVNAME(datasource, userlist.get(x).getLeveid()).isSuccess()) {
+                            UserLevel userLevel = utility.ObjectMapper().readValue(new FetchMethods().GETLEVELBYLEVNAME(datasource, userlist.get(x).getLeveid()).getResult(), UserLevel.class);
                             if (userLevel.getStats().equals("2")) {
                                 User user = new User();
                                 user.setUserid(userlist.get(x).getUserid());
@@ -87,7 +85,7 @@ public class Methods {
                                 user.setDatecreated(userlist.get(x).getDatecreated());
                                 user.setStatus(userlist.get(x).getStatus());
                                 //----------------------------------------------
-                                ACRGBWSResult detailsresult = fm.GETFULLDETAILS(datasource, userlist.get(x).getUserid());
+                                ACRGBWSResult detailsresult = new FetchMethods().GETFULLDETAILS(datasource, userlist.get(x).getUserid());
                                 if (detailsresult.isSuccess()) {
                                     user.setDid(detailsresult.getResult());
                                 } else {
@@ -234,11 +232,9 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-//        UpdateMethods um = new UpdateMethods();
-//        EmailSender emailSender = new EmailSender();
         try (Connection connection = dataSource.getConnection()) {
             int counteruser = 0;
-            ACRGBWSResult checkUsername = fm.COUNTUSERNAME(dataSource, p_username);
+            ACRGBWSResult checkUsername = new FetchMethods().COUNTUSERNAME(dataSource, p_username);
             if (checkUsername.isSuccess()) {
                 counteruser += Integer.parseInt(checkUsername.getResult());
             }
@@ -251,11 +247,11 @@ public class Methods {
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("userid", userid.trim());
                 getinsertresult.setString("p_username", p_username.trim());
-                getinsertresult.setString("p_password", cryptor.encrypt(p_password, p_password, "ACRGB"));
+                getinsertresult.setString("p_password", new Cryptor().encrypt(p_password, p_password, "ACRGB"));
                 getinsertresult.setString("p_stats", "2");
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
-                    ACRGBWSResult GetDID = fm.GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
+                    ACRGBWSResult GetDID = new FetchMethods().GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
                     if (GetDID.isSuccess()) {
                         User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
                         if (getUser.getDid() != null) {
@@ -291,10 +287,9 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        UpdateMethods um = new UpdateMethods();
         try (Connection connection = dataSource.getConnection()) {
             int counteruser = 0;
-            ACRGBWSResult checkUsername = fm.COUNTUSERNAME(dataSource, p_username);
+            ACRGBWSResult checkUsername = new FetchMethods().COUNTUSERNAME(dataSource, p_username);
             if (checkUsername.isSuccess()) {
                 counteruser += Integer.parseInt(checkUsername.getResult());
             }
@@ -309,12 +304,12 @@ public class Methods {
                 getinsertresult.setString("p_stats", "2".trim());
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
-                    ACRGBWSResult GetDID = fm.GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
+                    ACRGBWSResult GetDID = new FetchMethods().GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
                     if (GetDID.isSuccess()) {
                         User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
                         if (getUser.getDid() != null) {
                             UserInfo userinfo = utility.ObjectMapper().readValue(getUser.getDid(), UserInfo.class);
-                            ACRGBWSResult updateInfo = um.UPDATEUSERINFOBYDID(dataSource, p_username.trim(), userinfo.getDid().trim(), createdby.trim());
+                            ACRGBWSResult updateInfo = new UpdateMethods().UPDATEUSERINFOBYDID(dataSource, p_username.trim(), userinfo.getDid().trim(), createdby.trim());
                             if (updateInfo.isSuccess()) {
                                 result.setSuccess(true);
                                 result.setMessage(getinsertresult.getString("Message"));
@@ -370,27 +365,34 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
+        UserActivity userlogs = utility.UserActivity();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("p_userid", userid.trim());
-            getinsertresult.setString("p_password", cryptor.encrypt(p_password, p_password, "ACRGB"));
+            getinsertresult.setString("p_password", new Cryptor().encrypt(p_password, p_password, "ACRGB"));
             getinsertresult.setString("p_stats", "2");
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
-                ACRGBWSResult GetEmail = fm.GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
+                ACRGBWSResult GetEmail = new FetchMethods().GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
                 if (GetEmail.isSuccess()) {
                     User user = utility.ObjectMapper().readValue(GetEmail.getResult(), User.class);
                     result.setSuccess(true);
                     result.setMessage(getinsertresult.getString("Message"));
                     new EmailSender().EmailSender(dataSource, user.getUsername(), p_password, session);
+                    userlogs.setActstatus("SUCCESS");
                 } else {
                     result.setMessage(GetEmail.getMessage());
+                    userlogs.setActstatus("FAILED");
                 }
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
             }
+            //-----------------------------------------------------------
+            userlogs.setActdetails(getinsertresult.getString("Message"));
+            userlogs.setActby(userid);
+            new UserActivityLogs().UserLogsMethod(dataSource, "UPDATE-OWN-PASSWORD", userlogs, "00", "00");
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -477,7 +479,6 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ContractMethod cm = new ContractMethod();
         try {
             switch (tags.toUpperCase()) {
                 case "USERPRO": {//USERID IS PRO ACCOUNT USERID
@@ -495,115 +496,129 @@ public class Methods {
                                 if (getHCIUisngHCPNCode.isSuccess()) {
                                     List<String> ListOHCI = Arrays.asList(getHCIUisngHCPNCode.getResult().split(","));
                                     for (int hci = 0; hci < ListOHCI.size(); hci++) {
-                                        //   ACRGBWSResult restA = this.GetAmountPerFacility(dataSource, ListOHCI.get(hci).trim(), datefrom.trim(), dateto.trim());
-                                        ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, ListOHCI.get(hci).trim(), datefrom.trim(), dateto.trim());
-                                        if (restA.isSuccess()) {
-                                            List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
-                                            //DATE SETTINGS
-                                            for (int f = 0; f < fcaA.size(); f++) {
-                                                ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
-                                                if (getFacilityA.isSuccess()) {
-                                                    FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                                                    HealthCareFacility hciList = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
-                                                    //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                                    if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
-                                                            && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                        double countamount = 0.00;
-                                                        switch (hciList.getHcilevel().toUpperCase().trim()) {
-                                                            case "T1":
-                                                            case "T2":
-                                                            case "SH": {
-                                                                //--------------------------------------------------------------------------------
-                                                                if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                                } else {
-                                                                    totalcomputeA.setC1icdcode("");
-                                                                    totalcomputeA.setC1rvcode("");
+                                        //GET MULTIPLE PMCC NO THIS AREA
+                                        //GET HCF DETAILS BY HCFCODE 
+                                        ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, ListOHCI.get(hci).trim());
+                                        if (getHcfByCode.isSuccess()) {
+                                            HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
+                                            //GET HCF DETAILS BY NAME
+                                            ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
+                                            if (getHcfByName.isSuccess()) {
+                                                List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
+                                                for (int u = 0; u < healthCareFacilityList.size(); u++) {
+                                                    ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, healthCareFacilityList.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                                    if (restA.isSuccess()) {
+                                                        List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
+                                                        //DATE SETTINGS
+                                                        for (int f = 0; f < fcaA.size(); f++) {
+                                                            ACRGBWSResult getFacilityA = new FetchMethods().GETFACILITYID(dataSource, fcaA.get(f).getHospital());
+                                                            if (getFacilityA.isSuccess()) {
+                                                                FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                                                HealthCareFacility hciList = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
+                                                                //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                                                if (!new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
+                                                                        && !new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                    double countamount = 0.00;
+                                                                    switch (hciList.getHcilevel().toUpperCase().trim()) {
+                                                                        case "T1":
+                                                                        case "T2":
+                                                                        case "SH": {
+                                                                            //--------------------------------------------------------------------------------
+                                                                            if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                            } else {
+                                                                                totalcomputeA.setC1icdcode("");
+                                                                                totalcomputeA.setC1rvcode("");
+                                                                            }
+                                                                            //---------------------------------------------------------------------------------
+                                                                            if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                            } else {
+                                                                                totalcomputeA.setC2icdcode("");
+                                                                                totalcomputeA.setC2rvcode("");
+                                                                            }
+                                                                            totalcomputeA.setThirty(String.valueOf(00));
+                                                                            totalcomputeA.setSb(String.valueOf(countamount * 0.10));
+                                                                            claimsSb += countamount * 0.10;
+                                                                            break;
+                                                                        }
+                                                                        default: {
+                                                                            if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                            } else {
+                                                                                totalcomputeA.setC1icdcode("");
+                                                                                totalcomputeA.setC1rvcode("");
+                                                                            }
+                                                                            if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                                countamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                            } else {
+                                                                                totalcomputeA.setC2icdcode("");
+                                                                                totalcomputeA.setC2rvcode("");
+                                                                            }
+                                                                            totalcomputeA.setThirty(String.valueOf(00));
+                                                                            totalcomputeA.setSb(String.valueOf(00));
+                                                                            break;
+                                                                        }
+                                                                    }
+                                                                    totalcomputeA.setHospital(getFacilityA.getResult());
+                                                                    totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                                                    totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                                    totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                                    totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                                    totalcomputeA.setTotalamount(String.valueOf(countamount));
+                                                                    totalcomputeList.add(totalcomputeA);
+                                                                    totalbaseamount += countamount;
+                                                                    claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 }
-                                                                //---------------------------------------------------------------------------------
-                                                                if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                                } else {
-                                                                    totalcomputeA.setC2icdcode("");
-                                                                    totalcomputeA.setC2rvcode("");
-                                                                }
-                                                                totalcomputeA.setThirty(String.valueOf(00));
-                                                                totalcomputeA.setSb(String.valueOf(countamount * 0.10));
-                                                                claimsSb += countamount * 0.10;
-                                                                break;
-                                                            }
-                                                            default: {
-                                                                if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                                } else {
-                                                                    totalcomputeA.setC1icdcode("");
-                                                                    totalcomputeA.setC1rvcode("");
-                                                                }
-                                                                if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                    countamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                                } else {
-                                                                    totalcomputeA.setC2icdcode("");
-                                                                    totalcomputeA.setC2rvcode("");
-                                                                }
-                                                                totalcomputeA.setThirty(String.valueOf(00));
-                                                                totalcomputeA.setSb(String.valueOf(00));
-                                                                break;
                                                             }
                                                         }
-                                                        totalcomputeA.setHospital(getFacilityA.getResult());
-                                                        totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
-                                                        totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                                        totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                                        totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
-                                                        totalcomputeA.setTotalamount(String.valueOf(countamount));
-                                                        totalcomputeList.add(totalcomputeA);
-                                                        totalbaseamount += countamount;
-                                                        claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                     }
+
                                                 }
                                             }
                                         }
                                     }
+
                                 }
                             }
                             // SETTINGS OF FINAL COMPUTATION
@@ -651,6 +666,7 @@ public class Methods {
                     }
                     break;
                 }
+
                 case "PRO": {//USERID IS PROCODE
                     ACRGBWSResult getHCPNUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
                     int claimCount = 0;
@@ -665,108 +681,121 @@ public class Methods {
                             if (getHCFUnder.isSuccess()) {
                                 List<String> HCFList = Arrays.asList(getHCFUnder.getResult().split(","));
                                 for (int hcf = 0; hcf < HCFList.size(); hcf++) {
-                                    ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, HCFList.get(hcf).trim(), datefrom.trim(), dateto.trim());
-                                    if (restA.isSuccess()) {
-                                        List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
-                                        for (int f = 0; f < fcaA.size(); f++) {
-                                            ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
-                                            if (getFacilityA.isSuccess()) {
-                                                FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                                                HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
-                                                //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                                if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
-                                                        && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                    double totalamount = 0.00;
-                                                    switch (hci.getHcilevel().toUpperCase().trim()) {
-                                                        case "T1":
-                                                        case "T2":
-                                                        case "SH": {
-                                                            //--------------------------------------------------------------------------------
-                                                            if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                            } else {
-                                                                totalcomputeA.setC1icdcode("");
-                                                                totalcomputeA.setC1rvcode("");
+                                    //---------------------------------------
+                                    ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, HCFList.get(hcf).trim());
+                                    if (getHcfByCode.isSuccess()) {
+                                        HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
+                                        //GET HCF DETAILS BY NAME
+                                        ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
+                                        if (getHcfByName.isSuccess()) {
+                                            List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
+                                            for (int u = 0; u < healthCareFacilityList.size(); u++) {
+                                                //-----------------------------------------
+                                                ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, healthCareFacilityList.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                                if (restA.isSuccess()) {
+                                                    List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
+                                                    for (int f = 0; f < fcaA.size(); f++) {
+                                                        ACRGBWSResult getFacilityA = new FetchMethods().GETFACILITYID(dataSource, fcaA.get(f).getHospital());
+                                                        if (getFacilityA.isSuccess()) {
+                                                            FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                                            HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
+                                                            //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                                            if (!new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
+                                                                    && !new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                double totalamount = 0.00;
+                                                                switch (hci.getHcilevel().toUpperCase().trim()) {
+                                                                    case "T1":
+                                                                    case "T2":
+                                                                    case "SH": {
+                                                                        //--------------------------------------------------------------------------------
+                                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                        } else {
+                                                                            totalcomputeA.setC1icdcode("");
+                                                                            totalcomputeA.setC1rvcode("");
+                                                                        }
+                                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                        } else {
+                                                                            totalcomputeA.setC2icdcode("");
+                                                                            totalcomputeA.setC2rvcode("");
+                                                                        }
+                                                                        totalcomputeA.setThirty(String.valueOf(00));
+                                                                        totalcomputeA.setSb(String.valueOf(totalamount * 0.10));
+                                                                        claimsSb += totalamount * 0.10;
+                                                                        break;
+                                                                    }
+                                                                    default: {
+                                                                        //--------------------------------------------------------------------------------
+                                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                        } else {
+                                                                            totalcomputeA.setC1icdcode("");
+                                                                            totalcomputeA.setC1rvcode("");
+                                                                        }
+                                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                        } else {
+                                                                            totalcomputeA.setC2icdcode("");
+                                                                            totalcomputeA.setC2rvcode("");
+                                                                        }
+                                                                        totalcomputeA.setThirty(String.valueOf(00));
+                                                                        totalcomputeA.setSb(String.valueOf(00));
+                                                                        break;
+                                                                    }
+                                                                }
+                                                                totalcomputeA.setHospital(getFacilityA.getResult());
+                                                                totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                                                totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                                totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                                totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                                totalcomputeA.setTotalamount(String.valueOf(totalamount));
+                                                                computationList.add(totalcomputeA);
+                                                                totalbaseamount += totalamount;
+                                                                claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             }
-                                                            if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                            } else {
-                                                                totalcomputeA.setC2icdcode("");
-                                                                totalcomputeA.setC2rvcode("");
-                                                            }
-                                                            totalcomputeA.setThirty(String.valueOf(00));
-                                                            totalcomputeA.setSb(String.valueOf(totalamount * 0.10));
-                                                            claimsSb += totalamount * 0.10;
-                                                            break;
-                                                        }
-                                                        default: {
-                                                            //--------------------------------------------------------------------------------
-                                                            if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                            } else {
-                                                                totalcomputeA.setC1icdcode("");
-                                                                totalcomputeA.setC1rvcode("");
-                                                            }
-                                                            if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                            } else {
-                                                                totalcomputeA.setC2icdcode("");
-                                                                totalcomputeA.setC2rvcode("");
-                                                            }
-                                                            totalcomputeA.setThirty(String.valueOf(00));
-                                                            totalcomputeA.setSb(String.valueOf(00));
-                                                            break;
                                                         }
                                                     }
-                                                    totalcomputeA.setHospital(getFacilityA.getResult());
-                                                    totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
-                                                    totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                                    totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                                    totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
-                                                    totalcomputeA.setTotalamount(String.valueOf(totalamount));
-                                                    computationList.add(totalcomputeA);
-                                                    totalbaseamount += totalamount;
-                                                    claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                 }
                                             }
                                         }
@@ -821,118 +850,133 @@ public class Methods {
                 }
 
                 case "FACILITY": {//USERID IS HCFCODE/ACCRENO
-                    ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, userid, datefrom.trim(), dateto.trim());
-                    if (restA.isSuccess()) {
-                        ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
-                        List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
-                        //DATE SETTINGS AREA
-                        for (int f = 0; f < fcaA.size(); f++) {
-                            ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
-                            if (getFacilityA.isSuccess()) {
-                                FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                                HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
-                                //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
-                                        && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                    double totalamount = 0.00;
-                                    switch (hci.getHcilevel().toUpperCase().trim()) {
-                                        case "T1":
-                                        case "T2":
-                                        case "SH": {
-                                            //--------------------------------------------------------------------------------
-                                            if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                            } else {
-                                                totalcomputeA.setC1icdcode("");
-                                                totalcomputeA.setC1rvcode("");
+                    //---------------------------------------
+                    ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
+                    ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, userid.trim());
+                    if (getHcfByCode.isSuccess()) {
+                        HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
+                        //GET HCF DETAILS BY NAME
+                        ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
+                        if (getHcfByName.isSuccess()) {
+                            List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
+                            for (int u = 0; u < healthCareFacilityList.size(); u++) {
+                                //-----------------------------------------
+                                ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, healthCareFacilityList.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                if (restA.isSuccess()) {
+                                    List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
+                                    //DATE SETTINGS AREA
+                                    for (int f = 0; f < fcaA.size(); f++) {
+                                        ACRGBWSResult getFacilityA = new FetchMethods().GETFACILITYID(dataSource, fcaA.get(f).getHospital());
+                                        if (getFacilityA.isSuccess()) {
+                                            FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                            HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
+                                            //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                            if (!new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
+                                                    && !new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                double totalamount = 0.00;
+                                                switch (hci.getHcilevel().toUpperCase().trim()) {
+                                                    case "T1":
+                                                    case "T2":
+                                                    case "SH": {
+                                                        //--------------------------------------------------------------------------------
+                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                        } else {
+                                                            totalcomputeA.setC1icdcode("");
+                                                            totalcomputeA.setC1rvcode("");
+                                                        }
+                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                        } else {
+                                                            totalcomputeA.setC2icdcode("");
+                                                            totalcomputeA.setC2rvcode("");
+                                                        }
+                                                        totalcomputeA.setThirty(String.valueOf(00));
+                                                        totalcomputeA.setSb(String.valueOf(totalamount * 0.10));
+                                                        break;
+                                                    }
+                                                    default: {
+                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                        } else {
+                                                            totalcomputeA.setC1icdcode("");
+                                                            totalcomputeA.setC1rvcode("");
+                                                        }
+                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                        } else {
+                                                            totalcomputeA.setC2icdcode("");
+                                                            totalcomputeA.setC2rvcode("");
+                                                        }
+                                                        totalcomputeA.setThirty(String.valueOf(00));
+                                                        totalcomputeA.setSb(String.valueOf(00));
+                                                        break;
+                                                    }
+                                                }
+                                                totalcomputeA.setHospital(getFacilityA.getResult());
+                                                totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                                totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                totalcomputeA.setTotalamount(String.valueOf(totalamount));
+                                                totalcomputeList.add(totalcomputeA);
                                             }
-                                            if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                            } else {
-                                                totalcomputeA.setC2icdcode("");
-                                                totalcomputeA.setC2rvcode("");
-                                            }
-                                            totalcomputeA.setThirty(String.valueOf(00));
-                                            totalcomputeA.setSb(String.valueOf(totalamount * 0.10));
-                                            break;
-                                        }
-                                        default: {
-                                            if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                            } else {
-                                                totalcomputeA.setC1icdcode("");
-                                                totalcomputeA.setC1rvcode("");
-                                            }
-                                            if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                            } else {
-                                                totalcomputeA.setC2icdcode("");
-                                                totalcomputeA.setC2rvcode("");
-                                            }
-                                            totalcomputeA.setThirty(String.valueOf(00));
-                                            totalcomputeA.setSb(String.valueOf(00));
-                                            break;
                                         }
                                     }
-                                    totalcomputeA.setHospital(getFacilityA.getResult());
-                                    totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
-                                    totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                    totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                    totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
-                                    totalcomputeA.setTotalamount(String.valueOf(totalamount));
-                                    totalcomputeList.add(totalcomputeA);
                                 }
                             }
-                        }
-                        if (totalcomputeList.size() > 0) {
-                            result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeList));
-                            result.setMessage("OK");
-                            result.setSuccess(true);
+                            if (totalcomputeList.size() > 0) {
+                                result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeList));
+                                result.setMessage("OK");
+                                result.setSuccess(true);
+                            } else {
+                                result.setMessage("N/A");
+                            }
                         } else {
-                            result.setMessage("N/A");
+                            result.setMessage(getHcfByName.getMessage());
                         }
                     } else {
-                        result.setMessage(restA.getMessage());
+                        result.setMessage(getHcfByCode.getMessage());
                     }
                     break;
                 }
@@ -948,113 +992,124 @@ public class Methods {
                         ACRGBWSResult getFacilityUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
                         if (getFacilityUnder.isSuccess()) {
                             for (int y = 0; y < hcflist.size(); y++) {
-                                ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, hcflist.get(y).trim(), datefrom.trim(), dateto.trim());
-                                if (restC.isSuccess()) {
-                                    //DATE SETTINGS
-                                    List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
-                                    for (int f = 0; f < fcaA.size(); f++) {
-                                        //GET FACILITY
-                                        ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
-                                        if (getHCI.isSuccess()) {
-                                            HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class);
-                                            FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                                            totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                            totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                            //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                            if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
-                                                    && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                double totalamount = 0.00;
-                                                switch (hci.getHcilevel().toUpperCase().trim()) {
-                                                    case "T1":
-                                                    case "T2":
-                                                    case "SH": {
-                                                        //--------------------------------------------------------------------------------
-                                                        if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                        } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                        } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                        } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                        } else {
-                                                            totalcomputeA.setC1icdcode("");
-                                                            totalcomputeA.setC1rvcode("");
+                                ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, hcflist.get(y).trim());
+                                if (getHcfByCode.isSuccess()) {
+                                    HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
+                                    //GET HCF DETAILS BY NAME
+                                    ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
+                                    if (getHcfByName.isSuccess()) {
+                                        List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
+                                        for (int u = 0; u < healthCareFacilityList.size(); u++) {
+                                            ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, healthCareFacilityList.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                            if (restC.isSuccess()) {
+                                                //DATE SETTINGS
+                                                List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
+                                                for (int f = 0; f < fcaA.size(); f++) {
+                                                    //GET FACILITY
+                                                    ACRGBWSResult getHCI = new FetchMethods().GETFACILITYID(dataSource, fcaA.get(f).getHospital());
+                                                    if (getHCI.isSuccess()) {
+                                                        HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class);
+                                                        FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                                        totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                        totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                        //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                                        if (!new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
+                                                                && !new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                            double totalamount = 0.00;
+                                                            switch (hci.getHcilevel().toUpperCase().trim()) {
+                                                                case "T1":
+                                                                case "T2":
+                                                                case "SH": {
+                                                                    //--------------------------------------------------------------------------------
+                                                                    if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                        totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                    } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                        totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                    } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                        totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                    } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                        totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                    } else {
+                                                                        totalcomputeA.setC1icdcode("");
+                                                                        totalcomputeA.setC1rvcode("");
+                                                                    }
+                                                                    if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage());
+                                                                        totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                    } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage());
+                                                                        totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                    } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage());
+                                                                        totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                    } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage());
+                                                                        totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                    } else {
+                                                                        totalcomputeA.setC2icdcode("");
+                                                                        totalcomputeA.setC2rvcode("");
+                                                                    }
+                                                                    totalcomputeA.setThirty(String.valueOf(00));
+                                                                    totalcomputeA.setSb(String.valueOf(totalamount * 0.10));
+                                                                    claimsSb += totalamount * 0.10;
+                                                                    break;
+                                                                }
+                                                                default: {
+                                                                    if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                        totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                    } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                        totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                    } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                        totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                    } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                        totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                    } else {
+                                                                        totalcomputeA.setC1icdcode("");
+                                                                        totalcomputeA.setC1rvcode("");
+                                                                    }
+                                                                    if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                        totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                    } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                        totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                    } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                        totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                    } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode()).isSuccess()) {
+                                                                        totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                        totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                    } else {
+                                                                        totalcomputeA.setC2icdcode("");
+                                                                        totalcomputeA.setC2rvcode("");
+                                                                    }
+                                                                    totalcomputeA.setThirty(String.valueOf(00));
+                                                                    totalcomputeA.setSb(String.valueOf(00));
+                                                                    break;
+                                                                }
+                                                            }
+                                                            totalcomputeA.setHospital(getHCI.getResult());
+                                                            totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                                            totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                            totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                            totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                            totalcomputeA.setTotalamount(String.valueOf(totalamount));
+                                                            totalcomputeHCPNList.add(totalcomputeA);
+                                                            //-----------------------------------
+                                                            TotalBaseAmount += totalamount;
+                                                            claimsCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            //-----------------------------------
                                                         }
-                                                        if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage());
-                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                        } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage());
-                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                        } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage());
-                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                        } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage());
-                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                        } else {
-                                                            totalcomputeA.setC2icdcode("");
-                                                            totalcomputeA.setC2rvcode("");
-                                                        }
-                                                        totalcomputeA.setThirty(String.valueOf(00));
-                                                        totalcomputeA.setSb(String.valueOf(totalamount * 0.10));
-                                                        claimsSb += totalamount * 0.10;
-                                                        break;
-                                                    }
-                                                    default: {
-                                                        if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                        } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                        } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                        } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                        } else {
-                                                            totalcomputeA.setC1icdcode("");
-                                                            totalcomputeA.setC1rvcode("");
-                                                        }
-                                                        if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                        } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                        } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                        } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode()).isSuccess()) {
-                                                            totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                        } else {
-                                                            totalcomputeA.setC2icdcode("");
-                                                            totalcomputeA.setC2rvcode("");
-                                                        }
-                                                        totalcomputeA.setThirty(String.valueOf(00));
-                                                        totalcomputeA.setSb(String.valueOf(00));
-                                                        break;
                                                     }
                                                 }
-                                                totalcomputeA.setHospital(getHCI.getResult());
-                                                totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
-                                                totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                                totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                                totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
-                                                totalcomputeA.setTotalamount(String.valueOf(totalamount));
-                                                totalcomputeHCPNList.add(totalcomputeA);
-                                                //-----------------------------------
-                                                TotalBaseAmount += totalamount;
-                                                claimsCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                //-----------------------------------
                                             }
                                         }
                                     }
@@ -1104,187 +1159,198 @@ public class Methods {
                         double claims30percent = 0.00;
                         double claimsSb = 0.00;
                         double TotalBaseAmount = 0.00;
-//                        double primaryFinal = 0.00;
-//                        double seconFinal = 0.00;
-//                        double seconExcludedAmountFinal = 0.00;
-//                        double primaryExcludedFinal = 0.00;
-//                        int seconClaimFinal = 0;
-//                        int seconExcludedClaimFinal = 0;
-//                        int primaryClaimsFinal = 0;
-//                        int primaryExcludedClaimsFinal = 0;
+                        double primaryFinal = 0.00;
+                        double seconFinal = 0.00;
+                        double seconExcludedAmountFinal = 0.00;
+                        double primaryExcludedFinal = 0.00;
+                        int seconClaimFinal = 0;
+                        int seconExcludedClaimFinal = 0;
+                        int primaryClaimsFinal = 0;
+                        int primaryExcludedClaimsFinal = 0;
                         ArrayList<FacilityComputedAmount> totalcomputeHCPNList = new ArrayList<>();
                         List<String> hcflist = Arrays.asList(facilitylist.trim().split(","));
                         for (int y = 0; y < hcflist.size(); y++) {
-                            ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, hcflist.get(y).trim(), datefrom.trim(), dateto.trim());
-                            if (restC.isSuccess()) {
-                                List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
-                                for (int f = 0; f < fcaA.size(); f++) {
-                                    ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
-                                    if (getHCI.isSuccess()) {
-                                        FacilityComputedAmount totalcomputeHCPN = new FacilityComputedAmount();
-                                        //------------------------------------------------
-                                        HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class);
-                                        //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                        if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode()).isSuccess()
-                                                && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode()).isSuccess()) {
-                                            double totalamount = 0.00;
-//                                            double primary = 0.00;
-//                                            double secon = 0.00;
-//                                            double seconExcludedAmount = 0.00;
-//                                            double primaryExcluded = 0.00;
-//                                            int seconClaim = 0;
-//                                            int seconExcludedClaim = 0;
-//                                            int primaryClaims = 0;
-//                                            int primaryExcludedClaims = 0;
-                                            switch (hci.getHcilevel().toUpperCase().trim()) {
-                                                case "T1":
-                                                case "T2":
-                                                case "SH": {
-                                                    //-------------------------------------------------------------------------------------------------------------------
-                                                    if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC1icdcode(fcaA.get(f).getC1icdcode());
-//                                                        primary += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC1rvcode(fcaA.get(f).getC1rvcode());
-//                                                        primary += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC1icdcode(fcaA.get(f).getC1icdcode());
-//                                                        primaryExcluded += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC1rvcode(fcaA.get(f).getC1rvcode());
-//                                                        primaryExcluded += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else {
-                                                        totalcomputeHCPN.setC1icdcode("");
-                                                        totalcomputeHCPN.setC1rvcode("");
+                            ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, hcflist.get(y).trim());
+                            if (getHcfByCode.isSuccess()) {
+                                HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
+                                //GET HCF DETAILS BY NAME
+                                ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
+                                if (getHcfByName.isSuccess()) {
+                                    List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
+                                    for (int u = 0; u < healthCareFacilityList.size(); u++) {
+                                        ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, healthCareFacilityList.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                        if (restC.isSuccess()) {
+                                            List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
+                                            for (int f = 0; f < fcaA.size(); f++) {
+                                                ACRGBWSResult getHCI = new FetchMethods().GETFACILITYID(dataSource, fcaA.get(f).getHospital());
+                                                if (getHCI.isSuccess()) {
+                                                    FacilityComputedAmount totalcomputeHCPN = new FacilityComputedAmount();
+                                                    //------------------------------------------------
+                                                    HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class);
+                                                    //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                                    if (!new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode()).isSuccess()
+                                                            && !new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                        double totalamount = 0.00;
+                                                        double primary = 0.00;
+                                                        double secon = 0.00;
+                                                        double seconExcludedAmount = 0.00;
+                                                        double primaryExcluded = 0.00;
+                                                        int seconClaim = 0;
+                                                        int seconExcludedClaim = 0;
+                                                        int primaryClaims = 0;
+                                                        int primaryExcludedClaims = 0;
+                                                        switch (hci.getHcilevel().toUpperCase().trim()) {
+                                                            case "T1":
+                                                            case "T2":
+                                                            case "SH": {
+                                                                //-------------------------------------------------------------------------------------------------------------------
+                                                                if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                    primary += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                    primary += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                    primaryExcluded += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                    primaryExcluded += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else {
+                                                                    totalcomputeHCPN.setC1icdcode("");
+                                                                    totalcomputeHCPN.setC1rvcode("");
+                                                                }
+                                                                //-------------------------------------------------------------------------------------------------------------------
+                                                                if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                    secon += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                    secon += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                    seconExcludedAmount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                    seconExcludedAmount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else {
+                                                                    totalcomputeHCPN.setC2icdcode("");
+                                                                    totalcomputeHCPN.setC2rvcode("");
+                                                                }
+                                                                totalcomputeHCPN.setThirty(String.valueOf(00));
+                                                                totalcomputeHCPN.setSb(String.valueOf(totalamount * 0.10));
+                                                                claimsSb += totalamount * 0.10;
+                                                                break;
+                                                            }
+                                                            default: {
+                                                                //-------------------------------------------------------------------------------------------------------------------
+                                                                if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    primary += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                    primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                    primary += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                    primaryExcluded += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                    primaryExcluded += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else {
+                                                                    totalcomputeHCPN.setC1icdcode("");
+                                                                    totalcomputeHCPN.setC1rvcode("");
+                                                                }
+                                                                //---------------------------------------------------------------------------------------------------------------------
+                                                                if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                    secon += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                    secon += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                    seconExcludedAmount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeHCPN.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                    seconExcludedAmount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                } else {
+                                                                    totalcomputeHCPN.setC2icdcode("");
+                                                                    totalcomputeHCPN.setC2rvcode("");
+                                                                }
+                                                                totalcomputeHCPN.setThirty(String.valueOf(00));
+                                                                totalcomputeHCPN.setSb(String.valueOf(00));
+                                                                break;
+                                                            }
+                                                        }
+                                                        totalcomputeHCPN.setHospital(getHCI.getResult());
+                                                        totalcomputeHCPN.setDatefiled(fcaA.get(f).getDatefiled());
+                                                        totalcomputeHCPN.setYearfrom(fcaA.get(f).getYearfrom());
+                                                        totalcomputeHCPN.setYearto(fcaA.get(f).getYearto());
+                                                        totalcomputeHCPN.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                        totalcomputeHCPN.setTotalamount(String.valueOf(totalamount));
+                                                        totalcomputeHCPNList.add(totalcomputeHCPN);
+                                                        //---------------------------------------
+                                                        TotalBaseAmount += totalamount;
+                                                        claimsCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                        //-------------------------------------------
+                                                        primaryFinal += primary;
+                                                        primaryExcludedFinal += primaryExcluded;
+                                                        primaryClaimsFinal += primaryClaims;
+                                                        primaryExcludedClaimsFinal += primaryExcludedClaims;
+                                                        seconFinal += secon;
+                                                        seconClaimFinal += seconClaim;
+                                                        seconExcludedAmountFinal += seconExcludedAmount;
+                                                        seconExcludedClaimFinal += seconExcludedClaim;
+
                                                     }
-                                                    //-------------------------------------------------------------------------------------------------------------------
-                                                    if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC2icdcode(fcaA.get(f).getC2icdcode());
-//                                                        secon += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC2rvcode(fcaA.get(f).getC2rvcode());
-//                                                        secon += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC2icdcode(fcaA.get(f).getC2icdcode());
-//                                                        seconExcludedAmount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC2rvcode(fcaA.get(f).getC2rvcode());
-//                                                        seconExcludedAmount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else {
-                                                        totalcomputeHCPN.setC2icdcode("");
-                                                        totalcomputeHCPN.setC2rvcode("");
-                                                    }
-                                                    totalcomputeHCPN.setThirty(String.valueOf(00));
-                                                    totalcomputeHCPN.setSb(String.valueOf(totalamount * 0.10));
-                                                    claimsSb += totalamount * 0.10;
-                                                    break;
-                                                }
-                                                default: {
-                                                    //-------------------------------------------------------------------------------------------------------------------
-                                                    if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        primary += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        totalcomputeHCPN.setC1icdcode(fcaA.get(f).getC1icdcode());
-//                                                        primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC1rvcode(fcaA.get(f).getC1rvcode());
-//                                                        primary += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC1icdcode(fcaA.get(f).getC1icdcode());
-//                                                        primaryExcluded += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC1rvcode(fcaA.get(f).getC1rvcode());
-//                                                        primaryExcluded += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else {
-                                                        totalcomputeHCPN.setC1icdcode("");
-                                                        totalcomputeHCPN.setC1rvcode("");
-                                                    }
-                                                    //---------------------------------------------------------------------------------------------------------------------
-                                                    if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC2icdcode(fcaA.get(f).getC2icdcode());
-//                                                        secon += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC2rvcode(fcaA.get(f).getC2rvcode());
-//                                                        secon += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC2icdcode(fcaA.get(f).getC2icdcode());
-//                                                        seconExcludedAmount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeHCPN.setC2rvcode(fcaA.get(f).getC2rvcode());
-//                                                        seconExcludedAmount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-//                                                        seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                    } else {
-                                                        totalcomputeHCPN.setC2icdcode("");
-                                                        totalcomputeHCPN.setC2rvcode("");
-                                                    }
-                                                    totalcomputeHCPN.setThirty(String.valueOf(00));
-                                                    totalcomputeHCPN.setSb(String.valueOf(00));
-                                                    break;
                                                 }
                                             }
-                                            totalcomputeHCPN.setHospital(getHCI.getResult());
-                                            totalcomputeHCPN.setDatefiled(fcaA.get(f).getDatefiled());
-                                            totalcomputeHCPN.setYearfrom(fcaA.get(f).getYearfrom());
-                                            totalcomputeHCPN.setYearto(fcaA.get(f).getYearto());
-                                            totalcomputeHCPN.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
-                                            totalcomputeHCPN.setTotalamount(String.valueOf(totalamount));
-                                            totalcomputeHCPNList.add(totalcomputeHCPN);
-                                            //---------------------------------------
-                                            TotalBaseAmount += totalamount;
-                                            claimsCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                            //-------------------------------------------
-//                                            primaryFinal += primary;
-//                                            primaryExcludedFinal += primaryExcluded;
-//                                            primaryClaimsFinal += primaryClaims;
-//                                            primaryExcludedClaimsFinal += primaryExcludedClaims;
-//                                            seconFinal += secon;
-//                                            seconClaimFinal += seconClaim;
-//                                            seconExcludedAmountFinal += seconExcludedAmount;
-//                                            seconExcludedClaimFinal += seconExcludedClaim;
-
                                         }
                                     }
                                 }
                             }
                         }
-//                        System.out.println("PRIMARY AMOUNT " + primaryFinal);
-//                        System.out.println("PRIMARY CLAIMS " + primaryClaimsFinal);
-//                        System.out.println("PRIMARY EXCLUDED AMOUNT " + primaryExcludedFinal);
-//                        System.out.println("PRIMARY EXCLUDED CLAIMS " + primaryExcludedClaimsFinal);
-//                        System.out.println("SECONDARY AMOUNT  " + seconFinal);
-//                        System.out.println("SECONDARY CLAIMS  " + seconClaimFinal);
-//                        System.out.println("SECONDARY EXCLUDED AMOUNT  " + seconExcludedAmountFinal);
-//                        System.out.println("SECONDARY EXCLUDED CLAIMS  " + seconExcludedClaimFinal);
-//                        System.out.println("TOTAL BASE AMOUNT  " + TotalBaseAmount);
+                        System.out.println(primaryFinal);
+                        System.out.println(primaryClaimsFinal);
+                        System.out.println(primaryExcludedFinal);
+                        System.out.println(primaryExcludedClaimsFinal);
+                        System.out.println(seconFinal);
+                        System.out.println(seconClaimFinal);
+                        System.out.println(seconExcludedAmountFinal);
+                        System.out.println(seconExcludedClaimFinal);
+                        System.out.println(TotalBaseAmount);
                         FacilityComputedAmount totalcomputeHCPNA = new FacilityComputedAmount();
                         if (claimsSb > 0.00) {
                             totalcomputeHCPNA.setSb(String.valueOf(claimsSb / 3));
@@ -1326,13 +1392,15 @@ public class Methods {
             }
         } catch (IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
 
-    // GET SUMMARY FOR INSERTING CONTRACT
-    //ACR GB GET SUMMARY
+// GET SUMMARY FOR INSERTING CONTRACT
+//ACR GB GET SUMMARY
     public ACRGBWSResult GetBaseAmountForContract(final DataSource dataSource,
             final String tags,
             final String userid,
@@ -1343,7 +1411,6 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ContractMethod cm = new ContractMethod();
         try {
             switch (tags.toUpperCase()) {
                 case "USERPRO"://USERID IS PRO ACCOUNT USERID
@@ -1362,108 +1429,121 @@ public class Methods {
                                 if (getHCIUisngHCPNCode.isSuccess()) {
                                     List<String> ListOHCI = Arrays.asList(getHCIUisngHCPNCode.getResult().split(","));
                                     for (int hci = 0; hci < ListOHCI.size(); hci++) {
-                                        ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, ListOHCI.get(hci).trim(), datefrom.trim(), dateto.trim());
-                                        if (restA.isSuccess()) {
-                                            List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
-                                            //DATE SETTINGS
-                                            for (int f = 0; f < fcaA.size(); f++) {
-                                                ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
-                                                if (getFacilityA.isSuccess()) {
-                                                    FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                                                    HealthCareFacility hciList = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
-                                                    //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                                    if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
-                                                            && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                        double totalamount = 0.00;
-                                                        switch (hciList.getHcilevel().toUpperCase().trim()) {
-                                                            case "T1":
-                                                            case "T2":
-                                                            case "SH": {
-                                                                if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                                } else {
-                                                                    totalcomputeA.setC1icdcode("");
-                                                                    totalcomputeA.setC1rvcode("");
-                                                                }
 
-                                                                if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                                } else {
-                                                                    totalcomputeA.setC2icdcode("");
-                                                                    totalcomputeA.setC2rvcode("");
+                                        ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, ListOHCI.get(hci).trim());
+                                        if (getHcfByCode.isSuccess()) {
+                                            HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
+                                            //GET HCF DETAILS BY NAME
+                                            ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
+                                            if (getHcfByName.isSuccess()) {
+                                                List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
+                                                for (int u = 0; u < healthCareFacilityList.size(); u++) {
+
+                                                    ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, healthCareFacilityList.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                                    if (restA.isSuccess()) {
+                                                        List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
+                                                        //DATE SETTINGS
+                                                        for (int f = 0; f < fcaA.size(); f++) {
+                                                            ACRGBWSResult getFacilityA = new FetchMethods().GETFACILITYID(dataSource, fcaA.get(f).getHospital());
+                                                            if (getFacilityA.isSuccess()) {
+                                                                FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                                                HealthCareFacility hciList = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
+                                                                //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                                                if (!new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
+                                                                        && !new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                    double totalamount = 0.00;
+                                                                    switch (hciList.getHcilevel().toUpperCase().trim()) {
+                                                                        case "T1":
+                                                                        case "T2":
+                                                                        case "SH": {
+                                                                            if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                            } else {
+                                                                                totalcomputeA.setC1icdcode("");
+                                                                                totalcomputeA.setC1rvcode("");
+                                                                            }
+
+                                                                            if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                            } else {
+                                                                                totalcomputeA.setC2icdcode("");
+                                                                                totalcomputeA.setC2rvcode("");
+                                                                            }
+                                                                            totalcomputeA.setThirty(String.valueOf(00));
+                                                                            totalcomputeA.setSb(String.valueOf(totalamount * 0.10));
+                                                                            claimsSb += totalamount * 0.10;
+                                                                            break;
+                                                                        }
+                                                                        default: {
+                                                                            if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                            } else {
+                                                                                totalcomputeA.setC1icdcode("");
+                                                                                totalcomputeA.setC1rvcode("");
+                                                                            }
+                                                                            if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                            } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                                totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                            } else {
+                                                                                totalcomputeA.setC2icdcode("");
+                                                                                totalcomputeA.setC2rvcode("");
+                                                                            }
+                                                                            totalcomputeA.setThirty(String.valueOf(00));
+                                                                            totalcomputeA.setSb(String.valueOf(00));
+                                                                            break;
+                                                                        }
+                                                                    }
+                                                                    totalcomputeA.setHospital(getFacilityA.getResult());
+                                                                    totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                                                    totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                                    totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                                    totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                                    totalcomputeA.setTotalamount(String.valueOf(totalamount));
+                                                                    totalcomputeList.add(totalcomputeA);
+                                                                    totalbaseamount += totalamount;
+                                                                    claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 }
-                                                                totalcomputeA.setThirty(String.valueOf(00));
-                                                                totalcomputeA.setSb(String.valueOf(totalamount * 0.10));
-                                                                claimsSb += totalamount * 0.10;
-                                                                break;
-                                                            }
-                                                            default: {
-                                                                if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                                } else {
-                                                                    totalcomputeA.setC1icdcode("");
-                                                                    totalcomputeA.setC1rvcode("");
-                                                                }
-                                                                if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                                } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                    totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                                } else {
-                                                                    totalcomputeA.setC2icdcode("");
-                                                                    totalcomputeA.setC2rvcode("");
-                                                                }
-                                                                totalcomputeA.setThirty(String.valueOf(00));
-                                                                totalcomputeA.setSb(String.valueOf(00));
-                                                                break;
                                                             }
                                                         }
-                                                        totalcomputeA.setHospital(getFacilityA.getResult());
-                                                        totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
-                                                        totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                                        totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                                        totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
-                                                        totalcomputeA.setTotalamount(String.valueOf(totalamount));
-                                                        totalcomputeList.add(totalcomputeA);
-                                                        totalbaseamount += totalamount;
-                                                        claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                     }
                                                 }
                                             }
@@ -1527,111 +1607,124 @@ public class Methods {
                             if (getHCFUnder.isSuccess()) {
                                 List<String> HCFList = Arrays.asList(getHCFUnder.getResult().split(","));
                                 for (int hcf = 0; hcf < HCFList.size(); hcf++) {
-                                    ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, HCFList.get(hcf).trim(), datefrom.trim(), dateto.trim());
-                                    if (restA.isSuccess()) {
-                                        List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
-                                        for (int f = 0; f < fcaA.size(); f++) {
-                                            //------------------------------------------------     
-                                            ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
-                                            if (getFacilityA.isSuccess()) {
-                                                double totalamount = 0.00;
-                                                FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                                                HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
-                                                //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                                if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
-                                                        && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                    switch (hci.getHcilevel().toUpperCase().trim()) {
-                                                        case "T1":
-                                                        case "T2":
-                                                        case "SH": {
-                                                            if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                            } else {
-                                                                totalcomputeA.setC1icdcode("");
-                                                                totalcomputeA.setC1rvcode("");
-                                                            }
+                                    //-------------------------------------------------------------------
+                                    ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, HCFList.get(hcf).trim());
+                                    if (getHcfByCode.isSuccess()) {
+                                        HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
+                                        //GET HCF DETAILS BY NAME
+                                        ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
+                                        if (getHcfByName.isSuccess()) {
+                                            List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
+                                            for (int u = 0; u < healthCareFacilityList.size(); u++) {
+                                                //----------------------------------------------------------------------
+                                                ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, healthCareFacilityList.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                                if (restA.isSuccess()) {
+                                                    List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
+                                                    for (int f = 0; f < fcaA.size(); f++) {
+                                                        //------------------------------------------------     
+                                                        ACRGBWSResult getFacilityA = new FetchMethods().GETFACILITYID(dataSource, fcaA.get(f).getHospital());
+                                                        if (getFacilityA.isSuccess()) {
+                                                            double totalamount = 0.00;
+                                                            FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                                            HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
+                                                            //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                                            if (!new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
+                                                                    && !new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                switch (hci.getHcilevel().toUpperCase().trim()) {
+                                                                    case "T1":
+                                                                    case "T2":
+                                                                    case "SH": {
+                                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                        } else {
+                                                                            totalcomputeA.setC1icdcode("");
+                                                                            totalcomputeA.setC1rvcode("");
+                                                                        }
 
-                                                            if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                            } else {
-                                                                totalcomputeA.setC2icdcode("");
-                                                                totalcomputeA.setC2rvcode("");
-                                                            }
-                                                            totalcomputeA.setThirty(String.valueOf(00));
-                                                            totalcomputeA.setSb(String.valueOf(totalamount * 0.10));
-                                                            claimsSb += totalamount * 0.10;
-                                                            break;
-                                                        }
-                                                        default: {
-                                                            if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                            } else {
-                                                                totalcomputeA.setC1icdcode("");
-                                                                totalcomputeA.setC1rvcode("");
-                                                            }
+                                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                        } else {
+                                                                            totalcomputeA.setC2icdcode("");
+                                                                            totalcomputeA.setC2rvcode("");
+                                                                        }
+                                                                        totalcomputeA.setThirty(String.valueOf(00));
+                                                                        totalcomputeA.setSb(String.valueOf(totalamount * 0.10));
+                                                                        claimsSb += totalamount * 0.10;
+                                                                        break;
+                                                                    }
+                                                                    default: {
+                                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                        } else {
+                                                                            totalcomputeA.setC1icdcode("");
+                                                                            totalcomputeA.setC1rvcode("");
+                                                                        }
 
-                                                            if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage());
-                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage());
-                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage());
-                                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage());
-                                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage());
+                                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage());
+                                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage());
+                                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage());
+                                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
 
-                                                            } else {
-                                                                totalcomputeA.setC2icdcode("");
-                                                                totalcomputeA.setC2rvcode("");
+                                                                        } else {
+                                                                            totalcomputeA.setC2icdcode("");
+                                                                            totalcomputeA.setC2rvcode("");
+                                                                        }
+                                                                        totalcomputeA.setThirty(String.valueOf(00));
+                                                                        totalcomputeA.setSb(String.valueOf(00));
+                                                                        break;
+                                                                    }
+                                                                }
                                                             }
-                                                            totalcomputeA.setThirty(String.valueOf(00));
-                                                            totalcomputeA.setSb(String.valueOf(00));
-                                                            break;
+                                                            totalcomputeA.setHospital(getFacilityA.getResult());
+                                                            totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                                            totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                            totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                            totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                            totalcomputeA.setTotalamount(String.valueOf(totalamount));
+                                                            computationList.add(totalcomputeA);
+                                                            totalbaseamount += totalamount;
+                                                            claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                         }
                                                     }
                                                 }
-                                                totalcomputeA.setHospital(getFacilityA.getResult());
-                                                totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
-                                                totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                                totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                                totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
-                                                totalcomputeA.setTotalamount(String.valueOf(totalamount));
-                                                computationList.add(totalcomputeA);
-                                                totalbaseamount += totalamount;
-                                                claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                             }
                                         }
                                     }
@@ -1682,156 +1775,172 @@ public class Methods {
                     break;
                 }
                 case "FACILITY": {//USERID IS HCFCODE/ACCRENO
-                    ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, userid, datefrom.trim(), dateto.trim());
-                    if (restA.isSuccess()) {
-                        ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
-                        int claimCount = 0;
-                        double claimsSb = 0.00;
-                        double totalbaseamount = 0.00;
+                    ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
+                    //-------------------------------------------------------------------
+                    ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, userid.trim());
+                    if (getHcfByCode.isSuccess()) {
+                        HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
+                        //GET HCF DETAILS BY NAME
+                        ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
+                        if (getHcfByName.isSuccess()) {
+                            List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
+                            for (int u = 0; u < healthCareFacilityList.size(); u++) {
+                                //----------------------------------------------------------------------
+                                ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, healthCareFacilityList.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                if (restA.isSuccess()) {
+                                    int claimCount = 0;
+                                    double claimsSb = 0.00;
+                                    double totalbaseamount = 0.00;
+                                    List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
+                                    //DATE SETTINGS AREA
+                                    for (int f = 0; f < fcaA.size(); f++) {
+                                        ACRGBWSResult getFacilityA = new FetchMethods().GETFACILITYID(dataSource, fcaA.get(f).getHospital());
+                                        if (getFacilityA.isSuccess()) {
+                                            HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
+                                            //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                            FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                            if (!new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
+                                                    && !new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                double totalamount = 0.00;
+                                                switch (hci.getHcilevel().toUpperCase().trim()) {
+                                                    case "T1":
+                                                    case "T2":
+                                                    case "SH": {
+                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                        } else {
+                                                            totalcomputeA.setC1icdcode("");
+                                                            totalcomputeA.setC1rvcode("");
+                                                        }
+                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                        } else {
+                                                            totalcomputeA.setC2icdcode("");
+                                                            totalcomputeA.setC2rvcode("");
+                                                        }
+                                                        totalcomputeA.setThirty(String.valueOf(00));
+                                                        totalcomputeA.setSb(String.valueOf(totalamount * .10));
+                                                        claimsSb += totalamount * 0.10;
+                                                        break;
+                                                    }
+                                                    default: {
+                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                        } else {
+                                                            totalcomputeA.setC1icdcode("");
+                                                            totalcomputeA.setC1rvcode("");
+                                                        }
 
-                        List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
-                        //DATE SETTINGS AREA
-                        for (int f = 0; f < fcaA.size(); f++) {
-                            ACRGBWSResult getFacilityA = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital());
-                            if (getFacilityA.isSuccess()) {
-                                //------------------------------------------------
-                                HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class);
-                                //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                                if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
-                                        && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                    double totalamount = 0.00;
-                                    switch (hci.getHcilevel().toUpperCase().trim()) {
-                                        case "T1":
-                                        case "T2":
-                                        case "SH": {
-                                            if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                            } else {
-                                                totalcomputeA.setC1icdcode("");
-                                                totalcomputeA.setC1rvcode("");
-                                            }
-                                            if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                            } else {
-                                                totalcomputeA.setC2icdcode("");
-                                                totalcomputeA.setC2rvcode("");
-                                            }
-                                            totalcomputeA.setThirty(String.valueOf(00));
-                                            totalcomputeA.setSb(String.valueOf(totalamount * .10));
-                                            claimsSb += totalamount * 0.10;
-                                            break;
-                                        }
-                                        default: {
-                                            if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                            } else {
-                                                totalcomputeA.setC1icdcode("");
-                                                totalcomputeA.setC1rvcode("");
+                                                        if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                        } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                            totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                            totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                        } else {
+                                                            totalcomputeA.setC2icdcode("");
+                                                            totalcomputeA.setC2rvcode("");
+                                                        }
+                                                        totalcomputeA.setThirty(String.valueOf(00));
+                                                        totalcomputeA.setSb(String.valueOf(00));
+                                                        break;
+                                                    }
+                                                }
+                                                totalcomputeA.setHospital(getFacilityA.getResult());
+                                                totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                                totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                totalcomputeA.setTotalamount(String.valueOf(totalamount));
+                                                totalcomputeList.add(totalcomputeA);
+                                                totalbaseamount += totalamount;
+                                                claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                             }
 
-                                            if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                            } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                            } else {
-                                                totalcomputeA.setC2icdcode("");
-                                                totalcomputeA.setC2rvcode("");
-                                            }
-                                            totalcomputeA.setThirty(String.valueOf(00));
-                                            totalcomputeA.setSb(String.valueOf(00));
-                                            break;
                                         }
                                     }
-                                    totalcomputeA.setHospital(getFacilityA.getResult());
-                                    totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
-                                    totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                    totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                    totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
-                                    totalcomputeA.setTotalamount(String.valueOf(totalamount));
-                                    totalcomputeList.add(totalcomputeA);
-                                    totalbaseamount += totalamount;
-                                    claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
+
+                                    FacilityComputedAmount totalcompute = new FacilityComputedAmount();
+                                    //GET FACILITY
+                                    ACRGBWSResult getFacility = new FetchMethods().GETFACILITYID(dataSource, userid);
+                                    if (getFacility.isSuccess()) {
+                                        totalcompute.setHospital(getFacility.getResult());
+                                    } else {
+                                        totalcompute.setHospital(getFacility.getMessage());
+                                    }
+                                    if (totalbaseamount > 0.00) {
+                                        totalcompute.setTotalamount(String.valueOf(totalbaseamount / 3));
+                                    } else {
+                                        totalcompute.setTotalamount(String.valueOf(totalbaseamount));
+                                    }
+                                    if (claimCount > 0) {
+                                        totalcompute.setTotalclaims(String.valueOf(claimCount / 3));
+                                    } else {
+                                        totalcompute.setTotalclaims(String.valueOf(claimCount));
+                                    }
+                                    totalcompute.setThirty(String.valueOf(0.00));
+                                    if (claimsSb > 0.00) {
+                                        totalcompute.setSb(String.valueOf(claimsSb / 3));
+                                    } else {
+                                        totalcompute.setSb(String.valueOf(claimsSb));
+                                    }
+                                    totalcompute.setYearfrom(datefrom);
+                                    totalcompute.setYearto(dateto);
+                                    totalcomputeList.add(totalcompute);
+                                    //-------------------------------------------------------------------
+
                                 }
-
                             }
-                        }
 
-                        FacilityComputedAmount totalcompute = new FacilityComputedAmount();
-                        //GET FACILITY
-                        ACRGBWSResult getFacility = fm.GETFACILITYID(dataSource, userid);
-                        if (getFacility.isSuccess()) {
-                            totalcompute.setHospital(getFacility.getResult());
+                            if (totalcomputeList.size() > 0) {
+                                result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeList));
+                                result.setMessage("OK");
+                                result.setSuccess(true);
+                            } else {
+                                result.setMessage("N/A");
+                            }
+
                         } else {
-                            totalcompute.setHospital(getFacility.getMessage());
-                        }
-                        if (totalbaseamount > 0.00) {
-                            totalcompute.setTotalamount(String.valueOf(totalbaseamount / 3));
-                        } else {
-                            totalcompute.setTotalamount(String.valueOf(totalbaseamount));
-                        }
-                        if (claimCount > 0) {
-                            totalcompute.setTotalclaims(String.valueOf(claimCount / 3));
-                        } else {
-                            totalcompute.setTotalclaims(String.valueOf(claimCount));
-                        }
-                        totalcompute.setThirty(String.valueOf(0.00));
-                        if (claimsSb > 0.00) {
-                            totalcompute.setSb(String.valueOf(claimsSb / 3));
-                        } else {
-                            totalcompute.setSb(String.valueOf(claimsSb));
-                        }
-                        totalcompute.setYearfrom(datefrom);
-                        totalcompute.setYearto(dateto);
-                        totalcomputeList.add(totalcompute);
-                        //-------------------------------------------------------------------
-                        if (totalcomputeList.size() > 0) {
-                            result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeList));
-                            result.setMessage("OK");
-                            result.setSuccess(true);
-                        } else {
-                            result.setMessage("N/A");
+                            result.setMessage(getHcfByName.getMessage());
                         }
                     } else {
-                        result.setMessage(restA.getMessage());
+                        result.setMessage(getHcfByCode.getMessage());
                     }
                     break;
                 }
@@ -1846,117 +1955,131 @@ public class Methods {
                         double claimsSb = 0.00;
                         double totalbaseamount = 0.00;
                         for (int y = 0; y < hcflist.size(); y++) {
-                            ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, hcflist.get(y).trim(), datefrom.trim(), dateto.trim());
-                            if (restC.isSuccess()) {
-                                //DATE SETTINGS
-                                List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
-                                for (int f = 0; f < fcaA.size(); f++) {
-                                    //GET FACILITY
-                                    ACRGBWSResult getHCI = fm.GETFACILITYID(dataSource, fcaA.get(f).getHospital().trim());
-                                    if (getHCI.isSuccess()) {
-                                        FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
-                                        //------------------------------------------------
-                                        HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class);
-                                        //Z BEN CODE CHECKING AREA SKIP IF TRUE
-                                        if (!cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
-                                                && !cm.GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                            double totalamount = 0.00;
-                                            switch (hci.getHcilevel().toUpperCase().trim()) {
-                                                case "T1":
-                                                case "T2":
-                                                case "SH": {
-                                                    if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                    } else {
-                                                        totalcomputeA.setC1icdcode("");
-                                                        totalcomputeA.setC1rvcode("");
-                                                    }
+                            //-------------------------------------------------------------------
+                            ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, hcflist.get(y).trim());
+                            if (getHcfByCode.isSuccess()) {
+                                HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
+                                //GET HCF DETAILS BY NAME
+                                ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
+                                if (getHcfByName.isSuccess()) {
+                                    List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
+                                    for (int u = 0; u < healthCareFacilityList.size(); u++) {
+                                        //----------------------------------------------------------------------
+                                        ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, healthCareFacilityList.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                        if (restC.isSuccess()) {
+                                            //DATE SETTINGS
+                                            List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
+                                            for (int f = 0; f < fcaA.size(); f++) {
+                                                //GET FACILITY
+                                                ACRGBWSResult getHCI = new FetchMethods().GETFACILITYID(dataSource, fcaA.get(f).getHospital().trim());
+                                                if (getHCI.isSuccess()) {
+                                                    FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
+                                                    //------------------------------------------------
+                                                    HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class
+                                                    );
+                                                    //Z BEN CODE CHECKING AREA SKIP IF TRUE
+                                                    if (!new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
+                                                            && !new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                        double totalamount = 0.00;
+                                                        switch (hci.getHcilevel().toUpperCase().trim()) {
+                                                            case "T1":
+                                                            case "T2":
+                                                            case "SH": {
+                                                                if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                } else {
+                                                                    totalcomputeA.setC1icdcode("");
+                                                                    totalcomputeA.setC1rvcode("");
+                                                                }
 
-                                                    if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                    } else {
-                                                        totalcomputeA.setC2icdcode("");
-                                                        totalcomputeA.setC2rvcode("");
-                                                    }
-                                                    totalcomputeA.setThirty(String.valueOf(00));
-                                                    totalcomputeA.setSb(String.valueOf(totalamount * 0.10));
-                                                    claimsSb += totalamount * 0.10;
-                                                    break;
-                                                }
-                                                default: {
-                                                    if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                    } else {
-                                                        totalcomputeA.setC1icdcode("");
-                                                        totalcomputeA.setC1rvcode("");
-                                                    }
+                                                                if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                } else {
+                                                                    totalcomputeA.setC2icdcode("");
+                                                                    totalcomputeA.setC2rvcode("");
+                                                                }
+                                                                totalcomputeA.setThirty(String.valueOf(00));
+                                                                totalcomputeA.setSb(String.valueOf(totalamount * 0.10));
+                                                                claimsSb += totalamount * 0.10;
+                                                                break;
+                                                            }
+                                                            default: {
+                                                                if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC1icdcode(fcaA.get(f).getC1icdcode());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC1rvcode(fcaA.get(f).getC1rvcode());
+                                                                } else {
+                                                                    totalcomputeA.setC1icdcode("");
+                                                                    totalcomputeA.setC1rvcode("");
+                                                                }
 
-                                                    if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                    } else if (cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
-                                                        totalamount += Double.parseDouble(cm.GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                        totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                    } else {
-                                                        totalcomputeA.setC2icdcode("");
-                                                        totalcomputeA.setC2rvcode("");
+                                                                if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC2icdcode(fcaA.get(f).getC2icdcode());
+                                                                } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
+                                                                    totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode()).getMessage()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+                                                                    totalcomputeA.setC2rvcode(fcaA.get(f).getC2rvcode());
+                                                                } else {
+                                                                    totalcomputeA.setC2icdcode("");
+                                                                    totalcomputeA.setC2rvcode("");
+                                                                }
+                                                                totalcomputeA.setThirty(String.valueOf(00));
+                                                                totalcomputeA.setSb(String.valueOf(00));
+                                                                break;
+                                                            }
+                                                        }
+
+                                                        totalcomputeA.setHospital(getHCI.getResult());
+                                                        totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
+                                                        totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
+                                                        totalcomputeA.setYearto(fcaA.get(f).getYearto());
+                                                        totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
+                                                        totalcomputeA.setTotalamount(String.valueOf(totalamount));
+                                                        totalcomputeHCPNList.add(totalcomputeA);
+                                                        totalbaseamount += totalamount;
+                                                        claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                     }
-                                                    totalcomputeA.setThirty(String.valueOf(00));
-                                                    totalcomputeA.setSb(String.valueOf(00));
-                                                    break;
                                                 }
                                             }
-
-                                            totalcomputeA.setHospital(getHCI.getResult());
-                                            totalcomputeA.setDatefiled(fcaA.get(f).getDatefiled());
-                                            totalcomputeA.setYearfrom(fcaA.get(f).getYearfrom());
-                                            totalcomputeA.setYearto(fcaA.get(f).getYearto());
-                                            totalcomputeA.setTotalclaims(String.valueOf(Integer.parseInt(fcaA.get(f).getTotalclaims())));
-                                            totalcomputeA.setTotalamount(String.valueOf(totalamount));
-                                            totalcomputeHCPNList.add(totalcomputeA);
-                                            totalbaseamount += totalamount;
-                                            claimCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                         }
                                     }
-
                                 }
                             }
+
                         }
                         FacilityComputedAmount totalcomputeHCPNA = new FacilityComputedAmount();
                         if (claimsSb > 0.00) {
@@ -2007,7 +2130,7 @@ public class Methods {
     }
 
     // ACR GB USER ACTIVITY LOGS
-//    public ACRGBWSResult ActivityLogs(final DataSource dataSource, final UserActivity useractivity) {
+    //    public ACRGBWSResult ActivityLogs(final DataSource dataSource, final UserActivity useractivity) {
     public ACRGBWSResult ActivityLogs(
             final DataSource dataSource,
             final String actby,
@@ -2035,7 +2158,9 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2176,7 +2301,6 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        java.util.Date d1 = new java.util.Date();
         try (Connection connection = dataSource.getConnection()) {
             if (!utility.IsValidDate(mbrequestsummry.getDaterequest()) || !utility.IsValidDate(mbrequestsummry.getYearfrom()) || !utility.IsValidDate(mbrequestsummry.getYearto())) {
                 result.setMessage("DATE FORMAT IS NOT VALID MM-dd-yyyy");
@@ -2198,7 +2322,7 @@ public class Methods {
                     getinsertresult.setString("utranscode", mbrequestsummry.getTranscode());
                     getinsertresult.setString("uremarks", mbrequestsummry.getRemarks());
                     getinsertresult.setString("uamount", mbrequestsummry.getTotalamount());
-                    getinsertresult.setTimestamp("udatecreated", new java.sql.Timestamp(d1.getTime()));
+                    getinsertresult.setTimestamp("udatecreated", new java.sql.Timestamp(new java.util.Date().getTime()));
                     getinsertresult.execute();
                     if (getinsertresult.getString("Message").equals("SUCC")) {
                         ArrayList<String> errorList = new ArrayList<>();
@@ -2209,7 +2333,7 @@ public class Methods {
                             statement.registerOutParameter("Message", OracleTypes.VARCHAR);
                             statement.registerOutParameter("Code", OracleTypes.INTEGER);
                             statement.setString("utranscode", mbrequestsummry.getTranscode());
-                            statement.setTimestamp("udatecreated", new java.sql.Timestamp(d1.getTime()));
+                            statement.setTimestamp("udatecreated", new java.sql.Timestamp(new java.util.Date().getTime()));
                             statement.setString("uamount", facilitylist.get(x + 1));
                             statement.setString("ufacility", facilitylist.get(x));
                             statement.execute();
@@ -2231,7 +2355,9 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2297,15 +2423,19 @@ public class Methods {
                 if (accessidlist.size() > 0) {
                     for (int x = 0; x < accessidlist.size(); x++) {
                         ACRGBWSResult getmbresult = this.GETMBWITHID(dataSource, accessidlist.get(x));
+
                         if (getmbresult.isSuccess()) {
-                            ManagingBoard managingboard = utility.ObjectMapper().readValue(getmbresult.getResult(), ManagingBoard.class);
+                            ManagingBoard managingboard = utility.ObjectMapper().readValue(getmbresult.getResult(), ManagingBoard.class
+                            );
                             //GET FALCITY UNDER EVERY MB
                             ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, managingboard.getControlnumber(), tags);
                             List<String> facilityidlist = Arrays.asList(restC.getResult().split(","));
                             for (int y = 0; y < facilityidlist.size(); y++) {
-                                ACRGBWSResult getfacility = fm.GETFACILITYID(dataSource, facilityidlist.get(y));
+                                ACRGBWSResult getfacility = new FetchMethods().GETFACILITYID(dataSource, facilityidlist.get(y));
+
                                 if (getfacility.isSuccess()) {
-                                    HealthCareFacility facility = utility.ObjectMapper().readValue(getfacility.getResult(), HealthCareFacility.class);
+                                    HealthCareFacility facility = utility.ObjectMapper().readValue(getfacility.getResult(), HealthCareFacility.class
+                                    );
                                     HealthCareFacility newfacility = new HealthCareFacility();
                                     newfacility.setAmount(facility.getAmount());
                                     newfacility.setType(facility.getType());
@@ -2338,7 +2468,9 @@ public class Methods {
 
         } catch (IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2407,9 +2539,11 @@ public class Methods {
                 mb.setMbid(resultset.getString("MBID"));
                 mb.setMbname(resultset.getString("MBNAME"));
                 mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
-                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+
                 if (creator.isSuccess()) {
-                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
+                    );
                     mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                 } else {
                     mb.setCreatedby(creator.getMessage());
@@ -2427,7 +2561,9 @@ public class Methods {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2442,7 +2578,6 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        UserActivityLogs logss = new UserActivityLogs();
         try (Connection connection = datasource.getConnection()) {
             UserActivity userLogs = utility.UserActivity();
             ArrayList<String> errorList = new ArrayList<>();
@@ -2465,14 +2600,13 @@ public class Methods {
                 }
                 userLogs.setActdetails(getinsertresult.getString("Message"));
                 userLogs.setActby(createdby);
-                logss.UserLogsMethod(datasource, "REMOVED-ACCESS", userLogs, userid.trim(), accesslist.get(x).trim());
+                new UserActivityLogs().UserLogsMethod(datasource, "REMOVED-ACCESS", userLogs, userid.trim(), accesslist.get(x).trim());
             }
             if (errorList.size() > 0) {
                 result.setMessage(errorList.toString());
             } else {
                 result.setSuccess(true);
                 result.setMessage("OK");
-
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
@@ -2510,7 +2644,7 @@ public class Methods {
                         mb.setMbid(resultset.getString("MBID"));
                         mb.setMbname(resultset.getString("MBNAME"));
                         mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
-                        ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                        ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                         if (creator.isSuccess()) {
                             UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
                             mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
@@ -2523,9 +2657,11 @@ public class Methods {
                         mb.setBankname(resultset.getString("BANKNAME"));
                         mb.setAddress(resultset.getString("ADDRESS"));
                         //GET ACCREDITATION USING CODE
-                        ACRGBWSResult accreResult = fm.GETACCREDITATION(dataSource, resultset.getString("CONNUMBER").trim());
+                        ACRGBWSResult accreResult = new FetchMethods().GETACCREDITATION(dataSource, resultset.getString("CONNUMBER").trim());
+
                         if (accreResult.isSuccess()) {
-                            Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class);
+                            Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class
+                            );
                             mb.setLicensedatefrom(accree.getDatefrom());
                             mb.setLicensedateto(accree.getDateto());
                         } else {
@@ -2579,9 +2715,11 @@ public class Methods {
                         mb.setMbid(resultset.getString("MBID"));
                         mb.setMbname(resultset.getString("MBNAME"));
                         mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
-                        ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                        ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+
                         if (creator.isSuccess()) {
-                            UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                            UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
+                            );
                             mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                         } else {
                             mb.setCreatedby("N/A");
@@ -2592,9 +2730,11 @@ public class Methods {
                         mb.setBankname(resultset.getString("BANKNAME"));
                         mb.setAddress(resultset.getString("ADDRESS"));
                         //GET ACCREDITATION USING CODE
-                        ACRGBWSResult accreResult = fm.GETACCREDITATION(dataSource, resultset.getString("CONNUMBER"));
+                        ACRGBWSResult accreResult = new FetchMethods().GETACCREDITATION(dataSource, resultset.getString("CONNUMBER"));
+
                         if (accreResult.isSuccess()) {
-                            Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class);
+                            Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class
+                            );
                             mb.setLicensedatefrom(accree.getDatefrom());
                             mb.setLicensedateto(accree.getDateto());
                         } else {
@@ -2646,9 +2786,11 @@ public class Methods {
                     mb.setMbid(resultset.getString("MBID"));
                     mb.setMbname(resultset.getString("MBNAME"));
                     mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
-                    ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                    ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+
                     if (creator.isSuccess()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
+                        );
                         mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                     } else {
                         mb.setCreatedby("DATA NOT FOUND");
@@ -2659,13 +2801,15 @@ public class Methods {
                     mb.setBankname(resultset.getString("BANKNAME"));
                     mb.setAddress(resultset.getString("ADDRESS"));
                     //-----------------------------------------------------
-                    ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("CONNUMBER"), tags.toUpperCase().trim());
+//                    ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("CONNUMBER"), tags.toUpperCase().trim());
 //                        List<String> hcfcodeList = Arrays.asList(reastC.getResult().split(","));
 //                        Double totaldiff = 0.00;
                     mb.setBaseamount(String.valueOf(0.00));
-                    ACRGBWSResult accreResult = fm.GETACCREDITATION(dataSource, resultset.getString("CONNUMBER"));
+                    ACRGBWSResult accreResult = new FetchMethods().GETACCREDITATION(dataSource, resultset.getString("CONNUMBER"));
+
                     if (accreResult.isSuccess()) {
-                        Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class);
+                        Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class
+                        );
                         mb.setLicensedatefrom(accree.getDatefrom());
                         mb.setLicensedateto(accree.getDateto());
                     } else {
@@ -2732,7 +2876,9 @@ public class Methods {
             //----------------------------------------------------------
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2769,7 +2915,9 @@ public class Methods {
 
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2798,7 +2946,9 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2831,7 +2981,9 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2866,7 +3018,9 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2895,7 +3049,9 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2928,7 +3084,9 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2963,7 +3121,9 @@ public class Methods {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3349,7 +3509,9 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3368,8 +3530,10 @@ public class Methods {
             ACRGBWSResult getdatesettings = utility.ProcessDateAmountComputation(datefrom, dateto);
             //------------------------------------------------------------------
             ArrayList<FacilityComputedAmount> listOfcomputedamount = new ArrayList<>();
+
             if (getdatesettings.isSuccess()) {
-                List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class));
+                List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class
+                ));
                 for (int u = 0; u < GetDateSettings.size(); u++) {
                     CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETAVERAGECLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
@@ -3380,6 +3544,7 @@ public class Methods {
                     statement.execute();
                     ResultSet resultset = (ResultSet) statement.getObject("v_result");
                     while (resultset.next()) {
+//                        System.out.println(" | "+resultset.getString("PMCC_NO")+" | "+resultset.getString("CTOTAL")+" | "+resultset.getString("COUNTVAL"));
                         FacilityComputedAmount fca = new FacilityComputedAmount();
                         fca.setHospital(resultset.getString("PMCC_NO"));
                         fca.setTotalamount(resultset.getString("CTOTAL"));
@@ -3392,25 +3557,25 @@ public class Methods {
                         } else {
                             fca.setC1rvcode("");
                         }
-                        //------------------------------------------------
+//                        //------------------------------------------------
                         if (resultset.getString("C2_RVS_CODE") != null) {
                             fca.setC2rvcode(resultset.getString("C2_RVS_CODE"));
                         } else {
                             fca.setC2rvcode("");
                         }
-                        //-----------------------------------------------
+//                        //-----------------------------------------------
                         if (resultset.getString("C1_ICD_CODE") != null) {
                             fca.setC1icdcode(resultset.getString("C1_ICD_CODE"));
                         } else {
                             fca.setC1icdcode("");
                         }
-                        //----------------------------------------------
+//                        //----------------------------------------------
                         if (resultset.getString("C2_ICD_CODE") != null) {
                             fca.setC2icdcode(resultset.getString("C2_ICD_CODE"));
                         } else {
                             fca.setC2icdcode("");
                         }
-                        //----------------------------------------------
+//                        //----------------------------------------------
                         if (resultset.getTimestamp("DATESUB") != null) {
                             fca.setDatefiled(dateformat.format(resultset.getTimestamp("DATESUB")));
                         } else {
@@ -3427,6 +3592,7 @@ public class Methods {
                         } else {
                             fca.setDateadmit("");
                         }
+//                        System.out.println(utility.ObjectMapper().writeValueAsString(fca));
                         listOfcomputedamount.add(fca);
                     }
                 }
@@ -3434,6 +3600,7 @@ public class Methods {
                     result.setMessage(getdatesettings.getResult());
                     result.setResult(utility.ObjectMapper().writeValueAsString(listOfcomputedamount));
                     result.setSuccess(true);
+//                    System.out.println(utility.ObjectMapper().writeValueAsString(listOfcomputedamount));
                 } else {
                     result.setMessage("N/A");
                 }
@@ -3443,7 +3610,9 @@ public class Methods {
             //-------------------------------------------------------------------------------
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3516,7 +3685,9 @@ public class Methods {
             }
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3566,7 +3737,9 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3605,7 +3778,9 @@ public class Methods {
             logs.UserLogsMethod(datasource, "EDIT-ACCREDITATION-HCPN", userLogs, accreditation.getCreatedby(), accreditation.getAccreno());
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(Methods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3677,7 +3852,7 @@ public class Methods {
                 mb.setMbid(resultset.getString("MBID"));
                 mb.setMbname(resultset.getString("MBNAME"));
                 mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
-                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
                     UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
                     mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());

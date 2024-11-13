@@ -20,109 +20,105 @@ public class ContractHistoryService {
     public ContractHistoryService() {
     }
 
-    private final Utility utility = new Utility();
-    private final Methods methods = new Methods();
-    private final ContractHistory contractHistory = new ContractHistory();
-
     public ACRGBWSResult GetHistoryResult(
             final DataSource dataSource,
             final String userId,
             final String tags,
             final String requestCode,
             final String targetData) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
+        ACRGBWSResult result = new Utility().ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetRole = methods.GETROLE(dataSource, userId.trim(), "ACTIVE".trim()); // RETRIEVING CODE CONTROLLER
+        ACRGBWSResult GetRole = new Methods().GETROLE(dataSource, userId.trim(), "ACTIVE".trim()); // RETRIEVING CODE CONTROLLER
         switch (targetData.trim().toUpperCase()) {
             case "ALLPRO": { // THIS PART IS FOR PHIC CENTRAL LEVEL
-                ACRGBWSResult getAllPro = contractHistory.GetAllPROContract(dataSource, tags.trim().toUpperCase());
+                ACRGBWSResult getAllPro = new ContractHistory().GetAllPROContract(dataSource, tags.trim().toUpperCase());
                 result.setMessage(getAllPro.getMessage());
                 result.setResult(getAllPro.getResult());
                 result.setSuccess(getAllPro.isSuccess());
                 break;
             }
             case "ALLHCPN": {// THIS PART IS FOR PHIC CENTRAL LEVEL
-                ACRGBWSResult getAllHcpn = contractHistory.GetAllHCPNContract(dataSource, tags.trim().toUpperCase());
+                ACRGBWSResult getAllHcpn = new ContractHistory().GetAllHCPNContract(dataSource, tags.trim().toUpperCase());
                 result.setMessage(getAllHcpn.getMessage());
                 result.setResult(getAllHcpn.getResult());
                 result.setSuccess(getAllHcpn.isSuccess());
                 break;
             }
             case "ALLFACILITY": {// THIS PART IS FOR PHIC CENTRAL LEVEL
-                ACRGBWSResult getAllHci = contractHistory.GetAllAPEXContract(dataSource, tags.trim().toUpperCase());
+                ACRGBWSResult getAllHci = new ContractHistory().GetAllAPEXContract(dataSource, tags.trim().toUpperCase());
                 result.setMessage(getAllHci.getMessage());
                 result.setResult(getAllHci.getResult());
                 result.setSuccess(getAllHci.isSuccess());
                 break;
             }
             case "PRO": {// GET CONTRACT USING PROCODE
-                ACRGBWSResult getPro = contractHistory.GetPROContract(dataSource, requestCode, tags.trim().toUpperCase());
+                ACRGBWSResult getPro = new ContractHistory().GetPROContract(dataSource, requestCode, tags.trim().toUpperCase());
                 result.setMessage(getPro.getMessage());
                 result.setResult(getPro.getResult());
                 result.setSuccess(getPro.isSuccess());
                 break;
             }
             case "HCPN": {//GET CONTRACT USING HCPN CODE
-                ACRGBWSResult getHcpn = contractHistory.GetHCPNContract(dataSource, requestCode, tags.trim().toUpperCase());
+                ACRGBWSResult getHcpn = new ContractHistory().GetHCPNContract(dataSource, requestCode, tags.trim().toUpperCase());
                 result.setMessage(getHcpn.getMessage());
                 result.setResult(getHcpn.getResult());
                 result.setSuccess(getHcpn.isSuccess());
                 break;
             }
             case "HCPNUNDERPRO": {//GET CONTRACT USING HCPN CODE
-                ACRGBWSResult getHcpnuPro = contractHistory.GetHCPNContractUnderPRO(dataSource, GetRole.getResult().trim(), tags.trim().toUpperCase());
+                ACRGBWSResult getHcpnuPro = new ContractHistory().GetHCPNContractUnderPRO(dataSource, GetRole.getResult().trim(), tags.trim().toUpperCase());
                 result.setMessage(getHcpnuPro.getMessage());
                 result.setResult(getHcpnuPro.getResult());
                 result.setSuccess(getHcpnuPro.isSuccess());
                 break;
             }
             case "HCIUNDERHCPN": {//GET CONTRACT USING HCPN CODE
-                ACRGBWSResult getHcinuHcpn = contractHistory.GetHCIContractUnderHCPN(dataSource, GetRole.getResult().trim(), tags.trim().toUpperCase());
+                ACRGBWSResult getHcinuHcpn = new ContractHistory().GetHCIContractUnderHCPN(dataSource, GetRole.getResult().trim(), tags.trim().toUpperCase());
                 result.setMessage(getHcinuHcpn.getMessage());
                 result.setResult(getHcinuHcpn.getResult());
                 result.setSuccess(getHcinuHcpn.isSuccess());
                 break;
             }
             case "HCIUNDERPROUSINGHCPNCODE": {//GET CONTRACT USING HCPN CODE
-                ACRGBWSResult getHcinuProunderHcpn = contractHistory.GetHCIContractUnderPROUsingHCPNCODE(dataSource, GetRole.getResult().trim(), tags.trim().toUpperCase());
+                ACRGBWSResult getHcinuProunderHcpn = new ContractHistory().GetHCIContractUnderPROUsingHCPNCODE(dataSource, GetRole.getResult().trim(), tags.trim().toUpperCase());
                 result.setMessage(getHcinuProunderHcpn.getMessage());
                 result.setResult(getHcinuProunderHcpn.getResult());
                 result.setSuccess(getHcinuProunderHcpn.isSuccess());
                 break;
             }
-            
+
             case "FACILITY": {//GET PHIC USING HOSPITAL CODE
-                ACRGBWSResult getHci = contractHistory.GetHCIContract(dataSource, requestCode, tags.trim().toUpperCase());
+                ACRGBWSResult getHci = new ContractHistory().GetHCIContract(dataSource, requestCode, tags.trim().toUpperCase());
                 result.setMessage(getHci.getMessage());
                 result.setResult(getHci.getResult());
                 result.setSuccess(getHci.isSuccess());
                 break;
             }
             case "OWNPRO": {//GET PRO CONTRACT USING ACCOUNT USERID
-                ACRGBWSResult getOwnPro = contractHistory.GetPROContract(dataSource, GetRole.getResult().trim(), tags.trim().toUpperCase());
+                ACRGBWSResult getOwnPro = new ContractHistory().GetPROContract(dataSource, GetRole.getResult().trim(), tags.trim().toUpperCase());
                 result.setMessage(getOwnPro.getMessage());
                 result.setResult(getOwnPro.getResult());
                 result.setSuccess(getOwnPro.isSuccess());
                 break;
             }
             case "OWNHCPN": {//GET HCPN CONTRACT USING ACCOUNT USERID
-                ACRGBWSResult getOwnHcpn = contractHistory.GetHCPNContract(dataSource, GetRole.getResult().trim(), tags.trim().toUpperCase());
+                ACRGBWSResult getOwnHcpn = new ContractHistory().GetHCPNContract(dataSource, GetRole.getResult().trim(), tags.trim().toUpperCase());
                 result.setMessage(getOwnHcpn.getMessage());
                 result.setResult(getOwnHcpn.getResult());
                 result.setSuccess(getOwnHcpn.isSuccess());
                 break;
             }
             case "APEX": {//GET HCPN CONTRACT USING ACCOUNT USERID
-                ACRGBWSResult getOwnHcpn = contractHistory.GetAPEXContract(dataSource, tags.trim().toUpperCase());
+                ACRGBWSResult getOwnHcpn = new ContractHistory().GetAPEXContract(dataSource, tags.trim().toUpperCase());
                 result.setMessage(getOwnHcpn.getMessage());
                 result.setResult(getOwnHcpn.getResult());
                 result.setSuccess(getOwnHcpn.isSuccess());
                 break;
             }
             case "OWNFACILITY": {//GET HCI CONTRACT USING ACCOUNT USERID
-                ACRGBWSResult getOwnHci = contractHistory.GetHCIContract(dataSource, GetRole.getResult().trim(), tags.trim().toUpperCase());
+                ACRGBWSResult getOwnHci = new ContractHistory().GetHCIContract(dataSource, GetRole.getResult().trim(), tags.trim().toUpperCase());
                 result.setMessage(getOwnHci.getMessage());
                 result.setResult(getOwnHci.getResult());
                 result.setSuccess(getOwnHci.isSuccess());

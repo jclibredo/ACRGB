@@ -28,7 +28,6 @@ import javax.sql.DataSource;
 @RequestScoped
 public class UserActivityLogs {
 
-    private final FetchMethods fm = new FetchMethods();
     private final Utility utility = new Utility();
 
     public void UserLogsMethod(final DataSource dataSource, final String tags, final UserActivity userActivity, final String objectid1, final String objectid2) {
@@ -200,6 +199,10 @@ public class UserActivityLogs {
                 m.ActivityLogs(dataSource, userActivity.getActby(), "REMOVED " + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " removed access from " + GetAccount(dataSource, objectid2) + " for " + GetAccount(dataSource, objectid1) + " | " + userActivity.getActdetails(), userActivity.getActstatus());
                 break;
             }
+            case "UPDATE-OWN-PASSWORD": {
+                m.ActivityLogs(dataSource, userActivity.getActby(), "UPDATE" + GetSubjectData(dataSource, "ACCOUNT", userActivity.getActby()) + " | Change password " + userActivity.getActdetails(), userActivity.getActstatus());
+
+            }
 
         }
 
@@ -224,8 +227,8 @@ public class UserActivityLogs {
         try {
             switch (tags.toUpperCase().trim()) {
                 case "ACCOUNT": { //USERID
-                    if (fm.GETUSERBYUSERID(dataSource, id, "INACTIVE").isSuccess()) {
-                        User user = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(dataSource, id, "INACTIVE").getResult(), User.class);
+                    if (new FetchMethods().GETUSERBYUSERID(dataSource, id, "INACTIVE").isSuccess()) {
+                        User user = utility.ObjectMapper().readValue(new FetchMethods().GETUSERBYUSERID(dataSource, id, "INACTIVE").getResult(), User.class);
                         if (!user.getDid().equals("N/A")) {
                             UserInfo userInfo = utility.ObjectMapper().readValue(user.getDid(), UserInfo.class);
                             result = userInfo.getLastname() + " , " + userInfo.getFirstname();
@@ -233,8 +236,8 @@ public class UserActivityLogs {
                             result = "false";
                         }
                     } else {
-                        if (fm.GETUSERBYUSERID(dataSource, id, "ACTIVE").isSuccess()) {
-                            User user = utility.ObjectMapper().readValue(fm.GETUSERBYUSERID(dataSource, id, "ACTIVE").getResult(), User.class);
+                        if (new FetchMethods().GETUSERBYUSERID(dataSource, id, "ACTIVE").isSuccess()) {
+                            User user = utility.ObjectMapper().readValue(new FetchMethods().GETUSERBYUSERID(dataSource, id, "ACTIVE").getResult(), User.class);
                             if (!user.getDid().equals("N/A")) {
                                 UserInfo userInfo = utility.ObjectMapper().readValue(user.getDid(), UserInfo.class);
                                 result = userInfo.getLastname() + " , " + userInfo.getFirstname();
@@ -267,8 +270,8 @@ public class UserActivityLogs {
                     break;
                 }
                 case "HCI": { //HCI PMCC NO
-                    if (fm.GETFACILITYID(dataSource, id).isSuccess()) {
-                        HealthCareFacility hci = utility.ObjectMapper().readValue(fm.GETFACILITYID(dataSource, id).getResult(), HealthCareFacility.class);
+                    if (new FetchMethods().GETFACILITYID(dataSource, id).isSuccess()) {
+                        HealthCareFacility hci = utility.ObjectMapper().readValue(new FetchMethods().GETFACILITYID(dataSource, id).getResult(), HealthCareFacility.class);
                         result = hci.getHcfname();
                     } else {
                         result = "false";
@@ -276,8 +279,8 @@ public class UserActivityLogs {
                     break;
                 }
                 case "CONTRACT": { //CONTRACT ID
-                    if (fm.GETCONTRACTCONID(dataSource, id.trim(), "ACTIVE").isSuccess()) {
-                        Contract contract = utility.ObjectMapper().readValue(fm.GETCONTRACTCONID(dataSource, id.trim(), "ACTIVE").getResult(), Contract.class);
+                    if (new FetchMethods().GETCONTRACTCONID(dataSource, id.trim(), "ACTIVE").isSuccess()) {
+                        Contract contract = utility.ObjectMapper().readValue(new FetchMethods().GETCONTRACTCONID(dataSource, id.trim(), "ACTIVE").getResult(), Contract.class);
                         result = contract.getTranscode() + " | " + contract.getAmount();
                     } else {
                         result = "false";
@@ -285,8 +288,8 @@ public class UserActivityLogs {
                     break;
                 }
                 case "TRANCHE": { //TRANCHE ID
-                    if (fm.ACR_TRANCHWITHID(dataSource, id).isSuccess()) {
-                        Tranch tranch = utility.ObjectMapper().readValue(fm.ACR_TRANCHWITHID(dataSource, id).getResult(), Tranch.class);
+                    if (new FetchMethods().ACR_TRANCHWITHID(dataSource, id).isSuccess()) {
+                        Tranch tranch = utility.ObjectMapper().readValue(new FetchMethods().ACR_TRANCHWITHID(dataSource, id).getResult(), Tranch.class);
                         result = tranch.getTranchtype();
                     } else {
                         result = "false";
@@ -306,20 +309,20 @@ public class UserActivityLogs {
                 }
 
                 case "USERLEVEL": { //LEVEL ID
-                    if (fm.GETUSERLEVEL(dataSource, id).isSuccess()) {
-                        result = fm.GETUSERLEVEL(dataSource, id).getResult();
+                    if (new FetchMethods().GETUSERLEVEL(dataSource, id).isSuccess()) {
+                        result = new FetchMethods().GETUSERLEVEL(dataSource, id).getResult();
                     } else {
                         result = "false";
                     }
                     break;
                 }
                 case "USERINFO": { //USER DID
-                    if (fm.GETUSERDETAILSBYDID(dataSource, id, "ACTIVE").isSuccess()) {
-                        UserInfo userInfo = utility.ObjectMapper().readValue(fm.GETUSERDETAILSBYDID(dataSource, id, "ACTIVE").getResult(), UserInfo.class);
+                    if (new FetchMethods().GETUSERDETAILSBYDID(dataSource, id, "ACTIVE").isSuccess()) {
+                        UserInfo userInfo = utility.ObjectMapper().readValue(new FetchMethods().GETUSERDETAILSBYDID(dataSource, id, "ACTIVE").getResult(), UserInfo.class);
                         result = "LastName: " + userInfo.getLastname() + " | FirstName :" + userInfo.getFirstname() + " | Username :" + userInfo.getEmail();
                     } else {
-                        if (fm.GETUSERDETAILSBYDID(dataSource, id, "INACTIVE").isSuccess()) {
-                            UserInfo userInfo = utility.ObjectMapper().readValue(fm.GETUSERDETAILSBYDID(dataSource, id, "INACTIVE").getResult(), UserInfo.class);
+                        if (new FetchMethods().GETUSERDETAILSBYDID(dataSource, id, "INACTIVE").isSuccess()) {
+                            UserInfo userInfo = utility.ObjectMapper().readValue(new FetchMethods().GETUSERDETAILSBYDID(dataSource, id, "INACTIVE").getResult(), UserInfo.class);
                             result = "LastName: " + userInfo.getLastname() + " | FirstName :" + userInfo.getFirstname() + " | Username :" + userInfo.getEmail();
                         } else {
                             result = "false";
