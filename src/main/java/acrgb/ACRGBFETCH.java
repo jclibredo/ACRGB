@@ -57,7 +57,6 @@ public class ACRGBFETCH {
     private DataSource dataSource;
 
     private final Utility utility = new Utility();
-
     //GET ASSETS TYPE TBL
     @GET
     @Path("GetAssets/{tags}/{phcfid}")

@@ -5,7 +5,6 @@
                  global-variables="false">
     <application-name>ACRGB-0.1</application-name> 
     <variable-definition>        
-        
         <variable>
             <name>GetFacility</name>
             <value>https://localhost:7001/ACRGB/ACRGBFETCH/Test</value>

@@ -44,7 +44,6 @@ public class ContractMethod {
     public ContractMethod() {
     }
     private final Utility utility = new Utility();
-    private final FetchMethods fm = new FetchMethods();
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
 
 //    public ACRGBWSResult GetAllContract(final DataSource dataSource, final String phcfcode, final String tags) {
@@ -164,7 +163,7 @@ public class ContractMethod {
                 //END OF GET NETWORK FULL DETAILS
                 contract.setAmount(resultset.getString("AMOUNT"));
                 contract.setStats(resultset.getString("STATS"));
-                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
                     contract.setCreatedby(creator.getResult());
                 } else {
@@ -277,7 +276,7 @@ public class ContractMethod {
                 while (resultset.next()) {
                     ContractDate contractdate = new ContractDate();
                     contractdate.setCondateid(resultset.getString("CONDATEID"));
-                    ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                    ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                     if (creator.isSuccess()) {
                         contractdate.setCreatedby(creator.getResult());
                     } else {
@@ -309,7 +308,7 @@ public class ContractMethod {
                 while (resultset.next()) {
                     ContractDate contractdate = new ContractDate();
                     contractdate.setCondateid(resultset.getString("CONDATEID"));
-                    ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                    ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                     if (creator.isSuccess()) {
                         contractdate.setCreatedby(creator.getResult());
                     } else {
@@ -409,7 +408,7 @@ public class ContractMethod {
                     ManagingBoard mb = utility.ObjectMapper().readValue(GetMB.getResult(), ManagingBoard.class);
                     contract.setHcfid(mb.getMbname());
                 } else {
-                    ACRGBWSResult GetHCI = fm.GETFACILITYID(dataSource, resultset.getString("HCFID"));
+                    ACRGBWSResult GetHCI = new FetchMethods().GETFACILITYID(dataSource, resultset.getString("HCFID"));
                     if (GetHCI.isSuccess()) {
                         HealthCareFacility hciname = utility.ObjectMapper().readValue(GetHCI.getResult(), HealthCareFacility.class);
                         contract.setHcfid(hciname.getHcfname());
@@ -507,7 +506,7 @@ public class ContractMethod {
                     if (con.getContractdate() != null) {
                         Contract contract = new Contract();
                         //--------------------------------------
-                        ACRGBWSResult GetFacility = fm.GETFACILITYID(dataSource, userid);
+                        ACRGBWSResult GetFacility = new FetchMethods().GETFACILITYID(dataSource, userid);
                         if (GetFacility.isSuccess()) {
                             contract.setHcfid(GetFacility.getResult());
                         }
@@ -531,7 +530,7 @@ public class ContractMethod {
                         double percentageA = 0.00;
                         double percentageB = 0.00;
                         double claimsamount = 0.00;
-                        ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, con.getHcfid(), con.getConid().trim(), tags);
+                        ACRGBWSResult restA = new FetchMethods().GETASSETBYIDANDCONID(dataSource, con.getHcfid(), con.getConid().trim(), tags);
                         if (restA.isSuccess()) {
                             List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
                             for (int g = 0; g < assetlist.size(); g++) {
@@ -572,7 +571,7 @@ public class ContractMethod {
                                 List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                                 for (int yu = 0; yu < healthCareFacilityList.size(); yu++) {
                                     //------------------------------------------------------------------------
-                                    ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, healthCareFacilityList.get(yu).getHcfcode().trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
+                                    ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource, healthCareFacilityList.get(yu).getHcfcode().trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
                                     if (sumresult.isSuccess()) {
                                         List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                                         for (int i = 0; i < nclaimsdata.size(); i++) {
@@ -655,7 +654,7 @@ public class ContractMethod {
         result.setResult("");
         result.setSuccess(false);
         try {
-            ACRGBWSResult GetRole =  new Methods().GETROLE(dataSource, userid, "ACTIVE");
+            ACRGBWSResult GetRole = new Methods().GETROLE(dataSource, userid, "ACTIVE");
             if (GetRole.isSuccess()) {
                 //GETCONTRACT
                 ACRGBWSResult getHCPNContract = this.GETCONTRACTWITHOPENSTATE(dataSource, tags.trim().toUpperCase(), GetRole.getResult().trim(), ustate.trim().toUpperCase());
@@ -664,7 +663,7 @@ public class ContractMethod {
                     Contract con = utility.ObjectMapper().readValue(getHCPNContract.getResult(), Contract.class);
                     if (con.getContractdate() != null) {
                         Contract contract = new Contract();
-                        ACRGBWSResult GetHCPN =  new Methods().GETMBWITHID(dataSource, GetRole.getResult());
+                        ACRGBWSResult GetHCPN = new Methods().GETMBWITHID(dataSource, GetRole.getResult());
                         if (GetHCPN.isSuccess()) {
                             contract.setHcfid(GetHCPN.getResult());
                         }
@@ -690,14 +689,14 @@ public class ContractMethod {
                         double claimsamount = 0.00;
                         double totalrecievedamount = 0.00;
                         //GET ALL FACILITY UNDER HCPN
-                        ACRGBWSResult GetAccessList =  new Methods().GETROLEMULITPLE(dataSource, GetRole.getResult().trim(), tags.trim());
+                        ACRGBWSResult GetAccessList = new Methods().GETROLEMULITPLE(dataSource, GetRole.getResult().trim(), tags.trim());
                         if (GetAccessList.isSuccess()) {
                             List<String> HciList = Arrays.asList(GetAccessList.getResult().trim().split(","));
                             for (int x = 0; x < HciList.size(); x++) {
                                 ACRGBWSResult getHCIContract = this.GETCONTRACT(dataSource, tags, HciList.get(x).trim());
                                 if (getHCIContract.isSuccess()) {
                                     Contract hcinCon = utility.ObjectMapper().readValue(getHCIContract.getResult(), Contract.class);
-                                    ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, HciList.get(x).trim(), hcinCon.getConid().trim(), tags);
+                                    ACRGBWSResult restA = new FetchMethods().GETASSETBYIDANDCONID(dataSource, HciList.get(x).trim(), hcinCon.getConid().trim(), tags);
                                     if (restA.isSuccess()) {
                                         List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
                                         for (int g = 0; g < assetlist.size(); g++) {
@@ -737,7 +736,7 @@ public class ContractMethod {
                                             List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                                             for (int yu = 0; yu < healthCareFacilityList.size(); yu++) {
                                                 //------------------------------------------------------------------------
-                                                ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, healthCareFacilityList.get(yu).getHcfcode().trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
+                                                ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource, healthCareFacilityList.get(yu).getHcfcode().trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
                                                 if (sumresult.isSuccess()) {
                                                     List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                                                     for (int i = 0; i < nclaimsdata.size(); i++) {
@@ -776,7 +775,7 @@ public class ContractMethod {
                             }
                         }
 
-                        ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, con.getHcfid().trim(), con.getConid().trim(), tags);    //utility.AddMinusDaysDate(con.getEnddate().trim(), "60")
+                        ACRGBWSResult restA = new FetchMethods().GETASSETBYIDANDCONID(dataSource, con.getHcfid().trim(), con.getConid().trim(), tags);    //utility.AddMinusDaysDate(con.getEnddate().trim(), "60")
                         if (restA.isSuccess()) {
                             List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
                             for (int g = 0; g < assetlist.size(); g++) {
@@ -834,7 +833,7 @@ public class ContractMethod {
                     result.setMessage(getHCPNContract.getMessage());
                 }
             } else {
-                result.setMessage( new Methods().GETROLE(dataSource, userid, tags).getMessage());
+                result.setMessage(new Methods().GETROLE(dataSource, userid, tags).getMessage());
             }
         } catch (IOException | ParseException ex) {
             result.setMessage(ex.toString());
@@ -903,7 +902,7 @@ public class ContractMethod {
                             if (GetHCPNContract.isSuccess()) {
                                 Contract MapHCPNContract = utility.ObjectMapper().readValue(GetHCPNContract.getResult(), Contract.class);
                                 //----------------------------------------------
-                                ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, HCPNList.get(y).trim(), MapHCPNContract.getConid().trim(), tags);
+                                ACRGBWSResult restA = new FetchMethods().GETASSETBYIDANDCONID(dataSource, HCPNList.get(y).trim(), MapHCPNContract.getConid().trim(), tags);
                                 if (restA.isSuccess()) {
                                     List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
                                     for (int g = 0; g < assetlist.size(); g++) {
@@ -955,7 +954,7 @@ public class ContractMethod {
                                                         List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                                                         for (int yu = 0; yu < healthCareFacilityList.size(); yu++) {
                                                             //------------------------------------------------------------------------
-                                                            ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, healthCareFacilityList.get(yu).getHcfcode().trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
+                                                            ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource, healthCareFacilityList.get(yu).getHcfcode().trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
                                                             if (sumresult.isSuccess()) {
                                                                 List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                                                                 for (int i = 0; i < nclaimsdata.size(); i++) {
@@ -1071,7 +1070,7 @@ public class ContractMethod {
                 con.setHcfid(resultset.getString("HCFID"));
                 con.setAmount(resultset.getString("AMOUNT"));
                 con.setStats(resultset.getString("STATS"));
-                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
                     UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
                     con.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
@@ -1208,7 +1207,7 @@ public class ContractMethod {
                 //END OF GET NETWORK FULL DETAILS
                 contract.setAmount(resultset.getString("AMOUNT"));
                 contract.setStats(resultset.getString("STATS"));
-                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
                     contract.setCreatedby(creator.getResult());
                 } else {
@@ -1270,7 +1269,7 @@ public class ContractMethod {
                 //END OF GET NETWORK FULL DETAILS
                 contract.setAmount(resultset.getString("AMOUNT"));
                 contract.setStats(resultset.getString("STATS"));
-                ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
                     contract.setCreatedby(creator.getResult());
                 } else {
@@ -1336,7 +1335,7 @@ public class ContractMethod {
                     if (resultset.next()) {
                         Contract contract = new Contract();
                         contract.setConid(resultset.getString("CONID"));
-                        ACRGBWSResult facility = fm.GETFACILITYID(dataSource, resultset.getString("HCFID"));
+                        ACRGBWSResult facility = new FetchMethods().GETFACILITYID(dataSource, resultset.getString("HCFID"));
                         if (facility.isSuccess()) {
                             contract.setHcfid(facility.getResult());
                         } else {
@@ -1345,7 +1344,7 @@ public class ContractMethod {
                         //END OF GET NETWORK FULL DETAILS
                         contract.setAmount(resultset.getString("AMOUNT"));
                         contract.setStats(resultset.getString("STATS"));
-                        ACRGBWSResult creator = fm.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                        ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                         if (creator.isSuccess()) {
                             contract.setCreatedby(creator.getResult());
                         } else {
@@ -1376,7 +1375,7 @@ public class ContractMethod {
                         if (getcondateA.isSuccess()) {
                             contract.setContractdate(getcondateA.getResult());
                             ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class);
-                            ACRGBWSResult restAB = fm.GETASSETBYIDANDCONID(dataSource, resultset.getString("HCFID").trim(), resultset.getString("CONID").trim(), utags);
+                            ACRGBWSResult restAB = new FetchMethods().GETASSETBYIDANDCONID(dataSource, resultset.getString("HCFID").trim(), resultset.getString("CONID").trim(), utags);
                             if (restAB.isSuccess()) {
                                 List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
                                 for (int g = 0; g < assetlist.size(); g++) {
@@ -1421,7 +1420,7 @@ public class ContractMethod {
                                     List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                                     for (int yu = 0; yu < healthCareFacilityList.size(); yu++) {
                                         //------------------------------------------------------------------------END GET ALL PMCC NO UNDER SELECTED FACILITY
-                                        ACRGBWSResult sumresult = fm.GETNCLAIMS(dataSource, healthCareFacilityList.get(yu).getHcfcode().trim(), "G",
+                                        ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource, healthCareFacilityList.get(yu).getHcfcode().trim(), "G",
                                                 condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
                                         if (sumresult.isSuccess()) {
 //                                    Contract conHci = utility.ObjectMapper().readValue(GetHCPNContract.getResult(), Contract.class);

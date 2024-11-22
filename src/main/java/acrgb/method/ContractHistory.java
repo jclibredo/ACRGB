@@ -30,13 +30,11 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class ContractHistory {
-    
+
     public ContractHistory() {
     }
-    
+
     private final Utility utility = new Utility();
-    private final FetchMethods fm = new FetchMethods();
-    private final Methods m = new Methods();
 
     //GET CONTRACT HISTORY OF HCPN
     public ACRGBWSResult GetHCPNContract(final DataSource dataSource, final String hcpncode, final String tags) {
@@ -46,7 +44,7 @@ public class ContractHistory {
         result.setSuccess(false);
         ArrayList<Contract> contractList = new ArrayList<>();
         try {
-            ACRGBWSResult GetContract = fm.GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), hcpncode.trim());
+            ACRGBWSResult GetContract = new FetchMethods().GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), hcpncode.trim());
             if (GetContract.isSuccess()) {
                 List<Contract> mapContractList = Arrays.asList(utility.ObjectMapper().readValue(GetContract.getResult(), Contract[].class));
                 for (int y = 0; y < mapContractList.size(); y++) {
@@ -75,7 +73,7 @@ public class ContractHistory {
         result.setSuccess(false);
         ArrayList<Contract> contractList = new ArrayList<>();
         try {
-            ACRGBWSResult GetContract = fm.GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), facilitycode.trim());
+            ACRGBWSResult GetContract = new FetchMethods().GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), facilitycode.trim());
             if (GetContract.isSuccess()) {
                 List<Contract> mapContractList = Arrays.asList(utility.ObjectMapper().readValue(GetContract.getResult(), Contract[].class));
                 for (int y = 0; y < mapContractList.size(); y++) {
@@ -89,7 +87,7 @@ public class ContractHistory {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
@@ -105,7 +103,7 @@ public class ContractHistory {
         result.setSuccess(false);
         ArrayList<Contract> contractList = new ArrayList<>();
         try {
-            ACRGBWSResult GetContract = fm.GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), procode.trim());
+            ACRGBWSResult GetContract = new FetchMethods().GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), procode.trim());
             if (GetContract.isSuccess()) {
                 List<Contract> mapContractList = Arrays.asList(utility.ObjectMapper().readValue(GetContract.getResult(), Contract[].class));
                 for (int y = 0; y < mapContractList.size(); y++) {
@@ -119,7 +117,7 @@ public class ContractHistory {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
@@ -135,11 +133,11 @@ public class ContractHistory {
         result.setSuccess(false);
         ArrayList<Contract> contractList = new ArrayList<>();
         try {
-            ACRGBWSResult resultApex = m.GETAPEXFACILITY(dataSource);
+            ACRGBWSResult resultApex = new Methods().GETAPEXFACILITY(dataSource);
             if (resultApex.isSuccess()) {
                 List<HealthCareFacility> apexList = Arrays.asList(utility.ObjectMapper().readValue(resultApex.getResult(), HealthCareFacility[].class));
                 for (int x = 0; x < apexList.size(); x++) {
-                    ACRGBWSResult GetContract = fm.GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), apexList.get(x).getHcfcode().trim());
+                    ACRGBWSResult GetContract = new FetchMethods().GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), apexList.get(x).getHcfcode().trim());
                     if (GetContract.isSuccess()) {
                         List<Contract> mapContractList = Arrays.asList(utility.ObjectMapper().readValue(GetContract.getResult(), Contract[].class));
                         for (int y = 0; y < mapContractList.size(); y++) {
@@ -170,11 +168,11 @@ public class ContractHistory {
         result.setSuccess(false);
         ArrayList<Contract> contractList = new ArrayList<>();
         try {
-            ACRGBWSResult mblist = fm.GetManagingBoard(dataSource, "ACTIVE");
+            ACRGBWSResult mblist = new FetchMethods().GetManagingBoard(dataSource, "ACTIVE");
             if (mblist.isSuccess()) {
                 List<ManagingBoard> HCPNList = Arrays.asList(utility.ObjectMapper().readValue(mblist.getResult(), ManagingBoard[].class));
                 for (int x = 0; x < HCPNList.size(); x++) {
-                    ACRGBWSResult GetContract = fm.GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), HCPNList.get(x).getControlnumber().trim());
+                    ACRGBWSResult GetContract = new FetchMethods().GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), HCPNList.get(x).getControlnumber().trim());
                     if (GetContract.isSuccess()) {
                         List<Contract> mapContractList = Arrays.asList(utility.ObjectMapper().readValue(GetContract.getResult(), Contract[].class));
                         for (int y = 0; y < mapContractList.size(); y++) {
@@ -211,7 +209,7 @@ public class ContractHistory {
             ArrayList<Contract> contractList = new ArrayList<>();
             while (resultset.next()) {
                 String procode = "2024" + resultset.getString("PROCODE").trim();
-                ACRGBWSResult GetProContract = fm.GETALLCONTRACT(dataSource, tags.trim().toUpperCase(), procode.trim());
+                ACRGBWSResult GetProContract = new FetchMethods().GETALLCONTRACT(dataSource, tags.trim().toUpperCase(), procode.trim());
                 if (GetProContract.isSuccess()) {
                     List<Contract> mapContractList = Arrays.asList(utility.ObjectMapper().readValue(GetProContract.getResult(), Contract[].class));
                     for (int y = 0; y < mapContractList.size(); y++) {
@@ -226,7 +224,7 @@ public class ContractHistory {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
@@ -247,7 +245,7 @@ public class ContractHistory {
             if (getAllHCPNCode.isSuccess()) {
                 List<String> hcpnCodeList = Arrays.asList(getAllHCPNCode.getResult().split(","));
                 for (int x = 0; x < hcpnCodeList.size(); x++) {
-                    ACRGBWSResult GetContract = fm.GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), hcpnCodeList.get(x).trim());
+                    ACRGBWSResult GetContract = new FetchMethods().GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), hcpnCodeList.get(x).trim());
                     if (GetContract.isSuccess()) {
                         List<Contract> mapContractList = Arrays.asList(utility.ObjectMapper().readValue(GetContract.getResult(), Contract[].class));
                         for (int y = 0; y < mapContractList.size(); y++) {
@@ -269,7 +267,7 @@ public class ContractHistory {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GetHCIContractUnderHCPN(final DataSource dataSource, final String hcpncode, final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -282,7 +280,7 @@ public class ContractHistory {
             if (getAllHCPNCode.isSuccess()) {
                 List<String> hcpnCodeList = Arrays.asList(getAllHCPNCode.getResult().split(","));
                 for (int x = 0; x < hcpnCodeList.size(); x++) {
-                    ACRGBWSResult GetContract = fm.GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), hcpnCodeList.get(x).trim());
+                    ACRGBWSResult GetContract = new FetchMethods().GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), hcpnCodeList.get(x).trim());
                     if (GetContract.isSuccess()) {
                         List<Contract> mapContractList = Arrays.asList(utility.ObjectMapper().readValue(GetContract.getResult(), Contract[].class));
                         for (int y = 0; y < mapContractList.size(); y++) {
@@ -290,7 +288,7 @@ public class ContractHistory {
                         }
                     }
                 }
-            } 
+            }
             if (contractList.size() > 0) {
                 result.setMessage("OK");
                 result.setSuccess(true);
@@ -326,7 +324,7 @@ public class ContractHistory {
                         List<String> hciCodeList = Arrays.asList(getAllHCICode.getResult().split(","));
                         //----------------------------------------
                         for (int w = 0; w < hciCodeList.size(); w++) {
-                            ACRGBWSResult GetContract = fm.GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), hciCodeList.get(w).trim());
+                            ACRGBWSResult GetContract = new FetchMethods().GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), hciCodeList.get(w).trim());
                             if (GetContract.isSuccess()) {
                                 List<Contract> mapContractList = Arrays.asList(utility.ObjectMapper().readValue(GetContract.getResult(), Contract[].class));
                                 for (int y = 0; y < mapContractList.size(); y++) {
@@ -352,7 +350,7 @@ public class ContractHistory {
         }
         return result;
     }
-    
+
     public ACRGBWSResult GetAPEXContract(final DataSource dataSource, final String tags) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -365,7 +363,7 @@ public class ContractHistory {
             if (GetApex.isSuccess()) {
                 List<HealthCareFacility> hciList = Arrays.asList(utility.ObjectMapper().readValue(GetApex.getResult(), HealthCareFacility[].class));
                 for (int h = 0; h < hciList.size(); h++) {
-                    ACRGBWSResult GetContract = fm.GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), hciList.get(h).getHcfcode().trim());
+                    ACRGBWSResult GetContract = new FetchMethods().GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), hciList.get(h).getHcfcode().trim());
                     if (GetContract.isSuccess()) {
                         List<Contract> mapContractList = Arrays.asList(utility.ObjectMapper().readValue(GetContract.getResult(), Contract[].class));
                         for (int y = 0; y < mapContractList.size(); y++) {
@@ -381,12 +379,12 @@ public class ContractHistory {
             } else {
                 result.setMessage("N/A");
             }
-            
+
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
+
 }

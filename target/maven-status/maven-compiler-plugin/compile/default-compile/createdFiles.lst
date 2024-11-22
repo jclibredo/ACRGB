@@ -41,7 +41,6 @@ acrgb\structure\ConBalance.class
 acrgb\structure\Pro.class
 acrgb\structure\HealthCareFacility.class
 acrgb\structure\Email.class
-cf5data.class
 acrgb\method\GetHCFMultiplePMCCNO.class
 acrgb\structure\Tagging.class
 acrgb\structure\MBFacilityUnderRequest.class

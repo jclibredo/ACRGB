@@ -45,8 +45,6 @@ public class BookingMethod {
 
     private final Utility utility = new Utility();
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
-    private final ContractMethod cm = new ContractMethod();
-    private final FetchMethods fm = new FetchMethods();
 
     public ACRGBWSResult ACRBOOKING(final DataSource dataSource, final Book book) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -139,7 +137,7 @@ public class BookingMethod {
                 if (resultset.getString("PMCC_NO") == null) {
                     nclaims.setPmccno("N/A");
                 } else {
-                    ACRGBWSResult hci = fm.GETFACILITYID(dataSource, resultset.getString("PMCC_NO").trim());
+                    ACRGBWSResult hci = new FetchMethods().GETFACILITYID(dataSource, resultset.getString("PMCC_NO").trim());
                     if (hci.isSuccess()) {
                         nclaims.setPmccno(hci.getResult());
                     } else {
@@ -222,7 +220,7 @@ public class BookingMethod {
         result.setSuccess(false);
         ArrayList<String> errorList = new ArrayList<>();
         try {
-            ACRGBWSResult getConResult = fm.GETCONTRACTCONID(dataSource, book.getConid().trim(), utags.trim().toUpperCase());
+            ACRGBWSResult getConResult = new FetchMethods().GETCONTRACTCONID(dataSource, book.getConid().trim(), utags.trim().toUpperCase());
             if (getConResult.isSuccess()) {
                 switch (book.getTags().toUpperCase()) {
                     case "FACILITY": {
@@ -288,7 +286,7 @@ public class BookingMethod {
                                     }
                                 }
                             }
-                            ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, book.getHcpncode().trim(), book.getConid().trim(), utags.trim().toUpperCase());
+                            ACRGBWSResult restA = new FetchMethods().GETASSETBYIDANDCONID(dataSource, book.getHcpncode().trim(), book.getConid().trim(), utags.trim().toUpperCase());
                             if (restA.isSuccess()) {
                                 List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
                                 for (int g = 0; g < assetlist.size(); g++) {
@@ -358,11 +356,11 @@ public class BookingMethod {
                         Contract HCPNContract = utility.ObjectMapper().readValue(getConResult.getResult(), Contract.class);
                         if (HCPNContract.getContractdate() != null) {
                             ContractDate contractdate = utility.ObjectMapper().readValue(HCPNContract.getContractdate(), ContractDate.class);   //GETROLEMULITPLEFORENDROLE
-                            ACRGBWSResult hciList =  new Methods().GETROLEMULITPLEFORENDROLE(dataSource, utags.trim().toUpperCase(), book.getHcpncode().trim(), contractdate.getCondateid());
+                            ACRGBWSResult hciList = new Methods().GETROLEMULITPLEFORENDROLE(dataSource, utags.trim().toUpperCase(), book.getHcpncode().trim(), contractdate.getCondateid());
                             if (hciList.isSuccess()) {
                                 List<String> hciCodeList = Arrays.asList(hciList.getResult().split(","));
                                 for (int u = 0; u < hciCodeList.size(); u++) {
-                                    ACRGBWSResult getHCIContract = cm.GETCONTRACT(dataSource, utags, hciCodeList.get(u).trim());
+                                    ACRGBWSResult getHCIContract = new ContractMethod().GETCONTRACT(dataSource, utags, hciCodeList.get(u).trim());
                                     if (getHCIContract.isSuccess()) {
                                         //BOOK PER FACILITY
                                         ACRGBWSResult nonapexBooking = this.NONAPEXBOOKINGPROCESS(dataSource, book, hciCodeList.get(u).trim(), utags);
@@ -408,7 +406,7 @@ public class BookingMethod {
                                         }
                                     }
                                 }
-                                ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, book.getHcpncode().trim(), book.getConid().trim(), utags.trim().toUpperCase());
+                                ACRGBWSResult restA = new FetchMethods().GETASSETBYIDANDCONID(dataSource, book.getHcpncode().trim(), book.getConid().trim(), utags.trim().toUpperCase());
                                 if (restA.isSuccess()) {
                                     List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
                                     for (int g = 0; g < assetlist.size(); g++) {
@@ -495,7 +493,7 @@ public class BookingMethod {
         ArrayList<String> errorList = new ArrayList<>();
         ArrayList<NclaimsData> claimslist = new ArrayList<>();
         try {
-            ACRGBWSResult getConResult = fm.GETCONTRACTCONID(dataSource, contractid, tags.trim().toUpperCase());
+            ACRGBWSResult getConResult = new FetchMethods().GETCONTRACTCONID(dataSource, contractid, tags.trim().toUpperCase());
             if (getConResult.isSuccess()) {
                 switch (type.toUpperCase()) {
                     case "FACILITY": {
@@ -746,7 +744,7 @@ public class BookingMethod {
         try {
             //MANAGE FINAL BALANCE OF FACILITY CONTRACT 
             // ACRGBWSResult getHCIContract = cm.GETCONTRACT(dataSource, utags, upmmcno.trim());
-            ACRGBWSResult getHCIContract = cm.GETCONTRACTWITHOPENSTATE(dataSource, utags.trim().toUpperCase(), upmmcno.trim().toUpperCase(), "OPEN".trim().toUpperCase());
+            ACRGBWSResult getHCIContract = new ContractMethod().GETCONTRACTWITHOPENSTATE(dataSource, utags.trim().toUpperCase(), upmmcno.trim().toUpperCase(), "OPEN".trim().toUpperCase());
             if (getHCIContract.isSuccess()) {
                 double totalnumberofclaims = 0.00;
                 int totalClaimAmount = 0;
@@ -814,7 +812,7 @@ public class BookingMethod {
                         }
                     }
 
-                    ACRGBWSResult restA = fm.GETASSETBYIDANDCONID(dataSource, upmmcno.trim(), HCIContract.getConid().trim(), utags.trim().toUpperCase());
+                    ACRGBWSResult restA = new FetchMethods().GETASSETBYIDANDCONID(dataSource, upmmcno.trim(), HCIContract.getConid().trim(), utags.trim().toUpperCase());
                     if (restA.isSuccess()) {
                         List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
                         for (int g = 0; g < assetlist.size(); g++) {
