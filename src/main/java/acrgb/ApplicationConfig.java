@@ -10,7 +10,7 @@ import javax.ws.rs.core.Application;
 
 /**
  *
- * @author MinoSun
+ * @author DRG_SHADOWBILLING
  */
 @javax.ws.rs.ApplicationPath("/*")
 public class ApplicationConfig extends Application {

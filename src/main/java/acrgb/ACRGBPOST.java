@@ -50,7 +50,7 @@ import oracle.jdbc.OracleTypes;
 /**
  * REST Web Service
  *
- * @author MinoSun
+ * @author DRG_SHADOWBILLING
  */
 @Path("ACRGBINSERT")
 @RequestScoped
@@ -62,12 +62,12 @@ public class ACRGBPOST {
      * Creates a new instance of ACRGB
      */
 
-    @Resource(lookup = "mail/acrgbmail")
-    private Session session;
-
     //------------------------------------
-    @Resource(lookup = "jdbc/acrgb")
+    @Resource(lookup = "jdbc/acgbuser")
     private DataSource dataSource;
+
+    @Resource(lookup = "mail/acrgbmail")
+    private Session acrgbmail;
 
     private final Utility utility = new Utility();
 
@@ -157,7 +157,6 @@ public class ACRGBPOST {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult INSERTTRANCH(@HeaderParam("token") String token, final Tranch tranch) {
-        //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -180,7 +179,6 @@ public class ACRGBPOST {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult INSERTUSERDETAILS(@HeaderParam("token") String token, final UserInfo userinfo) {
-        //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -203,7 +201,6 @@ public class ACRGBPOST {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult INSERTUSERLEVEL(@HeaderParam("token") String token, final UserLevel userlevel) {
-        //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -227,7 +224,6 @@ public class ACRGBPOST {
     public ACRGBWSResult INSERTUSER(
             @HeaderParam("token") String token,
             final User user) {
-        //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -236,7 +232,7 @@ public class ACRGBPOST {
         if (!GetPayLoad.isSuccess()) {
             result.setMessage(GetPayLoad.getMessage());
         } else {
-            ACRGBWSResult insertresult = new InsertMethods().INSERTUSER(dataSource, user, session);
+            ACRGBWSResult insertresult = new InsertMethods().INSERTUSER(dataSource, user, acrgbmail);
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -249,7 +245,6 @@ public class ACRGBPOST {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UserLogin(final User user) {
-        //TODO return proper representation object
         ACRGBWSResult result = utility.ACRGBWSResult();
         ACRGBWSResult insertresult = new Methods().ACRUSERLOGIN(dataSource,
                 user.getUsername(),
@@ -264,7 +259,7 @@ public class ACRGBPOST {
 //    @Path("logs")
 //    @Consumes(MediaType.APPLICATION_JSON)
 //    @Produces(MediaType.APPLICATION_JSON)
-//    public ACRGBWSResult logs(@HeaderParam("token") String token, final UserActivity logs) throws SQLException, ParseException {
+//    public ACRGBWSResult logs(@HeaderParam("token") String token, final UserActivity logs) {
 //        //TODO return proper representation object
 //        ACRGBWSResult result = utility.ACRGBWSResult();
 //        result.setMessage("");
@@ -274,13 +269,14 @@ public class ACRGBPOST {
 //        if (!GetPayLoad.isSuccess()) {
 //            result.setMessage(GetPayLoad.getMessage());
 //        } else {
-//            ACRGBWSResult insertresult = methods.ActivityLogs(dataSource, logs);
+//            ACRGBWSResult insertresult =new Methods() methods.ActivityLogs(dataSource, logs);
 //            result.setMessage(insertresult.getMessage());
 //            result.setSuccess(insertresult.isSuccess());
 //            result.setResult(insertresult.getResult());
 //        }
 //        return result;
 //    }
+
     @POST
     @Path("INSERTMBREQUEST")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -381,15 +377,15 @@ public class ACRGBPOST {
     public ACRGBWSResult FORGETPASSWORD(
             final Email email) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = new EmailSender().EmailSender(dataSource, email.getEmailto(), "", session);
+        ACRGBWSResult insertresult = new EmailSender().EmailSender(dataSource, email.getEmailto(), "", acrgbmail);
         result.setMessage(insertresult.getMessage());
         result.setSuccess(insertresult.isSuccess());
         result.setResult(insertresult.getResult());
         //-------------------------------------
         return result;
     }
+//     USER ACCOUNT BATCH UPLOAD
 
-    // USER ACCOUNT BATCH UPLOAD
     @POST
     @Path("USERACCOUNTBATCH")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -511,7 +507,7 @@ public class ACRGBPOST {
                             }
                         }
 //                        email.setEmailto(userinfo.get(x).getEmail());
-                        ACRGBWSResult InsertCleanData = new InsertMethods().INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo, session);
+                        ACRGBWSResult InsertCleanData = new InsertMethods().INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo, acrgbmail);
                         if (!InsertCleanData.isSuccess()) {
                             error.add("| LINE NUMBER[" + userinfo.get(x).getId() + "]");
                             error.add(InsertCleanData.getMessage());
@@ -570,7 +566,7 @@ public class ACRGBPOST {
         ArrayList<String> errorList = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
             for (int x = 0; x < Integer.parseInt(nclaims.getTotalclaims()); x++) {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.INSERTCLAIMS(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.INSERTCLAIMS(:Message,:Code,"
                         + ":useries,:uaccreno,:upmccno,:udateadmission,:udatesubmitted,:uclaimamount,"
                         + ":utags,:utrn,:uclaimid,:uhcfname,:c1rvcode,:c2rvcode,:c1icdcode,:c2icdcode,:uopdtst)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -681,6 +677,4 @@ public class ACRGBPOST {
 //
 //        return null;
 //    }
-    
-
 }

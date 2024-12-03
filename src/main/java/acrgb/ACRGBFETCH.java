@@ -21,8 +21,13 @@ import acrgb.structure.Appellate;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.User;
+import acrgb.utility.NamedParameterStatement;
 import acrgb.utility.Utility;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -41,7 +46,7 @@ import javax.ws.rs.core.MediaType;
 /**
  * REST Web Service
  *
- * @author MinoSun
+ * @author DRG_SHADOWBILLING
  */
 @Path("ACRGBFETCH")
 @RequestScoped
@@ -53,10 +58,11 @@ public class ACRGBFETCH {
     public ACRGBFETCH() {
     }
 
-    @Resource(lookup = "jdbc/acrgb")
+    @Resource(lookup = "jdbc/acgbuser")
     private DataSource dataSource;
 
     private final Utility utility = new Utility();
+
     //GET ASSETS TYPE TBL
     @GET
     @Path("GetAssets/{tags}/{phcfid}")
@@ -1392,6 +1398,27 @@ public class ACRGBFETCH {
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
+        }
+        return result;
+    }
+
+    @GET
+    @Path("GetServerDateTime")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String GetServerDateTime() {
+        String result = "";
+        SimpleDateFormat sdf = utility.SimpleDateFormat("MM-dd-yyyy hh:mm:ss a");
+        try (Connection connection = dataSource.getConnection()) {
+            String query = "SELECT SYSDATE FROM DUAL";
+            NamedParameterStatement SDxVal = new NamedParameterStatement(connection, query);
+            SDxVal.execute();
+            ResultSet rest = SDxVal.executeQuery();
+            if (rest.next()) {
+                result = "SERVER DATE AND TIME : " + String.valueOf(sdf.format(rest.getDate("SYSDATE")));
+            }
+        } catch (SQLException ex) {
+            result = ex.toString();
+            Logger.getLogger(ACRGBFETCH.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

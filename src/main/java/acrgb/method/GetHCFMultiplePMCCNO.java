@@ -22,7 +22,7 @@ import oracle.jdbc.OracleTypes;
 
 /**
  *
- * @author MinoSun
+ * @author DRG_SHADOWBILLING
  */
 @RequestScoped
 public class GetHCFMultiplePMCCNO {
@@ -40,7 +40,7 @@ public class GetHCFMultiplePMCCNO {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:hcfrid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETFACILITY(:hcfrid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("hcfrid", hcfrid.trim());
             statement.execute();
@@ -75,7 +75,7 @@ public class GetHCFMultiplePMCCNO {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITYBYNAME(:uhcfname,:ustreet); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETFACILITYBYNAME(:uhcfname,:ustreet); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("uhcfname", uhcfname.trim());
             statement.setString("ustreet", ustreet.trim());

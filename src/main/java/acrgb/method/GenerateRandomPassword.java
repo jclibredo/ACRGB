@@ -9,7 +9,7 @@ import java.security.SecureRandom;
 
 /**
  *
- * @author MinoSun
+ * @author DRG_SHADOWBILLING
  */
 public class GenerateRandomPassword {
 

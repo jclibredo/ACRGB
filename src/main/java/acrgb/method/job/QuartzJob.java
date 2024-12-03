@@ -20,7 +20,7 @@ import java.util.TimerTask;
 
 /**
  *
- * @author MinoSun
+ * @author DRG_SHADOWBILLING
  */
 public class QuartzJob extends TimerTask {
 

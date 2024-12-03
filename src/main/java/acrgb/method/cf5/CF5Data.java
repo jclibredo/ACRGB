@@ -25,7 +25,7 @@ import oracle.jdbc.OracleTypes;
 
 /**
  *
- * @author MinoSun
+ * @author DRG_SHADOWBILLING
  */
 @RequestScoped
 public class CF5Data {
@@ -42,8 +42,7 @@ public class CF5Data {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            System.out.println("HERE " + useries);
-            CallableStatement statement = connection.prepareCall("begin :v_results := ACR_GB.ACRGBPKGFUNCTION.INFO(:useries); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_results := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.INFO(:useries); end;");
             statement.registerOutParameter("v_results", OracleTypes.CURSOR);
             statement.setString("useries", useries.trim());
             statement.execute();
@@ -85,7 +84,7 @@ public class CF5Data {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_results := ACR_GB.ACRGBPKGFUNCTION.WARNINGERROR(:useries); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_results := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.WARNINGERROR(:useries); end;");
             statement.registerOutParameter("v_results", OracleTypes.CURSOR);
             statement.setString("useries", useries.trim());
             statement.execute();
@@ -122,7 +121,7 @@ public class CF5Data {
         result.setSuccess(false);
 //        String[] errocode = {"203", "204", "205", "206", "207", "208", "506", "507", "508"};
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_results := ACR_GB.ACRGBPKGFUNCTION.PROCEDURES(:useries); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_results := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.PROCEDURES(:useries); end;");
             statement.registerOutParameter("v_results", OracleTypes.CURSOR);
             statement.setString("useries", useries.trim());
             statement.execute();
@@ -159,7 +158,7 @@ public class CF5Data {
         result.setSuccess(false);
 //        String[] errocode = {"202", "501", "502", "503", "504", "505"};
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_results := ACR_GB.ACRGBPKGFUNCTION.SECONDARY(:useries); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_results := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.SECONDARY(:useries); end;");
             statement.registerOutParameter("v_results", OracleTypes.CURSOR);
             statement.setString("useries", useries.trim());
             statement.execute();

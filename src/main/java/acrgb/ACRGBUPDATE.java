@@ -36,16 +36,16 @@ import javax.ws.rs.core.MediaType;
 /**
  * REST Web Service
  *
- * @author MinoSun
+ * @author DRG_SHADOWBILLING
  */
 @Path("ACRGBUPDATE")
 @RequestScoped
 public class ACRGBUPDATE {
 
     @Resource(lookup = "mail/acrgbmail")
-    private Session session;
+    private Session acrgbmail;
     //-----------------------------------
-    @Resource(lookup = "jdbc/acrgb")
+    @Resource(lookup = "jdbc/acgbuser")
     private DataSource dataSource;
 
     private final Utility utility = new Utility();
@@ -169,7 +169,7 @@ public class ACRGBUPDATE {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             if (user.getUsername().isEmpty() && !user.getUserpassword().isEmpty()) {
-                ACRGBWSResult insertresult = new Methods().CHANGEPASSWORD(dataSource, user.getUserid(), user.getUserpassword(), session);
+                ACRGBWSResult insertresult = new Methods().CHANGEPASSWORD(dataSource, user.getUserid(), user.getUserpassword(), acrgbmail);
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
@@ -179,7 +179,7 @@ public class ACRGBUPDATE {
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
             } else {
-                ACRGBWSResult insertresult = new Methods().UPDATEUSERCREDENTIALS(dataSource, user.getUserid(), user.getUsername(), user.getUserpassword(), user.getCreatedby(), session);
+                ACRGBWSResult insertresult = new Methods().UPDATEUSERCREDENTIALS(dataSource, user.getUserid(), user.getUsername(), user.getUserpassword(), user.getCreatedby(), acrgbmail);
                 result.setMessage(insertresult.getMessage());
                 result.setSuccess(insertresult.isSuccess());
                 result.setResult(insertresult.getResult());
@@ -223,17 +223,18 @@ public class ACRGBUPDATE {
 //        result.setMessage("");
 //        result.setResult("");
 //        result.setSuccess(false);
-//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
 //        if (!GetPayLoad.isSuccess()) {
 //            result.setMessage(GetPayLoad.getMessage());
 //        } else {
-//            ACRGBWSResult insertresult = new Methods().RESETPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
+//            ACRGBWSResult insertresult = new Methods()..RESETPASSWORD(dataSource, user.getUserid(), user.getUserpassword());
 //            result.setMessage(insertresult.getMessage());
 //            result.setSuccess(insertresult.isSuccess());
 //            result.setResult(insertresult.getResult());
 //        }
 //        return result;
 //    }
+
     //SET INACTIVE DATA
     @PUT
     @Path("INACTIVE")

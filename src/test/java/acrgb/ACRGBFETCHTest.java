@@ -5,15 +5,6 @@
  */
 package acrgb;
 
-import acrgb.structure.ACRGBWSResult;
-import antlr.Token;
-import com.jayway.restassured.RestAssured;
-import static com.jayway.restassured.RestAssured.given;
-import java.io.IOException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-
 /**
  *
  * @author MinoSun

@@ -11,7 +11,7 @@ import lombok.Data;
 
 /**
  *
- * @author MinoSun
+ * @author DRG_SHADOWBILLING
  */
 @Data
 public class ACRGBPayload {

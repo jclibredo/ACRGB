@@ -57,7 +57,7 @@ import okhttp3.OkHttpClient;
 
 /**
  *
- * @author MinoSun
+ * @author DRG_SHADOWBILLING
  */
 @ApplicationScoped
 @Singleton
@@ -144,36 +144,36 @@ public class Utility {
         return m.matches();
     }
 
-    public String GetStrings(String name) {
-        String result = "";
-        try {
-            Context context = new InitialContext();
-            Context environment = (Context) context.lookup("java:comp/env");
-            result = (String) environment.lookup(name);
-        } catch (NamingException ex) {
-            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
-            result = ex.getMessage();
-        }
-        return result;
-    }
+//    public String GetStrings(String name) {
+//        String result = "";
+//        try {
+//            Context context = new InitialContext();
+//            Context environment = (Context) context.lookup("java:comp/env");
+//            result = (String) environment.lookup(name);
+//        } catch (NamingException ex) {
+//            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
+//            result = ex.getMessage();
+//        }
+//        return result;
+//    }
 
-    public static boolean isWindows() {
-        return (System.getProperty("os.name").toLowerCase().contains("win"));
-    }
-
-    public static boolean isMac() {
-        return (System.getProperty("os.name").toLowerCase().contains("mac"));
-    }
-
-    public static boolean isUnix() {
-        return (System.getProperty("os.name").toLowerCase().contains("nix")
-                || System.getProperty("os.name").toLowerCase().contains("nux")
-                || System.getProperty("os.name").toLowerCase().contains("aix"));
-    }
-
-    public static boolean isSolaris() {
-        return (System.getProperty("os.name").toLowerCase().contains("sunos"));
-    }
+//    public static boolean isWindows() {
+//        return (System.getProperty("os.name").toLowerCase().contains("win"));
+//    }
+//
+//    public static boolean isMac() {
+//        return (System.getProperty("os.name").toLowerCase().contains("mac"));
+//    }
+//
+//    public static boolean isUnix() {
+//        return (System.getProperty("os.name").toLowerCase().contains("nix")
+//                || System.getProperty("os.name").toLowerCase().contains("nux")
+//                || System.getProperty("os.name").toLowerCase().contains("aix"));
+//    }
+//
+//    public static boolean isSolaris() {
+//        return (System.getProperty("os.name").toLowerCase().contains("sunos"));
+//    }
 
     public boolean IsValidNumber(String string) {
         try {
