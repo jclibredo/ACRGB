@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 
 /**
  *
- * @author DRG_SHADOWBILLING
+ * @author ACR_GB
  */
 @RequestScoped
 public class UserActivityLogs {

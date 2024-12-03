@@ -16,7 +16,7 @@ import javax.enterprise.context.RequestScoped;
 
 /**
  *
- * @author DRG_SHADOWBILLING
+ * @author ACR_GB
  */
 @RequestScoped
 public class ConfigReader {

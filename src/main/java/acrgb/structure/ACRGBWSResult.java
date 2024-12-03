@@ -9,7 +9,7 @@ import lombok.Data;
 
 /**
  *
- * @author DRG_SHADOWBILLING
+ * @author ACR_GB
  */
 @Data
 public class ACRGBWSResult {

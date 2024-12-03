@@ -57,7 +57,7 @@ import okhttp3.OkHttpClient;
 
 /**
  *
- * @author DRG_SHADOWBILLING
+ * @author ACR_GB
  */
 @ApplicationScoped
 @Singleton

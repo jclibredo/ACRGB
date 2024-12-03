@@ -46,7 +46,7 @@ import javax.ws.rs.core.MediaType;
 /**
  * REST Web Service
  *
- * @author DRG_SHADOWBILLING
+ * @author ACR_GB
  */
 @Path("ACRGBFETCH")
 @RequestScoped
@@ -1421,6 +1421,14 @@ public class ACRGBFETCH {
             Logger.getLogger(ACRGBFETCH.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
+    }
+
+//    TEST METHOD EXPOSED
+    @GET
+    @Path("TEST")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult TEST() {
+        return new FetchMethods().ACR_USER_LEVEL(dataSource, "ACTIVE");
     }
 
 }

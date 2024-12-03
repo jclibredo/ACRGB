@@ -44,7 +44,7 @@ import oracle.jdbc.OracleTypes;
 
 /**
  *
- * @author DRG_SHADOWBILLING
+ * @author ACR_GB
  */
 @RequestScoped
 public class Methods {
@@ -142,7 +142,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :p_user := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.ACRUSERNAME(:p_username); end;");
+            CallableStatement statement = connection.prepareCall("begin :p_user := ACR_GB.ACRGBPKGFUNCTION.ACRUSERNAME(:p_username); end;");
             statement.registerOutParameter("p_user", OracleTypes.CURSOR);
             statement.setString("p_username", p_username.trim());
             statement.execute();
@@ -169,7 +169,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_level := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.ACRUSERLEVEL(:p_levelid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_level := ACR_GB.ACRGBPKGFUNCTION.ACRUSERLEVEL(:p_levelid); end;");
             statement.registerOutParameter("v_level", OracleTypes.CURSOR);
             statement.setString("p_levelid", p_levelid.trim());
             statement.execute();
@@ -195,7 +195,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.UPDATEUSERDETAILS(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERDETAILS(:Message,:Code,"
                     + ":p_firstname,:p_lastname,:p_middlename,:p_did,:p_email,:p_contact)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -241,7 +241,7 @@ public class Methods {
             if (counteruser > 1) {
                 result.setMessage("Username is already exist");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,"
                         + ":userid,:p_username,:p_password,:p_stats)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -296,7 +296,7 @@ public class Methods {
             if (counteruser > 1) {
                 result.setMessage("Username is already exist");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEUSERNAME(:Message,:Code,:p_userid,:p_username,:p_stats)");
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERNAME(:Message,:Code,:p_userid,:p_username,:p_stats)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("p_userid", userid.trim());
@@ -337,7 +337,7 @@ public class Methods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
+//            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
 //            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
 //            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
 //            getinsertresult.setString("p_userid", userid.trim());
@@ -367,7 +367,7 @@ public class Methods {
         result.setSuccess(false);
         UserActivity userlogs = utility.UserActivity();
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("p_userid", userid.trim());
@@ -407,7 +407,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATELEVEL(:Message,:Code,:p_userid,:p_levelid,:p_stats)");
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATELEVEL(:Message,:Code,:p_userid,:p_levelid,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("p_userid", userid.trim());
@@ -439,7 +439,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETSUMMARY(:utags,:phcfid,:utranchid,:uconid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETSUMMARY(:utags,:phcfid,:utranchid,:uconid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("phcfid", phcfid.trim());
@@ -1173,6 +1173,8 @@ public class Methods {
                             ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, hcflist.get(y).trim());
                             if (getHcfByCode.isSuccess()) {
                                 HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
+//                                System.err.println("NAME "+healthCareFacility.getHcfname());
+//                                     System.err.println("NAME "+healthCareFacility.getStreet());
                                 //GET HCF DETAILS BY NAME
                                 ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
                                 if (getHcfByName.isSuccess()) {
@@ -2141,7 +2143,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.ACTIVITYLOGS(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACTIVITYLOGS(:Message,:Code,"
                     + ":a_date,:a_details,:a_by,:a_actstats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -2175,7 +2177,7 @@ public class Methods {
         result.setSuccess(false);
         ArrayList<UserActivity> logsList = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETLOGSWITHID(:userid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETLOGSWITHID(:userid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("userid", userid.trim());
             statement.execute();
@@ -2221,7 +2223,7 @@ public class Methods {
 //            if (getdatesettings.isSuccess()) {
 //                List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class));
 //                for (int u = 0; u < GetDateSettings.size(); u++) {
-//                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
+//                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
 //                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //                    statement.setString("upmccno", upmccno.trim());
 //                    statement.setString("utags", "G");
@@ -2311,7 +2313,7 @@ public class Methods {
             } else {
                 ACRGBWSResult restA = this.GETROLE(dataSource, mbrequestsummry.getRequestor(), "ACTIVE");
                 if (restA.isSuccess()) {
-                    CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.MBREQUEST(:Message,:Code,:udaterequest,:udatefrom,"
+                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUEST(:Message,:Code,:udaterequest,:udatefrom,"
                             + ":udateto,:urequestor,:utranscode,:uremarks,:uamount,:udatecreated)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -2329,7 +2331,7 @@ public class Methods {
                         List<String> facilitylist = Arrays.asList(mbrequestsummry.getFacility().split(","));
                         int errCounter = 0;
                         for (int x = 0; x < facilitylist.size(); x = x + 2) {
-                            CallableStatement statement = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.MBREQUESTFCHUNDER(:Message,:Code,:utranscode,:udatecreated,:uamount,:ufacility)");
+                            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUESTFCHUNDER(:Message,:Code,:utranscode,:udatecreated,:uamount,:ufacility)");
                             statement.registerOutParameter("Message", OracleTypes.VARCHAR);
                             statement.registerOutParameter("Code", OracleTypes.INTEGER);
                             statement.setString("utranscode", mbrequestsummry.getTranscode());
@@ -2371,7 +2373,7 @@ public class Methods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBREQUEST(:userid); end;");
+//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBREQUEST(:userid); end;");
 //            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //            statement.setString("userid", userid.trim());
 //            statement.execute();
@@ -2528,7 +2530,7 @@ public class Methods {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             //---------------------------------------------------- 
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("pid", pid.trim());
             statement.execute();
@@ -2584,7 +2586,7 @@ public class Methods {
             List<String> accesslist = Arrays.asList(accessid.split(","));
             for (int x = 0; x < accesslist.size(); x++) {
                 //------------------------------------------------------------------------------------------------
-                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.REMOVEDROLEINDEX(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.REMOVEDROLEINDEX(:Message,:Code,"
                         + ":puserid,:paccessid)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -2633,7 +2635,7 @@ public class Methods {
                 List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                 for (int x = 0; x < fchlist.size(); x++) {
                     //---------------------------------------------------- 
-                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("pid", fchlist.get(x).trim());
                     statement.execute();
@@ -2704,7 +2706,7 @@ public class Methods {
                 List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                 for (int x = 0; x < fchlist.size(); x++) {
                     //---------------------------------------------------- 
-                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("pid", fchlist.get(x));
                     statement.execute();
@@ -2775,7 +2777,7 @@ public class Methods {
             List<String> fchlist = Arrays.asList(restB.getResult().split(","));
             for (int x = 0; x < fchlist.size(); x++) {
                 //---------------------------------------------------- 
-                CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                 statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                 statement.setString("pid", fchlist.get(x));
                 statement.execute();
@@ -2849,7 +2851,7 @@ public class Methods {
             ArrayList<HealthCareFacility> fchlist = new ArrayList<>();
             for (int x = 0; x < resultlist.size(); x++) {
                 //---------------------------------------------------- 
-                CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETFACILITY(:pid); end;");
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:pid); end;");
                 statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                 statement.setString("pid", resultlist.get(x).trim());
                 statement.execute();
@@ -2893,7 +2895,7 @@ public class Methods {
         try (Connection connection = dataSource.getConnection()) {
             if (pproid.length() > 3) {
                 String procode = pproid.substring(pproid.length() - 2);
-                CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETPROWITHID(:pproid); end;");
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETPROWITHID(:pproid); end;");
                 statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                 statement.setString("pproid", procode.trim());
                 statement.execute();
@@ -2931,7 +2933,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -2962,7 +2964,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -2998,7 +3000,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDANDNOTEMPTY(:utags,:pid,:ucondate); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDANDNOTEMPTY(:utags,:pid,:ucondate); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", pid.trim());
@@ -3032,7 +3034,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -3061,7 +3063,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -3092,7 +3094,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETAPEXFACILITY(); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETAPEXFACILITY(); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.execute();
             ArrayList<HealthCareFacility> hcflist = new ArrayList<>();
@@ -3146,7 +3148,7 @@ public class Methods {
 //                        }
 //                        rmb.setConctractamount(conlist.get(x).getAmount());
 //                        rmb.setContractnumber(conlist.get(x).getTranscode());
-//                        CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
+//                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
 //                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //                        statement.setString("tags", tags.trim());
 //                        statement.setString("pconid", conlist.get(x).getConid().trim());
@@ -3212,7 +3214,7 @@ public class Methods {
 //                        }
 //                        rmb.setConctractamount(conlist.get(x).getAmount());
 //                        rmb.setContractnumber(conlist.get(x).getTranscode());
-//                        CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
+//                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
 //                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //                        statement.setString("tags", tags.trim());
 //                        statement.setString("pconid", conlist.get(x).getConid().trim());
@@ -3379,7 +3381,7 @@ public class Methods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
+//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
 //            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //            statement.setString("upmccno", upmccno.trim());
 //            statement.setString("utags", "G".trim());
@@ -3481,7 +3483,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDFORENDROLE(:utags,:pid,:pcondateid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDFORENDROLE(:utags,:pid,:pcondateid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -3527,7 +3529,7 @@ public class Methods {
                 List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class
                 ));
                 for (int u = 0; u < GetDateSettings.size(); u++) {
-                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETAVERAGECLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETAVERAGECLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("upmccno", upmccno.trim());
                     statement.setString("utags", "G".trim());
@@ -3619,7 +3621,7 @@ public class Methods {
         ContractTagging ct = new ContractTagging();
         ArrayList<String> errorList = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETENDEDCONTRACTDATEPERIOD(:tags); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETENDEDCONTRACTDATEPERIOD(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("tags", tags.trim().toUpperCase());
             statement.execute();
@@ -3657,7 +3659,7 @@ public class Methods {
                         errorList.add(endAffiliate.getMessage());
                     }
                     //CHANGE CONTRACT PERIOD STATUS
-                    CallableStatement stmt = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INACTIVEDATA(:Message,:Code,"
+                    CallableStatement stmt = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INACTIVEDATA(:Message,:Code,"
                             + ":tags,:dataid)");
                     stmt.registerOutParameter("Code", OracleTypes.INTEGER);
                     stmt.setString("tags", "CONTRACTDATE".trim().toUpperCase());
@@ -3691,7 +3693,7 @@ public class Methods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.VALIDATEEXCLUDEDCODE(:pcode); end;");
+//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.VALIDATEEXCLUDEDCODE(:pcode); end;");
 //            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //            statement.setString("pcode", excode.trim().toUpperCase());
 //            statement.execute();
@@ -3718,7 +3720,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.VALIDATECONTRACTDATE(:puserid,:pcondate); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.VALIDATECONTRACTDATE(:puserid,:pcondate); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(pdatefrom).getTime()));
             statement.setDate("udateto", (Date) new Date(utility.StringToDate(pdateto).getTime()));
@@ -3745,7 +3747,7 @@ public class Methods {
         try (Connection connection = datasource.getConnection()) {
             UserActivityLogs logs = new UserActivityLogs();
             UserActivity userLogs = utility.UserActivity();
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEHCPNACCREDITATION(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEHCPNACCREDITATION(:Message,:Code,"
                     + ":paccount,:pdateaction,:pcreatedby,:pstatus,:premarks,:ptags,:pdatefrom,:pdateto)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -3784,7 +3786,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETALLACCREDITATION(:utags); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETALLACCREDITATION(:utags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.execute();
@@ -3833,7 +3835,7 @@ public class Methods {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             //---------------------------------------------------- 
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBUSINGMBID(:umbuserid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBUSINGMBID(:umbuserid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("umbuserid", umbuserid.trim());
             statement.execute();

@@ -35,7 +35,7 @@ import oracle.jdbc.OracleTypes;
 
 /**
  *
- * @author DRG_SHADOWBILLING
+ * @author ACR_GB
  */
 @RequestScoped
 public class BookingMethod {
@@ -52,7 +52,7 @@ public class BookingMethod {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.ACRBOOKING(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACRBOOKING(:Message,:Code,"
                     + ":ubooknum,:uconid,:udatecreated,:ucreatedby)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -80,7 +80,7 @@ public class BookingMethod {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTCONBALANCE(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTCONBALANCE(:Message,:Code,"
                     + ":ubooknum,:ucondateid,:uaccount,:uconbalance,:uconamount,:uconutilized,:udatecreated,:ucreatedby,:uconid,:uclaimscount)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -119,7 +119,7 @@ public class BookingMethod {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := "
-                    + "DRG_SHADOWBILLING.ACRGBPKG.GETALLCLAIMSFORBOOK("
+                    + "ACR_GB.ACRGBPKG.GETALLCLAIMSFORBOOK("
                     + ":upmccno,"
                     + ":u_tags,"
                     + ":u_from,:u_to); end;");
@@ -628,7 +628,7 @@ public class BookingMethod {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.CLAIMSAMOUNTBOOK(:upmmcno,:utags,"
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.CLAIMSAMOUNTBOOK(:upmmcno,:utags,"
                     + ":udatefrom,:udateto); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("upmmcno", upmmcno.trim().toUpperCase());
@@ -698,7 +698,7 @@ public class BookingMethod {
                     List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                     for (int yu = 0; yu < healthCareFacilityList.size(); yu++) {
                         //------------------------------------------------------
-                        CallableStatement statement = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKG.AUTOBOOKDATA(:Message,:Code,"
+                        CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKG.AUTOBOOKDATA(:Message,:Code,"
                                 + ":ubooknum,:upmmcno,:utags,:udatefrom,:udateto)");
                         statement.registerOutParameter("Message", OracleTypes.VARCHAR);
                         statement.registerOutParameter("Code", OracleTypes.INTEGER);

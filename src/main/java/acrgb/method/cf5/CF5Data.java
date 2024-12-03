@@ -6,6 +6,7 @@
 package acrgb.method.cf5;
 
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.cf5.DRGClaimSubmissionAuditrail;
 import acrgb.structure.cf5.Info;
 import acrgb.structure.cf5.Procedure;
 import acrgb.structure.cf5.Secondary;
@@ -16,6 +17,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,7 +27,7 @@ import oracle.jdbc.OracleTypes;
 
 /**
  *
- * @author DRG_SHADOWBILLING
+ * @author ACR_GB
  */
 @RequestScoped
 public class CF5Data {
@@ -33,6 +35,7 @@ public class CF5Data {
     public CF5Data() {
     }
     private final Utility utility = new Utility();
+    private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm a");
 
     // GET CF5 PATIENT INFO
     public ACRGBWSResult INFO(final DataSource datasource,
@@ -42,7 +45,7 @@ public class CF5Data {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_results := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.INFO(:useries); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_results := ACR_GB.ACRGBPKGFUNCTION.INFO(:useries); end;");
             statement.registerOutParameter("v_results", OracleTypes.CURSOR);
             statement.setString("useries", useries.trim());
             statement.execute();
@@ -66,8 +69,16 @@ public class CF5Data {
                 }
                 result.setResult(utility.ObjectMapper().writeValueAsString(info));
                 result.setSuccess(true);
+                result.setMessage("CF5");
             } else {
-                result.setMessage("NO DATA FOUND");
+                ACRGBWSResult getAuditTrail = this.GETDRGCLAIMSINSERTSTATUS(datasource, useries);
+                if (getAuditTrail.isSuccess()) {
+                    result.setSuccess(true);
+                    result.setMessage("AUDIT");
+                    result.setResult(getAuditTrail.getResult());
+                } else {
+                    result.setMessage(getAuditTrail.getMessage());
+                }
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
@@ -84,7 +95,7 @@ public class CF5Data {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_results := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.WARNINGERROR(:useries); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_results := ACR_GB.ACRGBPKGFUNCTION.WARNINGERROR(:useries); end;");
             statement.registerOutParameter("v_results", OracleTypes.CURSOR);
             statement.setString("useries", useries.trim());
             statement.execute();
@@ -121,7 +132,7 @@ public class CF5Data {
         result.setSuccess(false);
 //        String[] errocode = {"203", "204", "205", "206", "207", "208", "506", "507", "508"};
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_results := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.PROCEDURES(:useries); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_results := ACR_GB.ACRGBPKGFUNCTION.PROCEDURES(:useries); end;");
             statement.registerOutParameter("v_results", OracleTypes.CURSOR);
             statement.setString("useries", useries.trim());
             statement.execute();
@@ -135,7 +146,6 @@ public class CF5Data {
                 procedure.setLat(resultSet.getString("LATERALITY"));
                 procedureList.add(procedure);
             }
-
             if (procedureList.size() > 0) {
                 result.setResult(utility.ObjectMapper().writeValueAsString(procedureList));
                 result.setSuccess(true);
@@ -158,7 +168,7 @@ public class CF5Data {
         result.setSuccess(false);
 //        String[] errocode = {"202", "501", "502", "503", "504", "505"};
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_results := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.SECONDARY(:useries); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_results := ACR_GB.ACRGBPKGFUNCTION.SECONDARY(:useries); end;");
             statement.registerOutParameter("v_results", OracleTypes.CURSOR);
             statement.setString("useries", useries.trim());
             statement.execute();
@@ -169,22 +179,48 @@ public class CF5Data {
                 second.setSdx(resultSet.getString("SDX_CODE"));
                 secondList.add(second);
             }
-//            ACRGBWSResult getSecond = this.WARNINGERROR(datasource, useries.trim());
-//            if (getSecond.isSuccess()) {
-//                List<WarningError> war = Arrays.asList(utility.ObjectMapper().readValue(getSecond.getResult(), WarningError[].class));
-//                for (int x = 0; x < war.size(); x++) {
-//                    if (Arrays.asList(errocode).contains(war.get(x).getErrcode())) {
-//                        Secondary sdx = new Secondary();
-//                        sdx.setSdx(war.get(x).getData());
-//                        secondList.add(sdx);
-//                    }
-//                }
-//            }
-
             //GET OTHER SDX FROM WARNING
             if (secondList.size() > 0) {
                 result.setResult(utility.ObjectMapper().writeValueAsString(secondList));
                 result.setSuccess(true);
+            } else {
+                result.setMessage("NO DATA FOUND");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(CF5Data.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    // GET CF5 PATIENT INFO
+    public ACRGBWSResult GETDRGCLAIMSINSERTSTATUS(final DataSource datasource,
+            final String useries) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_results := ACR_GB.ACRGBPKGFUNCTION.GETDRGCLAIMSINSERTSTATUS(:useries); end;");
+            statement.registerOutParameter("v_results", OracleTypes.CURSOR);
+            statement.setString("useries", useries.trim());
+            statement.execute();
+            ArrayList<DRGClaimSubmissionAuditrail> auditrailList = new ArrayList<>();
+            ResultSet resultSet = (ResultSet) statement.getObject("v_results");
+            while (resultSet.next()) {
+                DRGClaimSubmissionAuditrail auditrail = new DRGClaimSubmissionAuditrail();
+                auditrail.setClaimnumber(resultSet.getString("CLAIMNUMBER"));
+                auditrail.setDatetime(resultSet.getString("DATETIME"));
+                auditrail.setDetails(resultSet.getString("DETAILS"));
+                auditrail.setFilecontent(resultSet.getString("FILECONTENT"));
+                auditrail.setSeries(resultSet.getString("SERIES"));
+                auditrail.setStatus(resultSet.getString("STATUS"));
+                auditrailList.add(auditrail);
+            }
+            if (auditrailList.size() > 0) {
+                result.setMessage("AUDIT");
+                result.setSuccess(true);
+                result.setResult(utility.ObjectMapper().writeValueAsString(auditrailList));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
