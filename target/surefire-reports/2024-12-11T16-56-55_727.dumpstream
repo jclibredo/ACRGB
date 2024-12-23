@@ -1,4 +1,4 @@
-# Created at 2024-12-03T18:10:06.707
+# Created at 2024-12-11T16:56:56.762
 Boot Manifest-JAR contains absolute paths in classpath 'D:\Java Swing\ACRGB\target\test-classes'
 Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
 'other' has different root

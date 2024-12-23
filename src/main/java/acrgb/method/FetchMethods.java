@@ -1032,7 +1032,6 @@ public class FetchMethods {
                                     }
                                 }
                             }
-
                             double sumsA = (trancheamount / Double.parseDouble(resultset.getString("AMOUNT"))) * 100;
                             if (sumsA > 100) {
                                 double negvalue = 100 - sumsA;

@@ -1,4 +1,4 @@
-/*
+ /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -439,7 +439,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetActivityLogs")
     @Produces(MediaType.APPLICATION_JSON)
@@ -461,7 +460,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetLogWithParam/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -530,7 +528,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------    
-
     @GET
     @Path("GetFacilityUsingProAccountUserID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -553,7 +550,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GETALLFACILITY/{tags}/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -615,7 +611,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetManagingBoardWithProID/{proid}/{levelname}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -811,7 +806,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
-
     @GET
     @Path("GetContractDate/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -833,7 +827,6 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
     //GET TRIGGER AUTOEND CONTRACT DATE
     @GET
     @Path("AutoEndContractDate/{ucondateid}")
@@ -856,7 +849,6 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
     //GET RANDOM PASSWORD
     @GET
     @Path("GetRandomPasscode")
@@ -972,7 +964,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
-
     @GET
     @Path("CONTRACTWITHQUARTER/{tags}/{uprocode}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1051,7 +1042,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
-
     @GET
     @Path("GetContractHistory/{userId}/{requestCode}/{targetData}")//PRO LEVEL AND PHIC LEVEL
     @Produces(MediaType.APPLICATION_JSON)
@@ -1076,7 +1066,6 @@ public class ACRGBFETCH {
         return result;
     }
 //-----------------------------------------------------------------------------
-
 //    @GET
 //    @Path("Validate2FA")
 //    @Produces(MediaType.APPLICATION_JSON)
@@ -1152,7 +1141,6 @@ public class ACRGBFETCH {
         result.setResult(utility.Create2FACode());
         return result;
     }
-
     @GET
     @Path("AutoProcessData")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1172,7 +1160,6 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
 //    @GET
 //    @Path("TestEmailSender/{recipient}/{newpass}")
 //    @Produces(MediaType.TEXT_PLAIN)

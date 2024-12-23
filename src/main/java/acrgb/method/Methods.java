@@ -1171,12 +1171,15 @@ public class Methods {
                         List<String> hcflist = Arrays.asList(facilitylist.trim().split(","));
                         for (int y = 0; y < hcflist.size(); y++) {
                             ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, hcflist.get(y).trim());
+//                            System.out.println(getHcfByCode);
                             if (getHcfByCode.isSuccess()) {
                                 HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
 //                                System.err.println("NAME "+healthCareFacility.getHcfname());
-//                                     System.err.println("NAME "+healthCareFacility.getStreet());
+//                                System.err.println("STREET "+healthCareFacility.getStreet());
                                 //GET HCF DETAILS BY NAME
                                 ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
+//                                System.out.println("RESULT " + getHcfByName);
+//                                System.out.println("PMCC NO " + healthCareFacility.getHcfname().trim());
                                 if (getHcfByName.isSuccess()) {
                                     List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                                     for (int u = 0; u < healthCareFacilityList.size(); u++) {

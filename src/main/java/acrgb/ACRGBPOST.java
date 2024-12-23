@@ -276,28 +276,27 @@ public class ACRGBPOST {
 //        }
 //        return result;
 //    }
-
-    @POST
-    @Path("INSERTMBREQUEST")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult MBREQUEST(@HeaderParam("token") String token, final MBRequestSummary mbrequestsummry) {
-        //TODO return proper representation object
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            ACRGBWSResult insertresult = new Methods().InsertMBRequest(dataSource, mbrequestsummry);
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
-        }
-        return result;
-    }
+//    @POST
+//    @Path("INSERTMBREQUEST")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult MBREQUEST(@HeaderParam("token") String token, final MBRequestSummary mbrequestsummry) {
+//        //TODO return proper representation object
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
+//        if (!GetPayLoad.isSuccess()) {
+//            result.setMessage(GetPayLoad.getMessage());
+//        } else {
+//            ACRGBWSResult insertresult = new Methods().InsertMBRequest(dataSource, mbrequestsummry);
+//            result.setMessage(insertresult.getMessage());
+//            result.setSuccess(insertresult.isSuccess());
+//            result.setResult(insertresult.getResult());
+//        }
+//        return result;
+//    }
 
     @POST
     @Path("INSERTROLEINDEX")
@@ -384,8 +383,8 @@ public class ACRGBPOST {
         //-------------------------------------
         return result;
     }
-//     USER ACCOUNT BATCH UPLOAD
 
+    //USER ACCOUNT BATCH UPLOAD
     @POST
     @Path("USERACCOUNTBATCH")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -506,7 +505,6 @@ public class ACRGBPOST {
                                 userInfo.setDesignation(userinfo.get(x).getDesignation().trim().toUpperCase());
                             }
                         }
-//                        email.setEmailto(userinfo.get(x).getEmail());
                         ACRGBWSResult InsertCleanData = new InsertMethods().INSERTUSERACCOUNTBATCHUPLOAD(dataSource, userInfo, acrgbmail);
                         if (!InsertCleanData.isSuccess()) {
                             error.add("| LINE NUMBER[" + userinfo.get(x).getId() + "]");

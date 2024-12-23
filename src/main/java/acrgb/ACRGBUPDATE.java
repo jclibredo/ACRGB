@@ -234,7 +234,6 @@ public class ACRGBUPDATE {
 //        }
 //        return result;
 //    }
-
     //SET INACTIVE DATA
     @PUT
     @Path("INACTIVE")
@@ -252,7 +251,9 @@ public class ACRGBUPDATE {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             ACRGBWSResult insertresult = new InsertMethods().INACTIVEDATA(dataSource,
-                    arhived.getTags(), arhived.getDataid(), arhived.getCreatedby(), "ACTIVE");
+                    arhived.getTags(),
+                    arhived.getDataid(),
+                    arhived.getCreatedby(), "ACTIVE");
             result.setMessage(insertresult.getMessage());
             result.setSuccess(insertresult.isSuccess());
             result.setResult(insertresult.getResult());
@@ -318,13 +319,13 @@ public class ACRGBUPDATE {
 //    @Consumes(MediaType.APPLICATION_JSON)
 //    @Produces(MediaType.APPLICATION_JSON)
 //    public ACRGBWSResult TAGGINGFACILITY(@HeaderParam("token") String token,
-//            final HealthCareFacility hcf) throws SQLException {
+//            final HealthCareFacility hcf) {
 //        //TODO return proper representation object
 //        ACRGBWSResult result = utility.ACRGBWSResult();
 //        result.setMessage("");
 //        result.setResult("");
 //        result.setSuccess(false);
-//        ACRGBWSResult GetPayLoad = utility.GetPayload(token);
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
 //        if (!GetPayLoad.isSuccess()) {
 //            result.setMessage(GetPayLoad.getMessage());
 //        } else {
