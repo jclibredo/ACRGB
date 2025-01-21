@@ -16,7 +16,6 @@ import acrgb.structure.Book;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.Email;
-import acrgb.structure.MBRequestSummary;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.NclaimsData;
 import acrgb.structure.Tranch;

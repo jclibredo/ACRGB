@@ -496,6 +496,11 @@ public class Methods {
                                 if (getHCIUisngHCPNCode.isSuccess()) {
                                     List<String> ListOHCI = Arrays.asList(getHCIUisngHCPNCode.getResult().split(","));
                                     for (int hci = 0; hci < ListOHCI.size(); hci++) {
+                                        //CHECK IF MAIN ACCRE IS USE FOR FACILITY
+                                        
+                                        
+                                        
+                                        
                                         //GET MULTIPLE PMCC NO THIS AREA
                                         //GET HCF DETAILS BY HCFCODE 
                                         ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, ListOHCI.get(hci).trim());
@@ -504,6 +509,8 @@ public class Methods {
                                             //GET HCF DETAILS BY NAME
                                             ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
                                             if (getHcfByName.isSuccess()) {
+                                                
+                                                
                                                 List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                                                 for (int u = 0; u < healthCareFacilityList.size(); u++) {
                                                     ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, healthCareFacilityList.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());

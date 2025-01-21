@@ -26,7 +26,7 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class GetHCFMultiplePMCCNO {
-
+    
     public GetHCFMultiplePMCCNO() {
     }
     
@@ -90,6 +90,44 @@ public class GetHCFMultiplePMCCNO {
                 hcf.setType(resultset.getString("HCFTYPE"));
                 hcf.setHcilevel(resultset.getString("HCILEVEL"));
                 hcf.setStreet(resultset.getString("STREET"));
+                hcfList.add(hcf);
+            }
+            if (hcfList.size() > 0) {
+                result.setResult(utility.ObjectMapper().writeValueAsString(hcfList));
+                result.setSuccess(true);
+                result.setMessage("OK");
+            } else {
+                result.setMessage("NO RECORD FOUND");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(GetHCFMultiplePMCCNO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+    
+    public ACRGBWSResult GETFACILITYBYMAINACCRE(
+            final DataSource datasource,
+            final String umainaccre) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = datasource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITYBYMAINACCRE(:umainaccre); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("umainaccre", umainaccre.trim());
+            statement.execute();
+            ArrayList<HealthCareFacility> hcfList = new ArrayList<>();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                HealthCareFacility hcf = new HealthCareFacility();
+                hcf.setHcfname(resultset.getString("HCFNAME"));
+                hcf.setHcfcode(resultset.getString("HCFCODE"));
+                hcf.setType(resultset.getString("HCFTYPE"));
+                hcf.setHcilevel(resultset.getString("HCILEVEL"));
+                hcf.setStreet(resultset.getString("STREET"));
+                hcf.setMainaccre(resultset.getString("MAIN_ACCRE"));
                 hcfList.add(hcf);
             }
             if (hcfList.size() > 0) {
