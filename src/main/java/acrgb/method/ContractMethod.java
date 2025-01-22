@@ -562,48 +562,56 @@ public class ContractMethod {
                         }
                         //======================================
                         //-------------------------------------------------------------------
-                        ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, con.getHcfid().trim());
-                        if (getHcfByCode.isSuccess()) {
-                            HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
-                            //GET HCF DETAILS BY NAME
-                            ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-                            if (getHcfByName.isSuccess()) {
-                                List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
-                                for (int yu = 0; yu < healthCareFacilityList.size(); yu++) {
-                                    //------------------------------------------------------------------------
-                                    ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource, healthCareFacilityList.get(yu).getHcfcode().trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
-                                    if (sumresult.isSuccess()) {
-                                        List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
-                                        for (int i = 0; i < nclaimsdata.size(); i++) {
-                                            int countLedger = 0;
-                                            if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                                if (con.getEnddate().isEmpty()) {
-                                                    if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
-                                                        countLedger++;
-                                                    }
-                                                } else {
-                                                    if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(con.getEnddate().trim(), "60"))) <= 0) {
-                                                        countLedger++;
-                                                    }
+//                        ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, con.getHcfid().trim());
+//                        if (getHcfByCode.isSuccess()) {
+//                            HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
+//                            //GET HCF DETAILS BY NAME
+//                            ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
+//                            if (getHcfByName.isSuccess()) {
+//                                List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
+                        ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
+                        ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, con.getHcfid().trim());
+                        if (getMainAccre.isSuccess()) {
+                            testHCIlist.addAll(Arrays.asList(utility.ObjectMapper().readValue(getMainAccre.getResult(), HealthCareFacility[].class)));
+                        } else if (new FetchMethods().GETFACILITYID(dataSource, con.getHcfid().trim()).isSuccess()) {
+                            testHCIlist.add(utility.ObjectMapper().readValue(new FetchMethods().GETFACILITYID(dataSource, con.getHcfid().trim()).getResult(), HealthCareFacility.class));
+                        }
+                        if (testHCIlist.size() > 0) {
+                            for (int yu = 0; yu < testHCIlist.size(); yu++) {
+                                //------------------------------------------------------------------------
+                                ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource, testHCIlist.get(yu).getHcfcode().trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
+                                if (sumresult.isSuccess()) {
+                                    List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
+                                    for (int i = 0; i < nclaimsdata.size(); i++) {
+                                        int countLedger = 0;
+                                        if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
+                                            if (con.getEnddate().isEmpty()) {
+                                                if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                    countLedger++;
                                                 }
                                             } else {
-                                                if (con.getEnddate().isEmpty()) {
-                                                    if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
-                                                        countLedger++;
-                                                    }
-                                                } else {
-                                                    if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(con.getEnddate().trim(), "60"))) <= 0) {
-                                                        countLedger++;
-                                                    }
+                                                if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(con.getEnddate().trim(), "60"))) <= 0) {
+                                                    countLedger++;
                                                 }
                                             }
-                                            if (countLedger > 0) {
-                                                numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                                claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                        } else {
+                                            if (con.getEnddate().isEmpty()) {
+                                                if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                    countLedger++;
+                                                }
+                                            } else {
+                                                if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(con.getEnddate().trim(), "60"))) <= 0) {
+                                                    countLedger++;
+                                                }
                                             }
+                                        }
+                                        if (countLedger > 0) {
+                                            numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                            claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
                                         }
                                     }
                                 }
+                                // }
                             }
                         }
 
@@ -727,49 +735,58 @@ public class ContractMethod {
                                         }
                                     }
                                     //-------------------------------------------------------------------
-                                    ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, HciList.get(x).trim());
-                                    if (getHcfByCode.isSuccess()) {
-                                        HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
-                                        //GET HCF DETAILS BY NAME
-                                        ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-                                        if (getHcfByName.isSuccess()) {
-                                            List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
-                                            for (int yu = 0; yu < healthCareFacilityList.size(); yu++) {
-                                                //------------------------------------------------------------------------
-                                                ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource, healthCareFacilityList.get(yu).getHcfcode().trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
-                                                if (sumresult.isSuccess()) {
-                                                    List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
-                                                    for (int i = 0; i < nclaimsdata.size(); i++) {
-                                                        int countLedger = 0;
-                                                        if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                                            if (hcinCon.getEnddate().isEmpty()) {
-                                                                if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
-                                                                    countLedger++;
-                                                                }
-                                                            } else {
-                                                                if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(con.getEnddate().trim(), "60"))) <= 0) {
-                                                                    countLedger++;
-                                                                }
+//                                    ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, HciList.get(x).trim());
+//                                    if (getHcfByCode.isSuccess()) {
+//                                        HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
+//                                        //GET HCF DETAILS BY NAME
+//                                        ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
+//                                        if (getHcfByName.isSuccess()) {
+//                                            List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
+
+                                    ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
+                                    ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, HciList.get(x).trim());
+                                    if (getMainAccre.isSuccess()) {
+                                        testHCIlist.addAll(Arrays.asList(utility.ObjectMapper().readValue(getMainAccre.getResult(), HealthCareFacility[].class)));
+                                    } else if (new FetchMethods().GETFACILITYID(dataSource, HciList.get(x).trim()).isSuccess()) {
+                                        testHCIlist.add(utility.ObjectMapper().readValue(new FetchMethods().GETFACILITYID(dataSource, HciList.get(x).trim()).getResult(), HealthCareFacility.class));
+                                    }
+                                    if (testHCIlist.size() > 0) {
+                                        for (int yu = 0; yu < testHCIlist.size(); yu++) {
+                                            //------------------------------------------------------------------------
+                                            ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource, testHCIlist.get(yu).getHcfcode().trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
+                                            if (sumresult.isSuccess()) {
+                                                List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
+                                                for (int i = 0; i < nclaimsdata.size(); i++) {
+                                                    int countLedger = 0;
+                                                    if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
+                                                        if (hcinCon.getEnddate().isEmpty()) {
+                                                            if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                                countLedger++;
                                                             }
                                                         } else {
-                                                            if (hcinCon.getEnddate().isEmpty()) {
-                                                                if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
-                                                                    countLedger++;
-                                                                }
-                                                            } else {
-                                                                if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(con.getEnddate().trim(), "60"))) <= 0) {
-                                                                    countLedger++;
-                                                                }
+                                                            if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(con.getEnddate().trim(), "60"))) <= 0) {
+                                                                countLedger++;
                                                             }
                                                         }
-                                                        if (countLedger > 0) {
-                                                            numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                                            claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                    } else {
+                                                        if (hcinCon.getEnddate().isEmpty()) {
+                                                            if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                                countLedger++;
+                                                            }
+                                                        } else {
+                                                            if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(con.getEnddate().trim(), "60"))) <= 0) {
+                                                                countLedger++;
+                                                            }
                                                         }
+                                                    }
+                                                    if (countLedger > 0) {
+                                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                        claimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
                                                     }
                                                 }
                                             }
                                         }
+                                        //}
                                     }
                                 }
                             }
@@ -945,49 +962,57 @@ public class ContractMethod {
                                             if (GetHCIContract.isSuccess()) {
                                                 Contract hciCon = utility.ObjectMapper().readValue(GetHCIContract.getResult(), Contract.class);
                                                 //-------------------------------------------------------------------
-                                                ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, HCIList.get(x).trim());
-                                                if (getHcfByCode.isSuccess()) {
-                                                    HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
-                                                    //GET HCF DETAILS BY NAME
-                                                    ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-                                                    if (getHcfByName.isSuccess()) {
-                                                        List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
-                                                        for (int yu = 0; yu < healthCareFacilityList.size(); yu++) {
-                                                            //------------------------------------------------------------------------
-                                                            ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource, healthCareFacilityList.get(yu).getHcfcode().trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
-                                                            if (sumresult.isSuccess()) {
-                                                                List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
-                                                                for (int i = 0; i < nclaimsdata.size(); i++) {
-                                                                    int countLedger = 0;
-                                                                    if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                                                        if (hciCon.getEnddate().isEmpty()) {
-                                                                            if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
-                                                                                countLedger++;
-                                                                            }
-                                                                        } else {
-                                                                            if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(hciCon.getEnddate().trim(), "60"))) <= 0) {
-                                                                                countLedger++;
-                                                                            }
+//                                                ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, HCIList.get(x).trim());
+//                                                if (getHcfByCode.isSuccess()) {
+//                                                    HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
+//                                                    //GET HCF DETAILS BY NAME
+//                                                    ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
+//                                                    if (getHcfByName.isSuccess()) {
+//                                                        List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
+                                                ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
+                                                ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, HCIList.get(x).trim());
+                                                if (getMainAccre.isSuccess()) {
+                                                    testHCIlist.addAll(Arrays.asList(utility.ObjectMapper().readValue(getMainAccre.getResult(), HealthCareFacility[].class)));
+                                                } else if (new FetchMethods().GETFACILITYID(dataSource, HCIList.get(x).trim()).isSuccess()) {
+                                                    testHCIlist.add(utility.ObjectMapper().readValue(new FetchMethods().GETFACILITYID(dataSource, HCIList.get(x).trim()).getResult(), HealthCareFacility.class));
+                                                }
+                                                if (testHCIlist.size() > 0) {
+                                                    for (int yu = 0; yu < testHCIlist.size(); yu++) {
+                                                        //------------------------------------------------------------------------
+                                                        ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource, testHCIlist.get(yu).getHcfcode().trim(), "G", condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
+                                                        if (sumresult.isSuccess()) {
+                                                            List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
+                                                            for (int i = 0; i < nclaimsdata.size(); i++) {
+                                                                int countLedger = 0;
+                                                                if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
+                                                                    if (hciCon.getEnddate().isEmpty()) {
+                                                                        if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                                            countLedger++;
                                                                         }
                                                                     } else {
-                                                                        if (hciCon.getEnddate().isEmpty()) {
-                                                                            if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
-                                                                                countLedger++;
-                                                                            }
-                                                                        } else {
-                                                                            if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(hciCon.getEnddate().trim(), "60"))) <= 0) {
-                                                                                countLedger++;
-                                                                            }
+                                                                        if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(hciCon.getEnddate().trim(), "60"))) <= 0) {
+                                                                            countLedger++;
                                                                         }
                                                                     }
-
-                                                                    if (countLedger > 0) {//utility.AddMinusDaysDate(hciCon.getEnddate().trim(), "60")
-                                                                        numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                                                        totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                                                } else {
+                                                                    if (hciCon.getEnddate().isEmpty()) {
+                                                                        if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                                            countLedger++;
+                                                                        }
+                                                                    } else {
+                                                                        if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(hciCon.getEnddate().trim(), "60"))) <= 0) {
+                                                                            countLedger++;
+                                                                        }
                                                                     }
+                                                                }
+
+                                                                if (countLedger > 0) {//utility.AddMinusDaysDate(hciCon.getEnddate().trim(), "60")
+                                                                    numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                                    totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
                                                                 }
                                                             }
                                                         }
+                                                        // }
                                                     }
                                                 }
                                             }
@@ -1050,7 +1075,7 @@ public class ContractMethod {
         return result;
     }
 
-    //GET ACCREDITATION NUMBER BY ACCOUNTCODE
+//GET ACCREDITATION NUMBER BY ACCOUNTCODE
     public ACRGBWSResult GETCONBYCODEOFPRO(final DataSource dataSource, final String ucode) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1071,8 +1096,10 @@ public class ContractMethod {
                 con.setAmount(resultset.getString("AMOUNT"));
                 con.setStats(resultset.getString("STATS"));
                 ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+
                 if (creator.isSuccess()) {
-                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
+                    );
                     con.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                 } else {
                     con.setCreatedby(creator.getMessage());
@@ -1106,7 +1133,9 @@ public class ContractMethod {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(ContractMethod.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1144,7 +1173,9 @@ public class ContractMethod {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(ContractMethod.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1177,7 +1208,9 @@ public class ContractMethod {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(ContractMethod.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1238,7 +1271,9 @@ public class ContractMethod {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(ContractMethod.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1303,7 +1338,9 @@ public class ContractMethod {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(ContractMethod.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1322,8 +1359,10 @@ public class ContractMethod {
             ArrayList<Contract> contractlist = new ArrayList<>();
             //-------------- GET APEX FACILITY
             ACRGBWSResult resultfm = methods.GETAPEXFACILITY(dataSource);
+
             if (resultfm.isSuccess()) {
-                List<HealthCareFacility> userlist = Arrays.asList(utility.ObjectMapper().readValue(resultfm.getResult(), HealthCareFacility[].class));
+                List<HealthCareFacility> userlist = Arrays.asList(utility.ObjectMapper().readValue(resultfm.getResult(), HealthCareFacility[].class
+                ));
                 for (int x = 0; x < userlist.size(); x++) {
                     CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETENDCONOPENCONSTATE(:utags,:uhcfcode,:ustate); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
@@ -1374,13 +1413,17 @@ public class ContractMethod {
                         int tranches = 0;
                         if (getcondateA.isSuccess()) {
                             contract.setContractdate(getcondateA.getResult());
-                            ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class);
+                            ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class
+                            );
                             ACRGBWSResult restAB = new FetchMethods().GETASSETBYIDANDCONID(dataSource, resultset.getString("HCFID").trim(), resultset.getString("CONID").trim(), utags);
+
                             if (restAB.isSuccess()) {
-                                List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
+                                List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class
+                                ));
                                 for (int g = 0; g < assetlist.size(); g++) {
                                     if (assetlist.get(g).getPreviousbalance() != null) {
-                                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
+                                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class
+                                        );
                                         switch (tranch.getTranchtype()) {
                                             case "1ST": {
                                                 trancheamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
@@ -1411,52 +1454,64 @@ public class ContractMethod {
 //                            if (GetHCPNContract.isSuccess()) {
 
                             //-------------------------------------------------------------------GET ALL PMCC NO UNDER SELECTED FACILITY
-                            ACRGBWSResult getHcfByCode = new GetHCFMultiplePMCCNO().GETFACILITYBYCODE(dataSource, userlist.get(x).getHcfcode().trim());
-                            if (getHcfByCode.isSuccess()) {
-                                HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
-                                //GET HCF DETAILS BY NAME
-                                ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-                                if (getHcfByName.isSuccess()) {
-                                    List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
-                                    for (int yu = 0; yu < healthCareFacilityList.size(); yu++) {
-                                        //------------------------------------------------------------------------END GET ALL PMCC NO UNDER SELECTED FACILITY
-                                        ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource, healthCareFacilityList.get(yu).getHcfcode().trim(), "G",
-                                                condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
-                                        if (sumresult.isSuccess()) {
+//                            ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, userlist.get(x).getHcfcode().trim());
+//                            if (getHcfByCode.isSuccess()) {
+//                                HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class
+//                                );
+//                                //GET HCF DETAILS BY NAME
+//                                ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
+//                                if (getHcfByName.isSuccess()) {
+//                                    List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class
+//                                    ));
+                            ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
+                            ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, userlist.get(x).getHcfcode().trim());
+                            if (getMainAccre.isSuccess()) {
+                                testHCIlist.addAll(Arrays.asList(utility.ObjectMapper().readValue(getMainAccre.getResult(), HealthCareFacility[].class)));
+                            } else if (new FetchMethods().GETFACILITYID(dataSource, userlist.get(x).getHcfcode().trim()).isSuccess()) {
+                                testHCIlist.add(utility.ObjectMapper().readValue(new FetchMethods().GETFACILITYID(dataSource, userlist.get(x).getHcfcode().trim()).getResult(), HealthCareFacility.class));
+                            }
+                            if (testHCIlist.size() > 0) {
+                                for (int yu = 0; yu < testHCIlist.size(); yu++) {
+                                    //------------------------------------------------------------------------END GET ALL PMCC NO UNDER SELECTED FACILITY
+                                    ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource, testHCIlist.get(yu).getHcfcode().trim(), "G",
+                                            condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
+
+                                    if (sumresult.isSuccess()) {
 //                                    Contract conHci = utility.ObjectMapper().readValue(GetHCPNContract.getResult(), Contract.class);
-                                            List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
-                                            for (int i = 0; i < nclaimsdata.size(); i++) {
-                                                int countLedger = 0;
-                                                if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                                    if (resultset.getString("ENDDATE") == null) {
-                                                        if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
-                                                            countLedger++;
-                                                        }
-                                                    } else {
-                                                        if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(dateformat.format(resultset.getTimestamp("ENDDATE")), "60"))) <= 0) {
-                                                            countLedger++;
-                                                        }
+                                        List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class
+                                        ));
+                                        for (int i = 0; i < nclaimsdata.size(); i++) {
+                                            int countLedger = 0;
+                                            if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
+                                                if (resultset.getString("ENDDATE") == null) {
+                                                    if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                        countLedger++;
                                                     }
                                                 } else {
-                                                    if (resultset.getString("ENDDATE") == null) {
-                                                        if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
-                                                            countLedger++;
-                                                        }
-                                                    } else {
-                                                        if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(dateformat.format(resultset.getTimestamp("ENDDATE")), "60"))) <= 0) {
-                                                            countLedger++;
-                                                        }
+                                                    if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(dateformat.format(resultset.getTimestamp("ENDDATE")), "60"))) <= 0) {
+                                                        countLedger++;
                                                     }
                                                 }
-                                                if (countLedger > 0) {
-                                                    numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
-                                                    totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
+                                            } else {
+                                                if (resultset.getString("ENDDATE") == null) {
+                                                    if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                        countLedger++;
+                                                    }
+                                                } else {
+                                                    if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(dateformat.format(resultset.getTimestamp("ENDDATE")), "60"))) <= 0) {
+                                                        countLedger++;
+                                                    }
                                                 }
+                                            }
+                                            if (countLedger > 0) {
+                                                numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
+                                                totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
                                             }
                                         }
                                     }
                                 }
                             }
+                            // }
 
 //                            }
                             double sumsA = (trancheamount / Double.parseDouble(resultset.getString("AMOUNT"))) * 100;
@@ -1496,7 +1551,9 @@ public class ContractMethod {
 
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+            Logger
+                    .getLogger(FetchMethods.class
+                            .getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
