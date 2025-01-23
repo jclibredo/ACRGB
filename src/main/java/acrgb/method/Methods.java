@@ -511,7 +511,7 @@ public class Methods {
 //                                            HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
 //                                            //GET HCF DETAILS BY NAME
 //                                            ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-
+                                        System.out.println("FACILITY LIST " + testHCIlist);
                                         if (testHCIlist.size() > 0) {
                                             // List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                                             for (int u = 0; u < testHCIlist.size(); u++) {

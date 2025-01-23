@@ -325,10 +325,10 @@ public class ACRGBFETCH {
     @Path("GetSummary/{tags}/{userid}/{datefrom}/{dateto}/{type}/{hcilist}")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult GetSummary(@HeaderParam("token") String token,
-            @PathParam("datefrom") String datefrom,
-            @PathParam("dateto") String dateto,
             @PathParam("tags") String tags,
             @PathParam("userid") String userid,
+            @PathParam("datefrom") String datefrom,
+            @PathParam("dateto") String dateto,
             @PathParam("type") String type,
             @PathParam("hcilist") String hcilist) {
         ACRGBWSResult result = utility.ACRGBWSResult();

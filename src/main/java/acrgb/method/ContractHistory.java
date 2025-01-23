@@ -117,7 +117,6 @@ public class ContractHistory {
             } else {
                 result.setMessage("N/A");
             }
-
         } catch (IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
