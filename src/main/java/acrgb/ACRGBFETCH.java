@@ -1,4 +1,4 @@
- /*
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -57,10 +57,10 @@ public class ACRGBFETCH {
      */
     public ACRGBFETCH() {
     }
-
+    
     @Resource(lookup = "jdbc/acgbuser")
     private DataSource dataSource;
-
+    
     private final Utility utility = new Utility();
 
     //GET ASSETS TYPE TBL
@@ -275,7 +275,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+    
     @GET
     @Path("GetPro/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -297,7 +297,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+    
     @GET
     @Path("GetRoleIndex/{puserid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -386,7 +386,7 @@ public class ACRGBFETCH {
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
         }
-
+        
         return result;
     }
 //------------------------------------------------------------
@@ -439,6 +439,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetActivityLogs")
     @Produces(MediaType.APPLICATION_JSON)
@@ -460,6 +461,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetLogWithParam/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -528,6 +530,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------    
+
     @GET
     @Path("GetFacilityUsingProAccountUserID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -550,6 +553,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GETALLFACILITY/{tags}/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -592,7 +596,7 @@ public class ACRGBFETCH {
                                 mblist.add(mb);
                             }
                         }
-
+                        
                         if (mblist.size() > 0) {
                             result.setMessage("OK");
                             result.setSuccess(true);
@@ -611,6 +615,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
+
     @GET
     @Path("GetManagingBoardWithProID/{proid}/{levelname}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -806,6 +811,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
+
     @GET
     @Path("GetContractDate/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -827,6 +833,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
+
     //GET TRIGGER AUTOEND CONTRACT DATE
     @GET
     @Path("AutoEndContractDate/{ucondateid}")
@@ -849,6 +856,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
+
     //GET RANDOM PASSWORD
     @GET
     @Path("GetRandomPasscode")
@@ -964,6 +972,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
+
     @GET
     @Path("CONTRACTWITHQUARTER/{tags}/{uprocode}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1042,6 +1051,7 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------------------------
+
     @GET
     @Path("GetContractHistory/{userId}/{requestCode}/{targetData}")//PRO LEVEL AND PHIC LEVEL
     @Produces(MediaType.APPLICATION_JSON)
@@ -1131,6 +1141,7 @@ public class ACRGBFETCH {
 //        //--------------------------------------
 //        return result;
 //    }
+
     @GET
     @Path("GetCaptchaCode")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1141,6 +1152,7 @@ public class ACRGBFETCH {
         result.setResult(utility.Create2FACode());
         return result;
     }
+
     @GET
     @Path("AutoProcessData")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1199,6 +1211,7 @@ public class ACRGBFETCH {
 //        }
 //        return result;
 //    }
+
     @GET
     @Path("GetUserAccount/{puserid}/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1246,7 +1259,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+    
     @GET
     @Path("GetAffiliate/{puserid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1344,7 +1357,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+    
     @GET
     @Path("GetApexFacility")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1388,7 +1401,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+    
     @GET
     @Path("GetServerDateTime")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1417,5 +1430,16 @@ public class ACRGBFETCH {
     public ACRGBWSResult TEST() {
         return new FetchMethods().ACR_USER_LEVEL(dataSource, "ACTIVE");
     }
-
+    
+    @GET
+    @Path("GetFilePath")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetFilePath() {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage(utility.GetString("Path"));
+        result.setResult("");
+        result.setSuccess(false);
+        return result;
+    }
+    
 }

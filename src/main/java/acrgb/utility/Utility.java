@@ -156,7 +156,6 @@ public class Utility {
 //        }
 //        return result;
 //    }
-
 //    public static boolean isWindows() {
 //        return (System.getProperty("os.name").toLowerCase().contains("win"));
 //    }
@@ -174,7 +173,6 @@ public class Utility {
 //    public static boolean isSolaris() {
 //        return (System.getProperty("os.name").toLowerCase().contains("sunos"));
 //    }
-
     public boolean IsValidNumber(String string) {
         try {
             Integer.parseInt(string);
@@ -405,6 +403,7 @@ public class Utility {
                 .claim("Code1", EncryptString(username))
                 .claim("Code2", EncryptString(password))
                 .setExpiration(new Date(System.currentTimeMillis() + 30 * 480000))//ADD EXPIRE TIME 8HOURS
+
                 .signWith(algorithm, signingkey);
         return builder.compact();
 

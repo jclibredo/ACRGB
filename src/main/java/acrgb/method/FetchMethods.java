@@ -2614,12 +2614,6 @@ public class FetchMethods {
             List<String> hcflist = Arrays.asList(restA.getResult().split(","));
             //-------------- END OF GET APEX FACILITY
             for (int y = 0; y < hcflist.size(); y++) {
-                //--------------------------------------------------------
-//                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
-//                statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-//                statement.setString("tags", tags.trim());
-//                statement.setString("pfchid", hcflist.get(y).trim());
-
                 CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETENDCONOPENCONSTATE(:utags,:uhcfcode,:ustate); end;");
                 statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                 statement.setString("utags", utags.trim());

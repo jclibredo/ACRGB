@@ -4,10 +4,14 @@
                  xsi:schemaLocation="http://xmlns.oracle.com/weblogic/deployment-plan http://xmlns.oracle.com/weblogic/deployment-plan/1.0/deployment-plan.xsd" 
                  global-variables="false">
     <application-name>ACRGB-0.1</application-name> 
-    <variable-definition>        
+    <variable-definition>      
         <variable>
             <name>GetFacility</name>
             <value>https://localhost:7001/ACRGB/ACRGBFETCH/Test</value>
+        </variable>
+        <variable>
+            <name>Path</name>
+            <value>D:\DRG FULL IMPLEMENTATIONssss</value>
         </variable>
     </variable-definition>
     
@@ -19,6 +23,7 @@
             <uri>WEB-INF/weblogic.xml</uri>
         </module-descriptor>
         <module-descriptor external="false">
+            
             <root-element>web-app</root-element>
             <uri>WEB-INF/web.xml</uri>
                         
@@ -27,6 +32,14 @@
                 <xpath>/web-app/env-entry/[env-entry-name="GetFacility"]/env-entry-value</xpath>
                 <operation>replace</operation>
             </variable-assignment>
+            
+            <variable-assignment>
+                <name>Path</name>
+                <xpath>/web-app/env-entry/[env-entry-name="Path"]/env-entry-value</xpath>
+                <operation>replace</operation>
+            </variable-assignment>    
+            
+             
                
         </module-descriptor>
         <module-descriptor external="true">
