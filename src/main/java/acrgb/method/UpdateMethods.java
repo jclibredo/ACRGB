@@ -35,7 +35,7 @@ import oracle.jdbc.OracleTypes;
 
 /**
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 @RequestScoped
 public class UpdateMethods {
@@ -57,7 +57,7 @@ public class UpdateMethods {
 //                Assets assets = utility.ObjectMapper().readValue(src, Assets.class);
 //
 //            }
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEASSETS(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEASSETS(:Message,:Code,"
                     + ":p_assetsid,:p_hcfid,:p_receipt,:p_amount"
                     + ",:p_datereleased)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
@@ -101,7 +101,7 @@ public class UpdateMethods {
             }
             String logsTags = "";
             UserActivity userlogs = utility.UserActivity();
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATECONTRACT(:Message,:Code,:p_conid,:p_hcfid,:p_amount"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATECONTRACT(:Message,:Code,:p_conid,:p_hcfid,:p_amount"
                     + ",:p_contractdate,:p_transcode,:c_claimsvol,:p_quarter)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -171,7 +171,7 @@ public class UpdateMethods {
             } else {
                 oldData = new FetchMethods().ACR_TRANCHWITHID(datasource, tranch.getTranchid()).getMessage();
             }
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATETRANCH(:Message,:Code,:p_tranchid,:p_tranchtype,:p_percentage)");
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATETRANCH(:Message,:Code,:p_tranchid,:p_tranchtype,:p_percentage)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("p_tranchid", tranch.getTranchid());
@@ -213,7 +213,7 @@ public class UpdateMethods {
             } else {
                 oldData = new FetchMethods().GETUSERLEVEL(datasource, userlevel.getLevelid()).getMessage();
             }
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERLEVEL(:Message,:Code,:p_levelid,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEUSERLEVEL(:Message,:Code,:p_levelid,"
                     + ":p_levdetails)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -245,7 +245,7 @@ public class UpdateMethods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = datasource.getConnection()) {
-//            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKG.FACILITYTAGGING(:Message,:Code,:p_hcfidcode,"
+//            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKG.FACILITYTAGGING(:Message,:Code,:p_hcfidcode,"
 //                    + ":p_type)");
 //            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
 //            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -277,7 +277,7 @@ public class UpdateMethods {
             UserActivity userlogs = utility.UserActivity();
             String conDatePerio = "";
             String contractHolder = "";
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.CONTRACTTAGGING(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.CONTRACTTAGGING(:Message,:Code,"
                     + ":pconid,:pstats,:pendate,:premarks)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -377,7 +377,7 @@ public class UpdateMethods {
             List<String> accesslist = Arrays.asList(accessid.split(","));
             for (int x = 0; x < accesslist.size(); x++) {
                 //------------------------------------------------------------------------------------------------
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.REMOVEAPPELLATE(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.REMOVEAPPELLATE(:Message,:Code,"
                         + ":userid,:accessid)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -409,7 +409,7 @@ public class UpdateMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.CONSTATSUPDATE(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.CONSTATSUPDATE(:Message,:Code,"
                     + ":uconid,:ustats,:uremarks,:uenddate)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -444,7 +444,7 @@ public class UpdateMethods {
                 String oldData = mbOld.getAddress() + "|" + mbOld.getMbname() + "|" + mbOld.getBankaccount() + "|" + mbOld.getBankname() + "|" + mbOld.getControlnumber();
                 UserActivity userlogs = utility.UserActivity();
                 String logsTags = "EDIT-HCPN";
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEHCPN(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEHCPN(:Message,:Code,"
                         + ":umbname,:ucontrolnum,:uaddress,:ubankaccount,:ubankname,:umbid)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -483,7 +483,7 @@ public class UpdateMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEHCPNSTATS(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEHCPNSTATS(:Message,:Code,"
                     + ":uaccount,:ustats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -515,7 +515,7 @@ public class UpdateMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.APPROVEDMB(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.APPROVEDMB(:Message,:Code,"
                     + ":uremarks,:ustatus,:ucontrolnumber)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -568,7 +568,7 @@ public class UpdateMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATECONDATE(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATECONDATE(:Message,:Code,"
                     + ":ucondateid,:udatefrom,:udateto)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -601,7 +601,7 @@ public class UpdateMethods {
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
             //====================================================================
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEROLEINDEX(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEROLEINDEX(:Message,:Code,"
                     + ":utags,:uuserid,:uaccessid,:ucondate)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -643,7 +643,7 @@ public class UpdateMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEASSETSTATUS(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEASSETSTATUS(:Message,:Code,"
                     + ":uconid)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -670,7 +670,7 @@ public class UpdateMethods {
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
             String encryptpword = new Cryptor().encrypt(ppasscode, ppasscode, "ACRGB");
-            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSCODES(:Message,:Code,:pusername,:ppasscode)");
+            CallableStatement statement = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEPASSCODES(:Message,:Code,:pusername,:ppasscode)");
             statement.registerOutParameter("Message", OracleTypes.VARCHAR);
             statement.registerOutParameter("Code", OracleTypes.INTEGER);
             statement.setString("pusername", pusername.trim());
@@ -696,7 +696,7 @@ public class UpdateMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATECONBALANCESTATS(:Message,:Code,:pconid)");
+            CallableStatement statement = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATECONBALANCESTATS(:Message,:Code,:pconid)");
             statement.registerOutParameter("Message", OracleTypes.VARCHAR);
             statement.registerOutParameter("Code", OracleTypes.INTEGER);
             statement.setString("pconid", pconid);
@@ -727,7 +727,7 @@ public class UpdateMethods {
         UserActivity userLogs = utility.UserActivity();
         try (Connection connection = datasource.getConnection()) {
             userLogs.setActby(appellate.getCreatedby());
-            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEAPELLATE(:Message,:Code,"
+            CallableStatement statement = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEAPELLATE(:Message,:Code,"
                     + ":utags,:utats,:uaccesscode,:ucondateid)");
             statement.registerOutParameter("Message", OracleTypes.VARCHAR);
             statement.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -773,7 +773,7 @@ public class UpdateMethods {
         result.setSuccess(false);
         UserActivity userLogs = utility.UserActivity();
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERINFOBYDID(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEUSERINFOBYDID(:Message,:Code,"
                     + ":udid,:uemail)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -813,7 +813,7 @@ public class UpdateMethods {
 //        java.util.Date d1 = new java.util.Date();
 //        try (Connection connection = datasource.getConnection()) {
 //            String code2fa = utility.Create2FACode().trim();
-//            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERFOR2FA(:Message,:Code,"
+//            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEUSERFOR2FA(:Message,:Code,"
 //                    + ":puserid,:p2facode,:p2faexpirydate)");
 //            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
 //            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -857,7 +857,7 @@ public class UpdateMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSEROLE(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEUSEROLE(:Message,:Code,"
                     + ":puserid,:plevelid)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -900,7 +900,7 @@ public class UpdateMethods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = datasource.getConnection()) {
-//            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.DELETEDATA(:Message,:Code,"
+//            CallableStatement statement = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.DELETEDATA(:Message,:Code,"
 //                    + ":p_tags,:p_dataid)");
 //            if (tags.toUpperCase().trim().equals("USER")) {
 //                if (new FetchMethods().GETUSERBYUSERID(datasource, dataid).isSuccess()) {
@@ -967,7 +967,7 @@ public class UpdateMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERLEVEL(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEUSERLEVEL(:Message,:Code,"
                     + ":puserid,:plevelid)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -1008,7 +1008,7 @@ public class UpdateMethods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = datasource.getConnection()) {
-//            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEMAPPEDROLEBASECONDATE(:Message,:Code,:accessid,:pcondate)");
+//            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEMAPPEDROLEBASECONDATE(:Message,:Code,:accessid,:pcondate)");
 //            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
 //            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
 //            getinsertresult.setString("accessid", accessid);
@@ -1037,7 +1037,7 @@ public class UpdateMethods {
 //        UserActivityLogs logs = new UserActivityLogs();
 //        UserActivity userLogs = utility.UserActivity();
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEROLEINDEXBYACCESSID(:Message,:Code,:accessid)");
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEROLEINDEXBYACCESSID(:Message,:Code,:accessid)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("accessid", accessid);
@@ -1069,7 +1069,7 @@ public class UpdateMethods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEACCOUNTCONTROL(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEACCOUNTCONTROL(:Message,:Code,"
                     + ":puserid)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);

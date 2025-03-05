@@ -45,6 +45,7 @@ acrgb\structure\cf5\DRGClaimSubmissionAuditrail.class
 acrgb\method\GetHCFMultiplePMCCNO.class
 acrgb\structure\Tagging.class
 acrgb\structure\MBFacilityUnderRequest.class
+acrgb\structure\HcfPro.class
 acrgb\structure\ReportsFacilityUnderHCPNSummary.class
 acrgb\method\cf5\CF5Data.class
 acrgb\method\FetchMethods.class

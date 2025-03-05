@@ -10,7 +10,7 @@ import java.util.Timer;
 
 /**
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 public class SchedulerMain {
 //

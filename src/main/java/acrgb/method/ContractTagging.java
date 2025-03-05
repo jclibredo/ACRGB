@@ -27,7 +27,7 @@ import oracle.jdbc.OracleTypes;
 
 /**
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 @RequestScoped
 public class ContractTagging {
@@ -251,7 +251,7 @@ public class ContractTagging {
             ACRGBWSResult updatecondate = new UpdateMethods().UPDATEROLEINDEX(dataSource, "00", "00", dateid.trim(), "NONUPDATE");
             //------------------------------------------------------------------------------------------------------------------------
             //TAGGING OF CONTRACT PERIOD TO END CHANGE STATUS TO 3
-            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.TAGCONTRACTPERIOD(:Message,:Code,:pcondateid)");
+            CallableStatement statement = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.TAGCONTRACTPERIOD(:Message,:Code,:pcondateid)");
             statement.registerOutParameter("Message", OracleTypes.VARCHAR);
             statement.registerOutParameter("Code", OracleTypes.INTEGER);
             statement.setString("pcondateid", dateid.trim());
@@ -311,7 +311,7 @@ public class ContractTagging {
 //                }
 //            }
 //            //TAGGING OF CONTRACT PERIOD TO END CHANGE STATUS TO 3
-//            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.TAGCONTRACTPERIOD(:Message,:Code,:pcondateid)");
+//            CallableStatement statement = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.TAGCONTRACTPERIOD(:Message,:Code,:pcondateid)");
 //            statement.registerOutParameter("Message", OracleTypes.VARCHAR);
 //            statement.registerOutParameter("Code", OracleTypes.INTEGER);
 //            statement.setString("pcondateid", dateid.trim());

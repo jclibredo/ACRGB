@@ -21,7 +21,7 @@ import javax.sql.DataSource;
 
 /**
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 @RequestScoped
 public class EmailSender {

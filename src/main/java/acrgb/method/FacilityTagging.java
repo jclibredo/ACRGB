@@ -25,7 +25,7 @@ import oracle.jdbc.OracleTypes;
 
 /**
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 @RequestScoped
 public class FacilityTagging {
@@ -44,7 +44,7 @@ public class FacilityTagging {
         try (Connection connection = datasource.getConnection()) {
             List<String> serviceList = Arrays.asList(servicetype.split(","));
             for (int i = 0; i < serviceList.size(); i++) {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBACCREPACKAGE.ACRGBFACILITYTAGGING(:Message,:Code,:upmcc_no,:uservicetype,:udatestart,:udateended,:ucreator,:udatecreated,:udateissue,:udateeffective)");
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBACCREPACKAGE.ACRGBFACILITYTAGGING(:Message,:Code,:upmcc_no,:uservicetype,:udatestart,:udateended,:ucreator,:udatecreated,:udateissue,:udateeffective)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("upmcc_no", tagging.getHcino());
@@ -94,7 +94,7 @@ public class FacilityTagging {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBACCREPACKAGE.CHECKIFEXIST(:upmcc_no,:uservicetype); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBACCREPACKAGE.CHECKIFEXIST(:upmcc_no,:uservicetype); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("upmcc_no", pmccno);
             statement.setString("uservicetype", servicetype);
@@ -124,7 +124,7 @@ public class FacilityTagging {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBACCREPACKAGE.ACRGBHCITAGUPDATE(:Message,:Code,:upmcc_no,:uservicetype,:udatestart,:udateended,:udatecreated,:udateissue,:udateeffective)");
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBACCREPACKAGE.ACRGBHCITAGUPDATE(:Message,:Code,:upmcc_no,:uservicetype,:udatestart,:udateended,:udatecreated,:udateissue,:udateeffective)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("upmcc_no", tagging.getHcino());
@@ -156,7 +156,7 @@ public class FacilityTagging {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBACCREPACKAGE.ACRGBHCITAGNEW(:Message,:Code,:upmcc_no,:uservicetype,:udatestart,:udateended,:ucreator,:udatecreated,:udateissue,:udateeffective)");
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBACCREPACKAGE.ACRGBHCITAGNEW(:Message,:Code,:upmcc_no,:uservicetype,:udatestart,:udateended,:ucreator,:udatecreated,:udateissue,:udateeffective)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("upmcc_no", tagging.getHcino());

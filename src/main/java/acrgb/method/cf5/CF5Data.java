@@ -6,6 +6,7 @@
 package acrgb.method.cf5;
 
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.HcfPro;
 import acrgb.structure.cf5.DRGClaimSubmissionAuditrail;
 import acrgb.structure.cf5.Info;
 import acrgb.structure.cf5.Procedure;
@@ -27,7 +28,7 @@ import oracle.jdbc.OracleTypes;
 
 /**
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 @RequestScoped
 public class CF5Data {
@@ -45,7 +46,7 @@ public class CF5Data {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_results := ACR_GB.ACRGBPKGFUNCTION.INFO(:useries); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_results := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.INFO(:useries); end;");
             statement.registerOutParameter("v_results", OracleTypes.CURSOR);
             statement.setString("useries", useries.trim());
             statement.execute();
@@ -95,7 +96,7 @@ public class CF5Data {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_results := ACR_GB.ACRGBPKGFUNCTION.WARNINGERROR(:useries); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_results := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.WARNINGERROR(:useries); end;");
             statement.registerOutParameter("v_results", OracleTypes.CURSOR);
             statement.setString("useries", useries.trim());
             statement.execute();
@@ -132,7 +133,7 @@ public class CF5Data {
         result.setSuccess(false);
 //        String[] errocode = {"203", "204", "205", "206", "207", "208", "506", "507", "508"};
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_results := ACR_GB.ACRGBPKGFUNCTION.PROCEDURES(:useries); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_results := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.PROCEDURES(:useries); end;");
             statement.registerOutParameter("v_results", OracleTypes.CURSOR);
             statement.setString("useries", useries.trim());
             statement.execute();
@@ -168,7 +169,7 @@ public class CF5Data {
         result.setSuccess(false);
 //        String[] errocode = {"202", "501", "502", "503", "504", "505"};
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_results := ACR_GB.ACRGBPKGFUNCTION.SECONDARY(:useries); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_results := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.SECONDARY(:useries); end;");
             statement.registerOutParameter("v_results", OracleTypes.CURSOR);
             statement.setString("useries", useries.trim());
             statement.execute();
@@ -201,7 +202,7 @@ public class CF5Data {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_results := ACR_GB.ACRGBPKGFUNCTION.GETDRGCLAIMSINSERTSTATUS(:useries); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_results := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETDRGCLAIMSINSERTSTATUS(:useries); end;");
             statement.registerOutParameter("v_results", OracleTypes.CURSOR);
             statement.setString("useries", useries.trim());
             statement.execute();
@@ -226,6 +227,41 @@ public class CF5Data {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
+            Logger.getLogger(CF5Data.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+    
+    
+     public ACRGBWSResult GETHCFPRO(
+            final DataSource dataSource,
+            final String uprocode) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := DGBBPS.PHICPACKAGE.GETHCFPRO(:uprocode); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.setString("uprocode", uprocode.trim());
+            statement.execute();
+            ArrayList<HcfPro> hciproList = new ArrayList<>();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                HcfPro hcipro = new HcfPro();
+                hcipro.setHcino(resultset.getString("HCI_NO"));
+                hcipro.setPan(resultset.getString("PAN"));
+                hcipro.setPmccno(resultset.getString("PMCC_NO"));
+                hcipro.setProcode(resultset.getString("PROCODE"));
+                hcipro.setRegion(resultset.getString("REGION"));
+                hciproList.add(hcipro);
+            }
+            if (hciproList.size() > 0) {
+                result.setResult(utility.ObjectMapper().writeValueAsString(hciproList));
+                result.setSuccess(true);
+            }
+        } catch (Exception ex) {
+            result.setMessage("PHICServices " + ex.toString());
             Logger.getLogger(CF5Data.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

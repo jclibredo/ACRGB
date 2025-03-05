@@ -49,7 +49,7 @@ import oracle.jdbc.OracleTypes;
 /**
  * REST Web Service
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 @Path("ACRGBINSERT")
 @RequestScoped
@@ -199,7 +199,9 @@ public class ACRGBPOST {
     @Path("INSERTUSERLEVEL")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult INSERTUSERLEVEL(@HeaderParam("token") String token, final UserLevel userlevel) {
+    public ACRGBWSResult INSERTUSERLEVEL(
+            @HeaderParam("token") String token, 
+            final UserLevel userlevel) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
@@ -563,7 +565,7 @@ public class ACRGBPOST {
         ArrayList<String> errorList = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
             for (int x = 0; x < Integer.parseInt(nclaims.getTotalclaims()); x++) {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.INSERTCLAIMS(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.INSERTCLAIMS(:Message,:Code,"
                         + ":useries,:uaccreno,:upmccno,:udateadmission,:udatesubmitted,:uclaimamount,"
                         + ":utags,:utrn,:uclaimid,:uhcfname,:c1rvcode,:c2rvcode,:c1icdcode,:c2icdcode,:uopdtst)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);

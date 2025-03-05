@@ -27,7 +27,7 @@ import javax.crypto.NoSuchPaddingException;
 
 /**
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 public class Cryptor {
 

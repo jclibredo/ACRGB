@@ -18,6 +18,7 @@ import acrgb.method.ProcessAffiliate;
 import acrgb.method.cf5.CF5Data;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Appellate;
+import acrgb.structure.HcfPro;
 import acrgb.structure.HealthCareFacility;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.User;
@@ -46,7 +47,7 @@ import javax.ws.rs.core.MediaType;
 /**
  * REST Web Service
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 @Path("ACRGBFETCH")
 @RequestScoped
@@ -57,12 +58,14 @@ public class ACRGBFETCH {
      */
     public ACRGBFETCH() {
     }
-    
+
     @Resource(lookup = "jdbc/acgbuser")
     private DataSource dataSource;
+
     
     private final Utility utility = new Utility();
 
+    
     //GET ASSETS TYPE TBL
     @GET
     @Path("GetAssets/{tags}/{phcfid}")
@@ -83,6 +86,101 @@ public class ACRGBFETCH {
             result.setMessage(getResult.getMessage());
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
+        }
+        return result;
+    }
+
+    //GET FACILITY UNDER PRO USING PRO ACCOUNT USERID
+    @GET
+    @Path("GetAppexUnderProByUserid/{userid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetAppexUnderProByUserid(
+            @HeaderParam("token") String token,
+            @PathParam("userid") String userid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try {
+            ArrayList<HealthCareFacility> hcfList = new ArrayList<>();
+            ArrayList<String> errorList = new ArrayList<>();
+            ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
+            if (!GetPayLoad.isSuccess()) {
+                result.setMessage(GetPayLoad.getMessage());
+            } else {
+                ACRGBWSResult restA = new Methods().GETROLE(dataSource, userid, "ACTIVE");//GET (PROID) USING (USERID)
+                if (restA.isSuccess()) {
+                    ACRGBWSResult gethcf = new CF5Data().GETHCFPRO(dataSource, restA.getResult().replace("2024", ""));
+                    if (gethcf.isSuccess()) {
+                        List<HcfPro> hcfproList = Arrays.asList(utility.ObjectMapper().readValue(gethcf.getResult(), HcfPro[].class));
+                        for (int x = 0; x < hcfproList.size(); x++) {
+                            ACRGBWSResult getHciByPmccNo = new FetchMethods().GETFACILITYID(dataSource, hcfproList.get(x).getPmccno());
+                            if (getHciByPmccNo.isSuccess()) {
+                                HealthCareFacility hcf = utility.ObjectMapper().readValue(getHciByPmccNo.getResult(), HealthCareFacility.class);
+                                hcfList.add(hcf);
+                            }
+                        }
+                    } else {
+                        errorList.add("Hcf under pro " + gethcf.getMessage());
+                    }
+                } else {
+                    errorList.add("User Role Index " + restA.getMessage());
+                }
+                if (hcfList.size() > 0) {
+                    result.setResult(utility.ObjectMapper().writeValueAsString(hcfList));
+                    result.setSuccess(true);
+                } else {
+                    result.setMessage(errorList.toString());
+                }
+            }
+        } catch (IOException ex) {
+            result.setMessage("ACRGBFETCH " + ex.toString());
+            Logger.getLogger(ACRGBFETCH.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+
+    //GET FACILITY UNDER PRO USING PRO ACCOUNT USERID
+    @GET
+    @Path("GetAppexUnderProByProCode/{procode}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult GetAppexUnderProByProCode(
+            @HeaderParam("token") String token,
+            @PathParam("procode") String procode) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try {
+            ArrayList<HealthCareFacility> hcfList = new ArrayList<>();
+            ArrayList<String> errorList = new ArrayList<>();
+            ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
+            if (!GetPayLoad.isSuccess()) {
+                result.setMessage(GetPayLoad.getMessage());
+            } else {
+                ACRGBWSResult gethcf = new CF5Data().GETHCFPRO(dataSource, procode.replace("2024", ""));
+                if (gethcf.isSuccess()) {
+                    List<HcfPro> hcfproList = Arrays.asList(utility.ObjectMapper().readValue(gethcf.getResult(), HcfPro[].class));
+                    for (int x = 0; x < hcfproList.size(); x++) {
+                        ACRGBWSResult getHciByPmccNo = new FetchMethods().GETFACILITYID(dataSource, hcfproList.get(x).getPmccno());
+                        if (getHciByPmccNo.isSuccess()) {
+                            HealthCareFacility hcf = utility.ObjectMapper().readValue(getHciByPmccNo.getResult(), HealthCareFacility.class);
+                            hcfList.add(hcf);
+                        }
+                    }
+                } else {
+                    errorList.add("Hcf under pro " + gethcf.getMessage());
+                }
+                if (hcfList.size() > 0) {
+                    result.setResult(utility.ObjectMapper().writeValueAsString(hcfList));
+                    result.setSuccess(true);
+                } else {
+                    result.setMessage(errorList.toString());
+                }
+            }
+        } catch (IOException ex) {
+            result.setMessage("ACRGBFETCH " + ex.toString());
+            Logger.getLogger(ACRGBFETCH.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -275,7 +373,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-    
+
     @GET
     @Path("GetPro/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -297,7 +395,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-    
+
     @GET
     @Path("GetRoleIndex/{puserid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -386,7 +484,7 @@ public class ACRGBFETCH {
             result.setResult(getResult.getResult());
             result.setSuccess(getResult.isSuccess());
         }
-        
+
         return result;
     }
 //------------------------------------------------------------
@@ -596,7 +694,7 @@ public class ACRGBFETCH {
                                 mblist.add(mb);
                             }
                         }
-                        
+
                         if (mblist.size() > 0) {
                             result.setMessage("OK");
                             result.setSuccess(true);
@@ -657,8 +755,9 @@ public class ACRGBFETCH {
         }
         return result;
     }
+    
+    
 //------------------------------------------------------------
-
     @GET
     @Path("GetMBUsingMBID/{pid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -778,7 +877,8 @@ public class ACRGBFETCH {
                         }
                     }
                     break;
-                case "FACILITY"://GET LEDGER PER FACILITY
+                case "FACILITY":
+                    //GET LEDGER PER FACILITY
                     //hcpncode  MUST BE THE USERID OF PRO ACCOUNT
                     //CONTRACT DECLARE 0 VALUE
                     //TAGS MUST BE HCPNALL
@@ -810,8 +910,8 @@ public class ACRGBFETCH {
         }
         return result;
     }
+    
 //------------------------------------------------------------------------------
-
     @GET
     @Path("GetContractDate/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -902,8 +1002,8 @@ public class ACRGBFETCH {
         }
         return result;
     }
-//------------------------------------------------------------------------------
 
+    // 
     @GET
     @Path("GetClaims/{hcpncode}/{contractid}/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1259,7 +1359,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-    
+
     @GET
     @Path("GetAffiliate/{puserid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1357,28 +1457,27 @@ public class ACRGBFETCH {
         }
         return result;
     }
-    
-    @GET
-    @Path("GetApexFacility")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetAllApexFacility(
-            @HeaderParam("token") String token) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
-        } else {
-            ACRGBWSResult getResult = new FetchMethods().ACR_HCF(dataSource);
-            result.setMessage(getResult.getMessage());
-            result.setResult(getResult.getResult());
-            result.setSuccess(getResult.isSuccess());
-        }
-        return result;
-    }
 
+//    @GET
+//    @Path("GetApexFacility")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult GetAllApexFacility(
+//            @HeaderParam("token") String token) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
+//        if (!GetPayLoad.isSuccess()) {
+//            result.setMessage(GetPayLoad.getMessage());
+//        } else {
+//            ACRGBWSResult getResult = new FetchMethods().ACR_HCF(dataSource);
+//            result.setMessage(getResult.getMessage());
+//            result.setResult(getResult.getResult());
+//            result.setSuccess(getResult.isSuccess());
+//        }
+//        return result;
+//    }
     //GET ASSETS TYPE TBL
     @GET
     @Path("GetCF5Data")
@@ -1401,7 +1500,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-    
+
     @GET
     @Path("GetServerDateTime")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1424,22 +1523,21 @@ public class ACRGBFETCH {
     }
 
 //    TEST METHOD EXPOSED
-    @GET
-    @Path("TEST")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult TEST() {
-        return new FetchMethods().ACR_USER_LEVEL(dataSource, "ACTIVE");
-    }
-    
-    @GET
-    @Path("GetFilePath")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult GetFilePath() {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage(utility.GetString("Path"));
-        result.setResult("");
-        result.setSuccess(false);
-        return result;
-    }
-    
+//    @GET
+//    @Path("TEST")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult TEST() {
+//        return new FetchMethods().ACR_USER_LEVEL(dataSource, "ACTIVE");
+//    }
+//    
+//    @GET
+//    @Path("GetFilePath")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult GetFilePath() {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage(utility.GetString("Path"));
+//        result.setResult("");
+//        result.setSuccess(false);
+//        return result;
+//    }
 }

@@ -36,7 +36,7 @@ import javax.ws.rs.core.MediaType;
 /**
  * REST Web Service
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 @Path("ACRGBUPDATE")
 @RequestScoped

@@ -9,7 +9,7 @@ import lombok.Data;
 
 /**
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 @Data
 public class FacilityComputedAmount {

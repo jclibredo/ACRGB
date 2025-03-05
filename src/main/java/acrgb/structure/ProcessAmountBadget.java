@@ -7,7 +7,7 @@ package acrgb.structure;
 
 /**
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 public class ProcessAmountBadget {
 

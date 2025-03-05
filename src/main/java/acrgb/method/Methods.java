@@ -44,7 +44,7 @@ import oracle.jdbc.OracleTypes;
 
 /**
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 @RequestScoped
 public class Methods {
@@ -142,7 +142,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :p_user := ACR_GB.ACRGBPKGFUNCTION.ACRUSERNAME(:p_username); end;");
+            CallableStatement statement = connection.prepareCall("begin :p_user := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.ACRUSERNAME(:p_username); end;");
             statement.registerOutParameter("p_user", OracleTypes.CURSOR);
             statement.setString("p_username", p_username.trim());
             statement.execute();
@@ -169,7 +169,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_level := ACR_GB.ACRGBPKGFUNCTION.ACRUSERLEVEL(:p_levelid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_level := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.ACRUSERLEVEL(:p_levelid); end;");
             statement.registerOutParameter("v_level", OracleTypes.CURSOR);
             statement.setString("p_levelid", p_levelid.trim());
             statement.execute();
@@ -195,7 +195,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERDETAILS(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.UPDATEUSERDETAILS(:Message,:Code,"
                     + ":p_firstname,:p_lastname,:p_middlename,:p_did,:p_email,:p_contact)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -241,7 +241,7 @@ public class Methods {
             if (counteruser > 1) {
                 result.setMessage("Username is already exist");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,"
                         + ":userid,:p_username,:p_password,:p_stats)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -296,7 +296,7 @@ public class Methods {
             if (counteruser > 1) {
                 result.setMessage("Username is already exist");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERNAME(:Message,:Code,:p_userid,:p_username,:p_stats)");
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEUSERNAME(:Message,:Code,:p_userid,:p_username,:p_stats)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("p_userid", userid.trim());
@@ -337,7 +337,7 @@ public class Methods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
+//            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
 //            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
 //            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
 //            getinsertresult.setString("p_userid", userid.trim());
@@ -367,7 +367,7 @@ public class Methods {
         result.setSuccess(false);
         UserActivity userlogs = utility.UserActivity();
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("p_userid", userid.trim());
@@ -407,7 +407,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATELEVEL(:Message,:Code,:p_userid,:p_levelid,:p_stats)");
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATELEVEL(:Message,:Code,:p_userid,:p_levelid,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("p_userid", userid.trim());
@@ -439,7 +439,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETSUMMARY(:utags,:phcfid,:utranchid,:uconid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETSUMMARY(:utags,:phcfid,:utranchid,:uconid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("phcfid", phcfid.trim());
@@ -496,9 +496,7 @@ public class Methods {
                                 if (getHCIUisngHCPNCode.isSuccess()) {
                                     List<String> ListOHCI = Arrays.asList(getHCIUisngHCPNCode.getResult().split(","));
                                     for (int hci = 0; hci < ListOHCI.size(); hci++) {
-                                        //CHECK IF MAIN ACCRE IS USE FOR FACILITY
-                                        //GET MULTIPLE PMCC NO THIS AREA
-                                        //GET HCF DETAILS BY HCFCODE 
+                                        //CHECK IF CODE IS MAIN ACCREE
                                         ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                                         ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, ListOHCI.get(hci).trim());
                                         if (getMainAccre.isSuccess()) {
@@ -506,14 +504,7 @@ public class Methods {
                                         } else if (new FetchMethods().GETFACILITYID(dataSource, ListOHCI.get(hci).trim()).isSuccess()) {
                                             testHCIlist.add(utility.ObjectMapper().readValue(new FetchMethods().GETFACILITYID(dataSource, ListOHCI.get(hci).trim()).getResult(), HealthCareFacility.class));
                                         }
-//                                        ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, ListOHCI.get(hci).trim());
-//                                        if (getHcfByCode.isSuccess()) {
-//                                            HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
-//                                            //GET HCF DETAILS BY NAME
-//                                            ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-                                        System.out.println("FACILITY LIST " + testHCIlist);
                                         if (testHCIlist.size() > 0) {
-                                            // List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                                             for (int u = 0; u < testHCIlist.size(); u++) {
                                                 ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
                                                 if (restA.isSuccess()) {
@@ -1191,14 +1182,14 @@ public class Methods {
                         double claims30percent = 0.00;
                         double claimsSb = 0.00;
                         double TotalBaseAmount = 0.00;
-                        double primaryFinal = 0.00;
-                        double seconFinal = 0.00;
-                        double seconExcludedAmountFinal = 0.00;
-                        double primaryExcludedFinal = 0.00;
-                        int seconClaimFinal = 0;
-                        int seconExcludedClaimFinal = 0;
-                        int primaryClaimsFinal = 0;
-                        int primaryExcludedClaimsFinal = 0;
+//                        double primaryFinal = 0.00;
+//                        double seconFinal = 0.00;
+//                        double seconExcludedAmountFinal = 0.00;
+//                        double primaryExcludedFinal = 0.00;
+//                        int seconClaimFinal = 0;
+//                        int seconExcludedClaimFinal = 0;
+//                        int primaryClaimsFinal = 0;
+//                        int primaryExcludedClaimsFinal = 0;
                         ArrayList<FacilityComputedAmount> totalcomputeHCPNList = new ArrayList<>();
                         List<String> hcflist = Arrays.asList(facilitylist.trim().split(","));
                         for (int y = 0; y < hcflist.size(); y++) {
@@ -1225,6 +1216,7 @@ public class Methods {
                                     if (restC.isSuccess()) {
                                         List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
                                         for (int f = 0; f < fcaA.size(); f++) {
+
                                             ACRGBWSResult getHCI = new FetchMethods().GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                                             if (getHCI.isSuccess()) {
                                                 FacilityComputedAmount totalcomputeHCPN = new FacilityComputedAmount();
@@ -1368,14 +1360,14 @@ public class Methods {
                                                     TotalBaseAmount += totalamount;
                                                     claimsCount += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                     //-------------------------------------------
-                                                    primaryFinal += primary;
-                                                    primaryExcludedFinal += primaryExcluded;
-                                                    primaryClaimsFinal += primaryClaims;
-                                                    primaryExcludedClaimsFinal += primaryExcludedClaims;
-                                                    seconFinal += secon;
-                                                    seconClaimFinal += seconClaim;
-                                                    seconExcludedAmountFinal += seconExcludedAmount;
-                                                    seconExcludedClaimFinal += seconExcludedClaim;
+//                                                    primaryFinal += primary;
+//                                                    primaryExcludedFinal += primaryExcluded;
+//                                                    primaryClaimsFinal += primaryClaims;
+//                                                    primaryExcludedClaimsFinal += primaryExcludedClaims;
+//                                                    seconFinal += secon;
+//                                                    seconClaimFinal += seconClaim;
+//                                                    seconExcludedAmountFinal += seconExcludedAmount;
+//                                                    seconExcludedClaimFinal += seconExcludedClaim;
 
                                                 }
                                             }
@@ -1385,15 +1377,15 @@ public class Methods {
                                 }
                             }
                         }
-                        System.out.println(primaryFinal);
-                        System.out.println(primaryClaimsFinal);
-                        System.out.println(primaryExcludedFinal);
-                        System.out.println(primaryExcludedClaimsFinal);
-                        System.out.println(seconFinal);
-                        System.out.println(seconClaimFinal);
-                        System.out.println(seconExcludedAmountFinal);
-                        System.out.println(seconExcludedClaimFinal);
-                        System.out.println(TotalBaseAmount);
+//                        System.out.println(primaryFinal);
+//                        System.out.println(primaryClaimsFinal);
+//                        System.out.println(primaryExcludedFinal);
+//                        System.out.println(primaryExcludedClaimsFinal);
+//                        System.out.println(seconFinal);
+//                        System.out.println(seconClaimFinal);
+//                        System.out.println(seconExcludedAmountFinal);
+//                        System.out.println(seconExcludedClaimFinal);
+//                        System.out.println(TotalBaseAmount);
                         FacilityComputedAmount totalcomputeHCPNA = new FacilityComputedAmount();
                         if (claimsSb > 0.00) {
                             totalcomputeHCPNA.setSb(String.valueOf(claimsSb / 3));
@@ -1472,17 +1464,6 @@ public class Methods {
                                 if (getHCIUisngHCPNCode.isSuccess()) {
                                     List<String> ListOHCI = Arrays.asList(getHCIUisngHCPNCode.getResult().split(","));
                                     for (int hci = 0; hci < ListOHCI.size(); hci++) {
-
-//                                        ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, ListOHCI.get(hci).trim());
-//                                        if (getHcfByCode.isSuccess()) {
-//                                            HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class
-//                                            );
-//                                            //GET HCF DETAILS BY NAME
-//                                            ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-//
-//                                            if (getHcfByName.isSuccess()) {
-//                                                List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class
-//                                                ));
                                         //-----------------------------------------------------------
                                         ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                                         ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, ListOHCI.get(hci).trim());
@@ -1601,7 +1582,6 @@ public class Methods {
                                                     }
                                                 }
                                             }
-                                            // }
                                         }
                                     }
                                 }
@@ -1663,17 +1643,6 @@ public class Methods {
                             if (getHCFUnder.isSuccess()) {
                                 List<String> HCFList = Arrays.asList(getHCFUnder.getResult().split(","));
                                 for (int hcf = 0; hcf < HCFList.size(); hcf++) {
-//                                    //-------------------------------------------------------------------
-//                                    ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, HCFList.get(hcf).trim());
-//                                    if (getHcfByCode.isSuccess()) {
-//                                        HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class
-//                                        );
-//                                        //GET HCF DETAILS BY NAME
-//                                        ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-//
-//                                        if (getHcfByName.isSuccess()) {
-//                                            List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class
-//                                            ));
                                     //-----------------------------------------------------------
                                     ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                                     ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, HCFList.get(hcf).trim());
@@ -1798,7 +1767,6 @@ public class Methods {
                                                 }
                                             }
                                         }
-                                        //}
                                     }
                                 }
                             }
@@ -1848,16 +1816,6 @@ public class Methods {
                 }
                 case "FACILITY": {//USERID IS HCFCODE/ACCRENO
                     ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
-                    //-------------------------------------------------------------------
-//                    ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, userid.trim());
-//                    if (getHcfByCode.isSuccess()) {
-//                        HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class
-//                        );
-//                        //GET HCF DETAILS BY NAME
-//                        ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-//                        if (getHcfByName.isSuccess()) {
-//                            List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class
-//                            ));
                     //-----------------------------------------------------------
                     ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                     ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, userid.trim());
@@ -1879,7 +1837,6 @@ public class Methods {
                                 //DATE SETTINGS AREA
                                 for (int f = 0; f < fcaA.size(); f++) {
                                     ACRGBWSResult getFacilityA = new FetchMethods().GETFACILITYID(dataSource, fcaA.get(f).getHospital());
-
                                     if (getFacilityA.isSuccess()) {
                                         HealthCareFacility hci = utility.ObjectMapper().readValue(getFacilityA.getResult(), HealthCareFacility.class
                                         );
@@ -2035,17 +1992,6 @@ public class Methods {
                         double claimsSb = 0.00;
                         double totalbaseamount = 0.00;
                         for (int y = 0; y < hcflist.size(); y++) {
-                            //-------------------------------------------------------------------
-//                            ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, hcflist.get(y).trim());
-//                            if (getHcfByCode.isSuccess()) {
-//                                HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class
-//                                );
-//                                //GET HCF DETAILS BY NAME
-//                                ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-//
-//                                if (getHcfByName.isSuccess()) {
-//                                    List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class
-//                                    ));
                             //-----------------------------------------------------------
                             ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                             ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, hcflist.get(y).trim());
@@ -2059,7 +2005,6 @@ public class Methods {
                                 for (int u = 0; u < testHCIlist.size(); u++) {
                                     //----------------------------------------------------------------------
                                     ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
-
                                     if (restC.isSuccess()) {
                                         //DATE SETTINGS
                                         List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class
@@ -2070,8 +2015,7 @@ public class Methods {
                                             if (getHCI.isSuccess()) {
                                                 FacilityComputedAmount totalcomputeA = new FacilityComputedAmount();
                                                 //------------------------------------------------
-                                                HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class
-                                                );
+                                                HealthCareFacility hci = utility.ObjectMapper().readValue(getHCI.getResult(), HealthCareFacility.class);
                                                 //Z BEN CODE CHECKING AREA SKIP IF TRUE
                                                 if (!new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode().trim()).isSuccess()
                                                         && !new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
@@ -2236,7 +2180,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACTIVITYLOGS(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.ACTIVITYLOGS(:Message,:Code,"
                     + ":a_date,:a_details,:a_by,:a_actstats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -2270,7 +2214,7 @@ public class Methods {
         result.setSuccess(false);
         ArrayList<UserActivity> logsList = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETLOGSWITHID(:userid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETLOGSWITHID(:userid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("userid", userid.trim());
             statement.execute();
@@ -2318,7 +2262,7 @@ public class Methods {
 //            if (getdatesettings.isSuccess()) {
 //                List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class));
 //                for (int u = 0; u < GetDateSettings.size(); u++) {
-//                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
+//                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
 //                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //                    statement.setString("upmccno", upmccno.trim());
 //                    statement.setString("utags", "G");
@@ -2408,7 +2352,7 @@ public class Methods {
             } else {
                 ACRGBWSResult restA = this.GETROLE(dataSource, mbrequestsummry.getRequestor(), "ACTIVE");
                 if (restA.isSuccess()) {
-                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUEST(:Message,:Code,:udaterequest,:udatefrom,"
+                    CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.MBREQUEST(:Message,:Code,:udaterequest,:udatefrom,"
                             + ":udateto,:urequestor,:utranscode,:uremarks,:uamount,:udatecreated)");
                     getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                     getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -2426,7 +2370,7 @@ public class Methods {
                         List<String> facilitylist = Arrays.asList(mbrequestsummry.getFacility().split(","));
                         int errCounter = 0;
                         for (int x = 0; x < facilitylist.size(); x = x + 2) {
-                            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUESTFCHUNDER(:Message,:Code,:utranscode,:udatecreated,:uamount,:ufacility)");
+                            CallableStatement statement = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.MBREQUESTFCHUNDER(:Message,:Code,:utranscode,:udatecreated,:uamount,:ufacility)");
                             statement.registerOutParameter("Message", OracleTypes.VARCHAR);
                             statement.registerOutParameter("Code", OracleTypes.INTEGER);
                             statement.setString("utranscode", mbrequestsummry.getTranscode());
@@ -2468,7 +2412,7 @@ public class Methods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBREQUEST(:userid); end;");
+//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBREQUEST(:userid); end;");
 //            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //            statement.setString("userid", userid.trim());
 //            statement.execute();
@@ -2625,7 +2569,7 @@ public class Methods {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             //---------------------------------------------------- 
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("pid", pid.trim());
             statement.execute();
@@ -2658,9 +2602,7 @@ public class Methods {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2681,7 +2623,7 @@ public class Methods {
             List<String> accesslist = Arrays.asList(accessid.split(","));
             for (int x = 0; x < accesslist.size(); x++) {
                 //------------------------------------------------------------------------------------------------
-                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.REMOVEDROLEINDEX(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.REMOVEDROLEINDEX(:Message,:Code,"
                         + ":puserid,:paccessid)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -2732,7 +2674,7 @@ public class Methods {
                 List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                 for (int x = 0; x < fchlist.size(); x++) {
                     //---------------------------------------------------- 
-                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("pid", fchlist.get(x).trim());
                     statement.execute();
@@ -2759,7 +2701,6 @@ public class Methods {
                         mb.setAddress(resultset.getString("ADDRESS"));
                         //GET ACCREDITATION USING CODE
                         ACRGBWSResult accreResult = new FetchMethods().GETACCREDITATION(dataSource, resultset.getString("CONNUMBER").trim());
-
                         if (accreResult.isSuccess()) {
                             Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class
                             );
@@ -2807,7 +2748,7 @@ public class Methods {
                 List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                 for (int x = 0; x < fchlist.size(); x++) {
                     //---------------------------------------------------- 
-                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("pid", fchlist.get(x));
                     statement.execute();
@@ -2880,7 +2821,7 @@ public class Methods {
             List<String> fchlist = Arrays.asList(restB.getResult().split(","));
             for (int x = 0; x < fchlist.size(); x++) {
                 //---------------------------------------------------- 
-                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                 statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                 statement.setString("pid", fchlist.get(x));
                 statement.execute();
@@ -2892,7 +2833,6 @@ public class Methods {
                     mb.setMbname(resultset.getString("MBNAME"));
                     mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                     ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-
                     if (creator.isSuccess()) {
                         UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
                         );
@@ -2905,13 +2845,8 @@ public class Methods {
                     mb.setBankaccount(resultset.getString("BANKACCOUNT"));
                     mb.setBankname(resultset.getString("BANKNAME"));
                     mb.setAddress(resultset.getString("ADDRESS"));
-                    //-----------------------------------------------------
-//                    ACRGBWSResult reastC = this.GETROLEMULITPLE(dataSource, resultset.getString("CONNUMBER"), tags.toUpperCase().trim());
-//                        List<String> hcfcodeList = Arrays.asList(reastC.getResult().split(","));
-//                        Double totaldiff = 0.00;
                     mb.setBaseamount(String.valueOf(0.00));
                     ACRGBWSResult accreResult = new FetchMethods().GETACCREDITATION(dataSource, resultset.getString("CONNUMBER"));
-
                     if (accreResult.isSuccess()) {
                         Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class
                         );
@@ -2956,7 +2891,7 @@ public class Methods {
             ArrayList<HealthCareFacility> fchlist = new ArrayList<>();
             for (int x = 0; x < resultlist.size(); x++) {
                 //---------------------------------------------------- 
-                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:pid); end;");
+                CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETFACILITY(:pid); end;");
                 statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                 statement.setString("pid", resultlist.get(x).trim());
                 statement.execute();
@@ -3000,7 +2935,7 @@ public class Methods {
         try (Connection connection = dataSource.getConnection()) {
             if (pproid.length() > 3) {
                 String procode = pproid.substring(pproid.length() - 2);
-                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETPROWITHID(:pproid); end;");
+                CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETPROWITHID(:pproid); end;");
                 statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                 statement.setString("pproid", procode.trim());
                 statement.execute();
@@ -3022,9 +2957,7 @@ public class Methods {
 
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3038,7 +2971,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -3069,7 +3002,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -3105,7 +3038,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDANDNOTEMPTY(:utags,:pid,:ucondate); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDANDNOTEMPTY(:utags,:pid,:ucondate); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", pid.trim());
@@ -3125,9 +3058,7 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3141,7 +3072,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -3156,9 +3087,7 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3172,7 +3101,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -3191,9 +3120,7 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3205,7 +3132,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETAPEXFACILITY(); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETAPEXFACILITY(); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.execute();
             ArrayList<HealthCareFacility> hcflist = new ArrayList<>();
@@ -3228,9 +3155,7 @@ public class Methods {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3261,7 +3186,7 @@ public class Methods {
 //                        }
 //                        rmb.setConctractamount(conlist.get(x).getAmount());
 //                        rmb.setContractnumber(conlist.get(x).getTranscode());
-//                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
+//                        CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
 //                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //                        statement.setString("tags", tags.trim());
 //                        statement.setString("pconid", conlist.get(x).getConid().trim());
@@ -3327,7 +3252,7 @@ public class Methods {
 //                        }
 //                        rmb.setConctractamount(conlist.get(x).getAmount());
 //                        rmb.setContractnumber(conlist.get(x).getTranscode());
-//                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
+//                        CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
 //                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //                        statement.setString("tags", tags.trim());
 //                        statement.setString("pconid", conlist.get(x).getConid().trim());
@@ -3494,7 +3419,7 @@ public class Methods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
+//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
 //            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //            statement.setString("upmccno", upmccno.trim());
 //            statement.setString("utags", "G".trim());
@@ -3596,7 +3521,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDFORENDROLE(:utags,:pid,:pcondateid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDFORENDROLE(:utags,:pid,:pcondateid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -3639,10 +3564,9 @@ public class Methods {
             ArrayList<FacilityComputedAmount> listOfcomputedamount = new ArrayList<>();
 
             if (getdatesettings.isSuccess()) {
-                List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class
-                ));
+                List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class));
                 for (int u = 0; u < GetDateSettings.size(); u++) {
-                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETAVERAGECLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETAVERAGECLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("upmccno", upmccno.trim());
                     statement.setString("utags", "G".trim());
@@ -3651,7 +3575,6 @@ public class Methods {
                     statement.execute();
                     ResultSet resultset = (ResultSet) statement.getObject("v_result");
                     while (resultset.next()) {
-//                        System.out.println(" | "+resultset.getString("PMCC_NO")+" | "+resultset.getString("CTOTAL")+" | "+resultset.getString("COUNTVAL"));
                         FacilityComputedAmount fca = new FacilityComputedAmount();
                         fca.setHospital(resultset.getString("PMCC_NO"));
                         fca.setTotalamount(resultset.getString("CTOTAL"));
@@ -3659,47 +3582,34 @@ public class Methods {
                         fca.setYearto(GetDateSettings.get(u).getDateto());
                         fca.setTotalclaims(resultset.getString("COUNTVAL"));
                         //-----------------------------------------------
-                        if (resultset.getString("C1_RVS_CODE") != null) {
-                            fca.setC1rvcode(resultset.getString("C1_RVS_CODE"));
-                        } else {
-                            fca.setC1rvcode("");
-                        }
+                        fca.setC1rvcode(resultset.getString("C1_RVS_CODE").isEmpty()
+                                || resultset.getString("C1_RVS_CODE") == null
+                                || resultset.getString("C1_RVS_CODE").equals("") ? "" : resultset.getString("C1_RVS_CODE"));
 //                        //------------------------------------------------
-                        if (resultset.getString("C2_RVS_CODE") != null) {
-                            fca.setC2rvcode(resultset.getString("C2_RVS_CODE"));
-                        } else {
-                            fca.setC2rvcode("");
-                        }
+                        fca.setC2rvcode(resultset.getString("C2_RVS_CODE") == null
+                                || resultset.getString("C2_RVS_CODE").equals("")
+                                || resultset.getString("C2_RVS_CODE").isEmpty() ? "" : resultset.getString("C2_RVS_CODE"));
 //                        //-----------------------------------------------
-                        if (resultset.getString("C1_ICD_CODE") != null) {
-                            fca.setC1icdcode(resultset.getString("C1_ICD_CODE"));
-                        } else {
-                            fca.setC1icdcode("");
-                        }
+                        fca.setC1icdcode(resultset.getString("C1_ICD_CODE").isEmpty()
+                                || resultset.getString("C1_ICD_CODE") == null
+                                || resultset.getString("C1_ICD_CODE").equals("") ? "" : resultset.getString("C1_ICD_CODE"));
 //                        //----------------------------------------------
-                        if (resultset.getString("C2_ICD_CODE") != null) {
-                            fca.setC2icdcode(resultset.getString("C2_ICD_CODE"));
-                        } else {
-                            fca.setC2icdcode("");
-                        }
+                        fca.setC2icdcode(resultset.getString("C2_ICD_CODE").isEmpty()
+                                || resultset.getString("C2_ICD_CODE") == null
+                                || resultset.getString("C2_ICD_CODE").equals("") ? "" : resultset.getString("C2_ICD_CODE"));
 //                        //----------------------------------------------
-                        if (resultset.getTimestamp("DATESUB") != null) {
-                            fca.setDatefiled(dateformat.format(resultset.getTimestamp("DATESUB")));
-                        } else {
-                            fca.setDatefiled("");
-                        }
-
-                        if (resultset.getTimestamp("DATEREFILE") != null) {
-                            fca.setDaterefiled(dateformat.format(resultset.getTimestamp("DATEREFILE")));
-                        } else {
-                            fca.setDaterefiled("");
-                        }
-                        if (resultset.getTimestamp("DATEADM") != null) {
-                            fca.setDateadmit(dateformat.format(resultset.getTimestamp("DATEADM")));
-                        } else {
-                            fca.setDateadmit("");
-                        }
-//                        System.out.println(utility.ObjectMapper().writeValueAsString(fca));
+                        //DATE SUBMITTED
+                        fca.setDatefiled(resultset.getString("DATESUB") == null
+                                || resultset.getString("DATESUB").isEmpty()
+                                || resultset.getString("DATESUB").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATESUB")));
+                        //DATEREFILE
+                        fca.setDaterefiled(resultset.getString("DATEREFILE") == null
+                                || resultset.getString("DATEREFILE").isEmpty()
+                                || resultset.getString("DATEREFILE").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATEREFILE")));
+                        //DATEADMISSION
+                        fca.setDateadmit(resultset.getString("DATEADM") == null
+                                || resultset.getString("DATEADM").isEmpty()
+                                || resultset.getString("DATEADM").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATEADM")));
                         listOfcomputedamount.add(fca);
                     }
                 }
@@ -3707,7 +3617,6 @@ public class Methods {
                     result.setMessage(getdatesettings.getResult());
                     result.setResult(utility.ObjectMapper().writeValueAsString(listOfcomputedamount));
                     result.setSuccess(true);
-//                    System.out.println(utility.ObjectMapper().writeValueAsString(listOfcomputedamount));
                 } else {
                     result.setMessage("N/A");
                 }
@@ -3717,9 +3626,7 @@ public class Methods {
             //-------------------------------------------------------------------------------
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3734,7 +3641,7 @@ public class Methods {
         ContractTagging ct = new ContractTagging();
         ArrayList<String> errorList = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETENDEDCONTRACTDATEPERIOD(:tags); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETENDEDCONTRACTDATEPERIOD(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("tags", tags.trim().toUpperCase());
             statement.execute();
@@ -3772,7 +3679,7 @@ public class Methods {
                         errorList.add(endAffiliate.getMessage());
                     }
                     //CHANGE CONTRACT PERIOD STATUS
-                    CallableStatement stmt = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INACTIVEDATA(:Message,:Code,"
+                    CallableStatement stmt = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INACTIVEDATA(:Message,:Code,"
                             + ":tags,:dataid)");
                     stmt.registerOutParameter("Code", OracleTypes.INTEGER);
                     stmt.setString("tags", "CONTRACTDATE".trim().toUpperCase());
@@ -3792,9 +3699,7 @@ public class Methods {
             }
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3806,7 +3711,7 @@ public class Methods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.VALIDATEEXCLUDEDCODE(:pcode); end;");
+//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.VALIDATEEXCLUDEDCODE(:pcode); end;");
 //            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //            statement.setString("pcode", excode.trim().toUpperCase());
 //            statement.execute();
@@ -3833,7 +3738,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.VALIDATECONTRACTDATE(:puserid,:pcondate); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.VALIDATECONTRACTDATE(:puserid,:pcondate); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(pdatefrom).getTime()));
             statement.setDate("udateto", (Date) new Date(utility.StringToDate(pdateto).getTime()));
@@ -3844,9 +3749,7 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3860,7 +3763,7 @@ public class Methods {
         try (Connection connection = datasource.getConnection()) {
             UserActivityLogs logs = new UserActivityLogs();
             UserActivity userLogs = utility.UserActivity();
-            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEHCPNACCREDITATION(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEHCPNACCREDITATION(:Message,:Code,"
                     + ":paccount,:pdateaction,:pcreatedby,:pstatus,:premarks,:ptags,:pdatefrom,:pdateto)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -3885,9 +3788,7 @@ public class Methods {
             logs.UserLogsMethod(datasource, "EDIT-ACCREDITATION-HCPN", userLogs, accreditation.getCreatedby(), accreditation.getAccreno());
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3899,7 +3800,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETALLACCREDITATION(:utags); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETALLACCREDITATION(:utags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.execute();
@@ -3950,7 +3851,7 @@ public class Methods {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             //---------------------------------------------------- 
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBUSINGMBID(:umbuserid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBUSINGMBID(:umbuserid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("umbuserid", umbuserid.trim());
             statement.execute();
@@ -3962,10 +3863,8 @@ public class Methods {
                 mb.setMbname(resultset.getString("MBNAME"));
                 mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                 ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-
                 if (creator.isSuccess()) {
-                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
-                    );
+                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
                     mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
                 } else {
                     mb.setCreatedby(creator.getMessage());

@@ -19,7 +19,7 @@ import java.util.Map;
 
 /**
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 public class NamedParameterStatement {
     private final PreparedStatement statement;

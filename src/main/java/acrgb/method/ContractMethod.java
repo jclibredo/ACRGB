@@ -36,7 +36,7 @@ import oracle.jdbc.OracleTypes;
 
 /**
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 @RequestScoped
 public class ContractMethod {
@@ -53,7 +53,7 @@ public class ContractMethod {
 //        result.setResult("");
 //        try (Connection connection = dataSource.getConnection()) {
 //            ArrayList<Contract> contractList = new ArrayList<>();
-//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
+//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
 //            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //            statement.setString("tags", "INACTIVE");
 //            statement.setString("pfchid", phcfcode.trim());
@@ -150,7 +150,7 @@ public class ContractMethod {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("tags", tags.toUpperCase());
             statement.setString("pfchid", hcfid.trim());
@@ -181,11 +181,9 @@ public class ContractMethod {
                 contract.setSb(resultset.getString("SB"));
                 contract.setAddamount(resultset.getString("ADDAMOUNT"));
                 contract.setQuarter(resultset.getString("QUARTER"));
-                if (resultset.getTimestamp("ENDDATE") != null) {
-                    contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
-                } else {
-                    contract.setEnddate("");
-                }
+                contract.setEnddate(resultset.getString("ENDDATE") == null
+                        || resultset.getString("ENDDATE").isEmpty()
+                        || resultset.getString("ENDDATE").equals("") ? "" : dateformat.format(resultset.getTimestamp("ENDDATE")));
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
@@ -207,7 +205,7 @@ public class ContractMethod {
 //        result.setSuccess(false);
 //        ArrayList<Contract> contractList = new ArrayList<>();
 //        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
+//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.ACR_CONTRACT(:tags,:pfchid); end;");
 //            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //            statement.setString("tags", tags.toUpperCase().trim());
 //            statement.setString("pfchid", hcfid.trim());
@@ -266,7 +264,7 @@ public class ContractMethod {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONDATE(:tags); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETCONDATE(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("tags", tags.toUpperCase().trim());
             statement.execute();
@@ -344,7 +342,7 @@ public class ContractMethod {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONDATEBYID(:ucondateid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETCONDATEBYID(:ucondateid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("ucondateid", ucondateid.trim());
             statement.execute();
@@ -377,18 +375,19 @@ public class ContractMethod {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONTRACTBYCONDATEID(:ucondateid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETCONTRACTBYCONDATEID(:ucondateid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("ucondateid", ucondateid.trim());
             statement.execute();
-            // ArrayList<Contract> contractList = new ArrayList<>();
             ArrayList<String> conidlist = new ArrayList<>();
             ArrayList<Contract> contractlist = new ArrayList<>();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             while (resultset.next()) {
                 conidlist.add(resultset.getString("CONID"));
                 Contract contract = new Contract();
-                contract.setAmount(resultset.getString("AMOUNT"));
+                contract.setAmount(resultset.getString("AMOUNT") == null
+                        || resultset.getString("AMOUNT").isEmpty()
+                        || resultset.getString("AMOUNT").equals("") ? "0" : resultset.getString("AMOUNT"));
                 contract.setBaseamount(resultset.getString("BASEAMOUNT"));
                 contract.setConid(resultset.getString("CONID"));
                 ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE").trim());
@@ -397,11 +396,9 @@ public class ContractMethod {
                 }
                 contract.setCreatedby(resultset.getString("CREATEDBY"));
                 contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
-                if (resultset.getTimestamp("ENDDATE") == null) {
-                    contract.setEnddate(resultset.getString("ENDDATE"));
-                } else {
-                    contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
-                }
+                contract.setEnddate(resultset.getString("ENDDATE") == null
+                        || resultset.getString("ENDDATE").equals("")
+                        || resultset.getString("ENDDATE").isEmpty() ? "" : dateformat.format(resultset.getTimestamp("ENDDATE")));
                 //GET MANAGINGBOARD NAME
                 ACRGBWSResult GetMB = new Methods().GETMBWITHID(dataSource, resultset.getString("HCFID"));
                 if (GetMB.isSuccess()) {
@@ -449,7 +446,7 @@ public class ContractMethod {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETPREVIOUSBALANCE(:paccount,:pconid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETPREVIOUSBALANCE(:paccount,:pconid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("paccount", paccount.trim());
             statement.setString("pconid", pconid.trim());
@@ -460,7 +457,9 @@ public class ContractMethod {
                 ConBalance conbal = new ConBalance();
                 conbal.setAccount(resultset.getString("ACCOUNT"));
                 conbal.setBooknum(resultset.getString("BOOKNUM"));
-                conbal.setConamount(resultset.getString("CONAMOUNT")); //CONTRACT AMOUNT
+                conbal.setConamount(resultset.getString("CONAMOUNT") == null
+                        || resultset.getString("CONAMOUNT").isEmpty()
+                        || resultset.getString("CONAMOUNT").equals("") ? "" : resultset.getString("CONAMOUNT")); //CONTRACT AMOUNT
                 conbal.setConbalance(resultset.getString("CONBALANCE"));//CONTRACT REMAINING BALANCE
                 //GETCONDATEBYID
                 ACRGBWSResult getCondate = this.GETCONDATEBYID(dataSource, resultset.getString("CONID"));
@@ -469,11 +468,9 @@ public class ContractMethod {
                 }
                 conbal.setConid(resultset.getString("CONID"));
                 conbal.setConutilized(resultset.getString("CONUTILIZED"));
-                if (resultset.getTimestamp("DATECREATED") == null) {
-                    conbal.setDatecreated(resultset.getString("DATECREATED"));
-                } else {
-                    conbal.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
-                }
+                conbal.setDatecreated(resultset.getString("DATECREATED") == null
+                        || resultset.getString("DATECREATED").isEmpty()
+                        || resultset.getString("DATECREATED").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATECREATED")));
                 conbal.setStatus(resultset.getString("STATUS"));
                 //------------------  END OF OBJECT MAPPING ----------------------
                 result.setMessage("OK");
@@ -500,7 +497,6 @@ public class ContractMethod {
             if (GetRole.isSuccess()) {
                 //GETCONTRACT
                 ACRGBWSResult GetFacilityContract = this.GETCONTRACTWITHOPENSTATE(dataSource, tags.trim().toUpperCase(), GetRole.getResult().trim(), ustate.trim().toUpperCase());
-//                ACRGBWSResult GetFacilityContract = this.GETCONTRACT(dataSource, tags, GetRole.getResult().trim());
                 if (GetFacilityContract.isSuccess()) {
                     Contract con = utility.ObjectMapper().readValue(GetFacilityContract.getResult(), Contract.class);
                     if (con.getContractdate() != null) {
@@ -560,15 +556,6 @@ public class ContractMethod {
                                 }
                             }
                         }
-                        //======================================
-                        //-------------------------------------------------------------------
-//                        ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, con.getHcfid().trim());
-//                        if (getHcfByCode.isSuccess()) {
-//                            HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
-//                            //GET HCF DETAILS BY NAME
-//                            ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-//                            if (getHcfByName.isSuccess()) {
-//                                List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                         ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                         ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, con.getHcfid().trim());
                         if (getMainAccre.isSuccess()) {
@@ -584,8 +571,8 @@ public class ContractMethod {
                                     List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                                     for (int i = 0; i < nclaimsdata.size(); i++) {
                                         int countLedger = 0;
-                                        if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                            if (con.getEnddate().isEmpty()) {
+                                        if (nclaimsdata.get(i).getRefiledate().isEmpty() || nclaimsdata.get(i).getRefiledate().equals("") || nclaimsdata.get(i).getRefiledate() == null) {
+                                            if (con.getEnddate().isEmpty() || con.getEnddate() == null || con.getEnddate().equals("")) {
                                                 if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
                                                     countLedger++;
                                                 }
@@ -595,7 +582,7 @@ public class ContractMethod {
                                                 }
                                             }
                                         } else {
-                                            if (con.getEnddate().isEmpty()) {
+                                            if (con.getEnddate().isEmpty() || con.getEnddate() == null || con.getEnddate().equals("")) {
                                                 if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
                                                     countLedger++;
                                                 }
@@ -611,7 +598,6 @@ public class ContractMethod {
                                         }
                                     }
                                 }
-                                // }
                             }
                         }
 
@@ -734,15 +720,6 @@ public class ContractMethod {
                                             }
                                         }
                                     }
-                                    //-------------------------------------------------------------------
-//                                    ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, HciList.get(x).trim());
-//                                    if (getHcfByCode.isSuccess()) {
-//                                        HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
-//                                        //GET HCF DETAILS BY NAME
-//                                        ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-//                                        if (getHcfByName.isSuccess()) {
-//                                            List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
-
                                     ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                                     ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, HciList.get(x).trim());
                                     if (getMainAccre.isSuccess()) {
@@ -758,8 +735,8 @@ public class ContractMethod {
                                                 List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                                                 for (int i = 0; i < nclaimsdata.size(); i++) {
                                                     int countLedger = 0;
-                                                    if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                                        if (hcinCon.getEnddate().isEmpty()) {
+                                                    if (nclaimsdata.get(i).getRefiledate().isEmpty() || nclaimsdata.get(i).getRefiledate().equals("") || nclaimsdata.get(i).getRefiledate() == null) {
+                                                        if (hcinCon.getEnddate().isEmpty() || hcinCon.getEnddate().equals("") || hcinCon.getEnddate() == null) {
                                                             if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
                                                                 countLedger++;
                                                             }
@@ -769,7 +746,7 @@ public class ContractMethod {
                                                             }
                                                         }
                                                     } else {
-                                                        if (hcinCon.getEnddate().isEmpty()) {
+                                                        if (hcinCon.getEnddate().isEmpty() || hcinCon.getEnddate().equals("") || hcinCon.getEnddate() == null) {
                                                             if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
                                                                 countLedger++;
                                                             }
@@ -786,7 +763,6 @@ public class ContractMethod {
                                                 }
                                             }
                                         }
-                                        //}
                                     }
                                 }
                             }
@@ -869,7 +845,6 @@ public class ContractMethod {
         result.setResult("");
         result.setSuccess(false);
         Methods methods = new Methods();
-//        CurrentBalance cb = new CurrentBalance();
         try {
             ACRGBWSResult GetRole = methods.GETROLE(dataSource, userid, "ACTIVE");
             if (GetRole.isSuccess()) {
@@ -923,7 +898,7 @@ public class ContractMethod {
                                 if (restA.isSuccess()) {
                                     List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), Assets[].class));
                                     for (int g = 0; g < assetlist.size(); g++) {
-                                        if (assetlist.get(g).getPreviousbalance() != null) {
+                                        if (assetlist.get(g).getPreviousbalance() != null || !assetlist.get(g).getPreviousbalance().isEmpty() || !assetlist.get(g).getPreviousbalance().equals("")) {
                                             Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
                                             switch (tranch.getTranchtype()) {
                                                 case "1ST": {
@@ -957,18 +932,9 @@ public class ContractMethod {
                                     if (GetHCIList.isSuccess()) {
                                         List<String> HCIList = Arrays.asList(GetHCIList.getResult().split(","));
                                         for (int x = 0; x < HCIList.size(); x++) {
-//                                            ACRGBWSResult GetHCIContract = this.GETCONTRACT(dataSource, tags.trim().toUpperCase(), HCIList.get(x).trim());
                                             ACRGBWSResult GetHCIContract = this.GETCONTRACTWITHOPENSTATE(dataSource, tags.trim().toUpperCase(), HCIList.get(x).trim(), ustate);
                                             if (GetHCIContract.isSuccess()) {
                                                 Contract hciCon = utility.ObjectMapper().readValue(GetHCIContract.getResult(), Contract.class);
-                                                //-------------------------------------------------------------------
-//                                                ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, HCIList.get(x).trim());
-//                                                if (getHcfByCode.isSuccess()) {
-//                                                    HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
-//                                                    //GET HCF DETAILS BY NAME
-//                                                    ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-//                                                    if (getHcfByName.isSuccess()) {
-//                                                        List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                                                 ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                                                 ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, HCIList.get(x).trim());
                                                 if (getMainAccre.isSuccess()) {
@@ -984,8 +950,8 @@ public class ContractMethod {
                                                             List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                                                             for (int i = 0; i < nclaimsdata.size(); i++) {
                                                                 int countLedger = 0;
-                                                                if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                                                    if (hciCon.getEnddate().isEmpty()) {
+                                                                if (nclaimsdata.get(i).getRefiledate().isEmpty() || nclaimsdata.get(i).getRefiledate().equals("") || nclaimsdata.get(i).getRefiledate() == null) {
+                                                                    if (hciCon.getEnddate().isEmpty() || hciCon.getEnddate().equals("") || hciCon.getEnddate() == null) {
                                                                         if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
                                                                             countLedger++;
                                                                         }
@@ -995,7 +961,7 @@ public class ContractMethod {
                                                                         }
                                                                     }
                                                                 } else {
-                                                                    if (hciCon.getEnddate().isEmpty()) {
+                                                                    if (hciCon.getEnddate().isEmpty() || hciCon.getEnddate().equals("") || hciCon.getEnddate() == null) {
                                                                         if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
                                                                             countLedger++;
                                                                         }
@@ -1005,21 +971,18 @@ public class ContractMethod {
                                                                         }
                                                                     }
                                                                 }
-
-                                                                if (countLedger > 0) {//utility.AddMinusDaysDate(hciCon.getEnddate().trim(), "60")
+                                                                if (countLedger > 0) {
                                                                     numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
                                                                     totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
                                                                 }
                                                             }
                                                         }
-                                                        // }
                                                     }
                                                 }
                                             }
                                         }
                                     }
                                 }
-
                             }
                         }
                     }
@@ -1083,7 +1046,7 @@ public class ContractMethod {
         result.setSuccess(false);
         ContractMethod contractmethod = new ContractMethod();
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONBYCODE(:ucode); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETCONBYCODE(:ucode); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("ucode", ucode.trim());
             statement.execute();
@@ -1093,7 +1056,9 @@ public class ContractMethod {
                 Contract con = new Contract();
                 con.setConid(resultset.getString("CONID"));
                 con.setHcfid(resultset.getString("HCFID"));
-                con.setAmount(resultset.getString("AMOUNT"));
+                con.setAmount(resultset.getString("AMOUNT") == null
+                        || resultset.getString("AMOUNT").isEmpty()
+                        || resultset.getString("AMOUNT").equals("") ? "0" : resultset.getString("AMOUNT"));
                 con.setStats(resultset.getString("STATS"));
                 ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
 
@@ -1117,11 +1082,10 @@ public class ContractMethod {
                 con.setAddamount(resultset.getString("ADDAMOUNT"));
                 con.setQuarter(resultset.getString("QUARTER"));
                 con.setSb(resultset.getString("SB"));
-                if (resultset.getTimestamp("ENDDATE") == null) {
-                    con.setEnddate("N/A");
-                } else {
-                    con.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
-                }
+                //END DATE
+                con.setEnddate(resultset.getString("ENDDATE") == null
+                        || resultset.getString("ENDDATE").isEmpty()
+                        || resultset.getString("ENDDATE").equals("") ? "" : dateformat.format(resultset.getTimestamp("ENDDATE")));
                 conlist.add(con);
             }
             if (conlist.size() > 0) {
@@ -1133,9 +1097,7 @@ public class ContractMethod {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(ContractMethod.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1147,7 +1109,7 @@ public class ContractMethod {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEINDEXCONDATE(:pcondate); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEINDEXCONDATE(:pcondate); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("pcondate", pcondate.trim());
             statement.execute();
@@ -1173,9 +1135,7 @@ public class ContractMethod {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(ContractMethod.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1190,7 +1150,7 @@ public class ContractMethod {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETVALIDATECODE(:utags,:ucode); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETVALIDATECODE(:utags,:ucode); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("ucode", ucode.trim());
@@ -1199,18 +1159,20 @@ public class ContractMethod {
             if (resultset.next()) {
                 CaseRate caseRate = new CaseRate();
                 caseRate.setCode(resultset.getString("CODE"));
-                caseRate.setAmount(resultset.getString("AMOUNT"));
+                caseRate.setAmount(resultset.getString("AMOUNT").equals("")
+                        || resultset.getString("AMOUNT").isEmpty()
+                        || resultset.getString("AMOUNT") == null ? "0" : resultset.getString("AMOUNT"));
+                result.setMessage(resultset.getString("AMOUNT").equals("")
+                        || resultset.getString("AMOUNT").isEmpty()
+                        || resultset.getString("AMOUNT") == null ? "0" : resultset.getString("AMOUNT"));
                 result.setResult(utility.ObjectMapper().writeValueAsString(caseRate));
                 result.setSuccess(true);
-                result.setMessage(resultset.getString("AMOUNT"));
             } else {
                 result.setMessage("NO DATA FOUND");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(ContractMethod.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1226,7 +1188,7 @@ public class ContractMethod {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETENDCONOPENCONSTATE(:utags,:uhcfcode,:ustate); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETENDCONOPENCONSTATE(:utags,:uhcfcode,:ustate); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.toUpperCase());
             statement.setString("uhcfcode", uhcfcode.trim());
@@ -1238,7 +1200,9 @@ public class ContractMethod {
                 contract.setConid(resultset.getString("CONID"));
                 contract.setHcfid(resultset.getString("HCFID"));
                 //END OF GET NETWORK FULL DETAILS
-                contract.setAmount(resultset.getString("AMOUNT"));
+                contract.setAmount(resultset.getString("AMOUNT").equals("")
+                        || resultset.getString("AMOUNT").isEmpty()
+                        || resultset.getString("AMOUNT") == null ? "0" : resultset.getString("AMOUNT"));
                 contract.setStats(resultset.getString("STATS"));
                 ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
@@ -1258,11 +1222,10 @@ public class ContractMethod {
                 contract.setSb(resultset.getString("SB"));
                 contract.setAddamount(resultset.getString("ADDAMOUNT"));
                 contract.setQuarter(resultset.getString("QUARTER"));
-                if (resultset.getTimestamp("ENDDATE") != null) {
-                    contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
-                } else {
-                    contract.setEnddate("");
-                }
+                //END DATE
+                contract.setEnddate(resultset.getString("ENDDATE") == null
+                        || resultset.getString("ENDDATE").isEmpty()
+                        || resultset.getString("ENDDATE").equals("") ? "" : dateformat.format(resultset.getTimestamp("ENDDATE")));
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contract));
@@ -1271,9 +1234,7 @@ public class ContractMethod {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(ContractMethod.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1289,7 +1250,7 @@ public class ContractMethod {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETENDCONOPENCONSTATE(:utags,:uhcfcode,:ustate); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETENDCONOPENCONSTATE(:utags,:uhcfcode,:ustate); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.toUpperCase());
             statement.setString("uhcfcode", uhcfcode.trim());
@@ -1302,7 +1263,9 @@ public class ContractMethod {
                 contract.setConid(resultset.getString("CONID"));
                 contract.setHcfid(resultset.getString("HCFID"));
                 //END OF GET NETWORK FULL DETAILS
-                contract.setAmount(resultset.getString("AMOUNT"));
+                contract.setAmount(resultset.getString("AMOUNT").equals("")
+                        || resultset.getString("AMOUNT").isEmpty()
+                        || resultset.getString("AMOUNT") == null ? "0" : resultset.getString("AMOUNT"));
                 contract.setStats(resultset.getString("STATS"));
                 ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
@@ -1322,11 +1285,10 @@ public class ContractMethod {
                 contract.setSb(resultset.getString("SB"));
                 contract.setAddamount(resultset.getString("ADDAMOUNT"));
                 contract.setQuarter(resultset.getString("QUARTER"));
-                if (resultset.getTimestamp("ENDDATE") != null) {
-                    contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
-                } else {
-                    contract.setEnddate("");
-                }
+                //END DATE
+                contract.setEnddate(resultset.getString("ENDDATE") == null
+                        || resultset.getString("ENDDATE").isEmpty()
+                        || resultset.getString("ENDDATE").equals("") ? "" : dateformat.format(resultset.getTimestamp("ENDDATE")));
                 contractList.add(contract);
             }
             if (contractList.size() > 0) {
@@ -1338,9 +1300,7 @@ public class ContractMethod {
             }
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(ContractMethod.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -1359,12 +1319,10 @@ public class ContractMethod {
             ArrayList<Contract> contractlist = new ArrayList<>();
             //-------------- GET APEX FACILITY
             ACRGBWSResult resultfm = methods.GETAPEXFACILITY(dataSource);
-
             if (resultfm.isSuccess()) {
-                List<HealthCareFacility> userlist = Arrays.asList(utility.ObjectMapper().readValue(resultfm.getResult(), HealthCareFacility[].class
-                ));
+                List<HealthCareFacility> userlist = Arrays.asList(utility.ObjectMapper().readValue(resultfm.getResult(), HealthCareFacility[].class));
                 for (int x = 0; x < userlist.size(); x++) {
-                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETENDCONOPENCONSTATE(:utags,:uhcfcode,:ustate); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETENDCONOPENCONSTATE(:utags,:uhcfcode,:ustate); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("utags", utags);
                     statement.setString("uhcfcode", userlist.get(x).getHcfcode().trim());
@@ -1381,7 +1339,9 @@ public class ContractMethod {
                             contract.setHcfid(facility.getMessage());
                         }
                         //END OF GET NETWORK FULL DETAILS
-                        contract.setAmount(resultset.getString("AMOUNT"));
+                        contract.setAmount(resultset.getString("AMOUNT").equals("")
+                                || resultset.getString("AMOUNT").isEmpty()
+                                || resultset.getString("AMOUNT") == null ? "0" : resultset.getString("AMOUNT"));
                         contract.setStats(resultset.getString("STATS"));
                         ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                         if (creator.isSuccess()) {
@@ -1398,12 +1358,10 @@ public class ContractMethod {
                         contract.setSb(resultset.getString("SB"));
                         contract.setAddamount(resultset.getString("ADDAMOUNT"));
                         contract.setQuarter(resultset.getString("QUARTER"));
-                        if (resultset.getString("ENDDATE") == null) {
-                            contract.setEnddate("");
-                        } else {
-                            contract.setEnddate(dateformat.format(resultset.getTimestamp("ENDDATE")));
-                        }
-
+                        //END DATE
+                        contract.setEnddate(resultset.getString("ENDDATE") == null
+                                || resultset.getString("ENDDATE").isEmpty()
+                                || resultset.getString("ENDDATE").equals("") ? "" : dateformat.format(resultset.getTimestamp("ENDDATE")));
                         //=============================================
                         int numberofclaims = 0;
                         double totalclaimsamount = 0.00;
@@ -1413,17 +1371,13 @@ public class ContractMethod {
                         int tranches = 0;
                         if (getcondateA.isSuccess()) {
                             contract.setContractdate(getcondateA.getResult());
-                            ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class
-                            );
+                            ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class);
                             ACRGBWSResult restAB = new FetchMethods().GETASSETBYIDANDCONID(dataSource, resultset.getString("HCFID").trim(), resultset.getString("CONID").trim(), utags);
-
                             if (restAB.isSuccess()) {
-                                List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class
-                                ));
+                                List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
                                 for (int g = 0; g < assetlist.size(); g++) {
-                                    if (assetlist.get(g).getPreviousbalance() != null) {
-                                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class
-                                        );
+                                    if (assetlist.get(g).getPreviousbalance() != null || !assetlist.get(g).getPreviousbalance().isEmpty() || !assetlist.get(g).getPreviousbalance().equals("")) {
+                                        Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
                                         switch (tranch.getTranchtype()) {
                                             case "1ST": {
                                                 trancheamount += Double.parseDouble(assetlist.get(g).getPreviousbalance());
@@ -1448,21 +1402,6 @@ public class ContractMethod {
                                     }
                                 }
                             }
-                            //GET CLAIMS SUMMARY OF FACILITY UNDER NETWORK
-//                            ACRGBWSResult GetFacilityContract = this.GETCONTRACT(dataSource, utags, userlist.get(x).getHcfcode().trim());
-//                            ACRGBWSResult GetHCPNContract = this.GETCONTRACTWITHOPENSTATE(dataSource, utags.trim().toUpperCase(), userlist.get(x).getHcfcode().trim(), ustate.trim().toUpperCase());
-//                            if (GetHCPNContract.isSuccess()) {
-
-                            //-------------------------------------------------------------------GET ALL PMCC NO UNDER SELECTED FACILITY
-//                            ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, userlist.get(x).getHcfcode().trim());
-//                            if (getHcfByCode.isSuccess()) {
-//                                HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class
-//                                );
-//                                //GET HCF DETAILS BY NAME
-//                                ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-//                                if (getHcfByName.isSuccess()) {
-//                                    List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class
-//                                    ));
                             ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                             ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, userlist.get(x).getHcfcode().trim());
                             if (getMainAccre.isSuccess()) {
@@ -1475,15 +1414,12 @@ public class ContractMethod {
                                     //------------------------------------------------------------------------END GET ALL PMCC NO UNDER SELECTED FACILITY
                                     ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource, testHCIlist.get(yu).getHcfcode().trim(), "G",
                                             condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
-
                                     if (sumresult.isSuccess()) {
-//                                    Contract conHci = utility.ObjectMapper().readValue(GetHCPNContract.getResult(), Contract.class);
-                                        List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class
-                                        ));
+                                        List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                                         for (int i = 0; i < nclaimsdata.size(); i++) {
                                             int countLedger = 0;
-                                            if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                                if (resultset.getString("ENDDATE") == null) {
+                                            if (nclaimsdata.get(i).getRefiledate().isEmpty() || nclaimsdata.get(i).getRefiledate().equals("") || nclaimsdata.get(i).getRefiledate() == null) {
+                                                if (resultset.getString("ENDDATE") == null || resultset.getString("ENDDATE").equals("") || resultset.getString("ENDDATE").isEmpty()) {
                                                     if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
                                                         countLedger++;
                                                     }
@@ -1493,7 +1429,7 @@ public class ContractMethod {
                                                     }
                                                 }
                                             } else {
-                                                if (resultset.getString("ENDDATE") == null) {
+                                                if (resultset.getString("ENDDATE") == null || resultset.getString("ENDDATE").equals("") || resultset.getString("ENDDATE").isEmpty()) {
                                                     if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
                                                         countLedger++;
                                                     }
@@ -1511,10 +1447,9 @@ public class ContractMethod {
                                     }
                                 }
                             }
-                            // }
-
-//                            }
-                            double sumsA = (trancheamount / Double.parseDouble(resultset.getString("AMOUNT"))) * 100;
+                            double sumsA = (trancheamount / Double.parseDouble(resultset.getString("AMOUNT") == null
+                                    || resultset.getString("AMOUNT").isEmpty()
+                                    || resultset.getString("AMOUNT").equals("") ? "0" : resultset.getString("AMOUNT"))) * 100;
                             if (sumsA > 100) {
                                 double negvalue = 100 - sumsA;
                                 percentageA += negvalue;
@@ -1541,7 +1476,7 @@ public class ContractMethod {
                     }
                 }
             }
-            if (!contractlist.isEmpty()) {
+            if (contractlist.size() > 0) {
                 result.setMessage("OK");
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(contractlist));
@@ -1551,9 +1486,7 @@ public class ContractMethod {
 
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(FetchMethods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

@@ -33,7 +33,7 @@ import oracle.jdbc.OracleTypes;
 
 /**
  *
- * @author ACR_GB
+ * @author DRG_SHADOWBILLING
  */
 @RequestScoped
 public class CurrentBalance {
@@ -51,7 +51,7 @@ public class CurrentBalance {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONTRACTSTATE(:utags,:uhcfcode,:ustate); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETCONTRACTSTATE(:utags,:uhcfcode,:ustate); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("uhcfcode", uhcfcode.trim());
@@ -242,7 +242,7 @@ public class CurrentBalance {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONTRACTSTATE(:utags,:uhcfcode,:ustate); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETCONTRACTSTATE(:utags,:uhcfcode,:ustate); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("uhcfcode", uhcfcode.trim());
@@ -441,7 +441,7 @@ public class CurrentBalance {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETPREVIOUSMAP(:puserid,:pcondate); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETPREVIOUSMAP(:puserid,:pcondate); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("puserid", puserid.trim());
             statement.setString("pcondate", pcondate.trim());
@@ -479,7 +479,7 @@ public class CurrentBalance {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.VALIDATECONBALANCE(:ucondateid,:uaccount,:uconid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.VALIDATECONBALANCE(:ucondateid,:uaccount,:uconid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("ucondateid", ucondateid.trim());
             statement.setString("uaccount", uaccount.trim());
@@ -520,7 +520,7 @@ public class CurrentBalance {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GET1STFINAL(:utags,:phcfid,:utrancheid,:uconid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GET1STFINAL(:utags,:phcfid,:utrancheid,:uconid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("phcfid", phcfid.trim());
@@ -554,7 +554,7 @@ public class CurrentBalance {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.TRANCHWITHNAME(:ptype); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.TRANCHWITHNAME(:ptype); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("ptype", ptype.trim());
             statement.execute();
@@ -586,7 +586,7 @@ public class CurrentBalance {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETFINALBALANCE(:utags,:paccount); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETFINALBALANCE(:utags,:paccount); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("paccount", paccount.trim());
