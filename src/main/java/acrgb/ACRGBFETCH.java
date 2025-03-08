@@ -62,7 +62,6 @@ public class ACRGBFETCH {
     @Resource(lookup = "jdbc/acgbuser")
     private DataSource dataSource;
 
-    
     private final Utility utility = new Utility();
 
     
