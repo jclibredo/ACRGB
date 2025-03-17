@@ -48,13 +48,13 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class FetchMethods {
-
+    
     public FetchMethods() {
     }
     private final Utility utility = new Utility();
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
     private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm:ss a");
-
+    
     public ACRGBWSResult GETFACILITYID(final DataSource dataSource, final String uhcfid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -85,7 +85,7 @@ public class FetchMethods {
         }
         return result;
     }
-
+    
     public ACRGBWSResult GETROLEINDEXUSERID(final DataSource dataSource, final String puserid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -117,7 +117,7 @@ public class FetchMethods {
         }
         return result;
     }
-
+    
     public ACRGBWSResult GETROLEINDEXUSERIDHCI(final DataSource dataSource, final String paccessid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -220,13 +220,13 @@ public class FetchMethods {
                                 hcf.setMb(mgresult.getMessage());
                             }
                         }
-
+                        
                     }
                     hcf.setAmount("N/A");
                     hcf.setRemainingbalance("N/A");
                     hcflist.add(hcf);
                 }
-
+                
             }
             if (hcflist.size() > 0) {
                 result.setMessage("OK");
@@ -340,7 +340,7 @@ public class FetchMethods {
             } else {
                 result.setMessage(restAA.getMessage());
             }
-
+            
             if (hcflist.size() > 0) {
                 result.setMessage("OK");
                 result.setSuccess(true);
@@ -503,7 +503,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -728,7 +728,7 @@ public class FetchMethods {
                                                             }
                                                         }
                                                     }
-
+                                                    
                                                     if (ledgerCount > 0) {
                                                         numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
                                                         totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
@@ -736,13 +736,13 @@ public class FetchMethods {
                                                 }
 //                                                }
                                             }
-
+                                            
                                         }
                                     }
                                 }
                             }
                         }
-
+                        
                         ACRGBWSResult restAB = this.GETASSETBYIDANDCONID(dataSource, resultset.getString("HCFID").trim(), resultset.getString("CONID"), utags.trim().toUpperCase());
                         if (restAB.isSuccess()) {
                             if (getIdType.isSuccess()) {
@@ -785,7 +785,7 @@ public class FetchMethods {
                                 }
                             }
                         }
-
+                        
                         double ConAmount = Double.parseDouble(resultset.getString("AMOUNT").isEmpty()
                                 || resultset.getString("AMOUNT").equals("")
                                 || resultset.getString("AMOUNT") == null ? "0" : resultset.getString("AMOUNT"));
@@ -816,7 +816,7 @@ public class FetchMethods {
                     }
                     contractlist.add(contract);
                 }
-
+                
             } else {
                 result.setMessage("N/A");
             }
@@ -887,7 +887,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -932,7 +932,7 @@ public class FetchMethods {
                         contract.setAmount(resultset.getString("AMOUNT").isEmpty()
                                 || resultset.getString("AMOUNT") == null
                                 || resultset.getString("AMOUNT").equals("") ? "0" : resultset.getString("AMOUNT"));
-
+                        
                         contract.setStats(resultset.getString("STATS"));
                         ACRGBWSResult creator = this.GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                         if (creator.isSuccess()) {
@@ -992,7 +992,7 @@ public class FetchMethods {
                                     }
                                 }
                             }
-
+                            
                             ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                             ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, resultset.getString("HCFID").trim());
                             if (getMainAccre.isSuccess()) {
@@ -1075,7 +1075,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1204,7 +1204,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1279,7 +1279,7 @@ public class FetchMethods {
                 int totalnumberofclaims = 0;
                 double totalclaimsamount = 0.00;
                 int totalnumberoftranhce = 0;
-
+                
                 ACRGBWSResult getProFund = new ContractMethod().GETCONBYCODEOFPRO(dataSource, "2024" + resultset.getString("PROCODE").trim());
                 if (getProFund.isSuccess()) {
                     List<Contract> contractlist = Arrays.asList(utility.ObjectMapper().readValue(getProFund.getResult(), Contract[].class));
@@ -1381,7 +1381,7 @@ public class FetchMethods {
         }
         return result;
     }
-
+    
     public ACRGBWSResult ACR_USER(
             final DataSource dataSource,
             final String tags,
@@ -1570,7 +1570,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1619,7 +1619,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1787,7 +1787,7 @@ public class FetchMethods {
         }
         return result;
     }
-
+    
     public ACRGBWSResult GETROLETWOPARAM(
             final DataSource dataSource,
             final String puserid,
@@ -1815,7 +1815,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1848,7 +1848,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -1921,7 +1921,10 @@ public class FetchMethods {
                     if (restAB.isSuccess()) {
                         List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
                         for (int g = 0; g < assetlist.size(); g++) {
-                            if (assetlist.get(g).getPreviousbalance() != null) {
+                            if (assetlist.get(g).getPreviousbalance() == null || assetlist.get(g).getPreviousbalance().isEmpty() || assetlist.get(g).getPreviousbalance().equals("")) {
+                                trancheamount += Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                tranches++;
+                            } else {
                                 Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
                                 switch (tranch.getTranchtype()) {
                                     case "1ST": {
@@ -1940,9 +1943,7 @@ public class FetchMethods {
                                         tranches++;
                                         break;
                                 }
-                            } else {
-                                trancheamount += Double.parseDouble(assetlist.get(g).getReleasedamount());
-                                tranches++;
+                                
                             }
                         }
                     }
@@ -1998,7 +1999,7 @@ public class FetchMethods {
                                                 }
                                             }
                                         }
-
+                                        
                                     }
                                 }
                             }
@@ -2389,7 +2390,7 @@ public class FetchMethods {
         }
         return result;
     }
-
+    
     public ACRGBWSResult GETASSETBYIDANDCONID(
             final DataSource dataSource,
             final String phcfid,
@@ -2460,14 +2461,14 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-
+    
     public ACRGBWSResult GETASSETSHCFID(
             final DataSource dataSource,
             final String phcfid) {
@@ -2534,7 +2535,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2713,7 +2714,7 @@ public class FetchMethods {
                             }
                         }
                     }
-
+                    
                     double sumsA = (trancheamount / Double.parseDouble(resultset.getString("AMOUNT") == null
                             || resultset.getString("AMOUNT").isEmpty()
                             || resultset.getString("AMOUNT").equals("") ? "0" : resultset.getString("AMOUNT"))) * 100;
@@ -2741,7 +2742,7 @@ public class FetchMethods {
                     contractlist.add(contract);
                 }
             }
-
+            
             if (!contractlist.isEmpty()) {
                 result.setMessage("OK");
                 result.setSuccess(true);
@@ -2749,7 +2750,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException | ParseException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2921,7 +2922,7 @@ public class FetchMethods {
         }
         return result;
     }
-
+    
     public ACRGBWSResult GETOLDPASSCODE(
             final DataSource dataSource,
             final String puserid,
@@ -3034,7 +3035,7 @@ public class FetchMethods {
                                             trancheamount += Double.parseDouble(getResult.getCtotal());
                                         }
                                     }
-
+                                    
                                     ACRGBWSResult sumresultB = this.GETNCLAIMS(dataSource, HCIList.get(B).trim(), "G", condate.getDatefrom(), condate.getDateto(), "CURRENTSTATUS");
                                     if (sumresultB.isSuccess()) {
                                         List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresultB.getResult(), NclaimsData[].class));
@@ -3215,7 +3216,7 @@ public class FetchMethods {
         }
         return result;
     }
-
+    
     public ACRGBWSResult GETALLCONTRACTNOTBBOK(
             final DataSource dataSource,
             final String utags,
@@ -3442,7 +3443,7 @@ public class FetchMethods {
         }
         return result;
     }
-
+    
     public ACRGBWSResult GETBOOKCONTRACT(final DataSource dataSource, final String utags, final String uhcfcode) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -3505,7 +3506,7 @@ public class FetchMethods {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
@@ -3598,5 +3599,5 @@ public class FetchMethods {
         }
         return result;
     }
-
+    
 }

@@ -1314,11 +1314,10 @@ public class ContractMethod {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        Methods methods = new Methods();
         try (Connection connection = dataSource.getConnection()) {
             ArrayList<Contract> contractlist = new ArrayList<>();
             //-------------- GET APEX FACILITY
-            ACRGBWSResult resultfm = methods.GETAPEXFACILITY(dataSource);
+            ACRGBWSResult resultfm = new Methods().GETAPEXFACILITY(dataSource);
             if (resultfm.isSuccess()) {
                 List<HealthCareFacility> userlist = Arrays.asList(utility.ObjectMapper().readValue(resultfm.getResult(), HealthCareFacility[].class));
                 for (int x = 0; x < userlist.size(); x++) {
@@ -1376,7 +1375,10 @@ public class ContractMethod {
                             if (restAB.isSuccess()) {
                                 List<Assets> assetlist = Arrays.asList(utility.ObjectMapper().readValue(restAB.getResult(), Assets[].class));
                                 for (int g = 0; g < assetlist.size(); g++) {
-                                    if (assetlist.get(g).getPreviousbalance() != null || !assetlist.get(g).getPreviousbalance().isEmpty() || !assetlist.get(g).getPreviousbalance().equals("")) {
+                                    if (assetlist.get(g).getPreviousbalance() == null || assetlist.get(g).getPreviousbalance().isEmpty() || assetlist.get(g).getPreviousbalance().equals("")) {
+                                        trancheamount += Double.parseDouble(assetlist.get(g).getReleasedamount());
+                                        tranches++;
+                                    } else {
                                         Tranch tranch = utility.ObjectMapper().readValue(assetlist.get(g).getTranchid(), Tranch.class);
                                         switch (tranch.getTranchtype()) {
                                             case "1ST": {
@@ -1396,9 +1398,6 @@ public class ContractMethod {
                                                 break;
                                             }
                                         }
-                                    } else {
-                                        trancheamount += Double.parseDouble(assetlist.get(g).getReleasedamount());
-                                        tranches++;
                                     }
                                 }
                             }
