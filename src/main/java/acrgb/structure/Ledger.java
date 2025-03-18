@@ -27,4 +27,5 @@ public class Ledger {
     private String facility;
     private String account;
     private String voucher;
+    private String series;
 }

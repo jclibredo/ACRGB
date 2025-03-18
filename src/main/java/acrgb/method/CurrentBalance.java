@@ -153,14 +153,6 @@ public class CurrentBalance {
 
                         //GET CLAIMS SUMMARY OF FACILITY UNDER NETWORK
                         //-------------------------------------------------------------------
-//                        ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, resultset.getString("HCFID").trim());
-//                        if (getHcfByCode.isSuccess()) {
-//                            HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
-//                            //GET HCF DETAILS BY NAME
-//                            ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-//                            if (getHcfByName.isSuccess()) {
-//                                List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
-                        //-----------------------------------------------------------
                         ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                         ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, resultset.getString("HCFID").trim());
                         if (getMainAccre.isSuccess()) {
@@ -349,13 +341,6 @@ public class CurrentBalance {
                             List<UserRoleIndex> userRoleList = Arrays.asList(utility.ObjectMapper().readValue(conList.getResult(), UserRoleIndex[].class));
                             for (int x = 0; x < userRoleList.size(); x++) {
                                 //-------------------------------------------------------------------
-//                                ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, userRoleList.get(x).getAccessid().trim());
-//                                if (getHcfByCode.isSuccess()) {
-//                                    HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
-//                                    //GET HCF DETAILS BY NAME
-//                                    ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-//                                    if (getHcfByName.isSuccess()) {
-//                                        List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                                 ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                                 ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, resultset.getString("HCFID").trim());
                                 if (getMainAccre.isSuccess()) {
@@ -387,10 +372,8 @@ public class CurrentBalance {
                                                 }
                                             }
                                         }
-//                                        }
                                     }
                                 }
-
                             }
                         }
                         double sumsA = (trancheamount / Double.parseDouble(resultset.getString("AMOUNT"))) * 100;

@@ -617,7 +617,6 @@ public class Methods {
                                             }
                                         }
                                     }
-                                    //   }
                                 }
                             }
                             // SETTINGS OF FINAL COMPUTATION
@@ -681,13 +680,6 @@ public class Methods {
                                 List<String> HCFList = Arrays.asList(getHCFUnder.getResult().split(","));
                                 for (int hcf = 0; hcf < HCFList.size(); hcf++) {
                                     //---------------------------------------
-//                                    ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, HCFList.get(hcf).trim());
-//                                    if (getHcfByCode.isSuccess()) {
-//                                        HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
-//                                        //GET HCF DETAILS BY NAME
-//                                        ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-//                                        if (getHcfByName.isSuccess()) {
-//                                            List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                                     ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                                     ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, HCFList.get(hcf).trim());
                                     if (getMainAccre.isSuccess()) {
@@ -860,13 +852,6 @@ public class Methods {
                 case "FACILITY": {//USERID IS HCFCODE/ACCRENO
                     //---------------------------------------
                     ArrayList<FacilityComputedAmount> totalcomputeList = new ArrayList<>();
-//                    ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, userid.trim());
-//                    if (getHcfByCode.isSuccess()) {
-//                        HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
-                    //GET HCF DETAILS BY NAME
-//                        ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-//                        if (getHcfByName.isSuccess()) {
-//                            List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                     //-----------------------------------------------
                     ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                     ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, userid.trim());
@@ -1004,14 +989,6 @@ public class Methods {
                         ACRGBWSResult getFacilityUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
                         if (getFacilityUnder.isSuccess()) {
                             for (int y = 0; y < hcflist.size(); y++) {
-
-//                                ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, hcflist.get(y).trim());
-//                                if (getHcfByCode.isSuccess()) {
-//                                    HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
-//                                    //GET HCF DETAILS BY NAME
-//                                    ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-//                                    if (getHcfByName.isSuccess()) {
-//                                        List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
 //                                       //-----------------------------
                                 ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                                 ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, hcflist.get(y).trim());
@@ -1193,14 +1170,6 @@ public class Methods {
                         ArrayList<FacilityComputedAmount> totalcomputeHCPNList = new ArrayList<>();
                         List<String> hcflist = Arrays.asList(facilitylist.trim().split(","));
                         for (int y = 0; y < hcflist.size(); y++) {
-
-//                            ACRGBWSResult getHcfByCode = new FetchMethods().GETFACILITYID(dataSource, hcflist.get(y).trim());
-//                            if (getHcfByCode.isSuccess()) {
-//                                HealthCareFacility healthCareFacility = utility.ObjectMapper().readValue(getHcfByCode.getResult(), HealthCareFacility.class);
-//                                //GET HCF DETAILS BY NAME
-//                                ACRGBWSResult getHcfByName = new GetHCFMultiplePMCCNO().GETFACILITYBYNAME(dataSource, healthCareFacility.getHcfname().trim(), healthCareFacility.getStreet().trim());
-//                                if (getHcfByName.isSuccess()) {
-//                                    List<HealthCareFacility> healthCareFacilityList = Arrays.asList(utility.ObjectMapper().readValue(getHcfByName.getResult(), HealthCareFacility[].class));
                             //-----------------------------------------------------------
                             ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                             ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, hcflist.get(y).trim());
@@ -1216,7 +1185,6 @@ public class Methods {
                                     if (restC.isSuccess()) {
                                         List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
                                         for (int f = 0; f < fcaA.size(); f++) {
-
                                             ACRGBWSResult getHCI = new FetchMethods().GETFACILITYID(dataSource, fcaA.get(f).getHospital());
                                             if (getHCI.isSuccess()) {
                                                 FacilityComputedAmount totalcomputeHCPN = new FacilityComputedAmount();
@@ -1373,7 +1341,6 @@ public class Methods {
                                             }
                                         }
                                     }
-                                    //}
                                 }
                             }
                         }
@@ -1427,9 +1394,7 @@ public class Methods {
             }
         } catch (IOException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3541,9 +3506,7 @@ public class Methods {
             }
         } catch (SQLException ex) {
             result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

@@ -1177,7 +1177,6 @@ public class ContractMethod {
         return result;
     }
 //TAGS
-
     public ACRGBWSResult GETCONTRACTWITHOPENSTATE(
             final DataSource dataSource,
             final String utags,
@@ -1238,7 +1237,6 @@ public class ContractMethod {
         }
         return result;
     }
-//
 
     public ACRGBWSResult GETCONTRACTWITHOPENSTATEOFPRO(
             final DataSource dataSource,
@@ -1464,6 +1462,9 @@ public class ContractMethod {
                                 percentageB += sumsB;
                             }
                         }
+                        
+                        
+                        
                         contract.setTotalamountrecieved(String.valueOf(trancheamount));
                         contract.setTotalclaims(String.valueOf(numberofclaims));
                         contract.setTraches(String.valueOf(tranches));
@@ -1473,6 +1474,10 @@ public class ContractMethod {
                         contract.setTotalclaimspercentage(String.valueOf(percentageB));
                         contractlist.add(contract);
                     }
+                    
+                    
+                    
+                    
                 }
             }
             if (contractlist.size() > 0) {

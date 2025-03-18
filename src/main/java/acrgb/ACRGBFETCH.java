@@ -64,7 +64,6 @@ public class ACRGBFETCH {
 
     private final Utility utility = new Utility();
 
-    
     //GET ASSETS TYPE TBL
     @GET
     @Path("GetAssets/{tags}/{phcfid}")
@@ -754,8 +753,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-    
-    
+
 //------------------------------------------------------------
     @GET
     @Path("GetMBUsingMBID/{pid}")
@@ -851,7 +849,7 @@ public class ACRGBFETCH {
             result.setMessage(GetPayLoad.getMessage());
         } else {
             switch (tags.toUpperCase().trim()) {
-                case "HCPN": //GET LEDGER PER HCPN
+                case "HCPN": {//GET LEDGER PER HCPN
                     //hcpncode  MUST BE HCPNCONTROLCODE
                     //CONTRACT MUST BE CONID
                     //TAGS MUST BE HCPN
@@ -876,7 +874,8 @@ public class ACRGBFETCH {
                         }
                     }
                     break;
-                case "FACILITY":
+                }
+                case "FACILITY": {
                     //GET LEDGER PER FACILITY
                     //hcpncode  MUST BE THE USERID OF PRO ACCOUNT
                     //CONTRACT DECLARE 0 VALUE
@@ -902,14 +901,16 @@ public class ACRGBFETCH {
                         }
                     }
                     break;
-                default:
+                }
+                default: {
                     result.setMessage("TAGS NOT FOUND " + tags);
                     break;
+                }
             }
         }
         return result;
     }
-    
+
 //------------------------------------------------------------------------------
     @GET
     @Path("GetContractDate/{tags}")

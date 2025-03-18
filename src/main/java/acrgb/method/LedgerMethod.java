@@ -205,6 +205,7 @@ public class LedgerMethod {
                 fca.setDateadmit(resultset.getString("DATEADM").isEmpty()
                         || resultset.getString("DATEADM").equals("")
                         || resultset.getString("DATEADM") == null ? "" : dateformat.format(resultset.getTimestamp("DATEADM")));
+                fca.setSeries(resultset.getString("SERIES"));
                 fcalist.add(fca);
             }
 
@@ -250,6 +251,7 @@ public class LedgerMethod {
                 fca.setYearfrom(udatefrom);
                 fca.setYearto(utility.AddMinusDaysDate(udateto, "60"));
                 fca.setTotalclaims(resultset.getString("CLAIMSVOLUME"));
+                fca.setSeries(resultset.getString("SERIES"));
                 //DATE SUBMITTED
                 fca.setDatefiled(resultset.getString("DATESUB").isEmpty()
                         || resultset.getString("DATESUB").equals("")
@@ -264,7 +266,6 @@ public class LedgerMethod {
                         || resultset.getString("DATEADM") == null ? "" : dateformat.format(resultset.getTimestamp("DATEADM")));
                 fcalist.add(fca);
             }
-
             if (fcalist.size() > 0) {
                 result.setResult(utility.ObjectMapper().writeValueAsString(fcalist));
                 result.setMessage("OK");
@@ -272,16 +273,15 @@ public class LedgerMethod {
             } else {
                 result.setMessage("N/A");
             }
-
         } catch (SQLException | IOException ex) {
             result.setMessage(ex.toString());
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-
     //===============================================================================================
     //PROCESS LEDGER PER CONTRACT UNDER HCPN
+
     public ACRGBWSResult GETLedgerPerContractHCPN(final DataSource dataSource,
             final String hcpncode,
             final String conid,
@@ -415,6 +415,7 @@ public class LedgerMethod {
                                                     SubledgerA.setParticular("Liquidation Of " + hcf.getHcfname());
                                                     SubledgerA.setDebit(hcfA.get(u).getTotalamount());
                                                     SubledgerA.setTotalclaims(hcfA.get(u).getTotalclaims());
+                                                    SubledgerA.setSeries(hcfA.get(u).getSeries());
                                                     remaining -= Double.parseDouble(hcfA.get(u).getTotalamount());
                                                     SubledgerA.setBalance(String.valueOf(remaining));
                                                     if (remaining > 0) {
@@ -437,6 +438,7 @@ public class LedgerMethod {
                                                     SubledgerA.setParticular("Liquidation Of " + hcf.getHcfname());
                                                     SubledgerA.setDebit(hcfA.get(u).getTotalamount());
                                                     SubledgerA.setTotalclaims(hcfA.get(u).getTotalclaims());
+                                                    SubledgerA.setSeries(hcfA.get(u).getSeries());
                                                     remaining -= Double.parseDouble(hcfA.get(u).getTotalamount());
                                                     SubledgerA.setBalance(String.valueOf(remaining));
                                                     if (remaining > 0) {
@@ -641,6 +643,7 @@ public class LedgerMethod {
                                                         SubledgerA.setParticular("Liquidation Of " + hcf.getHcfname());
                                                         SubledgerA.setDebit(hcfA.get(u).getTotalamount());
                                                         SubledgerA.setTotalclaims(hcfA.get(u).getTotalclaims());
+                                                        SubledgerA.setSeries(hcfA.get(u).getSeries());
                                                         remaining -= Double.parseDouble(hcfA.get(u).getTotalamount());
                                                         SubledgerA.setBalance(String.valueOf(remaining));
                                                         if (remaining > 0) {
@@ -830,6 +833,7 @@ public class LedgerMethod {
                                         SubledgerA.setParticular("Liquidation Of " + hcf.getHcfname());
                                         SubledgerA.setDebit(hcfA.get(u).getTotalamount());
                                         SubledgerA.setTotalclaims(hcfA.get(u).getTotalclaims());
+                                        SubledgerA.setSeries(hcfA.get(u).getSeries());
                                         remaining -= Double.parseDouble(hcfA.get(u).getTotalamount());
                                         SubledgerA.setBalance(String.valueOf(remaining));
                                         if (remaining > 0) {
@@ -1020,6 +1024,7 @@ public class LedgerMethod {
                                         SubledgerA.setParticular("Liquidation of " + hcf.getHcfname());
                                         SubledgerA.setDebit(hcfA.get(u).getTotalamount());
                                         SubledgerA.setTotalclaims(hcfA.get(u).getTotalclaims());
+                                        SubledgerA.setSeries(hcfA.get(u).getSeries());
                                         remaining -= Double.parseDouble(hcfA.get(u).getTotalamount());
                                         SubledgerA.setBalance(String.valueOf(remaining));
                                         if (remaining > 0) {

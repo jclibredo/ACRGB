@@ -30,5 +30,6 @@ public class FacilityComputedAmount {
     private String c2rvcode;
     private String c1icdcode;
     private String c2icdcode;
+    private String series;
 
 }

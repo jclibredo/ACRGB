@@ -1655,6 +1655,7 @@ public class FetchMethods {
                     nclaimsdata.setAccreno(resultset.getString("PMCC_NO"));
                     nclaimsdata.setClaimamount(resultset.getString("CTOTAL"));
                     nclaimsdata.setTotalclaims(resultset.getString("COUNTVAL"));
+                    nclaimsdata.setSeries(resultset.getString("SERIES"));
                     //DATE SUBMITTED
                     nclaimsdata.setDatesubmitted(resultset.getString("DATESUB") == null
                             || resultset.getString("DATESUB").equals("")
