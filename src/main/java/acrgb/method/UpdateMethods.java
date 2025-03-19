@@ -11,7 +11,6 @@ import acrgb.structure.Appellate;
 import acrgb.structure.Assets;
 import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
-import acrgb.structure.HealthCareFacility;
 import acrgb.structure.LogStatus;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Tranch;

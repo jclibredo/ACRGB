@@ -506,7 +506,7 @@ public class Methods {
                                         }
                                         if (testHCIlist.size() > 0) {
                                             for (int u = 0; u < testHCIlist.size(); u++) {
-                                                ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                                ACRGBWSResult restA = this.GETAVERAGECLAIMSS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
                                                 if (restA.isSuccess()) {
                                                     List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
                                                     //DATE SETTINGS
@@ -691,7 +691,7 @@ public class Methods {
                                         //----------------------------------------------------------
                                         for (int u = 0; u < testHCIlist.size(); u++) {
                                             //-----------------------------------------
-                                            ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                            ACRGBWSResult restA = this.GETAVERAGECLAIMSS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
                                             if (restA.isSuccess()) {
                                                 List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
                                                 for (int f = 0; f < fcaA.size(); f++) {
@@ -863,7 +863,7 @@ public class Methods {
                     if (testHCIlist.size() > 0) {
                         for (int u = 0; u < testHCIlist.size(); u++) {
                             //-----------------------------------------
-                            ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                            ACRGBWSResult restA = this.GETAVERAGECLAIMSS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
                             if (restA.isSuccess()) {
                                 List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
                                 //DATE SETTINGS AREA
@@ -1000,7 +1000,7 @@ public class Methods {
                                 if (testHCIlist.size() > 0) {
                                     //----------------------------------                                        
                                     for (int u = 0; u < testHCIlist.size(); u++) {
-                                        ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                        ACRGBWSResult restC = this.GETAVERAGECLAIMSS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
                                         if (restC.isSuccess()) {
                                             //DATE SETTINGS
                                             List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
@@ -1181,7 +1181,7 @@ public class Methods {
                             if (testHCIlist.size() > 0) {
                                 //---------------------------------------------
                                 for (int u = 0; u < testHCIlist.size(); u++) {
-                                    ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                    ACRGBWSResult restC = this.GETAVERAGECLAIMSS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
                                     if (restC.isSuccess()) {
                                         List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class));
                                         for (int f = 0; f < fcaA.size(); f++) {
@@ -1440,7 +1440,7 @@ public class Methods {
                                         if (testHCIlist.size() > 0) {
                                             //---------------------------------------------
                                             for (int u = 0; u < testHCIlist.size(); u++) {
-                                                ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                                ACRGBWSResult restA = this.GETAVERAGECLAIMSS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
                                                 if (restA.isSuccess()) {
                                                     List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
                                                     //DATE SETTINGS
@@ -1620,7 +1620,7 @@ public class Methods {
                                         //---------------------------------------------
                                         for (int u = 0; u < testHCIlist.size(); u++) {
                                             //----------------------------------------------------------------------
-                                            ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                            ACRGBWSResult restA = this.GETAVERAGECLAIMSS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
 
                                             if (restA.isSuccess()) {
                                                 List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class
@@ -1793,7 +1793,7 @@ public class Methods {
                         //---------------------------------------------
                         for (int u = 0; u < testHCIlist.size(); u++) {
                             //----------------------------------------------------------------------
-                            ACRGBWSResult restA = this.GETAVERAGECLAIMS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                            ACRGBWSResult restA = this.GETAVERAGECLAIMSS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
                             if (restA.isSuccess()) {
                                 int claimCount = 0;
                                 double claimsSb = 0.00;
@@ -1969,7 +1969,7 @@ public class Methods {
                                 //---------------------------------------------
                                 for (int u = 0; u < testHCIlist.size(); u++) {
                                     //----------------------------------------------------------------------
-                                    ACRGBWSResult restC = this.GETAVERAGECLAIMS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
+                                    ACRGBWSResult restC = this.GETAVERAGECLAIMSS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
                                     if (restC.isSuccess()) {
                                         //DATE SETTINGS
                                         List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restC.getResult(), FacilityComputedAmount[].class
@@ -3090,40 +3090,7 @@ public class Methods {
         return result;
     }
 
-    //GET APEX FACILITY
-    public ACRGBWSResult GETAPEXFACILITY(final DataSource dataSource) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETAPEXFACILITY(); end;");
-            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.execute();
-            ArrayList<HealthCareFacility> hcflist = new ArrayList<>();
-            ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            while (resultset.next()) {
-                HealthCareFacility hcf = new HealthCareFacility();
-                hcf.setHcfname(resultset.getString("HCFNAME"));
-                hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
-                hcf.setHcfcode(resultset.getString("HCFCODE"));
-                hcf.setType(resultset.getString("HCFTYPE"));
-                hcf.setHcilevel(resultset.getString("HCILEVEL"));
-                hcflist.add(hcf);
-            }
-            if (hcflist.size() > 0) {
-                result.setResult(utility.ObjectMapper().writeValueAsString(hcflist));
-                result.setMessage("OK");
-                result.setSuccess(true);
-            } else {
-                result.setMessage("N/A");
-            }
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
+   
 
     //GET REPORTS FOR LIST OF SELECTED NETWORK
 //    public ACRGBWSResult GetReportsOfSelectedAPEXFacility(final DataSource dataSource, final String tags, final String puserid) {
@@ -3512,7 +3479,7 @@ public class Methods {
     }
 
     //GET AVERAGE AMOUNT AND VOLUME OF CLAIMS
-    public ACRGBWSResult GETAVERAGECLAIMS(
+    public ACRGBWSResult GETAVERAGECLAIMSS(
             final DataSource dataSource,
             final String upmccno,
             final String datefrom,
@@ -3525,7 +3492,6 @@ public class Methods {
             ACRGBWSResult getdatesettings = utility.ProcessDateAmountComputation(datefrom, dateto);
             //------------------------------------------------------------------
             ArrayList<FacilityComputedAmount> listOfcomputedamount = new ArrayList<>();
-
             if (getdatesettings.isSuccess()) {
                 List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class));
                 for (int u = 0; u < GetDateSettings.size(); u++) {
@@ -3545,20 +3511,20 @@ public class Methods {
                         fca.setYearto(GetDateSettings.get(u).getDateto());
                         fca.setTotalclaims(resultset.getString("COUNTVAL"));
                         //-----------------------------------------------
-                        fca.setC1rvcode(resultset.getString("C1_RVS_CODE").isEmpty()
-                                || resultset.getString("C1_RVS_CODE") == null
+                        fca.setC1rvcode(resultset.getString("C1_RVS_CODE") == null
+                                || resultset.getString("C1_RVS_CODE").isEmpty()
                                 || resultset.getString("C1_RVS_CODE").equals("") ? "" : resultset.getString("C1_RVS_CODE"));
 //                        //------------------------------------------------
                         fca.setC2rvcode(resultset.getString("C2_RVS_CODE") == null
                                 || resultset.getString("C2_RVS_CODE").equals("")
                                 || resultset.getString("C2_RVS_CODE").isEmpty() ? "" : resultset.getString("C2_RVS_CODE"));
 //                        //-----------------------------------------------
-                        fca.setC1icdcode(resultset.getString("C1_ICD_CODE").isEmpty()
-                                || resultset.getString("C1_ICD_CODE") == null
+                        fca.setC1icdcode(resultset.getString("C1_ICD_CODE") == null 
+                                || resultset.getString("C1_ICD_CODE").isEmpty()
                                 || resultset.getString("C1_ICD_CODE").equals("") ? "" : resultset.getString("C1_ICD_CODE"));
 //                        //----------------------------------------------
-                        fca.setC2icdcode(resultset.getString("C2_ICD_CODE").isEmpty()
-                                || resultset.getString("C2_ICD_CODE") == null
+                        fca.setC2icdcode(resultset.getString("C2_ICD_CODE") == null 
+                                || resultset.getString("C2_ICD_CODE").isEmpty()
                                 || resultset.getString("C2_ICD_CODE").equals("") ? "" : resultset.getString("C2_ICD_CODE"));
 //                        //----------------------------------------------
                         //DATE SUBMITTED

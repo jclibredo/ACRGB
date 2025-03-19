@@ -1162,6 +1162,7 @@ public class ContractMethod {
                 caseRate.setAmount(resultset.getString("AMOUNT").equals("")
                         || resultset.getString("AMOUNT").isEmpty()
                         || resultset.getString("AMOUNT") == null ? "0" : resultset.getString("AMOUNT"));
+
                 result.setMessage(resultset.getString("AMOUNT").equals("")
                         || resultset.getString("AMOUNT").isEmpty()
                         || resultset.getString("AMOUNT") == null ? "0" : resultset.getString("AMOUNT"));
@@ -1176,6 +1177,7 @@ public class ContractMethod {
         }
         return result;
     }
+
 //TAGS
     public ACRGBWSResult GETCONTRACTWITHOPENSTATE(
             final DataSource dataSource,
@@ -1314,8 +1316,8 @@ public class ContractMethod {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             ArrayList<Contract> contractlist = new ArrayList<>();
-            //-------------- GET APEX FACILITY
-            ACRGBWSResult resultfm = new Methods().GETAPEXFACILITY(dataSource);
+//            //-------------- GET APEX FACILITY
+            ACRGBWSResult resultfm = new FacilityTagging().GETAPEXFACILITYS(dataSource);
             if (resultfm.isSuccess()) {
                 List<HealthCareFacility> userlist = Arrays.asList(utility.ObjectMapper().readValue(resultfm.getResult(), HealthCareFacility[].class));
                 for (int x = 0; x < userlist.size(); x++) {
@@ -1336,18 +1338,19 @@ public class ContractMethod {
                             contract.setHcfid(facility.getMessage());
                         }
                         //END OF GET NETWORK FULL DETAILS
-                        contract.setAmount(resultset.getString("AMOUNT").equals("")
-                                || resultset.getString("AMOUNT").isEmpty()
-                                || resultset.getString("AMOUNT") == null ? "0" : resultset.getString("AMOUNT"));
+                        contract.setAmount(resultset.getString("AMOUNT") == null
+                                || resultset.getString("AMOUNT").equals("")
+                                || resultset.getString("AMOUNT").isEmpty() ? "0" : resultset.getString("AMOUNT"));
                         contract.setStats(resultset.getString("STATS"));
-                        ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
+                        ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, (resultset.getString("CREATEDBY") == null
+                                || resultset.getString("CREATEDBY").isEmpty()
+                                || resultset.getString("CREATEDBY").equals("") ? "00" : resultset.getString("CREATEDBY")).trim());
                         if (creator.isSuccess()) {
                             contract.setCreatedby(creator.getResult());
                         } else {
                             contract.setCreatedby(creator.getMessage());
                         }
                         contract.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
-                        ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
                         contract.setTranscode(resultset.getString("TRANSCODE"));
                         contract.setBaseamount(resultset.getString("BASEAMOUNT"));
                         contract.setComittedClaimsVol(resultset.getString("C_CLAIMSVOL"));
@@ -1366,6 +1369,7 @@ public class ContractMethod {
                         double percentageB = 0.00;
                         double trancheamount = 0.00;
                         int tranches = 0;
+                        ACRGBWSResult getcondateA = this.GETCONDATEBYID(dataSource, resultset.getString("CONTRACTDATE"));
                         if (getcondateA.isSuccess()) {
                             contract.setContractdate(getcondateA.getResult());
                             ContractDate condate = utility.ObjectMapper().readValue(getcondateA.getResult(), ContractDate.class);
@@ -1462,9 +1466,7 @@ public class ContractMethod {
                                 percentageB += sumsB;
                             }
                         }
-                        
-                        
-                        
+
                         contract.setTotalamountrecieved(String.valueOf(trancheamount));
                         contract.setTotalclaims(String.valueOf(numberofclaims));
                         contract.setTraches(String.valueOf(tranches));
@@ -1474,11 +1476,10 @@ public class ContractMethod {
                         contract.setTotalclaimspercentage(String.valueOf(percentageB));
                         contractlist.add(contract);
                     }
-                    
-                    
-                    
-                    
+
                 }
+            } else {
+                result.setMessage(resultfm.getMessage());
             }
             if (contractlist.size() > 0) {
                 result.setMessage("OK");

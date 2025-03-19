@@ -270,7 +270,7 @@ public class Utility {
             dateCollection.remove("2020");
             dateCollection.remove("2021");
             switch (dateCollection.size()) {
-                case 5:
+                case 5: {
                     dateCollection.remove(4);
                     dateCollection.remove(3);
                     for (int i = 0; i < dateCollection.size(); i++) {
@@ -280,7 +280,8 @@ public class Utility {
                         dateList.add(datesettings);
                     }
                     break;
-                case 4:
+                }
+                case 4: {
                     dateCollection.remove(3);
                     for (int i = 0; i < dateCollection.size(); i++) {
                         DateSettings datesettings = new DateSettings();
@@ -289,7 +290,8 @@ public class Utility {
                         dateList.add(datesettings);
                     }
                     break;
-                default:
+                }
+                default: {
                     for (int i = 0; i < dateCollection.size(); i++) {
                         DateSettings datesettings = new DateSettings();
                         datesettings.setDatefrom(GetFromMonth.format(ConvertDateFrom) + "-" + GetFromDay.format(ConvertDateFrom) + "-" + dateCollection.get(i));
@@ -297,6 +299,7 @@ public class Utility {
                         dateList.add(datesettings);
                     }
                     break;
+                }
             }
             if (dateList.size() > 0) {
                 result.setMessage("OK");

@@ -16,6 +16,7 @@ import acrgb.method.LedgerMethod;
 import acrgb.method.Methods;
 import acrgb.method.ProcessAffiliate;
 import acrgb.method.cf5.CF5Data;
+import acrgb.method.claimsvalidator.ValidateClaims;
 import acrgb.structure.ACRGBWSResult;
 import acrgb.structure.Appellate;
 import acrgb.structure.HcfPro;
@@ -61,8 +62,36 @@ public class ACRGBFETCH {
 
     @Resource(lookup = "jdbc/acgbuser")
     private DataSource dataSource;
-
     private final Utility utility = new Utility();
+
+    @GET
+    @Path("ValidateClaims/{useries}/{uaction}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult ValidateClaims(
+            @PathParam("useries") String useries,
+            @PathParam("uaction") String uaction) {
+        return new ValidateClaims().GETNCLAIMS(dataSource, useries.trim(), uaction.trim().toUpperCase());
+    }
+
+    //GET ASSETS TYPE TBL
+    @GET
+    @Path("TESTDate/{datefrom}/{dateto}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult TESTDate(
+            @PathParam("datefrom") String datefrom,
+            @PathParam("dateto") String dateto) {
+        return utility.ProcessDateAmountComputation(datefrom, dateto);
+    }
+
+    @GET
+    @Path("TESTGetClaimsAverage/{pmccno}/{datefrom}/{dateto}")  //300806/01-01-2025/12-31-2025
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult TESTGetClaimsAverage(
+            @PathParam("pmccno") String pmccno,
+            @PathParam("datefrom") String datefrom,
+            @PathParam("dateto") String dateto) {
+        return new Methods().GETAVERAGECLAIMSS(dataSource, pmccno, datefrom, dateto);
+    }
 
     //GET ASSETS TYPE TBL
     @GET

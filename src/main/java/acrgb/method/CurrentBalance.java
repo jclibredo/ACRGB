@@ -590,11 +590,9 @@ public class CurrentBalance {
                 }
                 conbal.setConid(resultset.getString("CONID"));
                 conbal.setConutilized(resultset.getString("CONUTILIZED"));
-                if (resultset.getTimestamp("DATECREATED") == null) {
-                    conbal.setDatecreated(resultset.getString("DATECREATED"));
-                } else {
-                    conbal.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
-                }
+                conbal.setDatecreated(resultset.getString("DATECREATED") == null
+                        || resultset.getString("DATECREATED").isEmpty()
+                        || resultset.getString("DATECREATED").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATECREATED")));
                 conbal.setStatus(resultset.getString("STATUS"));
                 conbal.setClaimscount(resultset.getString("CLAIMSCOUNT"));
                 conBalanceList.add(conbal);

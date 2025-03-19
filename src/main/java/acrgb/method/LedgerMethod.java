@@ -194,17 +194,17 @@ public class LedgerMethod {
                 fca.setYearto(udateto);
                 fca.setTotalclaims(resultset.getString("COUNTVAL"));
                 //DATE SUBMITTED
-                fca.setDatefiled(resultset.getString("DATESUB").isEmpty()
-                        || resultset.getString("DATESUB").equals("")
-                        || resultset.getString("DATESUB") == null ? "" : dateformat.format(resultset.getTimestamp("DATESUB")));
+                fca.setDatefiled(resultset.getString("DATESUB") == null
+                        || resultset.getString("DATESUB").isEmpty()
+                        || resultset.getString("DATESUB").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATESUB")));
                 //DATE REFILED
-                fca.setDaterefiled(resultset.getString("DATEREFILE").isEmpty()
-                        || resultset.getString("DATEREFILE").equals("")
-                        || resultset.getString("DATEREFILE") == null ? "" : dateformat.format(resultset.getTimestamp("DATEREFILE")));
+                fca.setDaterefiled(resultset.getString("DATEREFILE") == null
+                        || resultset.getString("DATEREFILE").isEmpty()
+                        || resultset.getString("DATEREFILE").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATEREFILE")));
                 //DATE REFILED
-                fca.setDateadmit(resultset.getString("DATEADM").isEmpty()
-                        || resultset.getString("DATEADM").equals("")
-                        || resultset.getString("DATEADM") == null ? "" : dateformat.format(resultset.getTimestamp("DATEADM")));
+                fca.setDateadmit(resultset.getString("DATEADM") == null
+                        || resultset.getString("DATEADM").isEmpty()
+                        || resultset.getString("DATEADM").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATEADM")));
                 fca.setSeries(resultset.getString("SERIES"));
                 fcalist.add(fca);
             }
@@ -253,17 +253,17 @@ public class LedgerMethod {
                 fca.setTotalclaims(resultset.getString("CLAIMSVOLUME"));
                 fca.setSeries(resultset.getString("SERIES"));
                 //DATE SUBMITTED
-                fca.setDatefiled(resultset.getString("DATESUB").isEmpty()
-                        || resultset.getString("DATESUB").equals("")
-                        || resultset.getString("DATESUB") == null ? "" : dateformat.format(resultset.getTimestamp("DATESUB")));
+                fca.setDatefiled(resultset.getString("DATESUB") == null
+                        || resultset.getString("DATESUB").isEmpty()
+                        || resultset.getString("DATESUB").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATESUB")));
                 //DATE REFILED
-                fca.setDaterefiled(resultset.getString("DATEREFILE").isEmpty()
-                        || resultset.getString("DATEREFILE").equals("")
-                        || resultset.getString("DATEREFILE") == null ? "" : dateformat.format(resultset.getTimestamp("DATEREFILE")));
+                fca.setDaterefiled(resultset.getString("DATEREFILE") == null
+                        || resultset.getString("DATEREFILE").isEmpty()
+                        || resultset.getString("DATEREFILE").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATEREFILE")));
                 //DATE REFILED
-                fca.setDateadmit(resultset.getString("DATEADM").isEmpty()
-                        || resultset.getString("DATEADM").equals("")
-                        || resultset.getString("DATEADM") == null ? "" : dateformat.format(resultset.getTimestamp("DATEADM")));
+                fca.setDateadmit(resultset.getString("DATEADM") == null
+                        || resultset.getString("DATEADM").isEmpty()
+                        || resultset.getString("DATEADM").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATEADM")));
                 fcalist.add(fca);
             }
             if (fcalist.size() > 0) {

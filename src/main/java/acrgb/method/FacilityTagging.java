@@ -6,6 +6,7 @@
 package acrgb.method;
 
 import acrgb.structure.ACRGBWSResult;
+import acrgb.structure.HealthCareFacility;
 import acrgb.structure.Tagging;
 import acrgb.utility.Utility;
 import java.io.IOException;
@@ -180,4 +181,41 @@ public class FacilityTagging {
         }
         return result;
     }
+    
+    
+     //GET APEX FACILITY
+    public ACRGBWSResult GETAPEXFACILITYS(final DataSource dataSource) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try (Connection connection = dataSource.getConnection()) {
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETAPEXFACILITY(); end;");
+            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+            statement.execute();
+            ArrayList<HealthCareFacility> hcflist = new ArrayList<>();
+            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+            while (resultset.next()) {
+                HealthCareFacility hcf = new HealthCareFacility();
+                hcf.setHcfname(resultset.getString("HCFNAME"));
+                hcf.setHcfaddress(resultset.getString("HCFADDRESS"));
+                hcf.setHcfcode(resultset.getString("HCFCODE"));
+                hcf.setType(resultset.getString("HCFTYPE"));
+                hcf.setHcilevel(resultset.getString("HCILEVEL"));
+                hcflist.add(hcf);
+            }
+            if (hcflist.size() > 0) {
+                result.setResult(utility.ObjectMapper().writeValueAsString(hcflist));
+                result.setMessage("OK");
+                result.setSuccess(true);
+            } else {
+                result.setMessage("N/A");
+            }
+        } catch (SQLException | IOException ex) {
+            result.setMessage(ex.toString());
+            Logger.getLogger(FacilityTagging.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return result;
+    }
+    
 }

@@ -132,7 +132,7 @@ public class ContractHistory {
         result.setSuccess(false);
         ArrayList<Contract> contractList = new ArrayList<>();
         try {
-            ACRGBWSResult resultApex = new Methods().GETAPEXFACILITY(dataSource);
+            ACRGBWSResult resultApex = new FacilityTagging().GETAPEXFACILITYS(dataSource);
             if (resultApex.isSuccess()) {
                 List<HealthCareFacility> apexList = Arrays.asList(utility.ObjectMapper().readValue(resultApex.getResult(), HealthCareFacility[].class));
                 for (int x = 0; x < apexList.size(); x++) {
@@ -355,10 +355,9 @@ public class ContractHistory {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        Methods methods = new Methods();
         ArrayList<Contract> contractList = new ArrayList<>();
         try {
-            ACRGBWSResult GetApex = methods.GETAPEXFACILITY(dataSource);
+            ACRGBWSResult GetApex = new FacilityTagging().GETAPEXFACILITYS(dataSource);
             if (GetApex.isSuccess()) {
                 List<HealthCareFacility> hciList = Arrays.asList(utility.ObjectMapper().readValue(GetApex.getResult(), HealthCareFacility[].class));
                 for (int h = 0; h < hciList.size(); h++) {
