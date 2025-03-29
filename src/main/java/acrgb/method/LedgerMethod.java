@@ -281,7 +281,6 @@ public class LedgerMethod {
     }
     //===============================================================================================
     //PROCESS LEDGER PER CONTRACT UNDER HCPN
-
     public ACRGBWSResult GETLedgerPerContractHCPN(final DataSource dataSource,
             final String hcpncode,
             final String conid,
@@ -318,7 +317,6 @@ public class LedgerMethod {
                         }
                     }
                 }
-
                 if (begin > 0.00) {
                     Ledger ledgersss = new Ledger();
                     ledgersss.setDatetime(assetlist.get(0).getDatecreated());

@@ -51,9 +51,11 @@ acrgb\method\cf5\CF5Data.class
 acrgb\method\FetchMethods.class
 acrgb\structure\FacilityComputedAmount.class
 acrgb\structure\User.class
+acrgb\method\claimsvalidator\ValidateClaims.class
 acrgb\structure\Appellate.class
 acrgb\structure\DateSettings.class
 acrgb\structure\AssetsType.class
+acrgb\structure\Action.class
 acrgb\structure\CaseRate.class
 acrgb\structure\AccountPayable.class
 acrgb\structure\ProcessAmountBadget.class

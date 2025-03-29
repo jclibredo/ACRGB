@@ -461,23 +461,16 @@ public class ACRGBFETCH {
         result.setResult("");
         result.setSuccess(false);
         if (utility.IsValidDate(datefrom) && utility.IsValidDate(dateto)) {
-            ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-            if (!GetPayLoad.isSuccess()) {
-                result.setMessage(GetPayLoad.getMessage());
+            if (!utility.GetPayload(dataSource, token).isSuccess()) {
+                result.setMessage(utility.GetPayload(dataSource, token).getMessage());
             } else {
                 switch (type.toUpperCase().trim()) {
                     case "SUMMARY": {
-                        ACRGBWSResult getResult = new Methods().GetBaseAmountForSummary(dataSource, tags, userid, datefrom, dateto, "ACTIVE".toUpperCase().trim(), hcilist);
-                        result.setMessage(getResult.getMessage());
-                        result.setResult(getResult.getResult());
-                        result.setSuccess(getResult.isSuccess());
+                        result = new Methods().GetBaseAmountForSummary(dataSource, tags, userid, datefrom, dateto, "ACTIVE".toUpperCase().trim(), hcilist);
                         break;
                     }
                     case "CONTRACT": {
-                        ACRGBWSResult getResult = new Methods().GetBaseAmountForContract(dataSource, tags, userid, datefrom, dateto, "ACTIVE".toUpperCase().trim());
-                        result.setMessage(getResult.getMessage());
-                        result.setResult(getResult.getResult());
-                        result.setSuccess(getResult.isSuccess());
+                        result = new Methods().GetBaseAmountForContract(dataSource, tags, userid, datefrom, dateto, "ACTIVE".toUpperCase().trim());
                         break;
                     }
                     default:

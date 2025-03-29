@@ -136,11 +136,15 @@ public class ContractHistory {
             if (resultApex.isSuccess()) {
                 List<HealthCareFacility> apexList = Arrays.asList(utility.ObjectMapper().readValue(resultApex.getResult(), HealthCareFacility[].class));
                 for (int x = 0; x < apexList.size(); x++) {
-                    ACRGBWSResult GetContract = new FetchMethods().GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), apexList.get(x).getHcfcode().trim());
-                    if (GetContract.isSuccess()) {
-                        List<Contract> mapContractList = Arrays.asList(utility.ObjectMapper().readValue(GetContract.getResult(), Contract[].class));
-                        for (int y = 0; y < mapContractList.size(); y++) {
-                            contractList.add(mapContractList.get(y));
+                    if (apexList.get(x).getType() != null) {
+                        if (apexList.get(x).getType().equals("AH")) {
+                            ACRGBWSResult GetContract = new FetchMethods().GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), apexList.get(x).getHcfcode().trim());
+                            if (GetContract.isSuccess()) {
+                                List<Contract> mapContractList = Arrays.asList(utility.ObjectMapper().readValue(GetContract.getResult(), Contract[].class));
+                                for (int y = 0; y < mapContractList.size(); y++) {
+                                    contractList.add(mapContractList.get(y));
+                                }
+                            }
                         }
                     }
                 }
@@ -361,11 +365,15 @@ public class ContractHistory {
             if (GetApex.isSuccess()) {
                 List<HealthCareFacility> hciList = Arrays.asList(utility.ObjectMapper().readValue(GetApex.getResult(), HealthCareFacility[].class));
                 for (int h = 0; h < hciList.size(); h++) {
-                    ACRGBWSResult GetContract = new FetchMethods().GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), hciList.get(h).getHcfcode().trim());
-                    if (GetContract.isSuccess()) {
-                        List<Contract> mapContractList = Arrays.asList(utility.ObjectMapper().readValue(GetContract.getResult(), Contract[].class));
-                        for (int y = 0; y < mapContractList.size(); y++) {
-                            contractList.add(mapContractList.get(y));
+                    if (hciList.get(h).getType() == null) {
+                        if (hciList.get(h).getType().toUpperCase().equals("AH")) {
+                            ACRGBWSResult GetContract = new FetchMethods().GETALLCONTRACT(dataSource, tags.toUpperCase().trim(), hciList.get(h).getHcfcode().trim());
+                            if (GetContract.isSuccess()) {
+                                List<Contract> mapContractList = Arrays.asList(utility.ObjectMapper().readValue(GetContract.getResult(), Contract[].class));
+                                for (int y = 0; y < mapContractList.size(); y++) {
+                                    contractList.add(mapContractList.get(y));
+                                }
+                            }
                         }
                     }
                 }

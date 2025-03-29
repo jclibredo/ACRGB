@@ -483,7 +483,7 @@ public class Methods {
             switch (tags.toUpperCase()) {
                 case "USERPRO": {//USERID IS PRO ACCOUNT USERID
                     ACRGBWSResult getPRO = this.GETROLE(dataSource, userid, stats);
-                    if (getPRO.isSuccess()) {
+                    if (this.GETROLE(dataSource, userid, stats).isSuccess()) {
                         ACRGBWSResult getHCPNUnderUsingProCode = this.GETROLEMULITPLE(dataSource, getPRO.getResult(), stats);
                         if (getHCPNUnderUsingProCode.isSuccess()) {
                             int claimCount = 0;
@@ -3090,8 +3090,6 @@ public class Methods {
         return result;
     }
 
-   
-
     //GET REPORTS FOR LIST OF SELECTED NETWORK
 //    public ACRGBWSResult GetReportsOfSelectedAPEXFacility(final DataSource dataSource, final String tags, final String puserid) {
 //        ACRGBWSResult result = utility.ACRGBWSResult();
@@ -3493,22 +3491,22 @@ public class Methods {
             //------------------------------------------------------------------
             ArrayList<FacilityComputedAmount> listOfcomputedamount = new ArrayList<>();
             if (getdatesettings.isSuccess()) {
-                List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class));
-                for (int u = 0; u < GetDateSettings.size(); u++) {
+//                List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class));
+                for (int u = 0; u < Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class)).size(); u++) {
                     CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETAVERAGECLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("upmccno", upmccno.trim());
                     statement.setString("utags", "G".trim());
-                    statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(GetDateSettings.get(u).getDatefrom()).getTime()));
-                    statement.setDate("udateto", (Date) new Date(utility.StringToDate(GetDateSettings.get(u).getDateto()).getTime()));
+                    statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class)).get(u).getDatefrom()).getTime()));
+                    statement.setDate("udateto", (Date) new Date(utility.StringToDate(Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class)).get(u).getDateto()).getTime()));
                     statement.execute();
                     ResultSet resultset = (ResultSet) statement.getObject("v_result");
                     while (resultset.next()) {
                         FacilityComputedAmount fca = new FacilityComputedAmount();
                         fca.setHospital(resultset.getString("PMCC_NO"));
                         fca.setTotalamount(resultset.getString("CTOTAL"));
-                        fca.setYearfrom(GetDateSettings.get(u).getDatefrom());
-                        fca.setYearto(GetDateSettings.get(u).getDateto());
+                        fca.setYearfrom(Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class)).get(u).getDatefrom());
+                        fca.setYearto(Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class)).get(u).getDateto());
                         fca.setTotalclaims(resultset.getString("COUNTVAL"));
                         //-----------------------------------------------
                         fca.setC1rvcode(resultset.getString("C1_RVS_CODE") == null
@@ -3519,11 +3517,11 @@ public class Methods {
                                 || resultset.getString("C2_RVS_CODE").equals("")
                                 || resultset.getString("C2_RVS_CODE").isEmpty() ? "" : resultset.getString("C2_RVS_CODE"));
 //                        //-----------------------------------------------
-                        fca.setC1icdcode(resultset.getString("C1_ICD_CODE") == null 
+                        fca.setC1icdcode(resultset.getString("C1_ICD_CODE") == null
                                 || resultset.getString("C1_ICD_CODE").isEmpty()
                                 || resultset.getString("C1_ICD_CODE").equals("") ? "" : resultset.getString("C1_ICD_CODE"));
 //                        //----------------------------------------------
-                        fca.setC2icdcode(resultset.getString("C2_ICD_CODE") == null 
+                        fca.setC2icdcode(resultset.getString("C2_ICD_CODE") == null
                                 || resultset.getString("C2_ICD_CODE").isEmpty()
                                 || resultset.getString("C2_ICD_CODE").equals("") ? "" : resultset.getString("C2_ICD_CODE"));
 //                        //----------------------------------------------

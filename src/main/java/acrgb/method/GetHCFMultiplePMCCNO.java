@@ -26,12 +26,12 @@ import oracle.jdbc.OracleTypes;
  */
 @RequestScoped
 public class GetHCFMultiplePMCCNO {
-    
+
     public GetHCFMultiplePMCCNO() {
     }
-    
+
     private final Utility utility = new Utility();
-    
+
     public ACRGBWSResult GETFACILITYBYMAINACCRE(
             final DataSource datasource,
             final String umainaccre) {
@@ -47,14 +47,18 @@ public class GetHCFMultiplePMCCNO {
             ArrayList<HealthCareFacility> hcfList = new ArrayList<>();
             ResultSet resultset = (ResultSet) statement.getObject("v_result");
             while (resultset.next()) {
-                HealthCareFacility hcf = new HealthCareFacility();
-                hcf.setHcfname(resultset.getString("HCFNAME"));
-                hcf.setHcfcode(resultset.getString("HCFCODE"));
-                hcf.setType(resultset.getString("HCFTYPE"));
-                hcf.setHcilevel(resultset.getString("HCILEVEL"));
-                hcf.setStreet(resultset.getString("STREET"));
-                hcf.setMainaccre(resultset.getString("MAIN_ACCRE"));
-                hcfList.add(hcf);
+                if (resultset.getString("HCFTYPE") != null) {
+                    if (resultset.getString("HCFTYPE").equals("AG")) {
+                        HealthCareFacility hcf = new HealthCareFacility();
+                        hcf.setHcfname(resultset.getString("HCFNAME"));
+                        hcf.setHcfcode(resultset.getString("HCFCODE"));
+                        hcf.setType(resultset.getString("HCFTYPE"));
+                        hcf.setHcilevel(resultset.getString("HCILEVEL"));
+                        hcf.setStreet(resultset.getString("STREET"));
+                        hcf.setMainaccre(resultset.getString("MAIN_ACCRE"));
+                        hcfList.add(hcf);
+                    }
+                }
             }
             if (hcfList.size() > 0) {
                 result.setResult(utility.ObjectMapper().writeValueAsString(hcfList));
@@ -69,5 +73,5 @@ public class GetHCFMultiplePMCCNO {
         }
         return result;
     }
-    
+
 }

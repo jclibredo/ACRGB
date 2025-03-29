@@ -1628,12 +1628,98 @@ public class FetchMethods {
     }
 
     //GET NCLAIMS DATA AND AMOUNT OF ITS CLAIMS TOTAL
+//    public ACRGBWSResult GETNCLAIMS(
+//            final DataSource dataSource,
+//            final String upmccno,
+//            final String u_tags,
+//            final String u_from,
+//            final String u_to,
+//            final String reqtype) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        try (Connection connection = dataSource.getConnection()) {
+//            ArrayList<NclaimsData> claimsList = new ArrayList<>();
+//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETNCLAIMS(:upmccno,:u_tags,:u_from,:u_to); end;");
+//            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+//            statement.setString("upmccno", upmccno.trim());
+//            statement.setString("u_tags", u_tags.trim().toUpperCase());
+//            if (reqtype.toUpperCase().trim().equals("CURRENTSTATUS")) {
+//                statement.setDate("u_from", (Date) new Date(utility.StringToDate(u_from).getTime()));
+//                statement.setDate("u_to", (Date) new Date(utility.StringToDate(u_to).getTime()));
+//                statement.execute();
+//                ResultSet resultset = (ResultSet) statement.getObject("v_result");
+//                while (resultset.next()) {
+//                    NclaimsData nclaimsdata = new NclaimsData();
+//                    nclaimsdata.setAccreno(resultset.getString("PMCC_NO"));
+//                    nclaimsdata.setClaimamount(resultset.getString("CTOTAL"));
+//                    nclaimsdata.setTotalclaims(resultset.getString("COUNTVAL"));
+//                    nclaimsdata.setSeries(resultset.getString("SERIES"));
+//                    //DATE SUBMITTED
+//                    nclaimsdata.setDatesubmitted(resultset.getString("DATESUB") == null
+//                            || resultset.getString("DATESUB").equals("")
+//                            || resultset.getString("DATESUB").isEmpty() ? "" : dateformat.format(resultset.getTimestamp("DATESUB")));
+//                    //DATE REFILE
+//                    nclaimsdata.setRefiledate(resultset.getString("DATEREFILE") == null
+//                            || resultset.getString("DATEREFILE").equals("")
+//                            || resultset.getString("DATEREFILE").isEmpty() ? "" : dateformat.format(resultset.getTimestamp("DATEREFILE")));
+//                    //DATE ADMISSION
+//                    nclaimsdata.setDateadmission(resultset.getString("DATEADM") == null
+//                            || resultset.getString("DATEADM").equals("")
+//                            || resultset.getString("DATEADM").isEmpty() ? "" : dateformat.format(resultset.getTimestamp("DATEADM")));
+//                    claimsList.add(nclaimsdata);
+//                }
+//            } else if (reqtype.toUpperCase().trim().equals("HISTORICALSTATUS")) {
+//                ACRGBWSResult GetDateRange = utility.ProcessDateAmountComputation(u_from, u_to);
+//                if (GetDateRange.isSuccess()) {
+//                    List<DateSettings> dateSettings = Arrays.asList(utility.ObjectMapper().readValue(GetDateRange.getResult(), DateSettings[].class));
+//                    for (int i = 0; i < dateSettings.size(); i++) {
+//                        statement.setDate("u_from", (Date) new Date(utility.StringToDate(dateSettings.get(i).getDatefrom()).getTime()));
+//                        statement.setDate("u_to", (Date) new Date(utility.StringToDate(dateSettings.get(i).getDateto()).getTime()));
+//                        statement.execute();
+//                        ResultSet resultset = (ResultSet) statement.getObject("v_result");
+//                        while (resultset.next()) {
+//                            NclaimsData nclaimsdata = new NclaimsData();
+//                            nclaimsdata.setPmccno(resultset.getString("PMCC_NO"));
+//                            nclaimsdata.setClaimamount(resultset.getString("CTOTAL"));
+//                            nclaimsdata.setTotalclaims(resultset.getString("COUNTVAL"));
+//                            //DATE SUBMITTED
+//                            nclaimsdata.setDatesubmitted(resultset.getString("DATESUB") == null
+//                                    || resultset.getString("DATESUB").equals("")
+//                                    || resultset.getString("DATESUB").isEmpty() ? "" : dateformat.format(resultset.getTimestamp("DATESUB")));
+//                            //DATE REFILE
+//                            nclaimsdata.setRefiledate(resultset.getString("DATEREFILE") == null
+//                                    || resultset.getString("DATEREFILE").equals("")
+//                                    || resultset.getString("DATEREFILE").isEmpty() ? "" : dateformat.format(resultset.getTimestamp("DATEREFILE")));
+//                            // DATE ADMISSION
+//                            nclaimsdata.setDateadmission(resultset.getString("DATEADM") == null
+//                                    || resultset.getString("DATEADM").equals("")
+//                                    || resultset.getString("DATEADM").isEmpty() ? "" : dateformat.format(resultset.getTimestamp("DATEADM")));
+//                            claimsList.add(nclaimsdata);
+//                        }
+//                    }
+//                }
+//            }
+//            if (claimsList.size() > 0) {
+//                result.setMessage("OK");
+//                result.setSuccess(true);
+//                result.setResult(utility.ObjectMapper().writeValueAsString(claimsList));
+//            } else {
+//                result.setMessage("N/A");
+//            }
+//        } catch (SQLException | IOException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
     public ACRGBWSResult GETNCLAIMS(
             final DataSource dataSource,
             final String upmccno,
-            final String u_tags,
-            final String u_from,
-            final String u_to,
+            final String utags,
+            final String udatefrom,
+            final String udateto,
             final String reqtype) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -1641,13 +1727,13 @@ public class FetchMethods {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             ArrayList<NclaimsData> claimsList = new ArrayList<>();
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETNCLAIMS(:upmccno,:u_tags,:u_from,:u_to); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("upmccno", upmccno.trim());
-            statement.setString("u_tags", u_tags.trim().toUpperCase());
+            statement.setString("utags", utags.trim().toUpperCase());
             if (reqtype.toUpperCase().trim().equals("CURRENTSTATUS")) {
-                statement.setDate("u_from", (Date) new Date(utility.StringToDate(u_from).getTime()));
-                statement.setDate("u_to", (Date) new Date(utility.StringToDate(u_to).getTime()));
+                statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(udatefrom).getTime()));
+                statement.setDate("udateto", (Date) new Date(utility.StringToDate(udateto).getTime()));
                 statement.execute();
                 ResultSet resultset = (ResultSet) statement.getObject("v_result");
                 while (resultset.next()) {
@@ -1671,12 +1757,12 @@ public class FetchMethods {
                     claimsList.add(nclaimsdata);
                 }
             } else if (reqtype.toUpperCase().trim().equals("HISTORICALSTATUS")) {
-                ACRGBWSResult GetDateRange = utility.ProcessDateAmountComputation(u_from, u_to);
-                if (GetDateRange.isSuccess()) {
-                    List<DateSettings> dateSettings = Arrays.asList(utility.ObjectMapper().readValue(GetDateRange.getResult(), DateSettings[].class));
-                    for (int i = 0; i < dateSettings.size(); i++) {
-                        statement.setDate("u_from", (Date) new Date(utility.StringToDate(dateSettings.get(i).getDatefrom()).getTime()));
-                        statement.setDate("u_to", (Date) new Date(utility.StringToDate(dateSettings.get(i).getDateto()).getTime()));
+//                ACRGBWSResult GetDateRange = utility.ProcessDateAmountComputation(udatefrom, udateto);
+                if (utility.ProcessDateAmountComputation(udatefrom, udateto).isSuccess()) {
+//                    List<DateSettings> dateSettings = Arrays.asList(utility.ObjectMapper().readValue(GetDateRange.getResult(), DateSettings[].class));
+                    for (int i = 0; i < Arrays.asList(utility.ObjectMapper().readValue(utility.ProcessDateAmountComputation(udatefrom, udateto).getResult(), DateSettings[].class)).size(); i++) {
+                        statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(Arrays.asList(utility.ObjectMapper().readValue(utility.ProcessDateAmountComputation(udatefrom, udateto).getResult(), DateSettings[].class)).get(i).getDatefrom()).getTime()));
+                        statement.setDate("udateto", (Date) new Date(utility.StringToDate(Arrays.asList(utility.ObjectMapper().readValue(utility.ProcessDateAmountComputation(udatefrom, udateto).getResult(), DateSettings[].class)).get(i).getDateto()).getTime()));
                         statement.execute();
                         ResultSet resultset = (ResultSet) statement.getObject("v_result");
                         while (resultset.next()) {
@@ -1684,6 +1770,7 @@ public class FetchMethods {
                             nclaimsdata.setPmccno(resultset.getString("PMCC_NO"));
                             nclaimsdata.setClaimamount(resultset.getString("CTOTAL"));
                             nclaimsdata.setTotalclaims(resultset.getString("COUNTVAL"));
+                            nclaimsdata.setSeries(resultset.getString("SERIES"));
                             //DATE SUBMITTED
                             nclaimsdata.setDatesubmitted(resultset.getString("DATESUB") == null
                                     || resultset.getString("DATESUB").equals("")
@@ -2761,58 +2848,112 @@ public class FetchMethods {
 
 //GET MULTIPLE CLAIMS FOR BOOKING
 //GET NCLAIMS DATA AND AMOUNT OF ITS CLAIMS TOTAL
-    public ACRGBWSResult BOOKCLAIMSDATA(
-            final DataSource dataSource,
-            final String upmccno,
-            final String u_tags,
-            final String u_from,
-            final String u_to) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETNCLAIMS(:upmccno,:u_tags,:u_from,:u_to); end;");
-            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
-            statement.setString("upmccno", upmccno.trim());
-            statement.setString("u_tags", u_tags.trim());
-            statement.setDate("u_from", (Date) new Date(utility.StringToDate(u_from).getTime()));
-            statement.setDate("u_to", (Date) new Date(utility.StringToDate(u_to).getTime()));
-            statement.execute();
-            ArrayList<NclaimsData> claimsList = new ArrayList<>();
-            ResultSet resultset = (ResultSet) statement.getObject("v_result");
-            while (resultset.next()) {
-                NclaimsData nclaimsdata = new NclaimsData();
-                nclaimsdata.setAccreno(resultset.getString("PMCC_NO"));
-                nclaimsdata.setClaimamount(resultset.getString("CTOTAL"));
-                nclaimsdata.setTotalclaims(resultset.getString("COUNTVAL"));
-                //DATE SUBMITTED
-                nclaimsdata.setDatesubmitted(resultset.getString("DATESUB") == null
-                        || resultset.getString("DATESUB").isEmpty()
-                        || resultset.getString("DATESUB").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATESUB")));
-                //DATE REFILE
-                nclaimsdata.setRefiledate(resultset.getString("DATEREFILE") == null
-                        || resultset.getString("DATEREFILE").isEmpty()
-                        || resultset.getString("DATEREFILE").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATEREFILE")));
-                //DATE ADMISSION
-                nclaimsdata.setDateadmission(resultset.getString("DATEADM") == null
-                        || resultset.getString("DATEADM").isEmpty()
-                        || resultset.getString("DATEADM").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATEADM")));
-                claimsList.add(nclaimsdata);
-            }
-            if (claimsList.size() > 0) {
-                result.setMessage("OK");
-                result.setSuccess(true);
-                result.setResult(utility.ObjectMapper().writeValueAsString(claimsList));
-            } else {
-                result.setMessage("N/A");
-            }
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
+//    public ACRGBWSResult BOOKCLAIMSDATA(
+//            final DataSource dataSource,
+//            final String upmccno,
+//            final String u_tags,
+//            final String u_from,
+//            final String u_to) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        try (Connection connection = dataSource.getConnection()) {
+//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETNCLAIMS(:upmccno,:u_tags,:u_from,:u_to); end;");
+//            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+//            statement.setString("upmccno", upmccno.trim());
+//            statement.setString("u_tags", u_tags.trim());
+//            statement.setDate("u_from", (Date) new Date(utility.StringToDate(u_from).getTime()));
+//            statement.setDate("u_to", (Date) new Date(utility.StringToDate(u_to).getTime()));
+//            statement.execute();
+//            ArrayList<NclaimsData> claimsList = new ArrayList<>();
+//            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+//            while (resultset.next()) {
+//                NclaimsData nclaimsdata = new NclaimsData();
+//                nclaimsdata.setAccreno(resultset.getString("PMCC_NO"));
+//                nclaimsdata.setClaimamount(resultset.getString("CTOTAL"));
+//                nclaimsdata.setTotalclaims(resultset.getString("COUNTVAL"));
+//                //DATE SUBMITTED
+//                nclaimsdata.setDatesubmitted(resultset.getString("DATESUB") == null
+//                        || resultset.getString("DATESUB").isEmpty()
+//                        || resultset.getString("DATESUB").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATESUB")));
+//                //DATE REFILE
+//                nclaimsdata.setRefiledate(resultset.getString("DATEREFILE") == null
+//                        || resultset.getString("DATEREFILE").isEmpty()
+//                        || resultset.getString("DATEREFILE").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATEREFILE")));
+//                //DATE ADMISSION
+//                nclaimsdata.setDateadmission(resultset.getString("DATEADM") == null
+//                        || resultset.getString("DATEADM").isEmpty()
+//                        || resultset.getString("DATEADM").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATEADM")));
+//                claimsList.add(nclaimsdata);
+//            }
+//            if (claimsList.size() > 0) {
+//                result.setMessage("OK");
+//                result.setSuccess(true);
+//                result.setResult(utility.ObjectMapper().writeValueAsString(claimsList));
+//            } else {
+//                result.setMessage("N/A");
+//            }
+//        } catch (SQLException | IOException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
+    
+//      public ACRGBWSResult BOOKCLAIMSDATA(
+//            final DataSource dataSource,
+//            final String upmccno,
+//            final String utags,
+//            final String udatefrom,
+//            final String udateto) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        try (Connection connection = dataSource.getConnection()) {
+//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETNCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
+//            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
+//            statement.setString("upmccno", upmccno.trim());
+//            statement.setString("utags", utags.trim());
+//            statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(udatefrom).getTime()));
+//            statement.setDate("udateto", (Date) new Date(utility.StringToDate(udateto).getTime()));
+//            statement.execute();
+//            ArrayList<NclaimsData> claimsList = new ArrayList<>();
+//            ResultSet resultset = (ResultSet) statement.getObject("v_result");
+//            while (resultset.next()) {
+//                NclaimsData nclaimsdata = new NclaimsData();
+//                nclaimsdata.setAccreno(resultset.getString("PMCC_NO"));
+//                nclaimsdata.setClaimamount(resultset.getString("CTOTAL"));
+//                nclaimsdata.setTotalclaims(resultset.getString("COUNTVAL"));
+//                nclaimsdata.setSeries(resultset.getString("SERIES"));
+//                //DATE SUBMITTED
+//                nclaimsdata.setDatesubmitted(resultset.getString("DATESUB") == null
+//                        || resultset.getString("DATESUB").isEmpty()
+//                        || resultset.getString("DATESUB").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATESUB")));
+//                //DATE REFILE
+//                nclaimsdata.setRefiledate(resultset.getString("DATEREFILE") == null
+//                        || resultset.getString("DATEREFILE").isEmpty()
+//                        || resultset.getString("DATEREFILE").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATEREFILE")));
+//                //DATE ADMISSION
+//                nclaimsdata.setDateadmission(resultset.getString("DATEADM") == null
+//                        || resultset.getString("DATEADM").isEmpty()
+//                        || resultset.getString("DATEADM").equals("") ? "" : dateformat.format(resultset.getTimestamp("DATEADM")));
+//                claimsList.add(nclaimsdata);
+//            }
+//            if (claimsList.size() > 0) {
+//                result.setMessage("OK");
+//                result.setSuccess(true);
+//                result.setResult(utility.ObjectMapper().writeValueAsString(claimsList));
+//            } else {
+//                result.setMessage("N/A");
+//            }
+//        } catch (SQLException | IOException ex) {
+//            result.setMessage(ex.toString());
+//            Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
 
     //GET USER INFO USING EMAIL ADDRESS
     public ACRGBWSResult GETUSERINFOUSINGEMAIL(
