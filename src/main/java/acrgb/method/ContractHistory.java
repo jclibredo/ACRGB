@@ -59,7 +59,7 @@ public class ContractHistory {
                 result.setMessage("N/A");
             }
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -89,7 +89,7 @@ public class ContractHistory {
             }
 
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -118,7 +118,7 @@ public class ContractHistory {
                 result.setMessage("N/A");
             }
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -157,7 +157,7 @@ public class ContractHistory {
                 result.setMessage("N/A");
             }
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -192,7 +192,7 @@ public class ContractHistory {
                 result.setMessage("N/A");
             }
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -229,7 +229,7 @@ public class ContractHistory {
             }
 
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -265,7 +265,7 @@ public class ContractHistory {
                 result.setMessage("N/A");
             }
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -300,7 +300,7 @@ public class ContractHistory {
                 result.setMessage("N/A");
             }
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -335,7 +335,6 @@ public class ContractHistory {
                                 }
                             }
                         }
-                        //------------------------------------------------
                     }
                 }
                 //-----------------------------------
@@ -348,7 +347,7 @@ public class ContractHistory {
                 result.setMessage("N/A");
             }
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -387,7 +386,7 @@ public class ContractHistory {
             }
 
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractHistory.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

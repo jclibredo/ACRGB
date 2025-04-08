@@ -332,7 +332,7 @@ public class UserActivityLogs {
                 }
             }
         } catch (IOException ex) {
-            ex.getLocalizedMessage();
+//            ex.getLocalizedMessage();
             Logger.getLogger(UserActivityLogs.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

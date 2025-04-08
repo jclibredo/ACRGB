@@ -115,7 +115,7 @@ public class Methods {
                 result.setMessage("INVALID USERNAME OR PASSWORD");
             }
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -155,7 +155,7 @@ public class Methods {
                 result.setSuccess(true);
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -181,7 +181,7 @@ public class Methods {
                 result.setMessage("USER ROLE IS NOT AVAILABLE");
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -213,7 +213,7 @@ public class Methods {
                 result.setMessage(getinsertresult.getString("Message"));
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -275,7 +275,7 @@ public class Methods {
                 }
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -325,7 +325,7 @@ public class Methods {
                 }
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -394,7 +394,7 @@ public class Methods {
             userlogs.setActby(userid);
             new UserActivityLogs().UserLogsMethod(dataSource, "UPDATE-OWN-PASSWORD", userlogs, "00", "00");
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -421,7 +421,7 @@ public class Methods {
                 result.setMessage(getinsertresult.getString("Message"));
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -459,7 +459,7 @@ public class Methods {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -1393,7 +1393,7 @@ public class Methods {
                 }
             }
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -2125,10 +2125,8 @@ public class Methods {
                 }
             }
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2161,10 +2159,8 @@ public class Methods {
                 result.setMessage(getinsertresult.getString("Message"));
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2202,10 +2198,8 @@ public class Methods {
             }
 
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2360,10 +2354,8 @@ public class Methods {
                 }
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2473,10 +2465,8 @@ public class Methods {
             }
 
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2566,7 +2556,7 @@ public class Methods {
                 result.setMessage("NO DATA");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -2613,10 +2603,8 @@ public class Methods {
                 result.setMessage("OK");
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2689,10 +2677,8 @@ public class Methods {
             }
 
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2763,10 +2749,8 @@ public class Methods {
                 result.setMessage("NO DATA FOUND");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2833,10 +2817,8 @@ public class Methods {
                 result.setMessage("NO DATA FOUND");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2882,10 +2864,8 @@ public class Methods {
             }
             //----------------------------------------------------------
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2921,7 +2901,7 @@ public class Methods {
             }
 
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -2950,10 +2930,8 @@ public class Methods {
                 result.setMessage("N/A");
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -2985,10 +2963,8 @@ public class Methods {
                 result.setMessage("N/A");
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3022,7 +2998,7 @@ public class Methods {
                 result.setMessage("N/A");
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -3051,7 +3027,7 @@ public class Methods {
                 result.setMessage("N/A");
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -3084,7 +3060,7 @@ public class Methods {
                 result.setMessage("N/A");
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -3470,7 +3446,7 @@ public class Methods {
                 result.setMessage("N/A");
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -3552,7 +3528,7 @@ public class Methods {
             }
             //-------------------------------------------------------------------------------
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -3564,8 +3540,6 @@ public class Methods {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        UpdateMethods um = new UpdateMethods();
-        ContractTagging ct = new ContractTagging();
         ArrayList<String> errorList = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
             CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETENDEDCONTRACTDATEPERIOD(:tags); end;");
@@ -3587,12 +3561,12 @@ public class Methods {
                 contractDate.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                 if (dateNow.compareTo(convertTo) > 0) {
                     //GET CONTRACT UNDER 
-                    ACRGBWSResult endContract = ct.EndContractUsingDateid(dataSource, resultset.getString("CONDATEID").trim());
+                    ACRGBWSResult endContract = new ContractTagging().EndContractUsingDateid(dataSource, resultset.getString("CONDATEID").trim());
                     if (!endContract.isSuccess()) {
                         errorList.add(endContract.getMessage());
                     }
                     //UPDATE ROLE INDEX
-                    ACRGBWSResult endResult = um.UPDATEROLEINDEX(dataSource, "00", "00", resultset.getString("CONDATEID").trim(), "NONUPDATE".toUpperCase().trim());
+                    ACRGBWSResult endResult = new UpdateMethods().UPDATEROLEINDEX(dataSource, "00", "00", resultset.getString("CONDATEID").trim(), "NONUPDATE".toUpperCase().trim());
                     if (!endResult.isSuccess()) {
                         errorList.add(endResult.getMessage());
                     }
@@ -3601,7 +3575,7 @@ public class Methods {
                     appellate.setAccesscode("0");
                     appellate.setStatus("3");
                     appellate.setConid(resultset.getString("CONDATEID").trim());
-                    ACRGBWSResult endAffiliate = um.UPDATEAPELLATE(dataSource, "OTHERS", appellate);
+                    ACRGBWSResult endAffiliate = new UpdateMethods().UPDATEAPELLATE(dataSource, "OTHERS", appellate);
                     if (!endAffiliate.isSuccess()) {
                         errorList.add(endAffiliate.getMessage());
                     }
@@ -3625,7 +3599,7 @@ public class Methods {
                 result.setSuccess(true);
             }
         } catch (SQLException | IOException | ParseException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -3675,7 +3649,7 @@ public class Methods {
                 result.setSuccess(true);
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -3714,7 +3688,7 @@ public class Methods {
             userLogs.setActby(accreditation.getCreatedby());
             logs.UserLogsMethod(datasource, "EDIT-ACCREDITATION-HCPN", userLogs, accreditation.getCreatedby(), accreditation.getAccreno());
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -3763,10 +3737,8 @@ public class Methods {
                 result.setMessage("N/A");
             }
         } catch (SQLException | ParseException ex) {
-            result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
@@ -3808,10 +3780,8 @@ public class Methods {
                 result.setMessage("NO DATA");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
-            Logger
-                    .getLogger(Methods.class
-                            .getName()).log(Level.SEVERE, null, ex);
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }

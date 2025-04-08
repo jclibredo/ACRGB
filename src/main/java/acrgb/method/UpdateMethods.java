@@ -78,7 +78,7 @@ public class UpdateMethods {
 //            userLogs.setActby(assets.getCreatedby());
 //            logs.UserLogsMethod(datasource, "EDIT-TRANCHE-HCPN", userLogs, userroleindex.getUserid(), accesslist.get(x));
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -149,7 +149,7 @@ public class UpdateMethods {
                     + " " + contract.getQuarter() + " " + getinsertresult.getString("Message").equals("SUCC"));
             new UserActivityLogs().UserLogsMethod(datasource, logsTags, userlogs, contract.getHcfid(), contract.getContractdate());
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -191,7 +191,7 @@ public class UpdateMethods {
             userlogs.setActdetails(" Data before :" + oldData + " Data after Type: " + tranch.getTranchtype() + " Value: " + tranch.getPercentage() + " | " + getinsertresult.getString("Message"));
             new UserActivityLogs().UserLogsMethod(datasource, "EDIT-TRANCHE", userlogs, "0", "0");
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -232,7 +232,7 @@ public class UpdateMethods {
             userlogs.setActdetails(" Data before :" + oldData + " Data after Name: " + userlevel.getLevname() + " Details: " + userlevel.getLevdetails() + " | " + getinsertresult.getString("Message"));
             new UserActivityLogs().UserLogsMethod(datasource, "EDIT-USER-LEVEL", userlogs, "0", "0");
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -395,7 +395,7 @@ public class UpdateMethods {
                 result.setMessage(errorList.toString());
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -424,7 +424,7 @@ public class UpdateMethods {
                 result.setMessage(getinsertresult.getString("Message"));
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -469,7 +469,7 @@ public class UpdateMethods {
                 result.setMessage(getOldMBData.getMessage());
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -501,7 +501,7 @@ public class UpdateMethods {
                 result.setMessage(getinsertresult.getString("Message"));
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -554,7 +554,7 @@ public class UpdateMethods {
             }
 
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -582,7 +582,7 @@ public class UpdateMethods {
                 result.setMessage(getinsertresult.getString("Message"));
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -629,7 +629,7 @@ public class UpdateMethods {
                 result.setMessage(getinsertresult.getString("Message"));
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -655,7 +655,7 @@ public class UpdateMethods {
                 result.setMessage(getinsertresult.getString("Message"));
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -682,7 +682,7 @@ public class UpdateMethods {
                 result.setMessage(statement.getString("Message"));
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -707,7 +707,7 @@ public class UpdateMethods {
                 result.setMessage(statement.getString("Message"));
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -754,7 +754,7 @@ public class UpdateMethods {
             //methods.ActivityLogs(datasource, userLogs);
 
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
 
@@ -793,7 +793,7 @@ public class UpdateMethods {
             new UserActivityLogs().UserLogsMethod(datasource, "EDIT-USERINFO-EMAIL", userLogs, udid, "0");
             //USER LOGS
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -883,7 +883,7 @@ public class UpdateMethods {
             /// methods.ActivityLogs(datasource, userLogs);
 
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -991,7 +991,7 @@ public class UpdateMethods {
             /// methods.ActivityLogs(datasource, userLogs);
 
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -1051,7 +1051,7 @@ public class UpdateMethods {
 //            userLogs.setActby(createdby);
 //            logs.UserLogsMethod(datasource, "EDIT-USERINFO", userLogs, udid, "0");
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -1099,7 +1099,7 @@ public class UpdateMethods {
             /// methods.ActivityLogs(datasource, userLogs);
 
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(UpdateMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

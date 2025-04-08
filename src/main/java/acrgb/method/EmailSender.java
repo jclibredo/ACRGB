@@ -68,7 +68,7 @@ public class EmailSender {
                 }
             }
         } catch (MessagingException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(EmailSender.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -116,7 +116,6 @@ public class EmailSender {
 ////        }
 //        return result;
 //    }
-
 //    //  Email Sender Using Gmail API 
 //    public ACRGBWSResult EmailSender(final DataSource dataSource,
 //            final Email email,

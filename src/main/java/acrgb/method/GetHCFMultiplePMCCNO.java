@@ -68,7 +68,7 @@ public class GetHCFMultiplePMCCNO {
                 result.setMessage("NO RECORD FOUND");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(GetHCFMultiplePMCCNO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

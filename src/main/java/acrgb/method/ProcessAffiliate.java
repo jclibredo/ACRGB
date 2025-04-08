@@ -30,9 +30,9 @@ public class ProcessAffiliate {
     private final Utility utility = new Utility();
 
     public ACRGBWSResult GETAFFILIATE(
-            final DataSource dataSource, 
-            final String uhcicode, 
-            final String uhcpn, 
+            final DataSource dataSource,
+            final String uhcicode,
+            final String uhcpn,
             final String ucondateid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -61,7 +61,7 @@ public class ProcessAffiliate {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ProcessAffiliate.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

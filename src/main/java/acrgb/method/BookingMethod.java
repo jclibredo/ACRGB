@@ -68,7 +68,7 @@ public class BookingMethod {
                 result.setMessage(getinsertresult.getString("Message"));
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -102,7 +102,7 @@ public class BookingMethod {
                 result.setMessage(getinsertresult.getString("Message"));
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -187,7 +187,7 @@ public class BookingMethod {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -445,7 +445,7 @@ public class BookingMethod {
             }
 
         } catch (IOException | ParseException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -585,7 +585,7 @@ public class BookingMethod {
             }
 
         } catch (IOException | ParseException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -635,7 +635,7 @@ public class BookingMethod {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -692,7 +692,7 @@ public class BookingMethod {
             }
 
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -834,7 +834,7 @@ public class BookingMethod {
             //END MANAGE FINAL BALANCE OF FACILITY CONTRACT 
 
         } catch (IOException | ParseException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(BookingMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

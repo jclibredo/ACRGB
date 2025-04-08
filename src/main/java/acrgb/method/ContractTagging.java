@@ -199,7 +199,7 @@ public class ContractTagging {
             result.setMessage(String.join(",", error));
             result.setResult("");
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractTagging.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -278,7 +278,7 @@ public class ContractTagging {
             }
             //end process end affiliates and remap 
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractTagging.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

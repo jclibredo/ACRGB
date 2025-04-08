@@ -18,7 +18,6 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,7 +35,7 @@ public class CF5Data {
     public CF5Data() {
     }
     private final Utility utility = new Utility();
-    private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm a");
+//    private final SimpleDateFormat datetimeformat = utility.SimpleDateFormat("MM-dd-yyyy hh:mm a");
 
     // GET CF5 PATIENT INFO
     public ACRGBWSResult INFO(final DataSource datasource,
@@ -82,7 +81,7 @@ public class CF5Data {
                 }
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(CF5Data.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -118,7 +117,7 @@ public class CF5Data {
                 result.setMessage("NO DATA FOUND");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(CF5Data.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -154,7 +153,7 @@ public class CF5Data {
                 result.setMessage("NO DATA FOUND");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(CF5Data.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -188,7 +187,7 @@ public class CF5Data {
                 result.setMessage("NO DATA FOUND");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(CF5Data.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -226,14 +225,13 @@ public class CF5Data {
                 result.setMessage("NO DATA FOUND");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(CF5Data.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
-    
-     public ACRGBWSResult GETHCFPRO(
+
+    public ACRGBWSResult GETHCFPRO(
             final DataSource dataSource,
             final String uprocode) {
         ACRGBWSResult result = utility.ACRGBWSResult();
@@ -261,7 +259,7 @@ public class CF5Data {
                 result.setSuccess(true);
             }
         } catch (Exception ex) {
-            result.setMessage("PHICServices " + ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(CF5Data.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

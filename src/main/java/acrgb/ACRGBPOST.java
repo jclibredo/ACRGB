@@ -17,7 +17,6 @@ import acrgb.structure.Contract;
 import acrgb.structure.ContractDate;
 import acrgb.structure.Email;
 import acrgb.structure.ManagingBoard;
-import acrgb.structure.NclaimsData;
 import acrgb.structure.Tranch;
 import acrgb.structure.User;
 import acrgb.structure.UserInfo;
@@ -25,10 +24,6 @@ import acrgb.structure.UserLevel;
 import acrgb.structure.UserRoleIndex;
 import acrgb.utility.Utility;
 import java.io.IOException;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -44,7 +39,6 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
-import oracle.jdbc.OracleTypes;
 
 /**
  * REST Web Service
@@ -89,14 +83,10 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
+        if (!utility.GetPayload(dataSource, token).isSuccess()) {
+            result.setMessage(utility.GetPayload(dataSource, token).getMessage());
         } else {
-            ACRGBWSResult insertresult = new InsertMethods().INSERTASSETS(dataSource, assets);
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
+            result = new InsertMethods().INSERTASSETS(dataSource, assets);
         }
         return result;
     }
@@ -114,14 +104,10 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
+        if (!utility.GetPayload(dataSource, token).isSuccess()) {
+            result.setMessage(utility.GetPayload(dataSource, token).getMessage());
         } else {
-            ACRGBWSResult insertresult = new InsertMethods().INSERTHCPN(dataSource, mb);
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
+            result = new InsertMethods().INSERTHCPN(dataSource, mb);
         }
         return result;
     }
@@ -138,14 +124,10 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
+        if (!utility.GetPayload(dataSource, token).isSuccess()) {
+            result.setMessage(utility.GetPayload(dataSource, token).getMessage());
         } else {
-            ACRGBWSResult insertresult = new InsertMethods().INSERTCONTRACT(dataSource, contract);
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
+            result = new InsertMethods().INSERTCONTRACT(dataSource, contract);
         }
         return result;
     }
@@ -160,14 +142,10 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
+        if (!utility.GetPayload(dataSource, token).isSuccess()) {
+            result.setMessage(utility.GetPayload(dataSource, token).getMessage());
         } else {
-            ACRGBWSResult insertresult = new InsertMethods().INSERTTRANCH(dataSource, tranch);
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
+            result = new InsertMethods().INSERTTRANCH(dataSource, tranch);
         }
         return result;
     }
@@ -182,14 +160,10 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
+        if (!utility.GetPayload(dataSource, token).isSuccess()) {
+            result.setMessage(utility.GetPayload(dataSource, token).getMessage());
         } else {
-            ACRGBWSResult insertresult = new InsertMethods().INSERTUSERDETAILS(dataSource, userinfo);
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
+            result = new InsertMethods().INSERTUSERDETAILS(dataSource, userinfo);
         }
         return result;
     }
@@ -200,20 +174,16 @@ public class ACRGBPOST {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult INSERTUSERLEVEL(
-            @HeaderParam("token") String token, 
+            @HeaderParam("token") String token,
             final UserLevel userlevel) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
+        if (!utility.GetPayload(dataSource, token).isSuccess()) {
+            result.setMessage(utility.GetPayload(dataSource, token).getMessage());
         } else {
-            ACRGBWSResult insertresult = new InsertMethods().INSERTUSERLEVEL(dataSource, userlevel);
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
+            result = new InsertMethods().INSERTUSERLEVEL(dataSource, userlevel);
         }
         return result;
     }
@@ -229,14 +199,10 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
+        if (!utility.GetPayload(dataSource, token).isSuccess()) {
+            result.setMessage(utility.GetPayload(dataSource, token).getMessage());
         } else {
-            ACRGBWSResult insertresult = new InsertMethods().INSERTUSER(dataSource, user, acrgbmail);
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
+            result = new InsertMethods().INSERTUSER(dataSource, user, acrgbmail);
         }
         return result;
     }
@@ -247,12 +213,9 @@ public class ACRGBPOST {
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult UserLogin(final User user) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = new Methods().ACRUSERLOGIN(dataSource,
+        result = new Methods().ACRUSERLOGIN(dataSource,
                 user.getUsername(),
                 user.getUserpassword());
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
         return result;
     }
 
@@ -298,7 +261,6 @@ public class ACRGBPOST {
 //        }
 //        return result;
 //    }
-
     @POST
     @Path("INSERTROLEINDEX")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -309,14 +271,10 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
+        if (!utility.GetPayload(dataSource, token).isSuccess()) {
+            result.setMessage(utility.GetPayload(dataSource, token).getMessage());
         } else {
-            ACRGBWSResult insertresult = new InsertMethods().INSEROLEINDEX(dataSource, userroleindex);
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
+            result = new InsertMethods().INSEROLEINDEX(dataSource, userroleindex);
         }
         return result;
     }
@@ -331,18 +289,14 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
+        if (!utility.GetPayload(dataSource, token).isSuccess()) {
+            result.setMessage(utility.GetPayload(dataSource, token).getMessage());
         } else {
-            ACRGBWSResult insertresult = new InsertMethods().INSERTAPPELLATE(dataSource,
+            result = new InsertMethods().INSERTAPPELLATE(dataSource,
                     userroleindex.getUserid(), //SONGLE
                     userroleindex.getAccessid(),//MULTIPLE
                     userroleindex.getCreatedby(),
                     userroleindex.getDatecreated());
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
         }
         return result;
     }
@@ -357,14 +311,10 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
+        if (!utility.GetPayload(dataSource, token).isSuccess()) {
+            result.setMessage(utility.GetPayload(dataSource, token).getMessage());
         } else {
-            ACRGBWSResult insertresult = new InsertMethods().INSERTCONDATE(dataSource, contractdate);
-            result.setMessage(insertresult.getMessage());
-            result.setSuccess(insertresult.isSuccess());
-            result.setResult(insertresult.getResult());
+            result = new InsertMethods().INSERTCONDATE(dataSource, contractdate);
         }
         return result;
     }
@@ -377,10 +327,7 @@ public class ACRGBPOST {
     public ACRGBWSResult FORGETPASSWORD(
             final Email email) {
         ACRGBWSResult result = utility.ACRGBWSResult();
-        ACRGBWSResult insertresult = new EmailSender().EmailSender(dataSource, email.getEmailto(), "", acrgbmail);
-        result.setMessage(insertresult.getMessage());
-        result.setSuccess(insertresult.isSuccess());
-        result.setResult(insertresult.getResult());
+        result = new EmailSender().EmailSender(dataSource, email.getEmailto(), "", acrgbmail);
         //-------------------------------------
         return result;
     }
@@ -400,9 +347,8 @@ public class ACRGBPOST {
         result.setSuccess(false);
         Collection errorList = new ArrayList<>();
         try {
-            ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-            if (!GetPayLoad.isSuccess()) {
-                result.setMessage(GetPayLoad.getMessage());
+            if (!utility.GetPayload(dataSource, token).isSuccess()) {
+                result.setMessage(utility.GetPayload(dataSource, token).getMessage());
             } else {
                 for (int x = 0; x < userinfo.size(); x++) {
                     ArrayList<String> error = new ArrayList<>();
@@ -518,7 +464,7 @@ public class ACRGBPOST {
             result.setSuccess(true);
             result.setResult(utility.ObjectMapper().writeValueAsString(errorList));
         } catch (IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ACRGBPOST.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -539,74 +485,69 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
+        if (!utility.GetPayload(dataSource, token).isSuccess()) {
+            result.setMessage(utility.GetPayload(dataSource, token).getMessage());
         } else {
             // CHECK PROCESS ALL ENDED CONTRACT             
-            ACRGBWSResult BookingResult = new BookingMethod().PROCESSENDEDCONTRACT(dataSource, book, "INACTIVE");
-            result.setMessage(BookingResult.getMessage());
-            result.setResult(BookingResult.getResult());
-            result.setSuccess(BookingResult.isSuccess());
+            result = new BookingMethod().PROCESSENDEDCONTRACT(dataSource, book, "INACTIVE");
         }
         return result;
     }
 
     //TEST INSERT CLAIMS DATA
-    @POST
-    @Path("InsertNclaims")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult InsertNclaims(final NclaimsData nclaims) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        ArrayList<String> errorList = new ArrayList<>();
-        try (Connection connection = dataSource.getConnection()) {
-            for (int x = 0; x < Integer.parseInt(nclaims.getTotalclaims()); x++) {
-                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.INSERTCLAIMS(:Message,:Code,"
-                        + ":useries,:uaccreno,:upmccno,:udateadmission,:udatesubmitted,:uclaimamount,"
-                        + ":utags,:utrn,:uclaimid,:uhcfname,:c1rvcode,:c2rvcode,:c1icdcode,:c2icdcode,:uopdtst)");
-                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                getinsertresult.setString("useries", nclaims.getSeries());
-                getinsertresult.setString("uaccreno", nclaims.getAccreno());
-                getinsertresult.setString("upmccno", nclaims.getPmccno());
-                getinsertresult.setString("udateadmission", nclaims.getDateadmission().trim());
-                getinsertresult.setDate("udateadmission", (Date) new Date(utility.StringToDate(nclaims.getDateadmission().trim()).getTime()));
-                getinsertresult.setDate("udatesubmitted", (Date) new Date(utility.StringToDate(nclaims.getDatesubmitted()).getTime()));
-                getinsertresult.setString("uclaimamount", nclaims.getClaimamount());
-                getinsertresult.setString("utags", nclaims.getTags());
-                getinsertresult.setString("utrn", nclaims.getTrn());
-                getinsertresult.setString("uclaimid", nclaims.getClaimid());
-                getinsertresult.setString("uhcfname", nclaims.getHcfname());
-                getinsertresult.setString("c1rvcode", nclaims.getC1rvcode());
-                getinsertresult.setString("c2rvcode", nclaims.getC2rvcode());
-                getinsertresult.setString("c1icdcode", nclaims.getC1icdcode());
-                getinsertresult.setString("c2icdcode", nclaims.getC2icdcode());
-                getinsertresult.setString("uopdtst", nclaims.getUopdtst());
-                getinsertresult.execute();
-                if (!getinsertresult.getString("Message").equals("SUCC")) {
-                    errorList.add(getinsertresult.getString("Message"));
-                }
-            }
-            //------------------------------------------------------------------------------------------------
-            if (errorList.size() > 0) {
-                result.setMessage("THERE'S AN ERROR");
-            } else {
-                result.setMessage("NO ERROR");
-            }
-            result.setResult(utility.ObjectMapper().writeValueAsString(errorList));
-            result.setSuccess(true);
-
-        } catch (SQLException | IOException ex) {
-            result.setMessage(ex.getLocalizedMessage());
-            Logger.getLogger(ACRGBPOST.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+//    @POST
+//    @Path("InsertNclaims")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult InsertNclaims(final NclaimsData nclaims) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        ArrayList<String> errorList = new ArrayList<>();
+//        try (Connection connection = dataSource.getConnection()) {
+//            for (int x = 0; x < Integer.parseInt(nclaims.getTotalclaims()); x++) {
+//                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.INSERTCLAIMS(:Message,:Code,"
+//                        + ":useries,:uaccreno,:upmccno,:udateadmission,:udatesubmitted,:uclaimamount,"
+//                        + ":utags,:utrn,:uclaimid,:uhcfname,:c1rvcode,:c2rvcode,:c1icdcode,:c2icdcode,:uopdtst)");
+//                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+//                getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+//                getinsertresult.setString("useries", nclaims.getSeries());
+//                getinsertresult.setString("uaccreno", nclaims.getAccreno());
+//                getinsertresult.setString("upmccno", nclaims.getPmccno());
+//                getinsertresult.setString("udateadmission", nclaims.getDateadmission().trim());
+//                getinsertresult.setDate("udateadmission", (Date) new Date(utility.StringToDate(nclaims.getDateadmission().trim()).getTime()));
+//                getinsertresult.setDate("udatesubmitted", (Date) new Date(utility.StringToDate(nclaims.getDatesubmitted()).getTime()));
+//                getinsertresult.setString("uclaimamount", nclaims.getClaimamount());
+//                getinsertresult.setString("utags", nclaims.getTags());
+//                getinsertresult.setString("utrn", nclaims.getTrn());
+//                getinsertresult.setString("uclaimid", nclaims.getClaimid());
+//                getinsertresult.setString("uhcfname", nclaims.getHcfname());
+//                getinsertresult.setString("c1rvcode", nclaims.getC1rvcode());
+//                getinsertresult.setString("c2rvcode", nclaims.getC2rvcode());
+//                getinsertresult.setString("c1icdcode", nclaims.getC1icdcode());
+//                getinsertresult.setString("c2icdcode", nclaims.getC2icdcode());
+//                getinsertresult.setString("uopdtst", nclaims.getUopdtst());
+//                getinsertresult.execute();
+//                if (!getinsertresult.getString("Message").equals("SUCC")) {
+//                    errorList.add(getinsertresult.getString("Message"));
+//                }
+//            }
+//            //------------------------------------------------------------------------------------------------
+//            if (errorList.size() > 0) {
+//                result.setMessage("THERE'S AN ERROR");
+//            } else {
+//                result.setMessage("NO ERROR");
+//            }
+//            result.setResult(utility.ObjectMapper().writeValueAsString(errorList));
+//            result.setSuccess(true);
+//
+//        } catch (SQLException | IOException ex) {
+//            result.setMessage("Something went wrong");
+//            Logger.getLogger(ACRGBPOST.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
     @POST
     @Path("Remap")
     @Produces(MediaType.APPLICATION_JSON)
@@ -617,14 +558,10 @@ public class ACRGBPOST {
         result.setMessage("");
         result.setResult("");
         result.setSuccess(false);
-        ACRGBWSResult GetPayLoad = utility.GetPayload(dataSource, token);
-        if (!GetPayLoad.isSuccess()) {
-            result.setMessage(GetPayLoad.getMessage());
+        if (!utility.GetPayload(dataSource, token).isSuccess()) {
+            result.setMessage(utility.GetPayload(dataSource, token).getMessage());
         } else {
-            ACRGBWSResult remapRsult = new InsertMethods().INSEROLEINDEX(dataSource, roleIndex);
-            result.setMessage(remapRsult.getMessage());
-            result.setResult(remapRsult.getResult());
-            result.setSuccess(remapRsult.isSuccess());
+            result = new InsertMethods().INSEROLEINDEX(dataSource, roleIndex);
         }
         return result;
     }

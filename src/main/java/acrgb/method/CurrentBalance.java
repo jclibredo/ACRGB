@@ -218,7 +218,7 @@ public class CurrentBalance {
                 result.setMessage("No data found");
             }
         } catch (Exception ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(CurrentBalance.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -334,7 +334,6 @@ public class CurrentBalance {
                                 }
                             }
                         }
-
                         //GET CLAIMS SUMMARY OF FACILITY UNDER NETWORK
                         ACRGBWSResult conList = this.GETPREVIOUSMAP(dataSource, uhcfcode.trim(), condate.getCondateid());
                         if (conList.isSuccess()) {
@@ -342,11 +341,12 @@ public class CurrentBalance {
                             for (int x = 0; x < userRoleList.size(); x++) {
                                 //-------------------------------------------------------------------
                                 ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
-                                ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, resultset.getString("HCFID").trim());
+//                                ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, resultset.getString("HCFID").trim());
+                                ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, userRoleList.get(x).getAccessid().trim());
                                 if (getMainAccre.isSuccess()) {
                                     testHCIlist.addAll(Arrays.asList(utility.ObjectMapper().readValue(getMainAccre.getResult(), HealthCareFacility[].class)));
-                                } else if (new FetchMethods().GETFACILITYID(dataSource, resultset.getString("HCFID").trim()).isSuccess()) {
-                                    testHCIlist.add(utility.ObjectMapper().readValue(new FetchMethods().GETFACILITYID(dataSource, resultset.getString("HCFID").trim()).getResult(), HealthCareFacility.class));
+                                } else if (new FetchMethods().GETFACILITYID(dataSource, userRoleList.get(x).getAccessid().trim()).isSuccess()) {
+                                    testHCIlist.add(utility.ObjectMapper().readValue(new FetchMethods().GETFACILITYID(dataSource, userRoleList.get(x).getAccessid().trim()).getResult(), HealthCareFacility.class));
                                 }
                                 if (testHCIlist.size() > 0) {
                                     for (int yu = 0; yu < testHCIlist.size(); yu++) {
@@ -410,7 +410,7 @@ public class CurrentBalance {
                 result.setMessage("No data found");
             }
         } catch (Exception ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(CurrentBalance.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -446,7 +446,7 @@ public class CurrentBalance {
                 result.setMessage("NO DATA FOUND");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(CurrentBalance.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -485,7 +485,7 @@ public class CurrentBalance {
                 result.setMessage("No data found");
             }
         } catch (Exception ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(CurrentBalance.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -523,7 +523,7 @@ public class CurrentBalance {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(CurrentBalance.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -554,7 +554,7 @@ public class CurrentBalance {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(CurrentBalance.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -606,7 +606,7 @@ public class CurrentBalance {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(CurrentBalance.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

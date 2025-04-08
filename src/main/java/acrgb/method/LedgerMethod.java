@@ -104,7 +104,7 @@ public class LedgerMethod {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -162,7 +162,7 @@ public class LedgerMethod {
             }
 
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -218,7 +218,7 @@ public class LedgerMethod {
             }
 
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -274,11 +274,12 @@ public class LedgerMethod {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
+
     //===============================================================================================
     //PROCESS LEDGER PER CONTRACT UNDER HCPN
     public ACRGBWSResult GETLedgerPerContractHCPN(final DataSource dataSource,
@@ -467,7 +468,7 @@ public class LedgerMethod {
                 result.setMessage("N/A");
             }
         } catch (IOException | ParseException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -672,7 +673,7 @@ public class LedgerMethod {
                 result.setMessage("N/A");
             }
         } catch (IOException | ParseException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -860,7 +861,7 @@ public class LedgerMethod {
                 result.setMessage("N/A");
             }
         } catch (IOException | ParseException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -1051,7 +1052,7 @@ public class LedgerMethod {
                 result.setMessage(utility.ObjectMapper().writeValueAsString(errorList));
             }
         } catch (IOException | ParseException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(LedgerMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

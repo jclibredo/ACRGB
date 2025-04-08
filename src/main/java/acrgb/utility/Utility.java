@@ -310,7 +310,7 @@ public class Utility {
             }
 
         } catch (NumberFormatException | ParseException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
         }
 
@@ -494,7 +494,7 @@ public class Utility {
                 }
             }
         } catch (ExpiredJwtException | MalformedJwtException | SignatureException | UnsupportedJwtException | IllegalArgumentException ex) {
-            result.setMessage("Invalid Token : " + ex.getLocalizedMessage());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
 
         }

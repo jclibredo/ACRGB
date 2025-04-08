@@ -191,7 +191,7 @@ public class ContractMethod {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -329,7 +329,7 @@ public class ContractMethod {
             }
 
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -362,7 +362,7 @@ public class ContractMethod {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -431,7 +431,7 @@ public class ContractMethod {
             }
 
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -480,7 +480,7 @@ public class ContractMethod {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -635,7 +635,7 @@ public class ContractMethod {
                 result.setMessage(new Methods().GETROLE(dataSource, userid, tags).getMessage());
             }
         } catch (IOException | ParseException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -829,7 +829,7 @@ public class ContractMethod {
                 result.setMessage(new Methods().GETROLE(dataSource, userid, tags).getMessage());
             }
         } catch (IOException | ParseException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -1032,7 +1032,7 @@ public class ContractMethod {
                 result.setMessage(methods.GETROLE(dataSource, userid, tags).getMessage());
             }
         } catch (IOException | ParseException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -1096,7 +1096,7 @@ public class ContractMethod {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -1134,7 +1134,7 @@ public class ContractMethod {
                 result.setMessage("NO DATA FOUND");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -1172,7 +1172,7 @@ public class ContractMethod {
                 result.setMessage("NO DATA FOUND");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -1234,7 +1234,7 @@ public class ContractMethod {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -1299,7 +1299,7 @@ public class ContractMethod {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ContractMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -1494,7 +1494,7 @@ public class ContractMethod {
             }
 
         } catch (SQLException | IOException | ParseException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

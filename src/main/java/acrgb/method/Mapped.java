@@ -33,7 +33,6 @@ public class Mapped {
 //        result.setResult("");
 //        return result;
 //    }
-
     public ACRGBWSResult GETMAXCONDATE(final DataSource dataSource, final String puserid) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -53,7 +52,7 @@ public class Mapped {
                 result.setMessage("NO DATE FOUND");
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(Mapped.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -103,5 +102,4 @@ public class Mapped {
 //        }
 //        return result;
 //    }
-
 }

@@ -80,7 +80,7 @@ public class FacilityTagging {
                 result.setSuccess(true);
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(FacilityTagging.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -111,7 +111,7 @@ public class FacilityTagging {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(FetchMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -143,7 +143,7 @@ public class FacilityTagging {
                 result.setSuccess(true);
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(FacilityTagging.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -176,14 +176,13 @@ public class FacilityTagging {
                 result.setSuccess(true);
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(FacilityTagging.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
-    
-     //GET APEX FACILITY
+
+    //GET APEX FACILITY
     public ACRGBWSResult GETAPEXFACILITYS(final DataSource dataSource) {
         ACRGBWSResult result = utility.ACRGBWSResult();
         result.setMessage("");
@@ -212,10 +211,10 @@ public class FacilityTagging {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(FacilityTagging.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
-    
+
 }

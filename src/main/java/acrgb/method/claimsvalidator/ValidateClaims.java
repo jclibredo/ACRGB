@@ -75,7 +75,7 @@ public class ValidateClaims {
                 result.setMessage("NO FACILITY GB CONTRACT FOUND FOR THIS CLAIMS");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ValidateClaims.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -207,7 +207,7 @@ public class ValidateClaims {
                 result.setMessage("CLAIM NOT FOUND WITH SERIES " + useries);
             }
         } catch (SQLException | IOException | ParseException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ValidateClaims.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -241,7 +241,7 @@ public class ValidateClaims {
                 result.setMessage("N/A");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ValidateClaims.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -270,7 +270,7 @@ public class ValidateClaims {
                 result.setMessage(statement.getString("Message"));
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ValidateClaims.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -304,7 +304,7 @@ public class ValidateClaims {
                 result.setMessage("NO RECORD FOUND");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ValidateClaims.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -342,7 +342,7 @@ public class ValidateClaims {
                 result.setMessage("NO RECORD FOUND");
             }
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(ValidateClaims.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;

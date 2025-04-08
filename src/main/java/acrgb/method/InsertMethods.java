@@ -117,7 +117,7 @@ public class InsertMethods {
             new UserActivityLogs().UserLogsMethod(datasource, logsTags, userlogs, assets.getHcfid().trim(), assets.getTranchid().trim());
             //END ACTIVITY LOGS
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -241,7 +241,7 @@ public class InsertMethods {
             userlogs.setActdetails("Amount :" + contract.getAmount() + "| SB :" + contract.getSb() + "| Comitted volume:" + contract.getComittedClaimsVol() + " " + contract.getQuarter());
             new UserActivityLogs().UserLogsMethod(datasource, logsTags, userlogs, contract.getHcfid(), contract.getContractdate());
         } catch (SQLException ex) {
-            result.setMessage(ex.getLocalizedMessage());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -277,7 +277,7 @@ public class InsertMethods {
                     + tranch.getTranchtype() + " " + getinsertresult.getString("Message"));
             new UserActivityLogs().UserLogsMethod(datasource, "ADD-TRANCHE", userlogs, "0", "0");
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -326,7 +326,7 @@ public class InsertMethods {
             new UserActivityLogs().UserLogsMethod(datasource, "ADD-USERINFO", userlogs, "0", "0");
             //USER LOGS
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -363,12 +363,13 @@ public class InsertMethods {
             new UserActivityLogs().UserLogsMethod(datasource, "ADD-USER-LEVEL", userlogs, "0", "0");
             //END USER LOGS
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
 //---------------------------------------------------------------------------------------------------
+
     public ACRGBWSResult INSERTUSER(
             final DataSource datasource,
             final User user,
@@ -423,7 +424,7 @@ public class InsertMethods {
             new UserActivityLogs().UserLogsMethod(datasource, "ADD-USERACCOUNT", userlogs, user.getLeveid(), user.getDid());
             //USER LOGS
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -468,7 +469,7 @@ public class InsertMethods {
                 result.setMessage("OK");
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -509,7 +510,7 @@ public class InsertMethods {
                 result.setMessage(errorList.toString());
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -584,7 +585,7 @@ public class InsertMethods {
             userLogs.setActdetails(tags);
             new UserActivityLogs().UserLogsMethod(datasource, "INACTIVE-DATA", userLogs, dataid, "0");
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -662,7 +663,7 @@ public class InsertMethods {
             userLogs.setActdetails(tags);
             new UserActivityLogs().UserLogsMethod(datasource, "ACTIVE-DATA", userLogs, dataid, "0");
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -749,7 +750,7 @@ public class InsertMethods {
             new UserActivityLogs().UserLogsMethod(datasource, "ADD-HCPN", userlogs, "0", "0");
             //USER LOGS
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -787,7 +788,7 @@ public class InsertMethods {
             new UserActivityLogs().UserLogsMethod(datasource, "ADD-ACCREDITATION-HCPN", userlogs, accre.getAccreno(), "0");
             //==============ACTIVLITY LOGS AREA ===========================
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -827,7 +828,7 @@ public class InsertMethods {
             new UserActivityLogs().UserLogsMethod(datasource, "ADD-STATSLOG", userlogs, "0", "0");
             //USER LOGS
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -875,7 +876,7 @@ public class InsertMethods {
                 result.setMessage("OK");
             }
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -913,7 +914,7 @@ public class InsertMethods {
             new UserActivityLogs().UserLogsMethod(datasource, "INSERT-BOOK-REF", userlogs, book.getConid(), book.getHcpncode());
 
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -1023,7 +1024,7 @@ public class InsertMethods {
             new UserActivityLogs().UserLogsMethod(datasource, "ADD-CONTRACT-DATE", userLogs, "0", "0");
             //==============ACTIVLITY LOGS AREA ===========================
         } catch (SQLException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
@@ -1107,7 +1108,7 @@ public class InsertMethods {
             infologs.setActdetails(" Contact :" + userinfo.getContact() + " Email :" + userinfo.getEmail() + " Lastname :" + userinfo.getLastname() + " FirstName :" + userinfo.getFirstname() + " " + getinsertresult.getString("Message"));
             new UserActivityLogs().UserLogsMethod(datasource, "ADD-USERINFO-BATCH", infologs, userinfo.getDesignation(), "0");
         } catch (SQLException | IOException ex) {
-            result.setMessage(ex.toString());
+            result.setMessage("Something went wrong");
             Logger.getLogger(InsertMethods.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
