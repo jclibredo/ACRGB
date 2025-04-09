@@ -13,6 +13,14 @@
             <name>Path</name>
             <value>D:\DRG FULL IMPLEMENTATIONssss</value>
         </variable>
+        <variable>
+            <name>CipherKey</name>
+            <value>A263B7980A15ADE7</value>
+        </variable>
+        <variable>
+            <name>TokenExpired</name>
+            <value>480000</value>
+        </variable>
     </variable-definition>
     
     <module-override>
@@ -39,6 +47,17 @@
                 <operation>replace</operation>
             </variable-assignment>    
             
+            <variable-assignment>
+                <name>CipherKey</name>
+                <xpath>/web-app/env-entry/[env-entry-name="CipherKey"]/env-entry-value</xpath>
+                <operation>replace</operation>
+            </variable-assignment>    
+            
+            <variable-assignment>
+                <name>TokenExpired</name>
+                <xpath>/web-app/env-entry/[env-entry-name="TokenExpired"]/env-entry-value</xpath>
+                <operation>replace</operation>
+            </variable-assignment>    
              
                
         </module-descriptor>

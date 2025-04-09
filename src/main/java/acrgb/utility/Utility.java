@@ -62,16 +62,15 @@ import okhttp3.OkHttpClient;
 @ApplicationScoped
 @Singleton
 public class Utility {
-
+    
     private static SecretKeySpec secretkey;
     private byte[] key;
     String regex = "^(?=.*[0-9])"
             + "(?=.*[a-z])(?=.*[A-Z])"
             + "(?=.*[@#$%^&+=])"
             + "(?=\\S+$).{8,20}$";
-    private static final String CIPHERKEY = "A263B7980A15ADE7";
+//    private static final String CIPHERKEY = "A263B7980A15ADE7";
     private final String email_pattern = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
-
     private static final String UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final String LOWER = UPPER.toLowerCase();
     private static final String DIGITS = "0123456789";
@@ -104,40 +103,40 @@ public class Utility {
         }
         return password.toString();
     }
-
+    
     public ACRGBWSResult ACRGBWSResult() {
         return new ACRGBWSResult();
     }
-
+    
     public Date GetCurrentDate() {
         return new java.util.Date();
     }
-
+    
     public OkHttpClient OkHttpClient() {
-
+        
         return new OkHttpClient();
     }
-
+    
     public ACRGBPayload ACRGBPayload() {
         return new ACRGBPayload();
     }
-
+    
     public UserActivity UserActivity() {
         return new UserActivity();
     }
-
+    
     public Contract Contract() {
         return new Contract();
     }
-
+    
     public SimpleDateFormat SimpleDateFormat(String pattern) {
         return new SimpleDateFormat(pattern);
     }
-
+    
     public ObjectMapper ObjectMapper() {
         return new ObjectMapper();
     }
-
+    
     public boolean validatePassword(String password) {
         Pattern p = Pattern.compile(regex);
         Matcher m = p.matcher(password);
@@ -181,12 +180,12 @@ public class Utility {
             return false;
         }
     }
-
+    
     public boolean isValidPhoneNumber(String phone_number) {
         boolean isValid = phone_number.matches("\\d{11}");
         return isValid;
     }
-
+    
     public boolean IsValidDate(String string) {
         SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
         sdf.setLenient(false);
@@ -197,7 +196,7 @@ public class Utility {
             return false;
         }
     }
-
+    
     public boolean IsValidDateDifference(String string) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         sdf.setLenient(false);
@@ -208,7 +207,7 @@ public class Utility {
             return false;
         }
     }
-
+    
     public Date StringToDate(String stringdate) {
         java.util.Date sf = null;
         try {
@@ -218,7 +217,7 @@ public class Utility {
         }
         return sf;
     }
-
+    
     public Date StringToDateTime(String stringdatetime) {
         java.util.Date sf = null;
         try {
@@ -228,12 +227,12 @@ public class Utility {
         }
         return sf;
     }
-
+    
     public String ComputeDateBackward(String dates, int diff) {
         String dateResults = String.valueOf(LocalDate.parse(dates).minusYears(diff).format(DateTimeFormatter.ofPattern("MM-dd-yyyy")));
         return dateResults;
     }
-
+    
     public String AddMinusDaysDate(String date, String val) {
         String dateresult = "";
         try {
@@ -247,7 +246,7 @@ public class Utility {
         }
         return dateresult;
     }
-
+    
     public ACRGBWSResult ProcessDateAmountComputation(String datefrom, String dateto) {
         ACRGBWSResult result = this.ACRGBWSResult();
         result.setMessage("");
@@ -308,15 +307,15 @@ public class Utility {
             } else {
                 result.setMessage("N/A");
             }
-
+            
         } catch (NumberFormatException | ParseException | IOException ex) {
             result.setMessage("Something went wrong");
             Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        
         return result;
     }
-
+    
     public boolean isValidEmail(String email) {
         boolean isValid = email.matches(email_pattern);
         return isValid;
@@ -400,18 +399,18 @@ public class Utility {
     //GENERATE TOKEN METHODS
     public String GenerateToken(String username, String password) {
         SignatureAlgorithm algorithm = SignatureAlgorithm.HS256;
-        byte[] userkeybytes = DatatypeConverter.parseBase64Binary(CIPHERKEY);
+        byte[] userkeybytes = DatatypeConverter.parseBase64Binary(this.GetString("CipherKey"));
         Key signingkey = new SecretKeySpec(userkeybytes, algorithm.getJcaName());
         JwtBuilder builder = Jwts.builder()
                 .claim("Code1", EncryptString(username))
                 .claim("Code2", EncryptString(password))
-                .setExpiration(new Date(System.currentTimeMillis() + 30 * 480000))//ADD EXPIRE TIME 8HOURS
+                .setExpiration(new Date(System.currentTimeMillis() + 30 * Integer.parseInt(this.GetString("TokenExpired"))))//ADD EXPIRE TIME 8HOURS
 
                 .signWith(algorithm, signingkey);
         return builder.compact();
-
+        
     }
-
+    
     public String EncryptString(String string) {
         String result = null;
         try {
@@ -424,11 +423,11 @@ public class Utility {
         }
         return result;
     }
-
+    
     private void SetKey() {
         MessageDigest sha = null;
         try {
-            String userkey = CIPHERKEY;
+            String userkey = this.GetString("CipherKey");
             key = userkey.getBytes("UTF-8");
             sha = MessageDigest.getInstance("SHA-1");
             key = sha.digest(key);
@@ -438,17 +437,17 @@ public class Utility {
             Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+    
     public boolean ValidateToken(final String token) {
         boolean result = false;
         try {
-            Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(CIPHERKEY)).parseClaimsJws(token).getBody();
+            Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(this.GetString("CipherKey"))).parseClaimsJws(token).getBody();
             result = true;
         } catch (ExpiredJwtException | MalformedJwtException | SignatureException | UnsupportedJwtException | IllegalArgumentException ex) {
         }
         return result;
     }
-
+    
     public String DecryptString(String string) {
         String result = null;
         try {
@@ -462,7 +461,7 @@ public class Utility {
         }
         return result;
     }
-
+    
     public ACRGBWSResult GetPayload(
             final DataSource dataSource,
             final String token) {
@@ -474,8 +473,8 @@ public class Utility {
             if (token.equals("")) {
                 result.setMessage("Token is required");
             } else {
-                if (this.ValidateToken(token) == true) {
-                    Claims claims = Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(CIPHERKEY)).parseClaimsJws(token).getBody();
+                if (this.ValidateToken(token)) {
+                    Claims claims = Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(this.GetString("CipherKey"))).parseClaimsJws(token).getBody();
                     if (!this.isJWTExpired(claims)) {
                         ACRGBPayload payload = this.ACRGBPayload();
                         payload.setCode1(this.DecryptString((String) claims.get("Code1")));
@@ -484,23 +483,53 @@ public class Utility {
                         if (new Methods().ACRUSERLOGIN(dataSource, this.DecryptString((String) claims.get("Code1")).trim(), this.DecryptString((String) claims.get("Code2")).trim()).isSuccess()) {
                             result.setSuccess(true);
                         } else {
-                            result.setMessage("Unrecognized User");
+                            result.setMessage("Unrecognized User ");
                         }
                     } else {
-                        result.setMessage("Token is expired");
+                        result.setMessage("The access token expired ");
                     }
                 } else {
-                    result.setMessage("Invalid Token");
+                    result.setMessage("Could not verify JWT token integrity! ");
                 }
             }
         } catch (ExpiredJwtException | MalformedJwtException | SignatureException | UnsupportedJwtException | IllegalArgumentException ex) {
             result.setMessage("Something went wrong");
             Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
-
+            
         }
         return result;
     }
-
+    
+    public ACRGBWSResult GetPayloadNODB(
+            final DataSource dataSource,
+            final String token) {
+        ACRGBWSResult result = this.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        try {
+            if (token.equals("")) {
+                result.setMessage("Token is required");
+            } else {
+                if (this.ValidateToken(token)) {
+                    Claims claims = Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(this.GetString("CipherKey"))).parseClaimsJws(token).getBody();
+                    if (!this.isJWTExpired(claims)) {
+                        result.setSuccess(true);
+                    } else {
+                        result.setMessage("The access token expired ");
+                    }
+                } else {
+                    result.setMessage("Could not verify JWT token integrity!");
+                }
+            }
+        } catch (ExpiredJwtException | MalformedJwtException | SignatureException | UnsupportedJwtException | IllegalArgumentException ex) {
+            result.setMessage("Something went wrong");
+            Logger.getLogger(Utility.class.getName()).log(Level.SEVERE, null, ex);
+            
+        }
+        return result;
+    }
+    
     public boolean isJWTExpired(Claims claims) {
         if (claims.getExpiration() == null) {
             return true;
@@ -532,7 +561,7 @@ public class Utility {
         }
         return result;
     }
-
+    
     public String EmailSenderContent(String useremail, String passcode) {
         String result = "<body style=\"padding-top: 30px; font-family: sans-serif; border: groove 10px; max-width: 80%; margin-top: 10px; display: grid; align-items:center ;\">\n"
                 + "    <div style=\"display:grid; place-items: center; padding:5px; width: 80%; margin:auto\">\n"
@@ -562,5 +591,5 @@ public class Utility {
                 + "</html>";
         return result;
     }
-
+    
 }

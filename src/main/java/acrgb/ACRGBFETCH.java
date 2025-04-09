@@ -37,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
+import javax.mail.Session;
 import javax.sql.DataSource;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
@@ -62,37 +63,68 @@ public class ACRGBFETCH {
 
     @Resource(lookup = "jdbc/acgbuser")
     private DataSource dataSource;
+
+    @Resource(lookup = "mail/acrgbmail")
+    private Session acrgbmail;
+
     private final Utility utility = new Utility();
+
+    @GET
+    @Path("EmailNotification/{conid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ACRGBWSResult EmailNotification(
+            @HeaderParam("token") String token,
+            @PathParam("conid") String conid) {
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        if (!utility.GetPayloadNODB(dataSource, token).isSuccess()) {
+            result.setMessage(utility.GetPayloadNODB(dataSource, token).getMessage());
+        } else {
+//            result = new ValidateClaims().GETNCLAIMS(dataSource, useries.trim(), uaction.trim().toUpperCase());
+        }
+        return result;
+    }
 
     @GET
     @Path("ValidateClaims/{useries}/{uaction}")
     @Produces(MediaType.APPLICATION_JSON)
     public ACRGBWSResult ValidateClaims(
+            @HeaderParam("token") String token,
             @PathParam("useries") String useries,
             @PathParam("uaction") String uaction) {
-        return new ValidateClaims().GETNCLAIMS(dataSource, useries.trim(), uaction.trim().toUpperCase());
+        ACRGBWSResult result = utility.ACRGBWSResult();
+        result.setMessage("");
+        result.setResult("");
+        result.setSuccess(false);
+        if (!utility.GetPayloadNODB(dataSource, token).isSuccess()) {
+            result.setMessage(utility.GetPayloadNODB(dataSource, token).getMessage());
+        } else {
+            result = new ValidateClaims().GETNCLAIMS(dataSource, useries.trim(), uaction.trim().toUpperCase());
+        }
+        return result;
     }
 
     //GET ASSETS TYPE TBL
-    @GET
-    @Path("TESTDate/{datefrom}/{dateto}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult TESTDate(
-            @PathParam("datefrom") String datefrom,
-            @PathParam("dateto") String dateto) {
-        return utility.ProcessDateAmountComputation(datefrom, dateto);
-    }
-
-    @GET
-    @Path("TESTGetClaimsAverage/{pmccno}/{datefrom}/{dateto}")  //300806/01-01-2025/12-31-2025
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult TESTGetClaimsAverage(
-            @PathParam("pmccno") String pmccno,
-            @PathParam("datefrom") String datefrom,
-            @PathParam("dateto") String dateto) {
-        return new Methods().GETAVERAGECLAIMSS(dataSource, pmccno, datefrom, dateto);
-    }
-
+//    @GET
+//    @Path("TESTDate/{datefrom}/{dateto}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult TESTDate(
+//            @PathParam("datefrom") String datefrom,
+//            @PathParam("dateto") String dateto) {
+//        return utility.ProcessDateAmountComputation(datefrom, dateto);
+//    }
+//
+//    @GET
+//    @Path("TESTGetClaimsAverage/{pmccno}/{datefrom}/{dateto}")  //300806/01-01-2025/12-31-2025
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult TESTGetClaimsAverage(
+//            @PathParam("pmccno") String pmccno,
+//            @PathParam("datefrom") String datefrom,
+//            @PathParam("dateto") String dateto) {
+//        return new Methods().GETAVERAGECLAIMSS(dataSource, pmccno, datefrom, dateto);
+//    }
     //GET ASSETS TYPE TBL
     @GET
     @Path("GetAssets/{tags}/{phcfid}")
