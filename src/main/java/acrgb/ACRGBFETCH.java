@@ -37,7 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Resource;
 import javax.enterprise.context.RequestScoped;
-import javax.mail.Session;
+//import javax.mail.Session;
 import javax.sql.DataSource;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
@@ -64,9 +64,8 @@ public class ACRGBFETCH {
     @Resource(lookup = "jdbc/acgbuser")
     private DataSource dataSource;
 
-    @Resource(lookup = "mail/acrgbmail")
-    private Session acrgbmail;
-
+//    @Resource(lookup = "mail/acrgbmail")
+//    private Session acrgbmail;
     private final Utility utility = new Utility();
 
     @GET
@@ -82,7 +81,8 @@ public class ACRGBFETCH {
         if (!utility.GetPayloadNODB(dataSource, token).isSuccess()) {
             result.setMessage(utility.GetPayloadNODB(dataSource, token).getMessage());
         } else {
-//            result = new ValidateClaims().GETNCLAIMS(dataSource, useries.trim(), uaction.trim().toUpperCase());
+            
+            
         }
         return result;
     }
@@ -144,7 +144,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+//------------------------------------------------------------
     //GET FACILITY UNDER PRO USING PRO ACCOUNT USERID
     @GET
     @Path("GetAppexUnderProByUserid/{userid}")
@@ -193,7 +193,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+//------------------------------------------------------------
     //GET FACILITY UNDER PRO USING PRO ACCOUNT USERID
     @GET
     @Path("GetAppexUnderProByProCode/{procode}")
@@ -238,7 +238,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+//------------------------------------------------------------
     //GET  HCI NET ASSETS TBL FINAL
     @GET
     @Path("GetContract/{tags}/{puserid}/{level}")
@@ -305,7 +305,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+//------------------------------------------------------------
     //GET  ACR USER INDEX TBL
     @GET
     @Path("GetTranch/{tags}")
@@ -324,7 +324,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+//------------------------------------------------------------
     //GET  ACR USER TABLE
     @GET
     @Path("GetUserInfo/{tags}/{pdid}")
@@ -344,7 +344,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+//------------------------------------------------------------
     //GET  HCI FACILITY
     @GET
     @Path("GetUserLevel/{tags}")
@@ -363,7 +363,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+//------------------------------------------------------------
     //GET  HCI FACILITY
     @GET
     @Path("GetUser/{tags}/{id}")
@@ -383,7 +383,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+//------------------------------------------------------------
     @GET
     @Path("GetPro/{tags}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -401,7 +401,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+//------------------------------------------------------------
     @GET
     @Path("GetRoleIndex/{puserid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -419,7 +419,7 @@ public class ACRGBFETCH {
         }
         return result;
     }
-
+//------------------------------------------------------------
 //SUMMARY 
     @GET
     @Path("GetSummary/{tags}/{userid}/{datefrom}/{dateto}/{type}/{hcilist}")
@@ -448,9 +448,10 @@ public class ACRGBFETCH {
                         result = new Methods().GetBaseAmountForContract(dataSource, tags, userid, datefrom, dateto, "ACTIVE".toUpperCase().trim());
                         break;
                     }
-                    default:
+                    default: {
                         result.setMessage("REQUEST TYPE NOT FOUND");
                         break;
+                    }
                 }
             }
         } else {
@@ -459,7 +460,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetLevel/{levid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -480,7 +480,6 @@ public class ACRGBFETCH {
     }
 //------------------------------------------------------------
 //GET USER DETAILS
-
     @GET
     @Path("GETFULLDETAILS/{userid}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -520,7 +519,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetActivityLogs")
     @Produces(MediaType.APPLICATION_JSON)
@@ -673,7 +671,6 @@ public class ACRGBFETCH {
         return result;
     }
 //------------------------------------------------------------
-
     @GET
     @Path("GetManagingBoardWithProID/{proid}/{levelname}")
     @Produces(MediaType.APPLICATION_JSON)

@@ -158,17 +158,17 @@ public class InsertMethods {
                 if (getinsertresult.getString("Message").equals("SUCC")) {
                     //INSERT TO ACTIVITY LOGS
                     int countpro = 0;
-                    int hcicounter = 0;
-                    int hcpncounter = 0;
+//                    int hcicounter = 0;
+//                    int hcpncounter = 0;
                     ACRGBWSResult getSubject = new FetchMethods().GETFACILITYID(datasource, contract.getHcfid());
                     if (getSubject.isSuccess()) {
                         logsTags = "ADD-CONTRACT-HCI";
-                        hcicounter++;
+//                        hcicounter++;
                     } else {
                         ACRGBWSResult getSubjectA = new Methods().GETMBWITHID(datasource, contract.getHcfid());
                         if (getSubjectA.isSuccess()) {
                             logsTags = "ADD-CONTRACT-HCPN";
-                            hcpncounter++;
+//                            hcpncounter++;
                         } else {
                             logsTags = "ADD-CONTRACT-PRO";
                             countpro++;

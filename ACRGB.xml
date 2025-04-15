@@ -19,14 +19,14 @@
         </variable>
         <variable>
             <name>TokenExpired</name>
-            <value>480000</value>
+            <value>480000</value>  
         </variable>
     </variable-definition>
     
     <module-override>
         <module-name>ACRGB-0.1.war</module-name>
         <module-type>war</module-type>
-        <module-descriptor external="false">
+        <module-descriptor external="false"> 
             <root-element>weblogic-web-app</root-element>
             <uri>WEB-INF/weblogic.xml</uri>
         </module-descriptor>
