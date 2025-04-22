@@ -36,6 +36,7 @@ public class ValidateClaims {
 
     private final Utility utility = new Utility();
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
+    private final String DaysExt = utility.GetString("DaysExtension");
 
     public ACRGBWSResult GETROLEREVERESE(
             final DataSource dataSource,
@@ -125,11 +126,11 @@ public class ValidateClaims {
                                             } else {
                                                 if (dateformat.parse(contractDate.getDatefrom()).compareTo(dateformat.parse(dateformat.format(resultset.getTimestamp("DATE_ADM")))) <= 0) {
                                                     if (resultset.getString("REFILEDATE") == null || resultset.getString("REFILEDATE").isEmpty() || resultset.getString("REFILEDATE").equals("")) {
-                                                        if (dateformat.parse(dateformat.format(resultset.getTimestamp("DATESUBMITTED"))).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractDate.getDateto(), "60"))) <= 0) {
+                                                        if (dateformat.parse(dateformat.format(resultset.getTimestamp("DATESUBMITTED"))).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractDate.getDateto(), DaysExt))) <= 0) {
                                                             counterCurrent++;
                                                         }
                                                     } else {
-                                                        if (dateformat.parse(dateformat.format(resultset.getTimestamp("REFILEDATE"))).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractDate.getDateto(), "60"))) <= 0) {
+                                                        if (dateformat.parse(dateformat.format(resultset.getTimestamp("REFILEDATE"))).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractDate.getDateto(), DaysExt))) <= 0) {
                                                             counterCurrent++;
                                                         }
                                                     }
@@ -150,11 +151,11 @@ public class ValidateClaims {
                                             } else {
                                                 if (dateformat.parse(contractDate.getDatefrom()).compareTo(dateformat.parse(dateformat.format(resultset.getTimestamp("DATE_ADM")))) <= 0) {
                                                     if (resultset.getString("REFILEDATE") == null || resultset.getString("REFILEDATE").isEmpty() || resultset.getString("REFILEDATE").equals("")) {
-                                                        if (dateformat.parse(dateformat.format(resultset.getTimestamp("DATESUBMITTED"))).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractDate.getDateto(), "60"))) <= 0) {
+                                                        if (dateformat.parse(dateformat.format(resultset.getTimestamp("DATESUBMITTED"))).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractDate.getDateto(), DaysExt))) <= 0) {
                                                             counterOld++;
                                                         }
                                                     } else {
-                                                        if (dateformat.parse(dateformat.format(resultset.getTimestamp("REFILEDATE"))).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractDate.getDateto(), "60"))) <= 0) {
+                                                        if (dateformat.parse(dateformat.format(resultset.getTimestamp("REFILEDATE"))).compareTo(dateformat.parse(utility.AddMinusDaysDate(contractDate.getDateto(), DaysExt))) <= 0) {
                                                             counterOld++;
                                                         }
                                                     }

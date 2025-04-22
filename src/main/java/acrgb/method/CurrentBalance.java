@@ -40,6 +40,7 @@ public class CurrentBalance {
 
     private final Utility utility = new Utility();
     private final SimpleDateFormat dateformat = utility.SimpleDateFormat("MM-dd-yyyy");
+    private final String DaysExt = utility.webXml(utility.GetString("DaysExtension"));
 
     public ACRGBWSResult OpenEndedHCIContract( //09761235056
             final DataSource dataSource,
@@ -164,17 +165,17 @@ public class CurrentBalance {
                             for (int yu = 0; yu < testHCIlist.size(); yu++) {
                                 //------------------------------------------------------------------------
                                 ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource, testHCIlist.get(yu).getHcfcode().trim(), "G",
-                                        condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), "60"), "CURRENTSTATUS");
+                                        condate.getDatefrom(), utility.AddMinusDaysDate(condate.getDateto(), DaysExt), "CURRENTSTATUS");
                                 if (sumresult.isSuccess()) {
                                     List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                                     for (int i = 0; i < nclaimsdata.size(); i++) {
                                         if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                            if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                            if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), DaysExt))) <= 0) {
                                                 numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
                                                 totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
                                             }
                                         } else {
-                                            if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                            if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), DaysExt))) <= 0) {
                                                 numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
                                                 totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
                                             }
@@ -354,18 +355,18 @@ public class CurrentBalance {
                                         ACRGBWSResult sumresult = new FetchMethods().GETNCLAIMS(dataSource,
                                                 testHCIlist.get(yu).getHcfcode().trim(), "G",
                                                 condate.getDatefrom(),
-                                                utility.AddMinusDaysDate(condate.getDateto().trim(), "60"),
+                                                utility.AddMinusDaysDate(condate.getDateto().trim(), DaysExt),
                                                 "CURRENTSTATUS");
                                         if (sumresult.isSuccess()) {
                                             List<NclaimsData> nclaimsdata = Arrays.asList(utility.ObjectMapper().readValue(sumresult.getResult(), NclaimsData[].class));
                                             for (int i = 0; i < nclaimsdata.size(); i++) {
                                                 if (nclaimsdata.get(i).getRefiledate().isEmpty()) {
-                                                    if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                    if (dateformat.parse(nclaimsdata.get(i).getDatesubmitted()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), DaysExt))) <= 0) {
                                                         numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
                                                         totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
                                                     }
                                                 } else {
-                                                    if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), "60"))) <= 0) {
+                                                    if (dateformat.parse(nclaimsdata.get(i).getRefiledate()).compareTo(dateformat.parse(utility.AddMinusDaysDate(condate.getDateto(), DaysExt))) <= 0) {
                                                         numberofclaims += Integer.parseInt(nclaimsdata.get(i).getTotalclaims());
                                                         totalclaimsamount += Double.parseDouble(nclaimsdata.get(i).getClaimamount());
                                                     }

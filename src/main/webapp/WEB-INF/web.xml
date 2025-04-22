@@ -24,6 +24,11 @@
         <env-entry-value>A263B7980A15ADE7</env-entry-value> 
     </env-entry>
     <env-entry> 
+        <env-entry-name>DaysExtension</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>60</env-entry-value> 
+    </env-entry>
+    <env-entry> 
         <env-entry-name>TokenExpired</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
         <env-entry-value>480000</env-entry-value> 
