@@ -31,7 +31,7 @@ public class BudgetStatsNotification {
         result.setResult("");
         // try (Connection connection = dataSource.getConnection()) {
         try {
-             ACRGBWSResult restA = new Methods().GETROLEREVERESE(dataSource, contract.getHcfid(), "ACTIVE");//GET (PROID) USING (USERID)
+//             ACRGBWSResult restA = new Methods().GETROLEREVERESE(dataSource, contract.getHcfid(), "ACTIVE");//GET (PROID) USING (USERID)
 
             // } catch (SQLException ex) {
         } catch (Exception ex) {

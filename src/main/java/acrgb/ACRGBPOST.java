@@ -507,7 +507,7 @@ public class ACRGBPOST {
 //        ArrayList<String> errorList = new ArrayList<>();
 //        try (Connection connection = dataSource.getConnection()) {
 //            for (int x = 0; x < Integer.parseInt(nclaims.getTotalclaims()); x++) {
-//                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.INSERTCLAIMS(:Message,:Code,"
+//                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.INSERTCLAIMS(:Message,:Code,"
 //                        + ":useries,:uaccreno,:upmccno,:udateadmission,:udatesubmitted,:uclaimamount,"
 //                        + ":utags,:utrn,:uclaimid,:uhcfname,:c1rvcode,:c2rvcode,:c1icdcode,:c2icdcode,:uopdtst)");
 //                getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);

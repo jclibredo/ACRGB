@@ -51,8 +51,8 @@ public class EmailSender {
                 Transport.send(message);
                 result.setSuccess(true);
             } else {
-                ACRGBWSResult validateUsername = new Methods().ACRUSERNAME(dataSource, uemail.trim());
-                if (validateUsername.isSuccess()) {
+//                ACRGBWSResult validateUsername = new Methods().ACRUSERNAME(dataSource, uemail.trim());
+                if (new Methods().ACRUSERNAME(dataSource, uemail.trim()).isSuccess()) {
                     result.setMessage(uemail + " User email not found");
                 } else {
                     String newPass = utility.GenerateRandomPassword(10);
@@ -63,7 +63,7 @@ public class EmailSender {
                         result.setMessage(updatepassword.getMessage());
                         result.setSuccess(true);
                     } else {
-                        result.setMessage(updatepassword.getMessage());
+                        result.setMessage("Something went wrong");
                     }
                 }
             }

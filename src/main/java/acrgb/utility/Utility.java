@@ -104,15 +104,15 @@ public class Utility {
         return password.toString();
     }
 
-    public String webXml(String stringData) {
-        String result = "";
-        if (this.GetString(stringData).equals("")) {
-            result = "60";
-        } else {
-            result = this.GetString(stringData);
-        }
-        return result;
-    }
+//    public String webXml(String stringData) {
+//        String result = "";
+//        if (this.GetString(stringData).equals("")) {
+//            result = "60";
+//        } else {
+//            result = this.GetString(stringData);
+//        }
+//        return result;
+//    }
 
     public ACRGBWSResult ACRGBWSResult() {
         return new ACRGBWSResult();

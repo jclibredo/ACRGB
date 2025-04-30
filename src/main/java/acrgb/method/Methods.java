@@ -12,7 +12,7 @@ import acrgb.structure.ContractDate;
 import acrgb.structure.DateSettings;
 import acrgb.structure.FacilityComputedAmount;
 import acrgb.structure.HealthCareFacility;
-import acrgb.structure.MBRequestSummary;
+//import acrgb.structure.MBRequestSummary;
 import acrgb.structure.ManagingBoard;
 import acrgb.structure.Pro;
 import acrgb.structure.Total;
@@ -63,55 +63,37 @@ public class Methods {
         result.setSuccess(false);
         result.setMessage("");
         result.setResult("");
-        ArrayList<String> message = new ArrayList<>();
         try {
-            int resultcounter = 0;
-            ACRGBWSResult resultfm = new FetchMethods().ACR_USER(datasource, "ACTIVE", "0");
-            if (resultfm.isSuccess()) {
-                List<User> userlist = Arrays.asList(utility.ObjectMapper().readValue(resultfm.getResult(), User[].class));
-                for (int x = 0; x < userlist.size(); x++) {
+            if (!this.ACRUSERNAME(datasource, p_username).isSuccess()) {
+                User user = utility.ObjectMapper().readValue(this.ACRUSERNAME(datasource, p_username).getMessage(), User.class);
+                if (user.getStatus().equals("2")) {
                     UserPassword userPassword = new UserPassword();
-                    userPassword.setDbpass(new Cryptor().decrypt(userlist.get(x).getUserpassword(), p_password, "ACRGB"));
-                    if (userlist.get(x).getUsername().equals(p_username) && userPassword.getDbpass().equals(p_password)) {
-                        if (new FetchMethods().GETLEVELBYLEVNAME(datasource, userlist.get(x).getLeveid()).isSuccess()) {
-                            UserLevel userLevel = utility.ObjectMapper().readValue(new FetchMethods().GETLEVELBYLEVNAME(datasource, userlist.get(x).getLeveid()).getResult(), UserLevel.class);
-                            if (userLevel.getStats().equals("2")) {
-                                User user = new User();
-                                user.setUserid(userlist.get(x).getUserid());
-                                user.setLeveid(userlist.get(x).getLeveid().toUpperCase());
-                                user.setLeveldetails(userlist.get(x).getLeveldetails());
-                                user.setUsername(userlist.get(x).getUsername());
-                                user.setUserpassword(userlist.get(x).getUserpassword());
-                                user.setDatecreated(userlist.get(x).getDatecreated());
-                                user.setStatus(userlist.get(x).getStatus());
-                                //----------------------------------------------
-                                ACRGBWSResult detailsresult = new FetchMethods().GETFULLDETAILS(datasource, userlist.get(x).getUserid());
+                    userPassword.setDbpass(new Cryptor().decrypt(user.getUserpassword(), p_password, "ACRGB"));
+                    if (user.getUsername().equals(p_username) && userPassword.getDbpass().equals(p_password)) {
+                        if (new FetchMethods().GETLEVELBYLEVNAME(datasource, user.getLeveid()).isSuccess()) {
+                            if (utility.ObjectMapper().readValue(new FetchMethods().GETLEVELBYLEVNAME(datasource, user.getLeveid()).getResult(), UserLevel.class).getStats().equals("2")) {
+                                ACRGBWSResult detailsresult = new FetchMethods().GETFULLDETAILS(datasource, user.getUserid());
                                 if (detailsresult.isSuccess()) {
                                     user.setDid(detailsresult.getResult());
                                 } else {
                                     user.setDid(detailsresult.getMessage());
                                 }
-                                //----------------------------------------------
-                                user.setCreatedby(userlist.get(x).getCreatedby());
                                 result.setSuccess(true);
                                 result.setResult(utility.ObjectMapper().writeValueAsString(user));
                                 result.setMessage(utility.GenerateToken(p_username, userPassword.getDbpass()));
-                                resultcounter++;
                             } else {
-                                message.add("USER ROLE CURRENTLY NOT YET ACTIVATED");
+                                result.setMessage("USER ROLE CURRENTLY NOT YET ACTIVATED");
                             }
                         } else {
-                            message.add("USER ROLE NOT RECOGNIZED");
+                            result.setMessage("USER ROLE NOT RECOGNIZED");
                         }
-                        break;
+                    } else {
+                        result.setMessage("INVALID USERNAME OR PASSWORD");
                     }
+                } else {
+                    result.setMessage("USER ACCOUNT IS CURRENTLY DISABLE");
                 }
             } else {
-                message.add(resultfm.getMessage());
-            }
-            if (message.size() > 0) {
-                result.setMessage(String.join(",", message));
-            } else if (resultcounter == 0) {
                 result.setMessage("INVALID USERNAME OR PASSWORD");
             }
         } catch (IOException ex) {
@@ -142,19 +124,39 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :p_user := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.ACRUSERNAME(:p_username); end;");
+            CallableStatement statement = connection.prepareCall("begin :p_user := ACR_GB.ACRGBPKGFUNCTION.ACRUSERNAME(:p_username); end;");
             statement.registerOutParameter("p_user", OracleTypes.CURSOR);
             statement.setString("p_username", p_username.trim());
             statement.execute();
             ResultSet resultset = (ResultSet) statement.getObject("p_user");
             if (resultset.next()) {
-                result.setMessage("USERNAME IS ALREADY EXIST");
+                User user = new User();
+                user.setUserid(resultset.getString("USERID"));
+                if (new FetchMethods().GETUSERLEVEL(dataSource, resultset.getString("LEVELID")).isSuccess()) {
+                    user.setLeveid(new FetchMethods().GETUSERLEVEL(dataSource, resultset.getString("LEVELID")).getResult());
+                    user.setLeveldetails(new FetchMethods().GETUSERLEVEL(dataSource, resultset.getString("LEVELID")).getMessage());
+                } else {
+                    user.setLeveldetails(new FetchMethods().GETUSERLEVEL(dataSource, resultset.getString("LEVELID")).getMessage());
+                    user.setLeveid(new FetchMethods().GETUSERLEVEL(dataSource, resultset.getString("LEVELID")).getMessage());
+                }
+                user.setUsername(resultset.getString("USERNAME"));
+                user.setUserpassword(resultset.getString("USERPASSWORD"));
+                user.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));//resultset.getString("DATECREATED"));
+                user.setStatus(resultset.getString("STATS"));
+                user.setDid(resultset.getString("DID"));
+                if (new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim()).isSuccess()) {
+                    user.setCreatedby(utility.ObjectMapper().readValue(new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim()).getResult(), UserInfo.class).getLastname() + ", "
+                            + "" + utility.ObjectMapper().readValue(new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim()).getResult(), UserInfo.class).getFirstname());
+                } else {
+                    user.setCreatedby(new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim()).getMessage());
+                }
+                result.setMessage(utility.ObjectMapper().writeValueAsString(user));
                 result.setResult(p_username);
             } else {
                 result.setMessage("OK");
                 result.setSuccess(true);
             }
-        } catch (SQLException ex) {
+        } catch (SQLException | IOException ex) {
             result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -169,7 +171,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_level := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.ACRUSERLEVEL(:p_levelid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_level := ACR_GB.ACRGBPKGFUNCTION.ACRUSERLEVEL(:p_levelid); end;");
             statement.registerOutParameter("v_level", OracleTypes.CURSOR);
             statement.setString("p_levelid", p_levelid.trim());
             statement.execute();
@@ -178,7 +180,7 @@ public class Methods {
                 result.setResult(resultset.getString("LEVNAME"));
                 result.setSuccess(true);
             } else {
-                result.setMessage("USER ROLE IS NOT AVAILABLE");
+                result.setMessage("No data found");
             }
         } catch (SQLException ex) {
             result.setMessage("Something went wrong");
@@ -195,7 +197,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.UPDATEUSERDETAILS(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERDETAILS(:Message,:Code,"
                     + ":p_firstname,:p_lastname,:p_middlename,:p_did,:p_email,:p_contact)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -210,7 +212,7 @@ public class Methods {
                 result.setSuccess(true);
                 result.setMessage(getinsertresult.getString("Message"));
             } else {
-                result.setMessage(getinsertresult.getString("Message"));
+                result.setMessage("Something went wrong");
             }
         } catch (SQLException ex) {
             result.setMessage("Something went wrong");
@@ -233,15 +235,10 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            int counteruser = 0;
-            ACRGBWSResult checkUsername = new FetchMethods().COUNTUSERNAME(dataSource, p_username);
-            if (checkUsername.isSuccess()) {
-                counteruser += Integer.parseInt(checkUsername.getResult());
-            }
-            if (counteruser > 1) {
+            if (new FetchMethods().COUNTUSERNAME(dataSource, p_username).isSuccess()) {
                 result.setMessage("Username is already exist");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.UPDATEUSERCREDENTIALS(:Message,:Code,"
                         + ":userid,:p_username,:p_password,:p_stats)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -251,11 +248,9 @@ public class Methods {
                 getinsertresult.setString("p_stats", "2");
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
-                    ACRGBWSResult GetDID = new FetchMethods().GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
-                    if (GetDID.isSuccess()) {
-                        User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
-                        if (getUser.getDid() != null) {
-                            UserInfo userInfo = utility.ObjectMapper().readValue(getUser.getDid(), UserInfo.class);
+                    if (new FetchMethods().GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE").isSuccess()) {
+                        if (utility.ObjectMapper().readValue(new FetchMethods().GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE").getResult(), User.class).getDid() != null) {
+                            UserInfo userInfo = utility.ObjectMapper().readValue(utility.ObjectMapper().readValue(new FetchMethods().GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE").getResult(), User.class).getDid(), UserInfo.class);
                             ACRGBWSResult updateInfo = new UpdateMethods().UPDATEUSERINFOBYDID(dataSource, p_username.trim(), userInfo.getDid().trim(), createdby.trim());
                             if (updateInfo.isSuccess()) {
                                 result.setMessage(getinsertresult.getString("Message"));
@@ -264,14 +259,14 @@ public class Methods {
                                 new EmailSender().EmailSender(dataSource, p_username, p_password.trim(), session);
                                 result.setSuccess(true);
                             } else {
-                                result.setMessage(updateInfo.getMessage());
+                                result.setMessage("Something went wrong");
                             }
                         }
                     } else {
-                        result.setMessage(GetDID.getMessage());
+                        result.setMessage("No data found");
                     }
                 } else {
-                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setMessage("No data found");
                 }
             }
         } catch (SQLException | IOException ex) {
@@ -288,15 +283,10 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            int counteruser = 0;
-            ACRGBWSResult checkUsername = new FetchMethods().COUNTUSERNAME(dataSource, p_username);
-            if (checkUsername.isSuccess()) {
-                counteruser += Integer.parseInt(checkUsername.getResult());
-            }
-            if (counteruser > 1) {
+            if (new FetchMethods().COUNTUSERNAME(dataSource, p_username).isSuccess()) {
                 result.setMessage("Username is already exist");
             } else {
-                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEUSERNAME(:Message,:Code,:p_userid,:p_username,:p_stats)");
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEUSERNAME(:Message,:Code,:p_userid,:p_username,:p_stats)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("p_userid", userid.trim());
@@ -304,9 +294,8 @@ public class Methods {
                 getinsertresult.setString("p_stats", "2".trim());
                 getinsertresult.execute();
                 if (getinsertresult.getString("Message").equals("SUCC")) {
-                    ACRGBWSResult GetDID = new FetchMethods().GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
-                    if (GetDID.isSuccess()) {
-                        User getUser = utility.ObjectMapper().readValue(GetDID.getResult(), User.class);
+                    if (new FetchMethods().GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE").isSuccess()) {
+                        User getUser = utility.ObjectMapper().readValue(new FetchMethods().GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE").getResult(), User.class);
                         if (getUser.getDid() != null) {
                             UserInfo userinfo = utility.ObjectMapper().readValue(getUser.getDid(), UserInfo.class);
                             ACRGBWSResult updateInfo = new UpdateMethods().UPDATEUSERINFOBYDID(dataSource, p_username.trim(), userinfo.getDid().trim(), createdby.trim());
@@ -318,10 +307,10 @@ public class Methods {
                             }
                         }
                     } else {
-                        result.setMessage(GetDID.getMessage());
+                        result.setMessage("No data found");
                     }
                 } else {
-                    result.setMessage(getinsertresult.getString("Message"));
+                    result.setMessage("Something went wrong");
                 }
             }
         } catch (SQLException | IOException ex) {
@@ -337,7 +326,7 @@ public class Methods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
+//            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
 //            getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
 //            getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
 //            getinsertresult.setString("p_userid", userid.trim());
@@ -367,7 +356,7 @@ public class Methods {
         result.setSuccess(false);
         UserActivity userlogs = utility.UserActivity();
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEPASSWORD(:Message,:Code,:p_userid,:p_password,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("p_userid", userid.trim());
@@ -375,19 +364,19 @@ public class Methods {
             getinsertresult.setString("p_stats", "2");
             getinsertresult.execute();
             if (getinsertresult.getString("Message").equals("SUCC")) {
-                ACRGBWSResult GetEmail = new FetchMethods().GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
-                if (GetEmail.isSuccess()) {
-                    User user = utility.ObjectMapper().readValue(GetEmail.getResult(), User.class);
+//                ACRGBWSResult GetEmail = new FetchMethods().GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE");
+                if (new FetchMethods().GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE").isSuccess()) {
+                    User user = utility.ObjectMapper().readValue(new FetchMethods().GETUSERBYUSERID(dataSource, userid.trim(), "ACTIVE").getResult(), User.class);
                     result.setSuccess(true);
                     result.setMessage(getinsertresult.getString("Message"));
                     new EmailSender().EmailSender(dataSource, user.getUsername(), p_password, session);
                     userlogs.setActstatus("SUCCESS");
                 } else {
-                    result.setMessage(GetEmail.getMessage());
+                    result.setMessage("No data found");
                     userlogs.setActstatus("FAILED");
                 }
             } else {
-                result.setMessage(getinsertresult.getString("Message"));
+                result.setMessage("Something went wrong");
             }
             //-----------------------------------------------------------
             userlogs.setActdetails(getinsertresult.getString("Message"));
@@ -407,7 +396,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATELEVEL(:Message,:Code,:p_userid,:p_levelid,:p_stats)");
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATELEVEL(:Message,:Code,:p_userid,:p_levelid,:p_stats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("p_userid", userid.trim());
@@ -418,7 +407,7 @@ public class Methods {
                 result.setSuccess(true);
                 result.setMessage(getinsertresult.getString("Message"));
             } else {
-                result.setMessage(getinsertresult.getString("Message"));
+                result.setMessage("Something went wrong");
             }
         } catch (SQLException ex) {
             result.setMessage("Something went wrong");
@@ -439,7 +428,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETSUMMARY(:utags,:phcfid,:utranchid,:uconid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETSUMMARY(:utags,:phcfid,:utranchid,:uconid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("phcfid", phcfid.trim());
@@ -456,7 +445,7 @@ public class Methods {
                 result.setResult(utility.ObjectMapper().writeValueAsString(tot));
                 result.setMessage("OK");
             } else {
-                result.setMessage("N/A");
+                result.setMessage("No data found");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage("Something went wrong");
@@ -654,32 +643,31 @@ public class Methods {
                                 result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeList));
                                 result.setSuccess(true);
                             } else {
-                                result.setMessage("N/A");
+                                result.setMessage("No data found");
                             }
                         } else {
-                            result.setMessage(getHCPNUnderUsingProCode.getMessage());
+                            result.setMessage("HCPN data not found");
                         }
                     } else {
-                        result.setMessage(getPRO.getMessage());
+                        result.setMessage("PRO data not found");
                     }
                     break;
                 }
 
                 case "PRO": {//USERID IS PROCODE
-                    ACRGBWSResult getHCPNUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
+//                    ACRGBWSResult getHCPNUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
                     int claimCount = 0;
                     double claims30percent = 0.00;
                     double claimsSb = 0.00;
                     double totalbaseamount = 0.00;
-                    if (getHCPNUnder.isSuccess()) {
-                        List<String> HCPNList = Arrays.asList(getHCPNUnder.getResult().split(","));
+                    if (this.GETROLEMULITPLE(dataSource, userid, stats).isSuccess()) {
+                        List<String> HCPNList = Arrays.asList(this.GETROLEMULITPLE(dataSource, userid, stats).getResult().split(","));
                         ArrayList<FacilityComputedAmount> computationList = new ArrayList<>();
                         for (int pro = 0; pro < HCPNList.size(); pro++) {
-                            ACRGBWSResult getHCFUnder = this.GETROLEMULITPLE(dataSource, HCPNList.get(pro), stats);
-                            if (getHCFUnder.isSuccess()) {
-                                List<String> HCFList = Arrays.asList(getHCFUnder.getResult().split(","));
+//                            ACRGBWSResult getHCFUnder = this.GETROLEMULITPLE(dataSource, HCPNList.get(pro), stats);
+                            if (this.GETROLEMULITPLE(dataSource, HCPNList.get(pro), stats).isSuccess()) {
+                                List<String> HCFList = Arrays.asList(this.GETROLEMULITPLE(dataSource, HCPNList.get(pro), stats).getResult().split(","));
                                 for (int hcf = 0; hcf < HCFList.size(); hcf++) {
-                                    //---------------------------------------
                                     ArrayList<HealthCareFacility> testHCIlist = new ArrayList<>();
                                     ACRGBWSResult getMainAccre = new GetHCFMultiplePMCCNO().GETFACILITYBYMAINACCRE(dataSource, HCFList.get(hcf).trim());
                                     if (getMainAccre.isSuccess()) {
@@ -688,9 +676,7 @@ public class Methods {
                                         testHCIlist.add(utility.ObjectMapper().readValue(new FetchMethods().GETFACILITYID(dataSource, HCFList.get(hcf).trim()).getResult(), HealthCareFacility.class));
                                     }
                                     if (testHCIlist.size() > 0) {
-                                        //----------------------------------------------------------
                                         for (int u = 0; u < testHCIlist.size(); u++) {
-                                            //-----------------------------------------
                                             ACRGBWSResult restA = this.GETAVERAGECLAIMSS(dataSource, testHCIlist.get(u).getHcfcode().trim(), datefrom.trim(), dateto.trim());
                                             if (restA.isSuccess()) {
                                                 List<FacilityComputedAmount> fcaA = Arrays.asList(utility.ObjectMapper().readValue(restA.getResult(), FacilityComputedAmount[].class));
@@ -798,7 +784,6 @@ public class Methods {
                                                 }
                                             }
                                         }
-                                        // }
                                     }
                                 }
                             }
@@ -827,11 +812,11 @@ public class Methods {
                         totalcompute.setYearto(dateto);
 
                         //----------------------------------------------------------
-                        ACRGBWSResult getPROCode = this.GetProWithPROID(dataSource, userid);
-                        if (getPROCode.isSuccess()) {
-                            totalcompute.setHospital(getPROCode.getResult());
+//                        ACRGBWSResult getPROCode = this.GetProWithPROID(dataSource, userid);
+                        if (this.GetProWithPROID(dataSource, userid).isSuccess()) {
+                            totalcompute.setHospital(this.GetProWithPROID(dataSource, userid).getResult());
                         } else {
-                            totalcompute.setHospital(getPROCode.getMessage());
+                            totalcompute.setHospital("No data found");
                         }
                         computationList.add(totalcompute);
                         //----------------------------------------------------------
@@ -841,10 +826,10 @@ public class Methods {
                             result.setResult(utility.ObjectMapper().writeValueAsString(computationList));
                             result.setSuccess(true);
                         } else {
-                            result.setMessage("N/A");
+                            result.setMessage("No data found");
                         }
                     } else {
-                        result.setMessage(getHCPNUnder.getMessage());
+                        result.setMessage("HCPN data not found");
                     }
                     break;
                 }
@@ -972,7 +957,7 @@ public class Methods {
                             result.setMessage("OK");
                             result.setSuccess(true);
                         } else {
-                            result.setMessage("N/A");
+                            result.setMessage("No data found");
                         }
                     }
                     break;
@@ -1144,15 +1129,15 @@ public class Methods {
                             totalcomputeHCPNList.add(totalcomputeHCPNA);
 
                             //END OF GETTING HCPN
-                            if (!totalcomputeHCPNList.isEmpty()) {
+                            if (totalcomputeHCPNList.size() > 0) {
                                 result.setMessage("OK");
                                 result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeHCPNList));
                                 result.setSuccess(true);
                             } else {
-                                result.setMessage("N/A");
+                                result.setMessage("No data found");
                             }
                         } else {
-                            result.setMessage(getFacilityUnder.getMessage());
+                            result.setMessage("No facility found");
                         }
                     } else {
                         int claimsCount = 0;
@@ -1194,14 +1179,14 @@ public class Methods {
                                                 if (!new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1icdcode()).isSuccess()
                                                         && !new ContractMethod().GETVALIDATECODE(dataSource, "ZBEN", fcaA.get(f).getC1rvcode()).isSuccess()) {
                                                     double totalamount = 0.00;
-                                                    double primary = 0.00;
-                                                    double secon = 0.00;
-                                                    double seconExcludedAmount = 0.00;
-                                                    double primaryExcluded = 0.00;
-                                                    int seconClaim = 0;
-                                                    int seconExcludedClaim = 0;
-                                                    int primaryClaims = 0;
-                                                    int primaryExcludedClaims = 0;
+//                                                    double primary = 0.00;
+//                                                    double secon = 0.00;
+//                                                    double seconExcludedAmount = 0.00;
+//                                                    double primaryExcluded = 0.00;
+//                                                    int seconClaim = 0;
+//                                                    int seconExcludedClaim = 0;
+//                                                    int primaryClaims = 0;
+//                                                    int primaryExcludedClaims = 0;
                                                     switch (hci.getHcilevel().toUpperCase().trim()) {
                                                         case "T1":
                                                         case "T2":
@@ -1210,23 +1195,23 @@ public class Methods {
                                                             if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                                primary += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primary += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                                primary += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primary += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PRIMARY", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                                primaryExcluded += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primaryExcluded += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                                primaryExcluded += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primaryExcluded += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else {
                                                                 totalcomputeHCPN.setC1icdcode("");
                                                                 totalcomputeHCPN.setC1rvcode("");
@@ -1235,23 +1220,23 @@ public class Methods {
                                                             if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                                secon += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                secon += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                                secon += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                secon += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SECONDARY", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                                seconExcludedAmount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                seconExcludedAmount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else if (new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                                seconExcludedAmount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                seconExcludedAmount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "SEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else {
                                                                 totalcomputeHCPN.setC2icdcode("");
                                                                 totalcomputeHCPN.setC2rvcode("");
@@ -1265,24 +1250,24 @@ public class Methods {
                                                             //-------------------------------------------------------------------------------------------------------------------
                                                             if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                primary += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primary += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                                primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                                primary += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primary += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primaryClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC1icdcode(fcaA.get(f).getC1icdcode());
-                                                                primaryExcluded += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primaryExcluded += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PEXCLUDED", fcaA.get(f).getC1icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC1rvcode(fcaA.get(f).getC1rvcode());
-                                                                primaryExcluded += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primaryExcluded += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC1rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                primaryExcludedClaims += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else {
                                                                 totalcomputeHCPN.setC1icdcode("");
                                                                 totalcomputeHCPN.setC1rvcode("");
@@ -1291,23 +1276,23 @@ public class Methods {
                                                             if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                                secon += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                secon += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                                secon += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                secon += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCF", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                seconClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC2icdcode(fcaA.get(f).getC2icdcode());
-                                                                seconExcludedAmount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                seconExcludedAmount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2icdcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else if (new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).isSuccess()) {
                                                                 totalamount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                                 totalcomputeHCPN.setC2rvcode(fcaA.get(f).getC2rvcode());
-                                                                seconExcludedAmount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
-                                                                seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                seconExcludedAmount += Double.parseDouble(new ContractMethod().GETVALIDATECODE(dataSource, "PCFEXCLUDED", fcaA.get(f).getC2rvcode().trim()).getMessage().trim()) * Integer.parseInt(fcaA.get(f).getTotalclaims());
+//                                                                seconExcludedClaim += Integer.parseInt(fcaA.get(f).getTotalclaims());
                                                             } else {
                                                                 totalcomputeHCPN.setC2icdcode("");
                                                                 totalcomputeHCPN.setC2rvcode("");
@@ -1373,20 +1358,20 @@ public class Methods {
                             totalcomputeHCPNA.setTotalclaims(String.valueOf(claimsCount));
                         }
                         //GET HCPN
-                        ACRGBWSResult getHCPN = this.GETMBWITHID(dataSource, userid);
-                        if (getHCPN.isSuccess()) {
-                            totalcomputeHCPNA.setHospital(getHCPN.getResult());
+//                        ACRGBWSResult getHCPN = this.GETMBWITHID(dataSource, userid);
+                        if (this.GETMBWITHID(dataSource, userid).isSuccess()) {
+                            totalcomputeHCPNA.setHospital(this.GETMBWITHID(dataSource, userid).getResult());
                         } else {
-                            totalcomputeHCPNA.setHospital(getHCPN.getMessage());
+                            totalcomputeHCPNA.setHospital("No data found");
                         }
                         totalcomputeHCPNList.add(totalcomputeHCPNA);
                         //END OF GETTING HCPN
-                        if (!totalcomputeHCPNList.isEmpty()) {
+                        if (totalcomputeHCPNList.size() > 0) {
                             result.setMessage("OK");
                             result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeHCPNList));
                             result.setSuccess(true);
                         } else {
-                            result.setMessage("N/A");
+                            result.setMessage("No data found");
                         }
                     }
                     break;
@@ -1415,9 +1400,9 @@ public class Methods {
             switch (tags.toUpperCase()) {
                 case "USERPRO"://USERID IS PRO ACCOUNT USERID
                 {
-                    ACRGBWSResult getPRO = this.GETROLE(dataSource, userid, stats);
-                    if (getPRO.isSuccess()) {
-                        ACRGBWSResult getHCPNUnderUsingProCode = this.GETROLEMULITPLE(dataSource, getPRO.getResult(), stats);
+//                    ACRGBWSResult getPRO = this.GETROLE(dataSource, userid, stats);
+                    if (this.GETROLE(dataSource, userid, stats).isSuccess()) {
+                        ACRGBWSResult getHCPNUnderUsingProCode = this.GETROLEMULITPLE(dataSource, this.GETROLE(dataSource, userid, stats).getResult(), stats);
                         if (getHCPNUnderUsingProCode.isSuccess()) {
                             int claimCount = 0;
                             double claimsSb = 0.00;
@@ -1571,11 +1556,11 @@ public class Methods {
                             }
                             totalcompute.setYearfrom(datefrom);
                             totalcompute.setYearto(dateto);
-                            ACRGBWSResult getPROCode = this.GetProWithPROID(dataSource, getPRO.getResult());
-                            if (getPROCode.isSuccess()) {
-                                totalcompute.setHospital(getPROCode.getResult());
+//                            ACRGBWSResult getPROCode = this.GetProWithPROID(dataSource, getPRO.getResult());
+                            if (this.GetProWithPROID(dataSource, this.GETROLE(dataSource, userid, stats).getResult()).isSuccess()) {
+                                totalcompute.setHospital(this.GetProWithPROID(dataSource, this.GETROLE(dataSource, userid, stats).getResult()).getResult());
                             } else {
-                                totalcompute.setHospital(getPROCode.getMessage());
+                                totalcompute.setHospital("No data found");
                             }
                             totalcomputeList.add(totalcompute);
                             //-------------------------------------------------------------------
@@ -1584,24 +1569,24 @@ public class Methods {
                                 result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeList));
                                 result.setSuccess(true);
                             } else {
-                                result.setMessage("N/A");
+                                result.setMessage("No data found");
                             }
                         } else {
-                            result.setMessage(getHCPNUnderUsingProCode.getMessage());
+                            result.setMessage("HCPN data not found");
                         }
                     } else {
-                        result.setMessage(getPRO.getMessage());
+                        result.setMessage("PRO data not found");
                     }
                     break;
                 }
 
                 case "PRO": {//USERID IS PROCODE
-                    ACRGBWSResult getHCPNUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
+//                    ACRGBWSResult getHCPNUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
                     int claimCount = 0;
                     double claimsSb = 0.00;
                     double totalbaseamount = 0.00;
-                    if (getHCPNUnder.isSuccess()) {
-                        List<String> HCPNList = Arrays.asList(getHCPNUnder.getResult().split(","));
+                    if (this.GETROLEMULITPLE(dataSource, userid, stats).isSuccess()) {
+                        List<String> HCPNList = Arrays.asList(this.GETROLEMULITPLE(dataSource, userid, stats).getResult().split(","));
                         ArrayList<FacilityComputedAmount> computationList = new ArrayList<>();
                         for (int pro = 0; pro < HCPNList.size(); pro++) {
                             ACRGBWSResult getHCFUnder = this.GETROLEMULITPLE(dataSource, HCPNList.get(pro), stats);
@@ -1772,10 +1757,10 @@ public class Methods {
                             result.setResult(utility.ObjectMapper().writeValueAsString(computationList));
                             result.setSuccess(true);
                         } else {
-                            result.setMessage("N/A");
+                            result.setMessage("No data found");
                         }
                     } else {
-                        result.setMessage(getHCPNUnder.getMessage());
+                        result.setMessage("HCPN data not found");
                     }
                     break;
                 }
@@ -1941,7 +1926,7 @@ public class Methods {
                             result.setMessage("OK");
                             result.setSuccess(true);
                         } else {
-                            result.setMessage("N/A");
+                            result.setMessage("No data found");
                         }
                     }
                     break;
@@ -1949,10 +1934,10 @@ public class Methods {
                 case "HCPN"://USERID IS HCPNCODE/ACCRENO
                 //GET ALL FACILITY UNDER OF HCPN
                 {
-                    ACRGBWSResult getFacilityUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
-                    if (getFacilityUnder.isSuccess()) {
+//                    ACRGBWSResult getFacilityUnder = this.GETROLEMULITPLE(dataSource, userid, stats);
+                    if (this.GETROLEMULITPLE(dataSource, userid, stats).isSuccess()) {
                         ArrayList<FacilityComputedAmount> totalcomputeHCPNList = new ArrayList<>();
-                        List<String> hcflist = Arrays.asList(getFacilityUnder.getResult().split(","));
+                        List<String> hcflist = Arrays.asList(this.GETROLEMULITPLE(dataSource, userid, stats).getResult().split(","));
                         int claimCount = 0;
                         double claimsSb = 0.00;
                         double totalbaseamount = 0.00;
@@ -2101,25 +2086,25 @@ public class Methods {
                             totalcomputeHCPNA.setTotalclaims(String.valueOf(claimCount));
                         }
                         //GET HCPN
-                        ACRGBWSResult getHCPN = this.GETMBWITHID(dataSource, userid);
-                        if (getHCPN.isSuccess()) {
-                            totalcomputeHCPNA.setHospital(getHCPN.getResult());
+//                        ACRGBWSResult getHCPN = this.GETMBWITHID(dataSource, userid);
+                        if (this.GETMBWITHID(dataSource, userid).isSuccess()) {
+                            totalcomputeHCPNA.setHospital(this.GETMBWITHID(dataSource, userid).getResult());
                         } else {
-                            totalcomputeHCPNA.setHospital(getHCPN.getMessage());
+                            totalcomputeHCPNA.setHospital("No data found");
                         }
                         totalcomputeHCPNA.setYearfrom(datefrom);
                         totalcomputeHCPNA.setYearto(dateto);
                         totalcomputeHCPNList.add(totalcomputeHCPNA);
                         //END OF GETTING HCPN
-                        if (!totalcomputeHCPNList.isEmpty()) {
+                        if (totalcomputeHCPNList.size() > 0) {
                             result.setMessage("OK");
                             result.setResult(utility.ObjectMapper().writeValueAsString(totalcomputeHCPNList));
                             result.setSuccess(true);
                         } else {
-                            result.setMessage("N/A");
+                            result.setMessage("No data found");
                         }
                     } else {
-                        result.setMessage(getFacilityUnder.getMessage());
+                        result.setMessage("No facility found");
                     }
                     break;
                 }
@@ -2143,7 +2128,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.ACTIVITYLOGS(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.ACTIVITYLOGS(:Message,:Code,"
                     + ":a_date,:a_details,:a_by,:a_actstats)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -2156,7 +2141,7 @@ public class Methods {
                 result.setSuccess(true);
                 result.setMessage(getinsertresult.getString("Message"));
             } else {
-                result.setMessage(getinsertresult.getString("Message"));
+                result.setMessage("Something went wrong");
             }
         } catch (SQLException ex) {
             result.setMessage("Something went wrong");
@@ -2175,7 +2160,7 @@ public class Methods {
         result.setSuccess(false);
         ArrayList<UserActivity> logsList = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETLOGSWITHID(:userid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETLOGSWITHID(:userid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("userid", userid.trim());
             statement.execute();
@@ -2194,9 +2179,8 @@ public class Methods {
                 result.setMessage("OK");
                 result.setSuccess(true);
             } else {
-                result.setMessage("N/A");
+                result.setMessage("No data found");
             }
-
         } catch (SQLException | IOException ex) {
             result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2221,7 +2205,7 @@ public class Methods {
 //            if (getdatesettings.isSuccess()) {
 //                List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class));
 //                for (int u = 0; u < GetDateSettings.size(); u++) {
-//                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
+//                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
 //                    statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //                    statement.setString("upmccno", upmccno.trim());
 //                    statement.setString("utags", "G");
@@ -2294,72 +2278,71 @@ public class Methods {
 //        return result;
 //    }
     //INSERT MB REQUEST
-    public ACRGBWSResult InsertMBRequest(
-            final DataSource dataSource,
-            final MBRequestSummary mbrequestsummry) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        try (Connection connection = dataSource.getConnection()) {
-            if (!utility.IsValidDate(mbrequestsummry.getDaterequest()) || !utility.IsValidDate(mbrequestsummry.getYearfrom()) || !utility.IsValidDate(mbrequestsummry.getYearto())) {
-                result.setMessage("DATE FORMAT IS NOT VALID MM-dd-yyyy");
-                result.setSuccess(false);
-            } else if (!utility.IsValidNumber(mbrequestsummry.getTotalamount())) {
-                result.setMessage("AMOUNT FORMAT IS NOT VALID");
-                result.setSuccess(false);
-            } else {
-                ACRGBWSResult restA = this.GETROLE(dataSource, mbrequestsummry.getRequestor(), "ACTIVE");
-                if (restA.isSuccess()) {
-                    CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.MBREQUEST(:Message,:Code,:udaterequest,:udatefrom,"
-                            + ":udateto,:urequestor,:utranscode,:uremarks,:uamount,:udatecreated)");
-                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
-                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
-                    getinsertresult.setDate("udaterequest", (Date) new Date(utility.StringToDate(mbrequestsummry.getDaterequest()).getTime()));
-                    getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(mbrequestsummry.getYearfrom()).getTime()));
-                    getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(mbrequestsummry.getYearto()).getTime()));
-                    getinsertresult.setInt("urequestor", Integer.parseInt(restA.getResult()));
-                    getinsertresult.setString("utranscode", mbrequestsummry.getTranscode());
-                    getinsertresult.setString("uremarks", mbrequestsummry.getRemarks());
-                    getinsertresult.setString("uamount", mbrequestsummry.getTotalamount());
-                    getinsertresult.setTimestamp("udatecreated", new java.sql.Timestamp(new java.util.Date().getTime()));
-                    getinsertresult.execute();
-                    if (getinsertresult.getString("Message").equals("SUCC")) {
-                        ArrayList<String> errorList = new ArrayList<>();
-                        List<String> facilitylist = Arrays.asList(mbrequestsummry.getFacility().split(","));
-                        int errCounter = 0;
-                        for (int x = 0; x < facilitylist.size(); x = x + 2) {
-                            CallableStatement statement = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.MBREQUESTFCHUNDER(:Message,:Code,:utranscode,:udatecreated,:uamount,:ufacility)");
-                            statement.registerOutParameter("Message", OracleTypes.VARCHAR);
-                            statement.registerOutParameter("Code", OracleTypes.INTEGER);
-                            statement.setString("utranscode", mbrequestsummry.getTranscode());
-                            statement.setTimestamp("udatecreated", new java.sql.Timestamp(new java.util.Date().getTime()));
-                            statement.setString("uamount", facilitylist.get(x + 1));
-                            statement.setString("ufacility", facilitylist.get(x));
-                            statement.execute();
-                            if (!statement.getString("Message").equals("SUCC")) {
-                                errCounter++;
-                                errorList.add(getinsertresult.getString("Message"));
-                            }
-                        }
-                        if (errCounter == 0) {
-                            result.setMessage("OK");
-                            result.setSuccess(true);
-                        } else {
-                            result.setMessage(errorList.toString());
-                        }
-                    } else {
-                        result.setMessage(getinsertresult.getString("Message"));
-                    }
-                }
-            }
-        } catch (SQLException ex) {
-            result.setMessage("Something went wrong");
-            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return result;
-    }
-
+//    public ACRGBWSResult InsertMBRequest(
+//            final DataSource dataSource,
+//            final MBRequestSummary mbrequestsummry) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        try (Connection connection = dataSource.getConnection()) {
+//            if (!utility.IsValidDate(mbrequestsummry.getDaterequest()) || !utility.IsValidDate(mbrequestsummry.getYearfrom()) || !utility.IsValidDate(mbrequestsummry.getYearto())) {
+//                result.setMessage("DATE FORMAT IS NOT VALID MM-dd-yyyy");
+//                result.setSuccess(false);
+//            } else if (!utility.IsValidNumber(mbrequestsummry.getTotalamount())) {
+//                result.setMessage("AMOUNT FORMAT IS NOT VALID");
+//                result.setSuccess(false);
+//            } else {
+//                ACRGBWSResult restA = this.GETROLE(dataSource, mbrequestsummry.getRequestor(), "ACTIVE");
+//                if (restA.isSuccess()) {
+//                    CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUEST(:Message,:Code,:udaterequest,:udatefrom,"
+//                            + ":udateto,:urequestor,:utranscode,:uremarks,:uamount,:udatecreated)");
+//                    getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
+//                    getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
+//                    getinsertresult.setDate("udaterequest", (Date) new Date(utility.StringToDate(mbrequestsummry.getDaterequest()).getTime()));
+//                    getinsertresult.setDate("udatefrom", (Date) new Date(utility.StringToDate(mbrequestsummry.getYearfrom()).getTime()));
+//                    getinsertresult.setDate("udateto", (Date) new Date(utility.StringToDate(mbrequestsummry.getYearto()).getTime()));
+//                    getinsertresult.setInt("urequestor", Integer.parseInt(restA.getResult()));
+//                    getinsertresult.setString("utranscode", mbrequestsummry.getTranscode());
+//                    getinsertresult.setString("uremarks", mbrequestsummry.getRemarks());
+//                    getinsertresult.setString("uamount", mbrequestsummry.getTotalamount());
+//                    getinsertresult.setTimestamp("udatecreated", new java.sql.Timestamp(new java.util.Date().getTime()));
+//                    getinsertresult.execute();
+//                    if (getinsertresult.getString("Message").equals("SUCC")) {
+//                        ArrayList<String> errorList = new ArrayList<>();
+//                        List<String> facilitylist = Arrays.asList(mbrequestsummry.getFacility().split(","));
+//                        int errCounter = 0;
+//                        for (int x = 0; x < facilitylist.size(); x = x + 2) {
+//                            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.MBREQUESTFCHUNDER(:Message,:Code,:utranscode,:udatecreated,:uamount,:ufacility)");
+//                            statement.registerOutParameter("Message", OracleTypes.VARCHAR);
+//                            statement.registerOutParameter("Code", OracleTypes.INTEGER);
+//                            statement.setString("utranscode", mbrequestsummry.getTranscode());
+//                            statement.setTimestamp("udatecreated", new java.sql.Timestamp(new java.util.Date().getTime()));
+//                            statement.setString("uamount", facilitylist.get(x + 1));
+//                            statement.setString("ufacility", facilitylist.get(x));
+//                            statement.execute();
+//                            if (!statement.getString("Message").equals("SUCC")) {
+//                                errCounter++;
+//                                errorList.add(getinsertresult.getString("Message"));
+//                            }
+//                        }
+//                        if (errCounter == 0) {
+//                            result.setMessage("OK");
+//                            result.setSuccess(true);
+//                        } else {
+//                            result.setMessage(errorList.toString());
+//                        }
+//                    } else {
+//                        result.setMessage(getinsertresult.getString("Message"));
+//                    }
+//                }
+//            }
+//        } catch (SQLException ex) {
+//            result.setMessage("Something went wrong");
+//            Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        return result;
+//    }
     // GET ALL REQUEST USING MB USERID ACCOUNT
 //    public ACRGBWSResult FetchMBRequest(
 //            final DataSource dataSource,
@@ -2369,7 +2352,7 @@ public class Methods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBREQUEST(:userid); end;");
+//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBREQUEST(:userid); end;");
 //            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //            statement.setString("userid", userid.trim());
 //            statement.execute();
@@ -2412,18 +2395,17 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try {
-            ACRGBWSResult restA = this.GETROLE(dataSource, pid, tags);
-            if (restA.isSuccess()) {
-                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), tags);
+//            ACRGBWSResult restA = this.GETROLE(dataSource, pid, tags);
+            if (this.GETROLE(dataSource, pid, tags).isSuccess()) {
+                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, this.GETROLE(dataSource, pid, tags).getResult(), tags);
                 List<String> accessidlist = Arrays.asList(restB.getResult().split(","));
                 ArrayList<ManagingBoard> mblist = new ArrayList<>();
                 ArrayList<HealthCareFacility> facilitylist = new ArrayList<>();
                 if (accessidlist.size() > 0) {
                     for (int x = 0; x < accessidlist.size(); x++) {
-                        ACRGBWSResult getmbresult = this.GETMBWITHID(dataSource, accessidlist.get(x));
-
-                        if (getmbresult.isSuccess()) {
-                            ManagingBoard managingboard = utility.ObjectMapper().readValue(getmbresult.getResult(), ManagingBoard.class
+//                        ACRGBWSResult getmbresult = this.GETMBWITHID(dataSource, accessidlist.get(x));
+                        if (this.GETMBWITHID(dataSource, accessidlist.get(x)).isSuccess()) {
+                            ManagingBoard managingboard = utility.ObjectMapper().readValue(this.GETMBWITHID(dataSource, accessidlist.get(x)).getResult(), ManagingBoard.class
                             );
                             //GET FALCITY UNDER EVERY MB
                             ACRGBWSResult restC = this.GETROLEMULITPLE(dataSource, managingboard.getControlnumber(), tags);
@@ -2463,7 +2445,6 @@ public class Methods {
             } else {
                 result.setMessage("NO DATA FOUND");
             }
-
         } catch (IOException ex) {
             result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2524,7 +2505,7 @@ public class Methods {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             //---------------------------------------------------- 
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("pid", pid.trim());
             statement.execute();
@@ -2536,13 +2517,12 @@ public class Methods {
                 mb.setMbname(resultset.getString("MBNAME"));
                 mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                 ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-
                 if (creator.isSuccess()) {
-                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
-                    );
-                    mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+//                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    mb.setCreatedby(utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class).getLastname() + ","
+                            + " " + utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class).getFirstname());
                 } else {
-                    mb.setCreatedby(creator.getMessage());
+                    mb.setCreatedby("No data found");
                 }
                 mb.setStatus(resultset.getString("STATUS"));
                 mb.setBankname(resultset.getString("BANKNAME"));
@@ -2553,7 +2533,7 @@ public class Methods {
                 result.setResult(utility.ObjectMapper().writeValueAsString(mb));
                 //------------------------------------------------------
             } else {
-                result.setMessage("NO DATA");
+                result.setMessage("NO DATA FOUND");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage("Something went wrong");
@@ -2578,7 +2558,7 @@ public class Methods {
             List<String> accesslist = Arrays.asList(accessid.split(","));
             for (int x = 0; x < accesslist.size(); x++) {
                 //------------------------------------------------------------------------------------------------
-                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.REMOVEDROLEINDEX(:Message,:Code,"
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.REMOVEDROLEINDEX(:Message,:Code,"
                         + ":puserid,:paccessid)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -2587,7 +2567,7 @@ public class Methods {
                 getinsertresult.execute();
                 //------------------------------------------------------------------------------------------------
                 if (!getinsertresult.getString("Message").equals("SUCC")) {
-                    errorList.add(getinsertresult.getString("Message"));
+                    errorList.add("Something went wrong");
                     userLogs.setActstatus("FAILED");
                 } else {
                     userLogs.setActstatus("SUCCESS");
@@ -2597,7 +2577,7 @@ public class Methods {
                 new UserActivityLogs().UserLogsMethod(datasource, "REMOVED-ACCESS", userLogs, userid.trim(), accesslist.get(x).trim());
             }
             if (errorList.size() > 0) {
-                result.setMessage(errorList.toString());
+                result.setMessage("Something went wrong");
             } else {
                 result.setSuccess(true);
                 result.setMessage("OK");
@@ -2618,16 +2598,16 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            ACRGBWSResult restA = this.GETROLE(dataSource, proid.trim(), "ACTIVE");
+//            ACRGBWSResult restA = this.GETROLE(dataSource, proid.trim(), "ACTIVE");
             // System.out.println(restA);
             ArrayList<ManagingBoard> mblist = new ArrayList<>();
-            if (restA.isSuccess()) {
-                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult().trim(), "ACTIVE");
+            if (this.GETROLE(dataSource, proid.trim(), "ACTIVE").isSuccess()) {
+                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, this.GETROLE(dataSource, proid.trim(), "ACTIVE").getResult().trim(), "ACTIVE");
                 //  System.out.println(restB);
                 List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                 for (int x = 0; x < fchlist.size(); x++) {
                     //---------------------------------------------------- 
-                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("pid", fchlist.get(x).trim());
                     statement.execute();
@@ -2639,13 +2619,12 @@ public class Methods {
                         mb.setMbname(resultset.getString("MBNAME"));
                         mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                         ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-
                         if (creator.isSuccess()) {
-                            UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
-                            );
-                            mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+//                            UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                            mb.setCreatedby(utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class).getLastname() + ","
+                                    + " " + utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class).getFirstname());
                         } else {
-                            mb.setCreatedby("N/A");
+                            mb.setCreatedby("No data found");
                         }
                         mb.setStatus(resultset.getString("STATUS"));
                         mb.setControlnumber(resultset.getString("CONNUMBER"));
@@ -2655,13 +2634,12 @@ public class Methods {
                         //GET ACCREDITATION USING CODE
                         ACRGBWSResult accreResult = new FetchMethods().GETACCREDITATION(dataSource, resultset.getString("CONNUMBER").trim());
                         if (accreResult.isSuccess()) {
-                            Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class
-                            );
-                            mb.setLicensedatefrom(accree.getDatefrom());
-                            mb.setLicensedateto(accree.getDateto());
+//                            Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class);
+                            mb.setLicensedatefrom(utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class).getDatefrom());
+                            mb.setLicensedateto(utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class).getDateto());
                         } else {
-                            mb.setLicensedatefrom(accreResult.getMessage());
-                            mb.setLicensedateto(accreResult.getMessage());
+                            mb.setLicensedatefrom("No data found");
+                            mb.setLicensedateto("No data found");
                         }
                         mblist.add(mb);
                         //------------------------------------------------------
@@ -2692,14 +2670,14 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            ACRGBWSResult restA = this.GETROLE(dataSource, proid, "ACTIVE");
+//            ACRGBWSResult restA = this.GETROLE(dataSource, proid, "ACTIVE");
             ArrayList<ManagingBoard> mblist = new ArrayList<>();
-            if (restA.isSuccess()) {
-                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, restA.getResult(), "INACTIVE");
+            if (this.GETROLE(dataSource, proid, "ACTIVE").isSuccess()) {
+                ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, this.GETROLE(dataSource, proid, "ACTIVE").getResult(), "INACTIVE");
                 List<String> fchlist = Arrays.asList(restB.getResult().split(","));
                 for (int x = 0; x < fchlist.size(); x++) {
                     //---------------------------------------------------- 
-                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("pid", fchlist.get(x));
                     statement.execute();
@@ -2711,13 +2689,12 @@ public class Methods {
                         mb.setMbname(resultset.getString("MBNAME"));
                         mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                         ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
-
                         if (creator.isSuccess()) {
-                            UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
-                            );
-                            mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+//                            UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                            mb.setCreatedby(utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class).getLastname() + ", "
+                                    + "" + utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class).getFirstname());
                         } else {
-                            mb.setCreatedby("N/A");
+                            mb.setCreatedby("No data found");
                         }
                         mb.setStatus(resultset.getString("STATUS"));
                         mb.setControlnumber(resultset.getString("CONNUMBER"));
@@ -2726,12 +2703,10 @@ public class Methods {
                         mb.setAddress(resultset.getString("ADDRESS"));
                         //GET ACCREDITATION USING CODE
                         ACRGBWSResult accreResult = new FetchMethods().GETACCREDITATION(dataSource, resultset.getString("CONNUMBER"));
-
                         if (accreResult.isSuccess()) {
-                            Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class
-                            );
-                            mb.setLicensedatefrom(accree.getDatefrom());
-                            mb.setLicensedateto(accree.getDateto());
+//                            Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class);
+                            mb.setLicensedatefrom(utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class).getDatefrom());
+                            mb.setLicensedateto(utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class).getDateto());
                         } else {
                             mb.setLicensedatefrom(accreResult.getMessage());
                             mb.setLicensedateto(accreResult.getMessage());
@@ -2766,11 +2741,11 @@ public class Methods {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             ArrayList<ManagingBoard> mblist = new ArrayList<>();
-            ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, proid, tags);
-            List<String> fchlist = Arrays.asList(restB.getResult().split(","));
+//            ACRGBWSResult restB = this.GETROLEMULITPLE(dataSource, proid, tags);
+            List<String> fchlist = Arrays.asList(this.GETROLEMULITPLE(dataSource, proid, tags).getResult().split(","));
             for (int x = 0; x < fchlist.size(); x++) {
                 //---------------------------------------------------- 
-                CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBWITHID(:pid); end;");
                 statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                 statement.setString("pid", fchlist.get(x));
                 statement.execute();
@@ -2783,11 +2758,11 @@ public class Methods {
                     mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                     ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                     if (creator.isSuccess()) {
-                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class
-                        );
-                        mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+//                        UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                        mb.setCreatedby(utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class).getLastname() + ","
+                                + " " + utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class).getFirstname());
                     } else {
-                        mb.setCreatedby("DATA NOT FOUND");
+                        mb.setCreatedby("NO DATA FOUND");
                     }
                     mb.setStatus(resultset.getString("STATUS"));
                     mb.setControlnumber(resultset.getString("CONNUMBER"));
@@ -2797,13 +2772,12 @@ public class Methods {
                     mb.setBaseamount(String.valueOf(0.00));
                     ACRGBWSResult accreResult = new FetchMethods().GETACCREDITATION(dataSource, resultset.getString("CONNUMBER"));
                     if (accreResult.isSuccess()) {
-                        Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class
-                        );
-                        mb.setLicensedatefrom(accree.getDatefrom());
-                        mb.setLicensedateto(accree.getDateto());
+//                        Accreditation accree = utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class);
+                        mb.setLicensedatefrom(utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class).getDatefrom());
+                        mb.setLicensedateto(utility.ObjectMapper().readValue(accreResult.getResult(), Accreditation.class).getDateto());
                     } else {
-                        mb.setLicensedatefrom(accreResult.getMessage());
-                        mb.setLicensedateto(accreResult.getMessage());
+                        mb.setLicensedatefrom("No data found");
+                        mb.setLicensedateto("No data found");
                     }
                     mblist.add(mb);
                     //------------------------------------------------------
@@ -2833,12 +2807,12 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            ACRGBWSResult restA = this.GETROLEMULITPLE(dataSource, proid, tags.toUpperCase().trim());
-            List<String> resultlist = Arrays.asList(restA.getResult().split(","));
+//            ACRGBWSResult restA = this.GETROLEMULITPLE(dataSource, proid, tags.toUpperCase().trim());
+            List<String> resultlist = Arrays.asList(this.GETROLEMULITPLE(dataSource, proid, tags.toUpperCase().trim()).getResult().split(","));
             ArrayList<HealthCareFacility> fchlist = new ArrayList<>();
             for (int x = 0; x < resultlist.size(); x++) {
                 //---------------------------------------------------- 
-                CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETFACILITY(:pid); end;");
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:pid); end;");
                 statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                 statement.setString("pid", resultlist.get(x).trim());
                 statement.execute();
@@ -2880,7 +2854,7 @@ public class Methods {
         try (Connection connection = dataSource.getConnection()) {
             if (pproid.length() > 3) {
                 String procode = pproid.substring(pproid.length() - 2);
-                CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETPROWITHID(:pproid); end;");
+                CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETPROWITHID(:pproid); end;");
                 statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                 statement.setString("pproid", procode.trim());
                 statement.execute();
@@ -2894,12 +2868,11 @@ public class Methods {
                     result.setMessage("OK");
                     result.setSuccess(true);
                 } else {
-                    result.setMessage("N/A");
+                    result.setMessage("No data found");
                 }
             } else {
-                result.setMessage("N/A");
+                result.setMessage("No data found");
             }
-
         } catch (SQLException | IOException ex) {
             result.setMessage("Something went wrong");
             Logger.getLogger(Methods.class.getName()).log(Level.SEVERE, null, ex);
@@ -2916,7 +2889,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -2927,7 +2900,7 @@ public class Methods {
                 result.setMessage("OK");
                 result.setSuccess(true);
             } else {
-                result.setMessage("N/A");
+                result.setMessage("No data found");
             }
         } catch (SQLException ex) {
             result.setMessage("Something went wrong");
@@ -2945,7 +2918,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHID(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -2960,7 +2933,7 @@ public class Methods {
                 result.setSuccess(true);
                 result.setResult(String.join(",", listresult));
             } else {
-                result.setMessage("N/A");
+                result.setMessage("No data found");
             }
         } catch (SQLException ex) {
             result.setMessage("Something went wrong");
@@ -2979,7 +2952,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDANDNOTEMPTY(:utags,:pid,:ucondate); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDANDNOTEMPTY(:utags,:pid,:ucondate); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", pid.trim());
@@ -2995,7 +2968,7 @@ public class Methods {
                 result.setSuccess(true);
                 result.setResult(String.join(",", listresult));
             } else {
-                result.setMessage("N/A");
+                result.setMessage("No data found");
             }
         } catch (SQLException ex) {
             result.setMessage("Something went wrong");
@@ -3013,7 +2986,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -3024,7 +2997,7 @@ public class Methods {
                 result.setSuccess(true);
                 result.setResult(resultset.getString("USERID"));
             } else {
-                result.setMessage("N/A");
+                result.setMessage("No data found");
             }
         } catch (SQLException ex) {
             result.setMessage("Something went wrong");
@@ -3042,7 +3015,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -3057,7 +3030,7 @@ public class Methods {
                 result.setSuccess(true);
                 result.setResult(String.join(",", resultlist));
             } else {
-                result.setMessage("N/A");
+                result.setMessage("No data found");
             }
         } catch (SQLException ex) {
             result.setMessage("Something went wrong");
@@ -3092,7 +3065,7 @@ public class Methods {
 //                        }
 //                        rmb.setConctractamount(conlist.get(x).getAmount());
 //                        rmb.setContractnumber(conlist.get(x).getTranscode());
-//                        CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
+//                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
 //                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //                        statement.setString("tags", tags.trim());
 //                        statement.setString("pconid", conlist.get(x).getConid().trim());
@@ -3158,7 +3131,7 @@ public class Methods {
 //                        }
 //                        rmb.setConctractamount(conlist.get(x).getAmount());
 //                        rmb.setContractnumber(conlist.get(x).getTranscode());
-//                        CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
+//                        CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETTOTALRELEASEUNDERMB(:tags,:pconid); end;");
 //                        statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //                        statement.setString("tags", tags.trim());
 //                        statement.setString("pconid", conlist.get(x).getConid().trim());
@@ -3325,7 +3298,7 @@ public class Methods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
+//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETSUMAMOUNTCLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
 //            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //            statement.setString("upmccno", upmccno.trim());
 //            statement.setString("utags", "G".trim());
@@ -3427,7 +3400,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDFORENDROLE(:utags,:pid,:pcondateid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDFORENDROLE(:utags,:pid,:pcondateid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -3443,7 +3416,7 @@ public class Methods {
                 result.setSuccess(true);
                 result.setResult(String.join(",", listresult));
             } else {
-                result.setMessage("N/A");
+                result.setMessage("No data found");
             }
         } catch (SQLException ex) {
             result.setMessage("Something went wrong");
@@ -3469,7 +3442,7 @@ public class Methods {
             if (getdatesettings.isSuccess()) {
 //                List<DateSettings> GetDateSettings = Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class));
                 for (int u = 0; u < Arrays.asList(utility.ObjectMapper().readValue(getdatesettings.getResult(), DateSettings[].class)).size(); u++) {
-                    CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETAVERAGECLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
+                    CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETAVERAGECLAIMS(:upmccno,:utags,:udatefrom,:udateto); end;");
                     statement.registerOutParameter("v_result", OracleTypes.CURSOR);
                     statement.setString("upmccno", upmccno.trim());
                     statement.setString("utags", "G".trim());
@@ -3521,10 +3494,10 @@ public class Methods {
                     result.setResult(utility.ObjectMapper().writeValueAsString(listOfcomputedamount));
                     result.setSuccess(true);
                 } else {
-                    result.setMessage("N/A");
+                    result.setMessage("No data found");
                 }
             } else {
-                result.setMessage("N/A");
+                result.setMessage("No data found");
             }
             //-------------------------------------------------------------------------------
         } catch (SQLException | IOException ex) {
@@ -3542,7 +3515,7 @@ public class Methods {
         result.setSuccess(false);
         ArrayList<String> errorList = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETENDEDCONTRACTDATEPERIOD(:tags); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETENDEDCONTRACTDATEPERIOD(:tags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("tags", tags.trim().toUpperCase());
             statement.execute();
@@ -3580,7 +3553,7 @@ public class Methods {
                         errorList.add(endAffiliate.getMessage());
                     }
                     //CHANGE CONTRACT PERIOD STATUS
-                    CallableStatement stmt = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INACTIVEDATA(:Message,:Code,"
+                    CallableStatement stmt = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INACTIVEDATA(:Message,:Code,"
                             + ":tags,:dataid)");
                     stmt.registerOutParameter("Code", OracleTypes.INTEGER);
                     stmt.setString("tags", "CONTRACTDATE".trim().toUpperCase());
@@ -3612,7 +3585,7 @@ public class Methods {
 //        result.setResult("");
 //        result.setSuccess(false);
 //        try (Connection connection = dataSource.getConnection()) {
-//            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.VALIDATEEXCLUDEDCODE(:pcode); end;");
+//            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.VALIDATEEXCLUDEDCODE(:pcode); end;");
 //            statement.registerOutParameter("v_result", OracleTypes.CURSOR);
 //            statement.setString("pcode", excode.trim().toUpperCase());
 //            statement.execute();
@@ -3639,7 +3612,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.VALIDATECONTRACTDATE(:puserid,:pcondate); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.VALIDATECONTRACTDATE(:puserid,:pcondate); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setDate("udatefrom", (Date) new Date(utility.StringToDate(pdatefrom).getTime()));
             statement.setDate("udateto", (Date) new Date(utility.StringToDate(pdateto).getTime()));
@@ -3664,7 +3637,7 @@ public class Methods {
         try (Connection connection = datasource.getConnection()) {
             UserActivityLogs logs = new UserActivityLogs();
             UserActivity userLogs = utility.UserActivity();
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGUPDATEDETAILS.UPDATEHCPNACCREDITATION(:Message,:Code,"
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBPKGUPDATEDETAILS.UPDATEHCPNACCREDITATION(:Message,:Code,"
                     + ":paccount,:pdateaction,:pcreatedby,:pstatus,:premarks,:ptags,:pdatefrom,:pdateto)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
@@ -3683,7 +3656,7 @@ public class Methods {
                 userLogs.setActstatus("SUCCESS");
             } else {
                 userLogs.setActstatus("FAILED");
-                result.setMessage(getinsertresult.getString("Message"));
+                result.setMessage("Something went wrong");
             }
             userLogs.setActby(accreditation.getCreatedby());
             logs.UserLogsMethod(datasource, "EDIT-ACCREDITATION-HCPN", userLogs, accreditation.getCreatedby(), accreditation.getAccreno());
@@ -3701,7 +3674,7 @@ public class Methods {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETALLACCREDITATION(:utags); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETALLACCREDITATION(:utags); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.execute();
@@ -3734,7 +3707,7 @@ public class Methods {
                 result.setSuccess(true);
                 result.setResult(errorList.toString());
             } else {
-                result.setMessage("N/A");
+                result.setMessage("No data found");
             }
         } catch (SQLException | ParseException ex) {
             result.setMessage("Something went wrong");
@@ -3750,7 +3723,7 @@ public class Methods {
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
             //---------------------------------------------------- 
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETMBUSINGMBID(:umbuserid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETMBUSINGMBID(:umbuserid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("umbuserid", umbuserid.trim());
             statement.execute();
@@ -3763,10 +3736,11 @@ public class Methods {
                 mb.setDatecreated(dateformat.format(resultset.getTimestamp("DATECREATED")));
                 ACRGBWSResult creator = new FetchMethods().GETFULLDETAILS(dataSource, resultset.getString("CREATEDBY").trim());
                 if (creator.isSuccess()) {
-                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
-                    mb.setCreatedby(userinfos.getLastname() + ", " + userinfos.getFirstname());
+//                    UserInfo userinfos = utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class);
+                    mb.setCreatedby(utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class).getLastname() + ", "
+                            + "" + utility.ObjectMapper().readValue(creator.getResult(), UserInfo.class).getFirstname());
                 } else {
-                    mb.setCreatedby(creator.getMessage());
+                    mb.setCreatedby("No data found");
                 }
                 mb.setStatus(resultset.getString("STATUS"));
                 mb.setControlnumber(resultset.getString("CONNUMBER"));
@@ -3777,7 +3751,7 @@ public class Methods {
                 result.setResult(utility.ObjectMapper().writeValueAsString(mb));
                 //------------------------------------------------------
             } else {
-                result.setMessage("NO DATA");
+                result.setMessage("NO DATA FOUND");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage("Something went wrong");

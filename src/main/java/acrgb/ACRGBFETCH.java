@@ -68,24 +68,24 @@ public class ACRGBFETCH {
 //    private Session acrgbmail;
     private final Utility utility = new Utility();
 
-    @GET
-    @Path("EmailNotification/{conid}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ACRGBWSResult EmailNotification(
-            @HeaderParam("token") String token,
-            @PathParam("conid") String conid) {
-        ACRGBWSResult result = utility.ACRGBWSResult();
-        result.setMessage("");
-        result.setResult("");
-        result.setSuccess(false);
-        if (!utility.GetPayloadNODB(dataSource, token).isSuccess()) {
-            result.setMessage(utility.GetPayloadNODB(dataSource, token).getMessage());
-        } else {
-            
-            
-        }
-        return result;
-    }
+//    @GET
+//    @Path("EmailNotification/{conid}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ACRGBWSResult EmailNotification(
+//            @HeaderParam("token") String token,
+//            @PathParam("conid") String conid) {
+//        ACRGBWSResult result = utility.ACRGBWSResult();
+//        result.setMessage("");
+//        result.setResult("");
+//        result.setSuccess(false);
+//        if (!utility.GetPayloadNODB(dataSource, token).isSuccess()) {
+//            result.setMessage(utility.GetPayloadNODB(dataSource, token).getMessage());
+//        } else {
+//            
+//            
+//        }
+//        return result;
+//    }
 
     @GET
     @Path("ValidateClaims/{useries}/{uaction}")

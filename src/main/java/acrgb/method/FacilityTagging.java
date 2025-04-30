@@ -45,7 +45,7 @@ public class FacilityTagging {
         try (Connection connection = datasource.getConnection()) {
             List<String> serviceList = Arrays.asList(servicetype.split(","));
             for (int i = 0; i < serviceList.size(); i++) {
-                CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBACCREPACKAGE.ACRGBFACILITYTAGGING(:Message,:Code,:upmcc_no,:uservicetype,:udatestart,:udateended,:ucreator,:udatecreated,:udateissue,:udateeffective)");
+                CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBACCREPACKAGE.ACRGBFACILITYTAGGING(:Message,:Code,:upmcc_no,:uservicetype,:udatestart,:udateended,:ucreator,:udatecreated,:udateissue,:udateeffective)");
                 getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
                 getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
                 getinsertresult.setString("upmcc_no", tagging.getHcino());
@@ -58,7 +58,7 @@ public class FacilityTagging {
                 getinsertresult.setDate("udateeffective", (Date) new Date(utility.StringToDate(tagging.getEffdate()).getTime()));//tranch.getDatecreated());
                 getinsertresult.execute();
                 if (!getinsertresult.getString("Message").equals("SUCC")) {
-                    errorList.add(getinsertresult.getString("Message"));
+                    errorList.add("Something went wrong");
                 } else {
                     if (this.CHECKIFEXIST(datasource, tagging.getHcino(), serviceList.get(i).trim().toUpperCase()).isSuccess()) {
                         ACRGBWSResult update = this.ACRGBHCITAGUPDATE(datasource, tagging, serviceList.get(i).trim().toUpperCase());
@@ -95,7 +95,7 @@ public class FacilityTagging {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBACCREPACKAGE.CHECKIFEXIST(:upmcc_no,:uservicetype); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBACCREPACKAGE.CHECKIFEXIST(:upmcc_no,:uservicetype); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("upmcc_no", pmccno);
             statement.setString("uservicetype", servicetype);
@@ -108,7 +108,7 @@ public class FacilityTagging {
                 result.setSuccess(true);
                 result.setResult(utility.ObjectMapper().writeValueAsString(tagging));
             } else {
-                result.setMessage("N/A");
+                result.setMessage("No data found");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage("Something went wrong");
@@ -125,7 +125,7 @@ public class FacilityTagging {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBACCREPACKAGE.ACRGBHCITAGUPDATE(:Message,:Code,:upmcc_no,:uservicetype,:udatestart,:udateended,:udatecreated,:udateissue,:udateeffective)");
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBACCREPACKAGE.ACRGBHCITAGUPDATE(:Message,:Code,:upmcc_no,:uservicetype,:udatestart,:udateended,:udatecreated,:udateissue,:udateeffective)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("upmcc_no", tagging.getHcino());
@@ -137,7 +137,7 @@ public class FacilityTagging {
             getinsertresult.setDate("udateeffective", (Date) new Date(utility.StringToDate(tagging.getEffdate()).getTime()));//tranch.getDatecreated());
             getinsertresult.execute();
             if (!getinsertresult.getString("Message").equals("SUCC")) {
-                result.setMessage(getinsertresult.getString("Message"));
+                result.setMessage("Something went wrong");
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
                 result.setSuccess(true);
@@ -157,7 +157,7 @@ public class FacilityTagging {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement getinsertresult = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBACCREPACKAGE.ACRGBHCITAGNEW(:Message,:Code,:upmcc_no,:uservicetype,:udatestart,:udateended,:ucreator,:udatecreated,:udateissue,:udateeffective)");
+            CallableStatement getinsertresult = connection.prepareCall("call ACR_GB.ACRGBACCREPACKAGE.ACRGBHCITAGNEW(:Message,:Code,:upmcc_no,:uservicetype,:udatestart,:udateended,:ucreator,:udatecreated,:udateissue,:udateeffective)");
             getinsertresult.registerOutParameter("Message", OracleTypes.VARCHAR);
             getinsertresult.registerOutParameter("Code", OracleTypes.INTEGER);
             getinsertresult.setString("upmcc_no", tagging.getHcino());
@@ -170,7 +170,7 @@ public class FacilityTagging {
             getinsertresult.setDate("udateeffective", (Date) new Date(utility.StringToDate(tagging.getEffdate()).getTime()));//tranch.getDatecreated());
             getinsertresult.execute();
             if (!getinsertresult.getString("Message").equals("SUCC")) {
-                result.setMessage(getinsertresult.getString("Message"));
+                result.setMessage("Something went wrong");
             } else {
                 result.setMessage(getinsertresult.getString("Message"));
                 result.setSuccess(true);
@@ -189,7 +189,7 @@ public class FacilityTagging {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETAPEXFACILITY(); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETAPEXFACILITY(); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.execute();
             ArrayList<HealthCareFacility> hcflist = new ArrayList<>();
@@ -208,7 +208,7 @@ public class FacilityTagging {
                 result.setMessage("OK");
                 result.setSuccess(true);
             } else {
-                result.setMessage("N/A");
+                result.setMessage("No data found");
             }
         } catch (SQLException | IOException ex) {
             result.setMessage("Something went wrong");

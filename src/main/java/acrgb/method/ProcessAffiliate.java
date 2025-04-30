@@ -39,7 +39,7 @@ public class ProcessAffiliate {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETAFFILIATE(:uhcicode,:uhcpn,:ucondateid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETAFFILIATE(:uhcicode,:uhcpn,:ucondateid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("uhcicode", uhcicode);
             statement.setString("uhcpn", uhcpn);

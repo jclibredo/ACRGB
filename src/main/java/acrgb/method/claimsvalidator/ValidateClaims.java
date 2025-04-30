@@ -47,7 +47,7 @@ public class ValidateClaims {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETROLEWITHIDREVERSE(:utags,:pid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("utags", utags.trim());
             statement.setString("pid", puserid.trim());
@@ -98,7 +98,7 @@ public class ValidateClaims {
         action.setSeries(useries);
         //END OF MAP OBJECT REQUEST
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.VALIDATECLAIMS(:useries); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.VALIDATECLAIMS(:useries); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("useries", useries.trim());
             statement.execute();
@@ -222,7 +222,7 @@ public class ValidateClaims {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = dataSource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKGFUNCTION.GETCONDATEBYID(:ucondateid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKGFUNCTION.GETCONDATEBYID(:ucondateid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("ucondateid", ucondateid.trim());
             statement.execute();
@@ -257,7 +257,7 @@ public class ValidateClaims {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("call DRG_SHADOWBILLING.ACRGBPKGPROCEDURE.INSERTACTION(:Message,:Code,:useries,:uaction,:udatecreated)");
+            CallableStatement statement = connection.prepareCall("call ACR_GB.ACRGBPKGPROCEDURE.INSERTACTION(:Message,:Code,:useries,:uaction,:udatecreated)");
             statement.registerOutParameter("Message", OracleTypes.VARCHAR);
             statement.registerOutParameter("Code", OracleTypes.INTEGER);
             statement.setString("useries", useries.trim());
@@ -285,7 +285,7 @@ public class ValidateClaims {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETFACILITY(:hcfrid); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITY(:hcfrid); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("hcfrid", hcfrid.trim());
             statement.execute();
@@ -319,7 +319,7 @@ public class ValidateClaims {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETFACILITYBYMAINACCRE(:umainaccre); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITYBYMAINACCRE(:umainaccre); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("umainaccre", umainaccre.trim());
             statement.execute();

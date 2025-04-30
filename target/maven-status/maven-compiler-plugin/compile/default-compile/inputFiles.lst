@@ -27,9 +27,9 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\method\UserActivityLogs.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\BookingMethod.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\ACRGBUPDATE.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\FacilityComputedAmount.java
+D:\Java Swing\ACRGB\src\main\java\acrgb\method\BudgetStatsNotification.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ManagingBoard.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ACRGBPayload.java
-D:\Java Swing\ACRGB\src\main\java\acrgb\method\job\TestMailProperties.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Archived.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\GetHCFMultiplePMCCNO.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\utility\Cryptor.java
@@ -45,7 +45,6 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\structure\cf5\WarningError.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ReportsHCPNSummary.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Pro.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Summary.java
-D:\Java Swing\ACRGB\src\main\java\acrgb\method\job\QuartzJob.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\cf5\CF5Data.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\MBRequestSummary.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\SubAccre.java
@@ -53,7 +52,6 @@ D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Accreditation.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Appellate.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\method\UpdateMethods.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ReportsParam.java
-D:\Java Swing\ACRGB\src\main\java\acrgb\method\job\SchedulerMain.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ContractDate.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\ACRGBWSResult.java
 D:\Java Swing\ACRGB\src\main\java\acrgb\structure\Tranch.java

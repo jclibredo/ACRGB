@@ -40,7 +40,7 @@ public class GetHCFMultiplePMCCNO {
         result.setResult("");
         result.setSuccess(false);
         try (Connection connection = datasource.getConnection()) {
-            CallableStatement statement = connection.prepareCall("begin :v_result := DRG_SHADOWBILLING.ACRGBPKG.GETFACILITYBYMAINACCRE(:umainaccre); end;");
+            CallableStatement statement = connection.prepareCall("begin :v_result := ACR_GB.ACRGBPKG.GETFACILITYBYMAINACCRE(:umainaccre); end;");
             statement.registerOutParameter("v_result", OracleTypes.CURSOR);
             statement.setString("umainaccre", umainaccre.trim());
             statement.execute();
